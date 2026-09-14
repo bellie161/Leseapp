@@ -445,6 +445,23 @@
     box-shadow: 0 2px 0 var(--orange-dark);
   }
 
+  .text-card.done {
+    border-color: #b8e8c8;
+    background: #f4fff8;
+    opacity: 0.85;
+  }
+  .text-card.done .card-title { color: #3a6a4a; }
+  .done-badge {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 1px 7px;
+    margin-top: 5px;
+  }
+
   @media (max-width: 480px) {
     .header-title { font-size: 1.9rem; }
     .text-grid { grid-template-columns: 1fr 1fr; }
@@ -1425,11 +1442,334 @@ Der größte Fisch ist der Walhai. Er kann bis zu 12 Meter lang werden, frisst a
         correct: 1
       }
     ]
+  },
+  {
+    title: "Haie",
+    topic: "Tiere",
+    emoji: "🦈",
+    text: "Haie leben seit über 400 Millionen Jahren im Meer — sie sind also viel älter als die Dinosaurier. Es gibt über 500 verschiedene Haiarten. Die meisten sind für Menschen ungefährlich.\n\nHaie haben kein Knochenskelett wie wir, sondern eines aus Knorpel. Das macht sie leicht und beweglich. Ihre Zähne fallen regelmäßig aus und wachsen immer wieder nach. Ein Hai kann in seinem Leben Tausende von Zähnen verlieren.\n\nHaie sind wichtig für das Gleichgewicht im Meer. Sie fressen kranke und schwache Tiere und halten so die Bestände gesund. Leider werden jedes Jahr Millionen Haie gefangen — viele Arten sind deshalb bedroht.",
+    questions: [
+      {
+        q: "Woraus besteht das Skelett eines Hais?",
+        options: ["Aus Knochen", "Aus Knorpel", "Aus Schuppen", "Aus Hartplastik"],
+        correct: 1
+      },
+      {
+        q: "Was ist besonders an den Zähnen eines Hais?",
+        options: ["Sie sind sehr spitz", "Sie leuchten im Dunkeln", "Sie fallen aus und wachsen immer nach", "Sie sind aus Knorpel"],
+        correct: 2
+      },
+      {
+        q: "Warum sind Haie wichtig für das Meer?",
+        options: ["Weil sie das Wasser sauber halten", "Weil sie andere Tiere erschrecken", "Weil sie kranke Tiere fressen und das Gleichgewicht halten", "Weil sie sehr alt werden"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Luft und Wind",
+    topic: "Wissen",
+    emoji: "💨",
+    text: "Luft ist überall um uns herum, auch wenn wir sie nicht sehen können. Sie besteht hauptsächlich aus Stickstoff und Sauerstoff. Den Sauerstoff brauchen wir zum Atmen — ohne ihn könnten wir nicht leben.\n\nWind entsteht, wenn warme und kalte Luft aufeinandertreffen. Warme Luft steigt nach oben, kühle Luft strömt nach. Das nennt man Luftbewegung — also Wind. Je größer der Unterschied, desto stärker bläst der Wind.\n\nWind kann viel Nützliches tun. Windräder verwandeln seine Kraft in Strom. Segelboote nutzen ihn zum Fahren. Und Samen vieler Pflanzen werden durch den Wind weit verbreitet — zum Beispiel beim Löwenzahn.",
+    questions: [
+      {
+        q: "Woraus besteht Luft hauptsächlich?",
+        options: ["Aus Sauerstoff und Kohlenstoff", "Aus Stickstoff und Sauerstoff", "Aus Wasserdampf und Staub", "Aus Helium und Wasserstoff"],
+        correct: 1
+      },
+      {
+        q: "Wie entsteht Wind?",
+        options: ["Wenn es regnet", "Wenn die Erde sich dreht", "Wenn warme und kalte Luft aufeinandertreffen", "Wenn Wolken zusammenstoßen"],
+        correct: 2
+      },
+      {
+        q: "Was machen Windräder mit der Windkraft?",
+        options: ["Sie erzeugen Wasser", "Sie verwandeln sie in Strom", "Sie bremsen den Wind", "Sie messen die Windstärke"],
+        correct: 1
+      }
+    ]
+  },
+  {
+    title: "Das Geheimnis im alten Baum",
+    topic: "Abenteuer",
+    emoji: "🌳",
+    text: "Im Garten von Omas Haus stand eine riesige alte Eiche. Finn und seine Kusine Clara entdeckten eines Tages ein tiefes Loch im Stamm. Darin lag, in ein Tuch gewickelt, eine kleine Holzschatulle.\n\nDarin fanden sie alte Murmeln, eine Münze von 1963 und einen Zettel: Wer diese Schatulle findet, soll eine neue Schatzkiste anlegen und sie zurücklegen. Finn und Clara überlegten lange, was sie hineinlegen sollten.\n\nAm Ende legten sie zwei ihrer Lieblingsmurmeln, einen Glücksstein und einen neuen Zettel mit ihren Namen hinein. Sie schlossen die Schatulle und versteckten sie wieder im Baum. Vielleicht würde sie jemand in vielen Jahren finden.",
+    questions: [
+      {
+        q: "Wo fanden Finn und Clara die Schatulle?",
+        options: ["Unter der Erde", "In einem Loch im Baumstamm", "Auf einem Ast", "Unter einem Stein"],
+        correct: 1
+      },
+      {
+        q: "Was stand auf dem Zettel in der Schatulle?",
+        options: ["Ein Gedicht", "Eine Warnung", "Man soll eine neue Schatzkiste anlegen und sie zurücklegen", "Die Adresse des Besitzers"],
+        correct: 2
+      },
+      {
+        q: "Was legten Finn und Clara in die Schatulle?",
+        options: ["Geld und ein Foto", "Murmeln, einen Glücksstein und einen Zettel", "Einen Brief an Oma", "Nichts, sie nahmen alles mit"],
+        correct: 1
+      }
+    ]
+  },
+  {
+    title: "Der Regenwurm",
+    topic: "Natur",
+    emoji: "🪱",
+    text: "Regenwürmer sind kleine, unscheinbare Tiere — aber für die Erde unglaublich wichtig. Sie leben im Boden und fressen abgestorbene Pflanzenteile. Dabei lockern sie die Erde auf und machen sie fruchtbar.\n\nEin Regenwurm hat keinen Magen im menschlichen Sinne. Er frisst Erde und Pflanzenreste und scheidet sie wieder aus — dabei entstehen wertvolle Nährstoffe für Pflanzen. In einem einzigen Quadratmeter Gartenerde können über 100 Regenwürmer leben.\n\nRegenwürmer mögen es feucht und dunkel. Nach einem Regen kommen sie oft an die Oberfläche — deshalb heißen sie Regenwürmer. Vögel wissen das und suchen nach dem Regen gezielt nach ihnen.",
+    questions: [
+      {
+        q: "Was fressen Regenwürmer?",
+        options: ["Kleine Insekten", "Abgestorbene Pflanzenteile und Erde", "Wurzeln von Pflanzen", "Wasser und Mineralien"],
+        correct: 1
+      },
+      {
+        q: "Was entsteht, wenn Regenwürmer Erde ausscheiden?",
+        options: ["Schmutz", "Wertvolle Nährstoffe für Pflanzen", "Neues Wasser", "Schutz gegen Schädlinge"],
+        correct: 1
+      },
+      {
+        q: "Warum kommen Regenwürmer nach dem Regen an die Oberfläche?",
+        options: ["Weil sie Sonne brauchen", "Weil sie trinken wollen", "Weil sie feuchte Bedingungen mögen", "Weil sie schlafen wollen"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Die Römer",
+    topic: "Geschichte",
+    emoji: "🏛️",
+    text: "Vor etwa 2000 Jahren beherrschten die Römer einen großen Teil Europas. Ihre Hauptstadt war Rom, in Italien. Das Römische Reich war so groß, dass man Wochen brauchte, um es zu durchqueren.\n\nDie Römer bauten beeindruckende Straßen, Brücken und Aquädukte — das sind Wasserleitungen aus Stein. Viele dieser Bauwerke stehen heute noch. Auch unser Kalender und viele Wörter in europäischen Sprachen stammen von den Römern.\n\nRömische Soldaten, die Legionäre, trugen Rüstungen und kämpften in genauen Formationen. Kinder in Rom gingen zur Schule und lernten Lesen, Schreiben und Rechnen — auf Wachstafeln statt auf Papier.",
+    questions: [
+      {
+        q: "Was sind Aquädukte?",
+        options: ["Römische Tempel", "Steinerne Wasserleitungen", "Römische Schulen", "Befestigte Mauern"],
+        correct: 1
+      },
+      {
+        q: "Wie schrieben Kinder in Rom in der Schule?",
+        options: ["Auf Papier", "Auf Pergament", "Auf Wachstafeln", "Auf Steinen"],
+        correct: 2
+      },
+      {
+        q: "Was haben die Römer uns unter anderem hinterlassen?",
+        options: ["Die deutsche Sprache", "Unseren Kalender und viele Wörter", "Das Christentum allein", "Die ersten Schulen weltweit"],
+        correct: 1
+      }
+    ]
+  },
+  {
+    title: "Warum ist der Himmel blau?",
+    topic: "Wissen",
+    emoji: "🔵",
+    text: "Sonnenlicht sieht weiß aus, enthält aber alle Farben des Regenbogens. Wenn es in die Erdatmosphäre eintritt, wird es an winzigen Luftteilchen gestreut. Blaues Licht wird dabei am stärksten gestreut — deshalb sehen wir den Himmel blau.\n\nBeim Sonnenuntergang ist das anders. Die Sonne steht tief und ihr Licht muss einen viel längeren Weg durch die Atmosphäre zurücklegen. Das blaue Licht wird dabei so stark gestreut, dass es verschwindet. Übrig bleibt rotes und oranges Licht — das macht den Abendhimmel so schön bunt.\n\nIm Weltall gibt es keine Atmosphäre. Deshalb ist der Himmel dort schwarz — auch wenn die Sonne scheint. Astronauten sehen tagsüber Sterne, weil es kein Streulicht gibt.",
+    questions: [
+      {
+        q: "Warum sehen wir den Himmel blau?",
+        options: ["Weil das Meer blau ist", "Weil blaues Licht am stärksten gestreut wird", "Weil die Sonne blaues Licht aussendet", "Weil die Wolken blau sind"],
+        correct: 1
+      },
+      {
+        q: "Warum ist der Abendhimmel orange und rot?",
+        options: ["Weil die Sonne heißer wird", "Weil die Wolken sich verfärben", "Weil das blaue Licht beim langen Weg verschwindet", "Weil der Mond aufgeht"],
+        correct: 2
+      },
+      {
+        q: "Welche Farbe hat der Himmel im Weltall?",
+        options: ["Blau", "Weiß", "Schwarz", "Dunkelviolett"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Kühe auf der Weide",
+    topic: "Natur",
+    emoji: "🐄",
+    text: "Kühe sind Nutztiere, die Menschen seit Jahrtausenden halten. Sie geben Milch, aus der man Butter, Käse und Joghurt herstellt. Eine Kuh gibt täglich bis zu 30 Liter Milch.\n\nKühe sind Wiederkäuer. Das bedeutet: Sie fressen Gras, schlucken es herunter und kauen es später noch einmal. Dafür haben sie vier Magenabschnitte. So können sie auch hartes Gras gut verdauen.\n\nAuf einer Weide verbringen Kühe viele Stunden mit Fressen. Sie brauchen täglich etwa 70 Kilogramm Gras. Kühe leben in Herden und fühlen sich in Gesellschaft wohl. Wenn eine Kuh krank ist, merken die anderen das oft als Erste.",
+    questions: [
+      {
+        q: "Was bedeutet es, dass Kühe Wiederkäuer sind?",
+        options: ["Sie fressen nur Kräuter", "Sie trinken viel Wasser", "Sie kauen ihr Futter zweimal", "Sie fressen Tag und Nacht"],
+        correct: 2
+      },
+      {
+        q: "Wie viel Milch gibt eine Kuh täglich?",
+        options: ["Bis zu 5 Liter", "Bis zu 10 Liter", "Bis zu 30 Liter", "Bis zu 100 Liter"],
+        correct: 2
+      },
+      {
+        q: "Warum leben Kühe lieber in Herden?",
+        options: ["Weil sie sich alleine langweilen", "Weil sie sich in Gesellschaft wohlfühlen", "Weil sie sich gegenseitig wärmen", "Weil sie gemeinsam fressen müssen"],
+        correct: 1
+      }
+    ]
+  },
+  {
+    title: "Tim und das Gewitter",
+    topic: "Abenteuer",
+    emoji: "⛈️",
+    text: "Tim war mit seinem Vater auf einer Wanderung, als der Himmel plötzlich dunkel wurde. Ein lautes Donnern rollte durch die Täler. Sein Vater zählte die Sekunden zwischen Blitz und Donner. Fünf Sekunden — das Gewitter war noch etwa eineinhalb Kilometer entfernt.\n\nSie suchten schnell Schutz in einer Berghütte. Drinnen roch es nach Holz und Suppe. Der Hüttenwirt erklärte: Unter einem Baum zu stehen ist bei Gewitter gefährlich, weil Blitze hohe Dinge treffen.\n\nNach einer Stunde war das Gewitter vorbei. Die Luft roch frisch und sauber. Tim hatte jetzt keine Angst mehr vor Gewitter — er fand sie sogar ein bisschen spannend.",
+    questions: [
+      {
+        q: "Wie konnte Tims Vater wissen, wie weit das Gewitter entfernt war?",
+        options: ["Er schaute auf sein Handy", "Er zählte Sekunden zwischen Blitz und Donner", "Er fragte den Hüttenwirt", "Er schaute auf die Wolken"],
+        correct: 1
+      },
+      {
+        q: "Warum ist es bei Gewitter gefährlich, unter einem Baum zu stehen?",
+        options: ["Weil Äste abbrechen können", "Weil Blitze hohe Dinge treffen", "Weil der Regen dort stärker ist", "Weil Bäume umfallen"],
+        correct: 1
+      },
+      {
+        q: "Wie fühlte Tim sich nach dem Gewitter?",
+        options: ["Er hatte immer noch Angst", "Er war böse auf seinen Vater", "Er fand Gewitter sogar spannend", "Er wollte nie wieder wandern"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Planeten im Sonnensystem",
+    topic: "Wissen",
+    emoji: "🪐",
+    text: "In unserem Sonnensystem gibt es acht Planeten, die alle um die Sonne kreisen. Der kleinste ist Merkur, der größte ist Jupiter. Die Erde ist der fünftgrößte Planet.\n\nManche Planeten haben Monde, die um sie kreisen. Die Erde hat einen Mond. Jupiter hat sogar über 90 Monde. Der Saturn ist bekannt für seine wunderschönen Ringe aus Eis und Gestein.\n\nAlle acht Planeten sind sehr verschieden. Auf dem Mars gibt es roten Staub und riesige Vulkane. Venus ist der heißeste Planet — obwohl er nicht am nächsten an der Sonne ist. Neptun ist am weitesten entfernt und braucht 165 Jahre für eine Runde um die Sonne.",
+    questions: [
+      {
+        q: "Wie viele Planeten hat unser Sonnensystem?",
+        options: ["Sechs", "Sieben", "Acht", "Zehn"],
+        correct: 2
+      },
+      {
+        q: "Wofür ist der Saturn bekannt?",
+        options: ["Für seine rote Farbe", "Für seine vielen Monde", "Für seine Ringe aus Eis und Gestein", "Für seine Größe"],
+        correct: 2
+      },
+      {
+        q: "Welcher Planet ist der heißeste?",
+        options: ["Merkur", "Mars", "Venus", "Jupiter"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Eulen",
+    topic: "Tiere",
+    emoji: "🦉",
+    text: "Eulen sind nachtaktive Vögel — sie jagen vor allem in der Dunkelheit. Ihre großen Augen können sehr gut im Dunkeln sehen. Außerdem können sie ihren Kopf fast vollständig im Kreis drehen, um ihre Umgebung gut zu beobachten.\n\nEulen fliegen fast lautlos, weil ihre Federn besonders weich sind. So können sie sich unbemerkt an ihre Beute heranschleichen. Sie fressen Mäuse, kleine Vögel und Insekten. Die unverdauten Knochen und Haare spucken sie als sogenannte Gewölle wieder aus.\n\nIn Deutschland gibt es viele Eulenarten, zum Beispiel den Waldkauz und die Schleiereule. Eulen gelten seit langer Zeit als Symbol der Weisheit.",
+    questions: [
+      {
+        q: "Wann sind Eulen am aktivsten?",
+        options: ["Am frühen Morgen", "Am Mittag", "In der Nacht", "Am späten Nachmittag"],
+        correct: 2
+      },
+      {
+        q: "Warum fliegen Eulen fast lautlos?",
+        options: ["Weil sie sehr leicht sind", "Weil ihre Federn besonders weich sind", "Weil sie sehr langsam fliegen", "Weil sie kleine Flügel haben"],
+        correct: 1
+      },
+      {
+        q: "Was sind Gewölle?",
+        options: ["Eulenküken", "Eulenrufe", "Ausgespuckte unverdaute Reste", "Eulenfedern"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Der Supermarkt",
+    topic: "Wissen",
+    emoji: "🛒",
+    text: "Im Supermarkt gibt es tausende verschiedene Produkte — von Obst und Gemüse bis zu Waschmittel und Zeitschriften. Alles ist so angeordnet, dass Kunden möglichst viel kaufen: Dinge des täglichen Bedarfs liegen oft hinten im Laden.\n\nJedes Produkt hat einen Strichcode. An der Kasse wird dieser Code eingescannt und der Preis wird automatisch berechnet. Früher mussten Kassierer jeden Preis selbst eintippen.\n\nLebensmittel haben ein Mindesthaltbarkeitsdatum. Das bedeutet: Bis zu diesem Datum ist das Produkt garantiert gut. Oft sind Lebensmittel aber noch länger haltbar. Viele Supermärkte geben Produkte kurz vor dem Datum günstiger ab, damit sie nicht weggeworfen werden müssen.",
+    questions: [
+      {
+        q: "Warum liegen wichtige Produkte oft hinten im Supermarkt?",
+        options: ["Weil es dort kühler ist", "Damit Kunden möglichst viel kaufen", "Weil sie dort mehr Platz haben", "Weil sie dort sicherer sind"],
+        correct: 1
+      },
+      {
+        q: "Wozu dient der Strichcode auf Produkten?",
+        options: ["Er zeigt das Herstellungsland", "Er gibt den Preis beim Einscannen an der Kasse an", "Er zeigt das Gewicht des Produkts", "Er ist nur zur Dekoration"],
+        correct: 1
+      },
+      {
+        q: "Was bedeutet das Mindesthaltbarkeitsdatum?",
+        options: ["Danach ist das Produkt immer schlecht", "Bis dahin ist das Produkt garantiert gut", "Das ist das Herstellungsdatum", "Das ist das Kaufdatum"],
+        correct: 1
+      }
+    ]
+  },
+  {
+    title: "Mia rettet den Vogel",
+    topic: "Abenteuer",
+    emoji: "🐦",
+    text: "Mia fand auf dem Schulhof einen kleinen Vogel, der nicht fliegen konnte. Er saß zitternd unter einem Busch. Mia legte ihn vorsichtig in ihren Schulranzen — in ein Fach, das sie mit ihrer Jacke auspolsterte.\n\nNach der Schule zeigte sie ihn ihrer Mutter. Gemeinsam riefen sie bei einer Tierrettungsstation an. Der Mann am Telefon erklärte: Junge Vögel, die noch keine richtigen Federn haben, brauchen besondere Pflege.\n\nSie brachten den Vogel zur Station. Drei Wochen später rief die Station an: Der Vogel war gesund und konnte freigelassen werden. Mia durfte dabei sein, als er davonflog. Sie winkte ihm nach, bis sie ihn nicht mehr sehen konnte.",
+    questions: [
+      {
+        q: "Wo fand Mia den Vogel?",
+        options: ["Im Park", "Auf dem Schulhof unter einem Busch", "In ihrem Garten", "Auf der Straße"],
+        correct: 1
+      },
+      {
+        q: "Was machte Mia mit dem Vogel?",
+        options: ["Sie ließ ihn sitzen", "Sie legte ihn in ihren Ranzen mit Jacke als Polster", "Sie brachte ihn sofort zum Tierarzt", "Sie gab ihn ihrer Lehrerin"],
+        correct: 1
+      },
+      {
+        q: "Was durfte Mia am Ende tun?",
+        options: ["Den Vogel behalten", "Den Vogel benennen", "Dabei sein, als der Vogel freigelassen wurde", "Den Vogel selbst pflegen"],
+        correct: 2
+      }
+    ]
+  },
+  {
+    title: "Sterne und Sternbilder",
+    topic: "Wissen",
+    emoji: "⭐",
+    text: "An einem klaren Nacht kann man tausende Sterne sehen. Alle Sterne sind riesige Sonnen — sie wirken nur so klein, weil sie so weit entfernt sind. Das Licht mancher Sterne braucht Millionen Jahre, bis es uns erreicht.\n\nMenschen haben am Himmel Muster erkannt und ihnen Namen gegeben — das sind die Sternbilder. Bekannte Sternbilder sind der Große Wagen, Orion und der Skorpion. Je nach Jahreszeit sieht man verschiedene Sternbilder.\n\nDer hellste Stern am Nachthimmel heißt Sirius. Der Nordstern zeigt immer genau nach Norden — früher nutzen Seefahrer ihn zur Orientierung, bevor es Kompasse und GPS gab.",
+    questions: [
+      {
+        q: "Warum wirken Sterne so klein?",
+        options: ["Weil sie wirklich klein sind", "Weil sie so weit entfernt sind", "Weil die Luft sie verzerrt", "Weil sie nur schwach leuchten"],
+        correct: 1
+      },
+      {
+        q: "Was sind Sternbilder?",
+        options: ["Fotos von Sternen", "Muster am Himmel, denen Menschen Namen gegeben haben", "Gruppen von Planeten", "Besonders helle Sterne"],
+        correct: 1
+      },
+      {
+        q: "Wozu nutzten Seefahrer früher den Nordstern?",
+        options: ["Zum Messen der Zeit", "Zur Orientierung nach Norden", "Zum Vorhersagen des Wetters", "Zum Bestimmen der Wassertiefe"],
+        correct: 1
+      }
+    ]
+  },
+  {
+    title: "Katzen",
+    topic: "Tiere",
+    emoji: "🐱",
+    text: "Katzen sind seit Tausenden von Jahren Haustiere der Menschen. Ursprünglich wurden sie in Ägypten gehalten, um Mäuse aus Getreidespeichern fernzuhalten. Heute leben Katzen auf der ganzen Welt.\n\nKatzen sind sehr geschickte Jäger. Sie haben ausfahrbare Krallen, weiche Pfoten und sehen auch im Dunkeln gut. Wenn sie fallen, drehen sie sich in der Luft und landen fast immer auf den Pfoten.\n\nKatzen kommunizieren auf verschiedene Weisen. Schnurren bedeutet meistens Wohlbefinden. Ein erhobener Schwanz zeigt, dass die Katze freundlich gestimmt ist. Wenn sie die Ohren anlegt und zischt, möchte sie in Ruhe gelassen werden.",
+    questions: [
+      {
+        q: "Warum hielten die alten Ägypter Katzen?",
+        options: ["Als Opfertiere", "Als Spielgefährten für Kinder", "Um Mäuse aus Getreidespeichern fernzuhalten", "Weil sie heilig waren"],
+        correct: 2
+      },
+      {
+        q: "Was bedeutet es, wenn eine Katze schnurrt?",
+        options: ["Sie hat Hunger", "Sie ist krank", "Sie fühlt sich meistens wohl", "Sie ist wütend"],
+        correct: 2
+      },
+      {
+        q: "Woran erkennt man, dass eine Katze in Ruhe gelassen werden will?",
+        options: ["Sie schläft ein", "Sie legt die Ohren an und zischt", "Sie wedelt mit dem Schwanz", "Sie versteckt sich"],
+        correct: 1
+      }
+    ]
   }
 ];
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 let state = { currentText: null, qIndex: 0, score: 0, answered: false };
+let doneSet = new Set();
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1442,11 +1782,22 @@ function buildTextList() {
   list.innerHTML = '';
   TEXTS.forEach((t, i) => {
     const card = document.createElement('button');
-    card.className = 'text-card';
-    card.innerHTML = `<span class="card-emoji">${t.emoji}</span><span class="card-title">${t.title}</span><span class="card-topic">${t.topic}</span>`;
+    card.className = 'text-card' + (doneSet.has(i) ? ' done' : '');
+    card.innerHTML = `<span class="card-emoji">${t.emoji}</span><span class="card-title">${t.title}</span><span class="card-topic">${t.topic}</span>` + (doneSet.has(i) ? '<span class="done-badge">✓</span>' : '');
     card.onclick = () => openText(i);
     list.appendChild(card);
   });
+  const remaining = TEXTS.length - doneSet.size;
+  const btn = document.querySelector('.random-btn');
+  if (btn) {
+    if (doneSet.size === 0) {
+      btn.innerHTML = '<span class="btn-icon">🎲</span> Zufälligen Text starten';
+    } else if (remaining > 0) {
+      btn.innerHTML = '<span class="btn-icon">🎲</span> Nächster neuer Text <span style="font-size:0.85rem;opacity:0.85">(' + remaining + ' übrig)</span>';
+    } else {
+      btn.innerHTML = '<span class="btn-icon">🔄</span> Alle geschafft! Nochmal von vorne';
+    }
+  }
 }
 
 function openText(index) {
@@ -1462,7 +1813,16 @@ function openText(index) {
 }
 
 function startRandom() {
-  openText(Math.floor(Math.random() * TEXTS.length));
+  let pool = [];
+  for (let i = 0; i < TEXTS.length; i++) {
+    if (!doneSet.has(i)) pool.push(i);
+  }
+  if (pool.length === 0) {
+    doneSet.clear();
+    pool = TEXTS.map((_, i) => i);
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  openText(pick);
 }
 
 function startQuestions() {
@@ -1536,6 +1896,7 @@ function nextQuestion() {
 }
 
 function showResult() {
+  doneSet.add(state.currentText);
   const t = TEXTS[state.currentText];
   const total = t.questions.length;
   const score = state.score;
