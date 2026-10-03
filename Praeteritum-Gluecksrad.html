@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Präteritum-Glücksrad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+/* Layout: zwei Räder nebeneinander (Querformat) bzw. untereinander (Hochformat), darunter die Schreibkarte wie ein Heftblatt */
+:root{
+  --paper:#EAF2E8; --stripe:#C5DDEE; --stripe2:#E4EEF6;
+  --card:#FFFFFF; --ink:#1E2B38; --muted:#5B6B78;
+  --blue:#2D6A9F; --blue-ink:#FFFFFF;
+  --good:#23824F; --good-bg:#E2F4E9; --bad:#B9461A; --bad-bg:#FBE9E1; --hint-bg:#FFF4D6; --hint:#7A5600;
+  --line:#CFDCE6;
+  --seg1:#F7C6C0; --seg2:#FBE0A6; --seg3:#CDEBB8; --seg4:#BFE2EE; --seg5:#D3CCF3; --seg6:#F5CDE6; --seg-ink:#1E2B38;
+  --f-display:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Andika","Comic Sans MS",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#13202A; --stripe:#23415A; --stripe2:#1A2F40;
+  --card:#1B2A36; --ink:#E7EEF3; --muted:#9DB0BE;
+  --blue:#7DB4E3; --blue-ink:#0E1C27;
+  --good:#6FD39B; --good-bg:#143726; --bad:#F29A72; --bad-bg:#3B2117; --hint-bg:#3A3015; --hint:#F2D27A;
+  --line:#2E4355; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#13202A; --stripe:#23415A; --stripe2:#1A2F40;
+  --card:#1B2A36; --ink:#E7EEF3; --muted:#9DB0BE;
+  --blue:#7DB4E3; --blue-ink:#0E1C27;
+  --good:#6FD39B; --good-bg:#143726; --bad:#F29A72; --bad-bg:#3B2117; --hint-bg:#3A3015; --hint:#F2D27A;
+  --line:#2E4355; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.4;overflow:hidden}
+.app{height:100%;display:grid;grid-template-rows:auto auto 1fr;gap:10px;padding-inline:16px;padding-block:0 12px}
+.stripes{height:10px;margin-inline:-16px;background:repeating-linear-gradient(90deg,var(--stripe) 0 10px,var(--stripe2) 10px 22px,transparent 22px 30px)}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px}
+.titles{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;min-width:0}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(1.3rem,2.6vw,1.9rem);margin:0;color:var(--blue)}
+.sub{margin:0;color:var(--muted)}
+.score{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-display);font-weight:600}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:5px 12px;font-variant-numeric:tabular-nums}
+.pill b{color:var(--good)}
+.iconbtn{background:var(--card);border:2px solid var(--line);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;cursor:pointer}
+
+/* Querformat: links Verb-Rad, rechts Personen-Rad über der Schreibkarte */
+.main{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;min-height:0}
+.right{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:12px;min-height:0;min-width:0}
+.wheelbox{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0}
+.wheelarea{flex:1;min-height:0;container-type:size;display:grid;place-items:center}
+.wheelstage{position:relative;width:min(100cqw,100cqh);aspect-ratio:1;max-width:100%}
+.wheelstage canvas{width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
+.pointer{position:absolute;left:50%;top:-4px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ink);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));z-index:2}
+.bar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.spin{font-family:var(--f-display);font-weight:600;font-size:1.15rem;background:var(--blue);color:var(--blue-ink);border:none;border-radius:14px;padding:9px 22px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.spin:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.spin:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.result{font-family:var(--f-display);font-size:1.45rem;font-weight:700;min-width:7ch;color:var(--blue)}
+
+.task{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 16px;display:grid;gap:8px;min-width:0}
+.task h2{font-family:var(--f-display);font-weight:600;margin:0;font-size:1.1rem}
+.prompt{margin:0;font-size:1.05rem}
+.prompt strong{font-family:var(--f-display);color:var(--blue);font-size:1.25rem}
+.answerrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pron{font-family:var(--f-display);font-weight:700;font-size:1.5rem;min-width:2.5ch}
+#answer{font-family:var(--f-body);font-size:1.5rem;padding:6px 12px;border:3px solid var(--blue);border-radius:12px;background:var(--card);color:var(--ink);width:min(240px,100%);min-width:0;flex:1 1 160px}
+#answer.ok{border-color:var(--good);background:var(--good-bg)}
+#answer.no{border-color:var(--bad);background:var(--bad-bg)}
+.keys{display:flex;gap:6px;flex-wrap:wrap}
+.key{font-family:var(--f-body);font-size:1.2rem;min-width:44px;padding:4px 10px;border-radius:10px;border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.check{font-family:var(--f-display);font-weight:600;font-size:1.15rem;background:var(--good);color:var(--card);border:none;border-radius:12px;padding:8px 18px;cursor:pointer}
+.feedback{border-radius:12px;padding:8px 12px;font-size:1.02rem}
+.feedback:empty{display:none}
+.feedback.good{background:var(--good-bg);color:var(--good)}
+.feedback.bad{background:var(--bad-bg);color:var(--bad)}
+.feedback.hint{background:var(--hint-bg);color:var(--hint)}
+.feedback strong{font-family:var(--f-display)}
+.waiting{color:var(--muted);margin:0}
+.history{display:flex;gap:6px;margin:0;padding:0;list-style:none;overflow:hidden;flex-wrap:nowrap}
+.history li{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.88rem;white-space:nowrap}
+.history li.first::before{content:"★ ";color:var(--good)}
+
+/* Hochformat (iPad hochkant): oben Verb-Rad, unten Personen-Rad neben der Schreibkarte */
+@media (orientation:portrait){
+  .main{grid-template-columns:1fr;grid-template-rows:minmax(0,1.15fr) minmax(0,1fr)}
+  .right{grid-template-rows:none;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);align-items:stretch}
+}
+/* Schmales Handy: untereinander, Seite darf scrollen */
+@media (max-width:620px){
+  body{overflow:auto}
+  .app,.main,.right{height:auto;display:flex;flex-direction:column}
+  .wheelarea{flex:none;height:calc(100vw - 32px)}
+  .right .wheelarea{height:70vw}
+}
+
+.dlg{position:fixed;inset:0;background:rgba(10,20,30,.45);display:grid;place-items:center;padding:16px;z-index:20}
+.dlgcard{background:var(--card);color:var(--ink);border-radius:16px;padding:16px 20px;max-width:900px;width:100%;max-height:90%;overflow:auto}
+.dlgcard header{margin-bottom:8px}
+.dlgcard h2{font-family:var(--f-display);margin:0}
+.verbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px;font-size:.95rem}
+.verbgrid span{color:var(--muted)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:10}
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="stripes" aria-hidden="true"></div>
+  <header>
+    <div class="titles">
+      <h1>Präteritum-Glücksrad</h1>
+      <p class="sub">Drehe beide Räder. Dann schreibe das Verb in der Vergangenheit.</p>
+    </div>
+    <div class="score">
+      <span class="pill">Richtig: <b id="scoreOk">0</b> / <span id="scoreAll">0</span></span>
+      <button class="iconbtn" id="listBtn" type="button">Verbliste</button>
+      <button class="iconbtn" id="fsBtn" type="button" hidden>Vollbild</button>
+      <button class="iconbtn" id="soundBtn" type="button" aria-pressed="true">Ton an</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="wheelbox">
+      <div class="wheelarea"><div class="wheelstage"><div class="pointer"></div><canvas id="verbWheel" aria-label="Glücksrad mit Verben"></canvas></div></div>
+      <div class="bar">
+        <button class="spin" id="spinVerb" type="button">1. Verb drehen</button>
+        <div class="result" id="verbResult" aria-live="polite"></div>
+      </div>
+    </section>
+    <div class="right">
+      <section class="wheelbox">
+        <div class="wheelarea"><div class="wheelstage"><div class="pointer"></div><canvas id="personWheel" aria-label="Glücksrad mit Personalformen"></canvas></div></div>
+        <div class="bar">
+          <button class="spin" id="spinPerson" type="button">2. Person drehen</button>
+          <div class="result" id="personResult" aria-live="polite"></div>
+        </div>
+      </section>
+      <section class="task" aria-live="polite">
+        <h2>Schreibe die Präteritum-Form</h2>
+        <div id="taskBody"><p class="waiting">Drehe zuerst das Verb-Rad und das Personen-Rad.</p></div>
+        <ul class="history" id="history"></ul>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="dlg" id="verbDlg" hidden>
+  <div class="dlgcard" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <header><h2 id="dlgTitle">Alle Verben auf dem Rad (96)</h2><button class="iconbtn" id="closeDlg" type="button">Schließen</button></header>
+    <div class="verbgrid" id="verbList"></div>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+// Grundform -> Präteritum-Stamm (ich-Form), Liste aus dem Verben-Heft (KV 2.14)
+const VERBS = [
+ ["beginnen","begann"],["beißen","biss"],["beschließen","beschloss"],["binden","band"],["bitten","bat"],["bleiben","blieb"],
+ ["brennen","brannte"],["bringen","brachte"],["denken","dachte"],["dürfen","durfte"],["entstehen","entstand"],["erfinden","erfand"],
+ ["erschrecken","erschrak"],["essen","aß"],["fahren","fuhr"],["fallen","fiel"],["fangen","fing"],["finden","fand"],
+ ["fliegen","flog"],["fließen","floss"],["fressen","fraß"],["frieren","fror"],["geben","gab"],["gehen","ging"],
+ ["gewinnen","gewann"],["gießen","goss"],["greifen","griff"],["haben","hatte"],["halten","hielt"],["hängen","hing"],
+ ["heben","hob"],["heißen","hieß"],["helfen","half"],["kennen","kannte"],["kneifen","kniff"],["kommen","kam"],
+ ["können","konnte"],["kriechen","kroch"],["lassen","ließ"],["laufen","lief"],["leihen","lieh"],["lesen","las"],
+ ["liegen","lag"],["lügen","log"],["messen","maß"],["mögen","mochte"],["müssen","musste"],["nehmen","nahm"],
+ ["nennen","nannte"],["pfeifen","pfiff"],["raten","riet"],["reiten","ritt"],["rennen","rannte"],["riechen","roch"],
+ ["rufen","rief"],["scheinen","schien"],["schieben","schob"],["schießen","schoss"],["schlafen","schlief"],["schlagen","schlug"],
+ ["schleichen","schlich"],["schließen","schloss"],["schneiden","schnitt"],["schreiben","schrieb"],["schreien","schrie"],["schweigen","schwieg"],
+ ["schwimmen","schwamm"],["schwingen","schwang"],["sehen","sah"],["sein","war"],["singen","sang"],["sitzen","saß"],
+ ["sprechen","sprach"],["sprießen","spross"],["springen","sprang"],["stehen","stand"],["stehlen","stahl"],["steigen","stieg"],
+ ["streichen","strich"],["streiten","stritt"],["tragen","trug"],["treffen","traf"],["treten","trat"],["trinken","trank"],
+ ["tun","tat"],["vergessen","vergaß"],["verlieren","verlor"],["vermeiden","vermied"],["wachsen","wuchs"],["waschen","wusch"],
+ ["werden","wurde"],["werfen","warf"],["wiegen","wog"],["wissen","wusste"],["wollen","wollte"],["ziehen","zog"]
+];
+const PERSONS = [
+ {key:"ich",label:"ich"},{key:"du",label:"du"},{key:"er",label:"er"},
+ {key:"wir",label:"wir"},{key:"ihr",label:"ihr"},{key:"sie",label:"sie (viele)"}
+];
+
+// Präteritum-Formen bilden. Die erste Form ist die Musterlösung, weitere sind ebenfalls richtig.
+function forms(st){
+  const weak = /e$/.test(st);                 // nannte, hatte, wurde, schrie …
+  const sib  = !weak && /(s|ß|z|x)$/.test(st) && !/sch$/.test(st);
+  const td   = !weak && /[td]$/.test(st);
+  const sch  = !weak && /sch$/.test(st);
+  return {
+    ich:[st], er:[st],
+    du: weak ? [st+"st"] : sib ? [st+"est", st+"t"] : td ? [st+"st", st+"est"] : sch ? [st+"st", st+"est"] : [st+"st"],
+    wir:[st+(weak?"n":"en")], sie:[st+(weak?"n":"en")],
+    ihr: weak ? [st+"t"] : td ? [st+"et"] : [st+"t"]
+  };
+}
+
+// ---------- Ton ----------
+let audio=null, soundOn=true;
+function tick(freq=900,dur=.03,vol=.08){
+  if(!soundOn) return;
+  try{
+    audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+    const o=audio.createOscillator(), g=audio.createGain();
+    o.frequency.value=freq; o.type="triangle";
+    g.gain.setValueAtTime(vol,audio.currentTime); g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+dur);
+    o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime+dur);
+  }catch(e){}
+}
+function melody(notes){ notes.forEach((f,i)=>setTimeout(()=>tick(f,.18,.12),i*130)); }
+document.getElementById("soundBtn").addEventListener("click",e=>{
+  soundOn=!soundOn; e.currentTarget.textContent=soundOn?"Ton an":"Ton aus"; e.currentTarget.setAttribute("aria-pressed",soundOn);
+});
+
+// ---------- Räder ----------
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+class Wheel{
+  constructor(canvas,labels,opts){
+    this.c=canvas; this.labels=labels; this.o=opts; this.rot=0; this.spinning=false; this.index=null;
+    this.recent=[];
+    new ResizeObserver(()=>this.resize()).observe(canvas);
+    canvas.addEventListener("click",()=>this.o.onTap && this.o.onTap());
+  }
+  resize(){
+    const r=this.c.getBoundingClientRect(), d=window.devicePixelRatio||1;
+    this.size=r.width; this.c.width=r.width*d; this.c.height=r.width*d;
+    this.ctx=this.c.getContext("2d"); this.ctx.setTransform(d,0,0,d,0,0); this.draw();
+  }
+  draw(){
+    const ctx=this.ctx; if(!ctx) return;
+    const s=this.size, R=s/2-4, n=this.labels.length, a=Math.PI*2/n;
+    const segs=["--seg1","--seg2","--seg3","--seg4","--seg5","--seg6"].map(cssVar);
+    const ink=cssVar("--seg-ink"), line=cssVar("--ink"), card=cssVar("--card");
+    ctx.clearRect(0,0,s,s);
+    ctx.save(); ctx.translate(s/2,s/2); ctx.rotate(this.rot);
+    for(let i=0;i<n;i++){
+      const st=-Math.PI/2+i*a;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,st,st+a); ctx.closePath();
+      ctx.fillStyle = (i===this.index && !this.spinning) ? card : segs[i%segs.length];
+      ctx.fill();
+      ctx.strokeStyle="rgba(30,43,56,.25)"; ctx.lineWidth=.6; ctx.stroke();
+      ctx.save(); ctx.rotate(st+a/2);
+      ctx.fillStyle=(i===this.index && !this.spinning)?line:ink;
+      ctx.textAlign="right"; ctx.textBaseline="middle";
+      const fs=this.o.font(s); ctx.font=`${(i===this.index&&!this.spinning)?700:600} ${fs}px Andika, system-ui, sans-serif`;
+      ctx.fillText(this.labels[i],R-8,0);
+      ctx.restore();
+    }
+    ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2); ctx.lineWidth=4; ctx.strokeStyle=line; ctx.stroke();
+    ctx.restore();
+    // Mitte
+    ctx.beginPath(); ctx.arc(s/2,s/2,s*this.o.hub,0,Math.PI*2); ctx.fillStyle=card; ctx.fill();
+    ctx.lineWidth=4; ctx.strokeStyle=line; ctx.stroke();
+    ctx.fillStyle=line; ctx.font=`700 ${Math.max(13,s*.045)}px Fredoka, system-ui, sans-serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(this.o.hubText,s/2,s/2);
+  }
+  pick(){
+    const n=this.labels.length; let i, guard=0;
+    do{ i=Math.floor(Math.random()*n); guard++; } while(this.recent.includes(i) && guard<50);
+    this.recent.push(i); if(this.recent.length>Math.min(this.o.memory,n-1)) this.recent.shift();
+    return i;
+  }
+  spin(done){
+    if(this.spinning) return;
+    const n=this.labels.length, a=Math.PI*2/n, target=this.pick();
+    this.spinning=true; this.index=target;
+    const TAU=Math.PI*2;
+    const base=((-(target+0.5)*a)%TAU+TAU)%TAU;
+    const jitter=(Math.random()-.5)*a*0.6;
+    const cur=((this.rot%TAU)+TAU)%TAU;
+    let delta=base+jitter-cur; if(delta<0) delta+=TAU;
+    const total=delta+TAU*(reduce?1:5+Math.floor(Math.random()*3));
+    const start=this.rot, dur=reduce?600:4200+Math.random()*800, t0=performance.now();
+    let lastSeg=-1;
+    const step=(t)=>{
+      const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,4);
+      this.rot=start+total*e;
+      const seg=Math.floor((((-this.rot)%TAU+TAU)%TAU)/a);
+      if(seg!==lastSeg){ lastSeg=seg; if(p<.97) tick(this.o.tick,.025,.05); }
+      this.draw();
+      if(p<1) requestAnimationFrame(step);
+      else { this.spinning=false; this.draw(); done(target); }
+    };
+    requestAnimationFrame(step);
+  }
+}
+
+const verbWheel=new Wheel(document.getElementById("verbWheel"),VERBS.map(v=>v[0]),
+  {font:s=>Math.max(8,s*.0215),hub:.12,hubText:"Verb",tick:1100,memory:40,onTap:()=>spinVerb()});
+const personWheel=new Wheel(document.getElementById("personWheel"),PERSONS.map(p=>p.label),
+  {font:s=>Math.max(14,s*.068),hub:.16,hubText:"Person",tick:700,memory:2,onTap:()=>spinPerson()});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{verbWheel.draw();personWheel.draw();});
+new MutationObserver(()=>{verbWheel.draw();personWheel.draw();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+document.fonts && document.fonts.ready.then(()=>{verbWheel.draw();personWheel.draw();});
+
+// ---------- Ablauf ----------
+let verb=null, person=null, tries=0, solved=false, okCount=0, allCount=0;
+const $=id=>document.getElementById(id);
+
+function spinVerb(){
+  if(verbWheel.spinning) return;
+  $("spinVerb").disabled=true; $("verbResult").textContent="";
+  verbWheel.spin(i=>{
+    verb=VERBS[i]; $("verbResult").textContent=verb[0]; $("spinVerb").disabled=false;
+    resetTask(); render();
+  });
+}
+function spinPerson(){
+  if(personWheel.spinning) return;
+  $("spinPerson").disabled=true; $("personResult").textContent="";
+  personWheel.spin(i=>{
+    person=PERSONS[i]; $("personResult").textContent=person.label; $("spinPerson").disabled=false;
+    resetTask(); render();
+  });
+}
+$("spinVerb").addEventListener("click",spinVerb);
+$("spinPerson").addEventListener("click",spinPerson);
+
+function resetTask(){ tries=0; solved=false; }
+
+function render(){
+  const body=$("taskBody");
+  if(!verb || !person){
+    body.innerHTML=`<p class="waiting">${!verb&&!person?"Drehe zuerst das Verb-Rad und das Personen-Rad.":!verb?"Jetzt noch das Verb-Rad drehen.":"Jetzt noch das Personen-Rad drehen."}</p>`;
+    return;
+  }
+  body.innerHTML=`
+    <p class="prompt">Verb: <strong>${verb[0]}</strong> &nbsp;·&nbsp; Person: <strong>${person.label}</strong></p>
+    <p class="prompt">Wie heißt es in der Vergangenheit (Präteritum)?</p>
+    <form id="form" class="answerrow" autocomplete="off">
+      <span class="pron">${person.key}</span>
+      <input id="answer" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Präteritum-Form eingeben">
+      <button class="check" type="submit">Prüfen</button>
+    </form>
+    <div class="keys" aria-label="Sonderzeichen">
+      ${["ä","ö","ü","ß"].map(k=>`<button class="key" type="button" data-k="${k}">${k}</button>`).join("")}
+    </div>
+    <div id="feedback"></div>`;
+  $("form").addEventListener("submit",e=>{e.preventDefault();check();});
+  body.querySelectorAll(".key").forEach(b=>b.addEventListener("click",()=>{
+    const inp=$("answer"), s=inp.selectionStart??inp.value.length, en=inp.selectionEnd??s;
+    inp.value=inp.value.slice(0,s)+b.dataset.k+inp.value.slice(en);
+    inp.focus(); inp.setSelectionRange(s+1,s+1);
+  }));
+  setTimeout(()=>$("answer").focus({preventScroll:true}),50);
+}
+
+function norm(s){
+  let t=s.trim().toLowerCase().replace(/\s+/g," ");
+  t=t.replace(/^(ich|du|er|sie|es|wir|ihr)\s+/,"");
+  return t;
+}
+
+function check(){
+  if(solved){ return; }
+  const inp=$("answer"), raw=inp.value, val=norm(raw), fb=$("feedback");
+  if(!val){ fb.className="feedback hint"; fb.innerHTML="Schreibe zuerst ein Wort in das Kästchen."; inp.focus(); return; }
+  const f=forms(verb[1]), ok=f[person.key], main=ok[0];
+  tries++;
+  if(ok.includes(val)){
+    solved=true; inp.classList.remove("no"); inp.classList.add("ok"); inp.readOnly=true;
+    allCount++; if(tries===1) okCount++;
+    updateScore(); addHistory(tries===1);
+    const praise=tries===1?["Super!","Klasse!","Richtig!","Toll gemacht!","Spitze!"][Math.floor(Math.random()*5)]:"Jetzt stimmt es!";
+    fb.className="feedback good";
+    fb.innerHTML=`<strong>${praise}</strong> ${person.key} <strong>${val}</strong> (${verb[0]})<br>Drehe die Räder für das nächste Verb.`;
+    melody([660,880,1100]); confetti();
+    return;
+  }
+  inp.classList.remove("ok"); inp.classList.add("no");
+  fb.className="feedback "+(tries>=3?"bad":"hint");
+  fb.innerHTML=tries>=3
+    ? `So wird es geschrieben: <strong>${person.key} ${main}</strong><br>Schreibe es jetzt selbst ab und drücke auf „Prüfen“.`
+    : diagnose(val, verb, person, f, tries);
+  tick(220,.2,.1);
+  inp.select();
+}
+
+function diagnose(val,v,p,f,t){
+  const main=f[p.key][0], stem=v[1];
+  const ssMain=main.replace(/ß/g,"ss"), ssVal=val.replace(/ß/g,"ss");
+  if(ssVal===ssMain) return `Fast! Achte auf <strong>ß</strong> oder <strong>ss</strong>. Versuch es noch einmal.`;
+  const reg=v[0].replace(/(e?n)$/,"")+"te";
+  if(val===v[0]) return `Das ist die Grundform. Gesucht ist die <strong>Vergangenheit</strong>: Wie war es gestern?`;
+  if(val.startsWith(reg)&&!stem.startsWith(reg)) return `Dieses Verb ist <strong>unregelmäßig</strong>. Es bekommt kein „-te“. Der Wortstamm verändert sich.`;
+  if(val.startsWith(stem)||val.startsWith(stem.replace(/e$/,""))) return `Der Wortstamm stimmt! Achte auf die <strong>Endung</strong> bei „${p.key}“.`;
+  if(t===2) return `Tipp: Bei „ich“ heißt es <strong>ich ${stem}</strong>. Wie heißt es bei „${p.key}“?`;
+  return `Das stimmt noch nicht. Sag den Satz leise: „Gestern ${p.key} …“ Versuch es noch einmal.`;
+}
+
+function updateScore(){ $("scoreOk").textContent=okCount; $("scoreAll").textContent=allCount; }
+function addHistory(first){
+  const li=document.createElement("li"); if(first) li.className="first";
+  li.textContent=`${verb[0]} → ${person.key} ${forms(verb[1])[person.key][0]}`;
+  $("history").prepend(li); const h=$("history"); while(h.children.length>4) h.lastChild.remove();
+}
+
+// Verbliste
+$("verbList").innerHTML=VERBS.map(v=>`<div>${v[0]} <span>– ${v[1]}</span></div>`).join("");
+
+// Verbliste & Vollbild
+$("listBtn").addEventListener("click",()=>{$("verbDlg").hidden=false;$("closeDlg").focus();});
+$("closeDlg").addEventListener("click",()=>{$("verbDlg").hidden=true;});
+$("verbDlg").addEventListener("click",e=>{if(e.target.id==="verbDlg") $("verbDlg").hidden=true;});
+const de=document.documentElement;
+if(document.fullscreenEnabled||document.webkitFullscreenEnabled){
+  const fs=$("fsBtn"); fs.hidden=false;
+  fs.addEventListener("click",()=>{
+    const on=document.fullscreenElement||document.webkitFullscreenElement;
+    try{
+      if(on){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); }
+      else { const r=(de.requestFullscreen||de.webkitRequestFullscreen).call(de); r&&r.catch&&r.catch(()=>{}); }
+    }catch(e){}
+  });
+  const upd=()=>{fs.textContent=(document.fullscreenElement||document.webkitFullscreenElement)?"Vollbild beenden":"Vollbild";};
+  document.addEventListener("fullscreenchange",upd); document.addEventListener("webkitfullscreenchange",upd);
+}
+
+// ---------- Konfetti ----------
+function confetti(){
+  if(reduce) return;
+  const c=$("confetti"), ctx=c.getContext("2d"), d=window.devicePixelRatio||1;
+  c.width=innerWidth*d; c.height=innerHeight*d; ctx.setTransform(d,0,0,d,0,0);
+  const cols=["--seg1","--seg2","--seg3","--seg4","--seg5","--seg6","--blue","--good"].map(cssVar);
+  const ps=Array.from({length:120},()=>({x:innerWidth/2,y:innerHeight*.6,vx:(Math.random()-.5)*14,vy:-Math.random()*14-6,
+    r:Math.random()*6+4,c:cols[Math.floor(Math.random()*cols.length)],a:Math.random()*6,va:(Math.random()-.5)*.3}));
+  const t0=performance.now();
+  (function f(t){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    ps.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);ctx.restore();});
+    if(t-t0<1800) requestAnimationFrame(f); else ctx.clearRect(0,0,innerWidth,innerHeight);
+  })(t0);
+}
+</script>
+</body>
+</html>
