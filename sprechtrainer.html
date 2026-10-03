@@ -74,6 +74,9 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px soli
 .legende span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px}
 .l-ok::before{background:var(--ok)} .l-fast::before{background:var(--fast)} .l-fehlt::before{background:var(--miss)}
 .reihe{display:flex;flex-wrap:wrap;gap:10px}
+.diktat{width:100%;font:inherit;font-size:1.6rem;min-height:5rem;border:3px dashed var(--accent);border-radius:16px;padding:12px 14px;background:var(--bg);color:var(--fg);resize:vertical}
+.diktathilfe{margin:0;font-size:1.1rem;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:10px}
+.diktathilfe svg{width:34px;height:34px;flex:none;border:2px solid currentColor;border-radius:8px;padding:4px}
 .hinweis{background:var(--fast-soft);border-radius:14px;padding:12px 16px;margin:0;font-size:1rem}
 
 dialog{border:none;border-radius:20px;background:var(--card);color:var(--fg);padding:22px;max-width:min(640px,calc(100vw - 32px));width:100%}
@@ -133,11 +136,19 @@ dialog small{color:var(--muted);display:block}
   <section class="gehoert">
     <p class="label">Das hat der Computer gehört</p>
     <p class="erkannt leer" id="erkannt">Drücke auf den roten Knopf und lies den Satz laut vor.</p>
+    <div id="diktatBox" hidden>
+      <p class="diktathilfe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>Tippe unten auf der Tastatur auf das Mikrofon und lies den Satz vor. Dann tippe auf „Fertig“.</p>
+      <textarea class="diktat" id="diktat" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" aria-label="Hier erscheint, was du sprichst"></textarea>
+    </div>
     <p class="lob" id="lob" hidden></p>
     <div class="legende" id="legende" hidden>
       <span class="l-ok">deutlich</span><span class="l-fast">fast</span><span class="l-fehlt">noch üben</span>
     </div>
     <div class="reihe" id="nachher" hidden>
+      <button class="knopf sek" id="btnStimme" hidden>
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg>
+        <span id="stimmeText">Stimme aufnehmen</span>
+      </button>
       <button class="knopf sek" id="btnMeine">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         Meine Stimme anhören
@@ -162,6 +173,11 @@ dialog small{color:var(--muted);display:block}
     <label for="groesse">Schriftgröße: <span id="groesseWert"></span></label>
     <input type="range" id="groesse" min="1.6" max="4" step="0.2">
     <label for="streng"><input type="checkbox" id="streng"> Strenger vergleichen (nur genau gleiche Wörter zählen)</label>
+    <label for="modus">Spracherkennung</label>
+    <select id="modus" style="font:inherit;font-size:1rem;padding:8px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--fg);width:100%">
+      <option value="diktat">iPad-Diktierfunktion über die Tastatur (zuverlässig, empfohlen fürs iPad)</option>
+      <option value="safari">Automatisch mit dem roten Knopf (Safari-Spracherkennung)</option>
+    </select>
     <label for="ohneAuf"><input type="checkbox" id="ohneAuf"> Ohne Stimm-Aufnahme (nur Spracherkennung) – hilft, wenn die Erkennung auf dem iPad nichts hört</label>
     <div class="reihe" style="margin-top:18px">
       <button class="knopf sek" value="ok" id="btnSpeichern">Speichern</button>
@@ -187,6 +203,9 @@ let tempo = laden("tempo",0.8);
 let groesse = laden("groesse",2.6);
 let streng = laden("streng",false);
 let ohneAufnahme = laden("ohneAufnahme",false);
+const IST_IPAD = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+let modus = laden("modus", IST_IPAD ? "diktat" : "safari");
+if(!(window.SpeechRecognition||window.webkitSpeechRecognition)) modus="diktat";
 let eigene = laden("eigene",[]);
 let sterne = laden("sterne",0);
 let index = 0;
@@ -246,7 +265,7 @@ function zeigeSatz(){
 }
 function zuruecksetzenErgebnis(){
   const e=$("erkannt"); e.textContent="Drücke auf den roten Knopf und lies den Satz laut vor."; e.classList.add("leer");
-  $("lob").hidden=true; $("legende").hidden=true; $("nachher").hidden = !aufnahmeURL;
+  $("lob").hidden=true; $("legende").hidden=true; $("nachher").hidden = !aufnahmeURL && modus!=="diktat"; $("btnStimme").hidden = modus!=="diktat"; $("btnMeine").hidden=!aufnahmeURL;
   document.querySelectorAll(".wort").forEach(w=>w.classList.remove("ok","fast","fehlt"));
 }
 function zeigeSterne(){ $("sterne").textContent = sterne ? "★ "+sterne+" Sterne" : ""; }
@@ -271,7 +290,11 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let erkenner=null, recorder=null, stream=null, chunks=[], laeuft=false, transkript="", fertigText="", aufnahmeURL=null, timer=null, neustarts=0, erkennerAus=null;
 
 function hinweis(t){ const h=$("hinweis"); h.textContent=t; h.hidden=!t; }
-if(!SR) hinweis("Dieser Browser kann keine Sprache erkennen. Bitte öffne die Seite auf dem iPad in Safari (nicht als Home-Bildschirm-App) oder am Computer in Chrome. Aufnehmen und Anhören funktioniert trotzdem.");
+function hinweisModus(){
+  if(modus==="safari" && !SR) hinweis("Dieser Browser kann keine Sprache automatisch erkennen. Bitte unter „Lehrkraft“ die iPad-Diktierfunktion wählen.");
+  else hinweis("");
+}
+hinweisModus();
 
 function zeigeLive(){
   transkript=(fertigText+" "+aktuellerText).trim();
@@ -352,15 +375,59 @@ async function stopp(){
   auswerten();
 }
 
+// Diktat-Modus: das Kind nutzt die eingebaute Diktierfunktion der iPad-Tastatur
+function diktatStart(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  zuruecksetzenErgebnis();
+  const d=$("diktat"); d.value="";
+  $("diktatBox").hidden=false;
+  $("erkannt").hidden=true;
+  d.focus();
+  laeuft=true;
+  const b=$("btnRec"); b.classList.add("an"); $("recText").textContent="Fertig"; b.setAttribute("aria-label","Fertig gesprochen");
+}
+function diktatStopp(){
+  laeuft=false;
+  const d=$("diktat"); d.blur();
+  transkript=d.value.trim();
+  $("diktatBox").hidden=true; $("erkannt").hidden=false;
+  const b=$("btnRec"); b.classList.remove("an"); $("recText").textContent="Aufnehmen"; b.setAttribute("aria-label","Aufnahme starten");
+  auswerten();
+}
+// Nur die eigene Stimme aufnehmen (ohne Erkennung), danach Mikrofon wieder freigeben
+let stimmeLaeuft=false;
+async function stimmeUmschalten(){
+  if(stimmeLaeuft){
+    stimmeLaeuft=false; $("stimmeText").textContent="Stimme aufnehmen";
+    if(recorder && recorder.state!=="inactive"){
+      await new Promise(res=>{ recorder.onstop=res; recorder.stop(); });
+    }
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+    if(chunks.length){ if(aufnahmeURL) URL.revokeObjectURL(aufnahmeURL); aufnahmeURL=URL.createObjectURL(new Blob(chunks,{type:chunks[0].type})); $("player").src=aufnahmeURL; $("btnMeine").hidden=false; }
+    return;
+  }
+  try{
+    if("speechSynthesis" in window) speechSynthesis.cancel();
+    chunks=[];
+    const s = await mikrofonHolen();
+    const typ = ["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+    recorder = new MediaRecorder(s, typ?{mimeType:typ}:undefined);
+    recorder.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+    recorder.start(250);
+    stimmeLaeuft=true; $("stimmeText").textContent="Stopp";
+  }catch(e){ hinweis("Das Mikrofon für die Stimm-Aufnahme ist nicht erlaubt. Tippe in der Adressleiste auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben. ("+e.name+")"); }
+}
+
 function auswerten(){
   const worte = liste[index].split(/\s+/);
-  $("nachher").hidden = !aufnahmeURL;
+  $("nachher").hidden = !aufnahmeURL && modus!=="diktat";
   $("btnMeine").hidden = !aufnahmeURL;
-  if(!SR) return;
+  $("btnStimme").hidden = modus!=="diktat";
+  if(!SR && modus!=="diktat") return;
   const e=$("erkannt");
   if(!transkript){
     e.textContent="Ich habe nichts gehört. Drücke noch einmal und sprich gleich los."; e.classList.add("leer");
-    if(!ohneAufnahme && aufnahmeURL) hinweis("Tipp für die Lehrkraft: Die Stimme wurde aufgenommen, aber die Erkennung hat nichts verstanden. Schalte unter „Lehrkraft“ die Option „Ohne Stimm-Aufnahme“ ein und versuche es erneut.");
+    if(modus==="safari" && !ohneAufnahme && aufnahmeURL) hinweis("Tipp für die Lehrkraft: Die Stimme wurde aufgenommen, aber die Erkennung hat nichts verstanden. Schalte unter „Lehrkraft“ die Option „Ohne Stimm-Aufnahme“ ein und versuche es erneut.");
     $("lob").hidden=true; $("nachher").hidden=false; return;
   }
   e.textContent=transkript; e.classList.remove("leer");
@@ -377,11 +444,15 @@ function auswerten(){
 }
 
 // Knöpfe
-$("btnRec").addEventListener("click",()=> laeuft ? stopp() : start());
+$("btnRec").addEventListener("click",()=>{
+  if(modus==="diktat") return laeuft ? diktatStopp() : diktatStart();
+  return laeuft ? stopp() : start();
+});
+$("btnStimme").addEventListener("click",stimmeUmschalten);
 $("btnVorlesen").addEventListener("click",()=>sprich(liste[index]));
 $("btnWeiter").addEventListener("click",()=>{ if(laeuft) return; if(aufnahmeURL){URL.revokeObjectURL(aufnahmeURL);aufnahmeURL=null;} index=(index+1)%liste.length; if(index===0) liste=mischen(aktuelleListe()); zeigeSatz(); });
 $("btnMeine").addEventListener("click",()=>{ const p=$("player"); p.currentTime=0; p.play().catch(()=>{}); });
-$("btnNochmal").addEventListener("click",()=>{ zuruecksetzenErgebnis(); $("nachher").hidden=!aufnahmeURL; });
+$("btnNochmal").addEventListener("click",()=>{ zuruecksetzenErgebnis(); });
 
 function setzeStufe(s){
   stufe=s; speichern("stufe",s);
@@ -398,7 +469,7 @@ $("btnLehrer").addEventListener("click",()=>{
   $("eigeneSaetze").value=eigene.join("\n");
   $("tempo").value=tempo; $("tempoWert").textContent=Math.round(tempo*100)+" %";
   $("groesse").value=groesse; $("groesseWert").textContent=groesse.toFixed(1);
-  $("streng").checked=streng; $("ohneAuf").checked=ohneAufnahme;
+  $("streng").checked=streng; $("ohneAuf").checked=ohneAufnahme; $("modus").value=modus;
   $("dlg").showModal();
 });
 $("tempo").addEventListener("input",e=>$("tempoWert").textContent=Math.round(e.target.value*100)+" %");
@@ -406,6 +477,7 @@ $("groesse").addEventListener("input",e=>{ $("groesseWert").textContent=(+e.targ
 $("formLehrer").addEventListener("submit",()=>{
   eigene=$("eigeneSaetze").value.split("\n").map(s=>s.trim()).filter(Boolean);
   tempo=+$("tempo").value; groesse=+$("groesse").value; streng=$("streng").checked; ohneAufnahme=$("ohneAuf").checked; speichern("ohneAufnahme",ohneAufnahme);
+  modus=$("modus").value; speichern("modus",modus); hinweisModus();
   if(ohneAufnahme && stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
   speichern("eigene",eigene); speichern("tempo",tempo); speichern("groesse",groesse); speichern("streng",streng);
   anwendenGroesse(); setzeStufe(eigene.length && stufe==="eigen" ? "eigen" : stufe);
