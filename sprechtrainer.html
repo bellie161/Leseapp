@@ -162,6 +162,7 @@ dialog small{color:var(--muted);display:block}
     <label for="groesse">Schriftgröße: <span id="groesseWert"></span></label>
     <input type="range" id="groesse" min="1.6" max="4" step="0.2">
     <label for="streng"><input type="checkbox" id="streng"> Strenger vergleichen (nur genau gleiche Wörter zählen)</label>
+    <label for="ohneAuf"><input type="checkbox" id="ohneAuf"> Ohne Stimm-Aufnahme (nur Spracherkennung) – hilft, wenn die Erkennung auf dem iPad nichts hört</label>
     <div class="reihe" style="margin-top:18px">
       <button class="knopf sek" value="ok" id="btnSpeichern">Speichern</button>
       <button class="knopf sek" type="button" id="btnSterneReset">Sterne auf 0</button>
@@ -185,6 +186,7 @@ let stufe = laden("stufe","1");
 let tempo = laden("tempo",0.8);
 let groesse = laden("groesse",2.6);
 let streng = laden("streng",false);
+let ohneAufnahme = laden("ohneAufnahme",false);
 let eigene = laden("eigene",[]);
 let sterne = laden("sterne",0);
 let index = 0;
@@ -266,46 +268,73 @@ function sprich(text, faktor=1){
 
 // Aufnahme + Spracherkennung
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let erkenner=null, recorder=null, stream=null, chunks=[], laeuft=false, transkript="", erkennerFertig=null, aufnahmeURL=null, timer=null;
+let erkenner=null, recorder=null, stream=null, chunks=[], laeuft=false, transkript="", fertigText="", aufnahmeURL=null, timer=null, neustarts=0, erkennerAus=null;
 
 function hinweis(t){ const h=$("hinweis"); h.textContent=t; h.hidden=!t; }
 if(!SR) hinweis("Dieser Browser kann keine Sprache erkennen. Bitte öffne die Seite auf dem iPad in Safari (nicht als Home-Bildschirm-App) oder am Computer in Chrome. Aufnehmen und Anhören funktioniert trotzdem.");
 
+function zeigeLive(){
+  transkript=(fertigText+" "+aktuellerText).trim();
+  const e=$("erkannt"); e.textContent=transkript||"Ich höre zu …"; e.classList.toggle("leer",!transkript);
+}
+let aktuellerText="";
+
+// Startet eine Erkennungsrunde. Safari beendet die Erkennung oft nach kurzer Zeit
+// oder nach einer Pause – dann wird automatisch neu gestartet, solange das Kind spricht.
+function erkennerStarten(){
+  const r = new SR(); erkenner=r;
+  r.lang="de-DE"; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
+  aktuellerText="";
+  r.onresult = ev=>{
+    let t=""; for(let i=0;i<ev.results.length;i++) t+=ev.results[i][0].transcript+" ";
+    aktuellerText=t.trim(); zeigeLive();
+  };
+  r.onerror = ev=>{
+    if(ev.error==="service-not-allowed"){ hinweis("Die Spracherkennung ist ausgeschaltet. Bitte unter Einstellungen → Allgemein → Tastatur die Diktierfunktion einschalten. (Fehler: service-not-allowed)"); laeuft&&stopp(); }
+    else if(ev.error==="not-allowed"){ hinweis("Safari erlaubt das Mikrofon für diese Seite nicht. Tippe in der Adressleiste auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben, dann neu laden. (Fehler: not-allowed)"); laeuft&&stopp(); }
+    else if(ev.error==="audio-capture"){ hinweis("Das Mikrofon ist belegt. Schalte unter „Lehrkraft“ die Option „Ohne Stimm-Aufnahme“ ein. (Fehler: audio-capture)"); }
+  };
+  r.onend = ()=>{
+    if(aktuellerText){ fertigText=(fertigText+" "+aktuellerText).trim(); aktuellerText=""; }
+    if(laeuft && erkenner===r && neustarts<15){ neustarts++; setTimeout(()=>{ if(laeuft && erkenner===r){ try{ erkennerStarten(); }catch(e){} } },150); }
+    else if(erkennerAus){ erkennerAus(); erkennerAus=null; }
+  };
+  r.start();
+}
+
+async function mikrofonHolen(){
+  if(stream && stream.getAudioTracks().some(t=>t.readyState==="live")) return stream;
+  stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  return stream;
+}
+
 async function start(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
-  transkript=""; chunks=[];
+  transkript=""; fertigText=""; aktuellerText=""; chunks=[]; neustarts=0;
   if(aufnahmeURL){ URL.revokeObjectURL(aufnahmeURL); aufnahmeURL=null; }
   zuruecksetzenErgebnis();
   $("erkannt").textContent="Ich höre zu …";
 
-  if(SR){
-    erkenner = new SR(); erkenner.lang="de-DE"; erkenner.continuous=true; erkenner.interimResults=true;
-    erkenner.onresult = ev=>{
-      let t=""; for(let i=0;i<ev.results.length;i++) t+=ev.results[i][0].transcript+" ";
-      transkript=t.trim();
-      const e=$("erkannt"); e.textContent=transkript||"Ich höre zu …"; e.classList.toggle("leer",!transkript);
-    };
-    erkenner.onerror = ev=>{
-      if(ev.error==="service-not-allowed") hinweis("Die Spracherkennung ist ausgeschaltet. Bitte unter Einstellungen → Allgemein → Tastatur die Diktierfunktion einschalten und Siri erlauben. (Fehler: service-not-allowed)");
-      else if(ev.error==="not-allowed") hinweis(location.protocol!=="https:" ? "Die Seite ist nicht über https:// geöffnet. Bitte über die GitHub-Pages-Adresse in Safari öffnen. (Fehler: not-allowed)" : "Safari erlaubt das Mikrofon für diese Seite nicht. Tippe in der Adressleiste auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben, dann neu laden. (Fehler: not-allowed)");
-      else if(ev.error==="audio-capture") hinweis("Das Mikrofon ist gerade belegt. Bitte andere Apps schließen und neu laden. (Fehler: audio-capture)");
-    };
-    erkennerFertig = new Promise(res=>{ erkenner.onend = ()=>{ res(); if(laeuft) stopp(); }; });
-    try{ erkenner.start(); }catch(e){}
-  }
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    const typ = ["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>window.MediaRecorder && MediaRecorder.isTypeSupported(t));
-    recorder = new MediaRecorder(stream, typ?{mimeType:typ}:undefined);
-    recorder.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
-    recorder.start();
-  }catch(e){
-    recorder=null;
-    if(!SR) { hinweis(location.protocol!=="https:" ? "Die Seite ist nicht über https:// geöffnet. Bitte über die GitHub-Pages-Adresse in Safari öffnen." : "Safari erlaubt das Mikrofon für diese Seite nicht. Tippe auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben. ("+e.name+")"); return; }
+  // 1. Stimm-Aufnahme (das Mikrofon bleibt danach offen, damit Safari nicht durcheinanderkommt)
+  recorder=null;
+  if(!ohneAufnahme){
+    try{
+      const s = await mikrofonHolen();
+      const typ = ["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+      recorder = new MediaRecorder(s, typ?{mimeType:typ}:undefined);
+      recorder.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+      recorder.start(250);
+    }catch(e){
+      recorder=null;
+      if(!SR){ hinweis("Safari erlaubt das Mikrofon für diese Seite nicht. Tippe auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben. ("+e.name+")"); return; }
+    }
   }
   laeuft=true;
+  // 2. Spracherkennung
+  if(SR){ try{ erkennerStarten(); }catch(e){ hinweis("Die Spracherkennung startet nicht. Bitte die Seite neu laden. ("+e.message+")"); } }
+
   const b=$("btnRec"); b.classList.add("an"); $("recText").textContent="Fertig"; b.setAttribute("aria-label","Aufnahme beenden");
-  timer=setTimeout(()=>{ if(laeuft) stopp(); }, 30000);
+  timer=setTimeout(()=>{ if(laeuft) stopp(); }, 40000);
 }
 
 async function stopp(){
@@ -314,9 +343,11 @@ async function stopp(){
   const recFertig = new Promise(res=>{
     if(recorder && recorder.state!=="inactive"){ recorder.onstop=res; recorder.stop(); } else res();
   });
-  if(erkenner){ try{ erkenner.stop(); }catch(e){} }
-  await Promise.race([Promise.all([recFertig, erkennerFertig||Promise.resolve()]), new Promise(r=>setTimeout(r,2500))]);
-  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  const erkFertig = new Promise(res=>{ erkennerAus=res; if(erkenner){ try{ erkenner.stop(); }catch(e){ res(); } } else res(); });
+  await Promise.race([Promise.all([recFertig, erkFertig]), new Promise(r=>setTimeout(r,2500))]);
+  if(aktuellerText){ fertigText=(fertigText+" "+aktuellerText).trim(); aktuellerText=""; }
+  transkript=fertigText;
+  erkenner=null;
   if(chunks.length){ aufnahmeURL = URL.createObjectURL(new Blob(chunks,{type:chunks[0].type})); $("player").src=aufnahmeURL; }
   auswerten();
 }
@@ -328,7 +359,8 @@ function auswerten(){
   if(!SR) return;
   const e=$("erkannt");
   if(!transkript){
-    e.textContent="Ich habe nichts gehört. Sprich ruhig etwas lauter und drücke noch einmal."; e.classList.add("leer");
+    e.textContent="Ich habe nichts gehört. Drücke noch einmal und sprich gleich los."; e.classList.add("leer");
+    if(!ohneAufnahme && aufnahmeURL) hinweis("Tipp für die Lehrkraft: Die Stimme wurde aufgenommen, aber die Erkennung hat nichts verstanden. Schalte unter „Lehrkraft“ die Option „Ohne Stimm-Aufnahme“ ein und versuche es erneut.");
     $("lob").hidden=true; $("nachher").hidden=false; return;
   }
   e.textContent=transkript; e.classList.remove("leer");
@@ -366,14 +398,15 @@ $("btnLehrer").addEventListener("click",()=>{
   $("eigeneSaetze").value=eigene.join("\n");
   $("tempo").value=tempo; $("tempoWert").textContent=Math.round(tempo*100)+" %";
   $("groesse").value=groesse; $("groesseWert").textContent=groesse.toFixed(1);
-  $("streng").checked=streng;
+  $("streng").checked=streng; $("ohneAuf").checked=ohneAufnahme;
   $("dlg").showModal();
 });
 $("tempo").addEventListener("input",e=>$("tempoWert").textContent=Math.round(e.target.value*100)+" %");
 $("groesse").addEventListener("input",e=>{ $("groesseWert").textContent=(+e.target.value).toFixed(1); groesse=+e.target.value; anwendenGroesse(); });
 $("formLehrer").addEventListener("submit",()=>{
   eigene=$("eigeneSaetze").value.split("\n").map(s=>s.trim()).filter(Boolean);
-  tempo=+$("tempo").value; groesse=+$("groesse").value; streng=$("streng").checked;
+  tempo=+$("tempo").value; groesse=+$("groesse").value; streng=$("streng").checked; ohneAufnahme=$("ohneAuf").checked; speichern("ohneAufnahme",ohneAufnahme);
+  if(ohneAufnahme && stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
   speichern("eigene",eigene); speichern("tempo",tempo); speichern("groesse",groesse); speichern("streng",streng);
   anwendenGroesse(); setzeStufe(eigene.length && stufe==="eigen" ? "eigen" : stufe);
 });
