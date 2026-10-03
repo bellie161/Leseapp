@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sprechtrainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap">
+<style>
+/* Layout: eine ruhige Karte mit dem Satz, darunter drei große Knöpfe, darunter der Vergleich. */
+:root{
+  --bg:#eef4f2; --card:#ffffff; --fg:#1f2d2b; --muted:#5d6f6b; --line:#d4e0dc;
+  --accent:#2f7d6d; --accent-soft:#dcefe9;
+  --rec:#d9534f; --rec-soft:#fbe3e2;
+  --ok:#2e8b57; --ok-soft:#dff3e6;
+  --fast:#b7791f; --fast-soft:#fdf0d5;
+  --miss:#c0504d; --miss-soft:#fbe4e3;
+  --font:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+  --satz:2.6rem;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#151d1c;--card:#1f2a28;--fg:#e8f0ee;--muted:#9fb3ae;--line:#33423f;
+    --accent:#6cc4b0;--accent-soft:#24413b;--rec:#f07b76;--rec-soft:#4a2726;
+    --ok:#6fd39a;--ok-soft:#1f3b2b;--fast:#f0bd5e;--fast-soft:#463619;--miss:#f08a86;--miss-soft:#4a2828;color-scheme:dark}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:18px;line-height:1.5;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between}
+h1{font-size:1.6rem;margin:0;letter-spacing:.01em}
+.stufen{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:inherit;font-size:1rem;border:2px solid var(--line);background:var(--card);color:var(--fg);
+  border-radius:999px;padding:6px 16px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.iconbtn{font:inherit;border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;
+  padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.karte{background:var(--card);border-radius:24px;padding:28px 24px;box-shadow:0 2px 0 var(--line);display:flex;flex-direction:column;gap:14px}
+.zaehler{color:var(--muted);font-size:1rem;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sterne{color:var(--fast);font-weight:700}
+.satz{font-size:var(--satz);line-height:1.45;font-weight:700;margin:0;text-wrap:balance;word-spacing:.18em}
+.wort{display:inline-block;border-radius:10px;padding:0 .12em;cursor:pointer;border-bottom:4px solid transparent;transition:background .2s}
+.wort:hover{background:var(--accent-soft)}
+.wort.ok{background:var(--ok-soft);border-bottom-color:var(--ok)}
+.wort.fast{background:var(--fast-soft);border-bottom-color:var(--fast)}
+.wort.fehlt{background:var(--miss-soft);border-bottom:4px dashed var(--miss)}
+.tipp{color:var(--muted);font-size:.95rem;margin:0}
+
+.knoepfe{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+.knopf{font:inherit;font-size:1.15rem;font-weight:700;border:none;border-radius:18px;padding:14px 18px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:64px}
+.knopf svg{width:30px;height:30px;flex:none}
+.sek{background:var(--accent-soft);color:var(--fg)}
+.sek:disabled{opacity:.45;cursor:default}
+.rec{width:130px;height:130px;border-radius:50%;background:var(--rec);color:#fff;flex-direction:column;gap:4px;font-size:1.05rem;
+  box-shadow:0 6px 0 rgba(0,0,0,.15);position:relative}
+.rec svg{width:46px;height:46px}
+.rec.an{background:var(--fg);color:var(--bg)}
+.rec.an::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:5px solid var(--rec);animation:puls 1.4s ease-out infinite}
+@keyframes puls{from{transform:scale(.92);opacity:1}to{transform:scale(1.15);opacity:0}}
+@media (prefers-reduced-motion:reduce){.rec.an::after{animation:none}}
+
+.gehoert{background:var(--card);border-radius:20px;padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+.label{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+.erkannt{font-size:1.6rem;margin:0;min-height:2.3rem;word-spacing:.12em}
+.erkannt.leer{color:var(--muted);font-size:1.15rem}
+.lob{font-size:1.35rem;font-weight:700;margin:0}
+.legende{display:flex;flex-wrap:wrap;gap:14px;font-size:.95rem;color:var(--muted)}
+.legende span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px}
+.l-ok::before{background:var(--ok)} .l-fast::before{background:var(--fast)} .l-fehlt::before{background:var(--miss)}
+.reihe{display:flex;flex-wrap:wrap;gap:10px}
+.hinweis{background:var(--fast-soft);border-radius:14px;padding:12px 16px;margin:0;font-size:1rem}
+
+dialog{border:none;border-radius:20px;background:var(--card);color:var(--fg);padding:22px;max-width:min(640px,calc(100vw - 32px));width:100%}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog h2{margin:0 0 6px}
+dialog label{display:block;font-weight:700;margin-top:14px}
+dialog textarea{width:100%;min-height:160px;font:inherit;font-size:1rem;border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--bg);color:var(--fg)}
+dialog input[type=range]{width:100%}
+dialog small{color:var(--muted);display:block}
+
+@media (max-width:560px){
+  .knoepfe{grid-template-columns:1fr 1fr}
+  .rec{grid-column:1/-1;grid-row:1;justify-self:center}
+  :root{--satz:2rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Sprechtrainer</h1>
+    <div class="stufen" role="group" aria-label="Stufe">
+      <button class="chip" data-stufe="1" id="st1">Kurz</button>
+      <button class="chip" data-stufe="2" id="st2">Mittel</button>
+      <button class="chip" data-stufe="3" id="st3">Lang</button>
+      <button class="chip" data-stufe="eigen" id="st4">Eigene</button>
+    </div>
+    <button class="iconbtn" id="btnLehrer" aria-label="Einstellungen für die Lehrkraft">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      Lehrkraft
+    </button>
+  </header>
+
+  <p class="hinweis" id="hinweis" hidden></p>
+
+  <section class="karte" aria-live="polite">
+    <div class="zaehler"><span id="zaehler">Satz 1 von 10</span><span class="sterne" id="sterne"></span></div>
+    <p class="satz" id="satz"></p>
+    <p class="tipp">Tippe auf ein Wort, dann hörst du es.</p>
+  </section>
+
+  <div class="knoepfe">
+    <button class="knopf sek" id="btnVorlesen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
+      Anhören
+    </button>
+    <button class="knopf rec" id="btnRec" aria-label="Aufnahme starten">
+      <svg id="icoRec" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+      <span id="recText">Aufnehmen</span>
+    </button>
+    <button class="knopf sek" id="btnWeiter">
+      Weiter
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <section class="gehoert">
+    <p class="label">Das hat der Computer gehört</p>
+    <p class="erkannt leer" id="erkannt">Drücke auf den roten Knopf und lies den Satz laut vor.</p>
+    <p class="lob" id="lob" hidden></p>
+    <div class="legende" id="legende" hidden>
+      <span class="l-ok">deutlich</span><span class="l-fast">fast</span><span class="l-fehlt">noch üben</span>
+    </div>
+    <div class="reihe" id="nachher" hidden>
+      <button class="knopf sek" id="btnMeine">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Meine Stimme anhören
+      </button>
+      <button class="knopf sek" id="btnNochmal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Nochmal
+      </button>
+    </div>
+    <audio id="player" hidden></audio>
+  </section>
+</div>
+
+<dialog id="dlg">
+  <form method="dialog" id="formLehrer">
+    <h2>Einstellungen</h2>
+    <small>Werden nur auf diesem Gerät gespeichert.</small>
+    <label for="eigeneSaetze">Eigene Sätze (ein Satz pro Zeile)</label>
+    <textarea id="eigeneSaetze" placeholder="Ich gehe gern in die Schule.&#10;Der Hund spielt mit dem Ball."></textarea>
+    <label for="tempo">Vorlese-Tempo: <span id="tempoWert"></span></label>
+    <input type="range" id="tempo" min="0.5" max="1.1" step="0.05">
+    <label for="groesse">Schriftgröße: <span id="groesseWert"></span></label>
+    <input type="range" id="groesse" min="1.6" max="4" step="0.2">
+    <label for="streng"><input type="checkbox" id="streng"> Strenger vergleichen (nur genau gleiche Wörter zählen)</label>
+    <div class="reihe" style="margin-top:18px">
+      <button class="knopf sek" value="ok" id="btnSpeichern">Speichern</button>
+      <button class="knopf sek" type="button" id="btnSterneReset">Sterne auf 0</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const SAETZE = {
+  1: ["Ich bin froh.","Die Sonne scheint.","Der Hund bellt.","Mama kocht Suppe.","Ich mag Eis.","Das Auto ist rot.","Wir spielen Ball.","Die Katze schläft.","Der Baum ist groß.","Ich male ein Bild."],
+  2: ["Ich gehe heute in die Schule.","Mein Freund heißt Paul.","Der Ball rollt unter den Tisch.","Am Morgen trinke ich Milch.","Im Winter fällt weißer Schnee.","Der Vogel sitzt auf dem Dach.","Wir lesen ein lustiges Buch.","Oma backt einen leckeren Kuchen.","Ich putze mir die Zähne.","Der Bus kommt um acht Uhr."],
+  3: ["In der Pause spiele ich mit meinen Freunden.","Der Schulhund liegt ruhig auf seiner Decke.","Am Wochenende fahren wir mit dem Fahrrad.","Im Herbst fallen bunte Blätter von den Bäumen.","Meine Schwester hilft mir bei den Hausaufgaben.","Nach dem Essen räume ich meinen Teller ab.","Im Zoo haben wir einen großen Elefanten gesehen.","Ich ziehe meine Jacke an, weil es regnet.","Unsere Lehrerin liest uns eine Geschichte vor.","Zum Geburtstag wünsche ich mir ein neues Spiel."]
+};
+const ZAHLEN = {"0":"null","1":"eins","2":"zwei","3":"drei","4":"vier","5":"fünf","6":"sechs","7":"sieben","8":"acht","9":"neun","10":"zehn","11":"elf","12":"zwölf","13":"dreizehn","14":"vierzehn","15":"fünfzehn","16":"sechzehn","17":"siebzehn","18":"achtzehn","19":"neunzehn","20":"zwanzig"};
+
+const $ = id => document.getElementById(id);
+function laden(k, d){ try{ const v = localStorage.getItem("sprech_"+k); return v===null?d:JSON.parse(v);}catch(e){return d;} }
+function speichern(k, v){ try{ localStorage.setItem("sprech_"+k, JSON.stringify(v)); }catch(e){} }
+
+let stufe = laden("stufe","1");
+let tempo = laden("tempo",0.8);
+let groesse = laden("groesse",2.6);
+let streng = laden("streng",false);
+let eigene = laden("eigene",[]);
+let sterne = laden("sterne",0);
+let index = 0;
+let liste = [];
+
+function aktuelleListe(){
+  if(stufe==="eigen") return eigene.length ? eigene : SAETZE[1];
+  return SAETZE[stufe] || SAETZE[1];
+}
+function mischen(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function norm(w){
+  let s = w.toLowerCase().replace(/[^a-zäöüß0-9]/g,"");
+  if(ZAHLEN[s]) s = ZAHLEN[s];
+  return s;
+}
+function lev(a,b){
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let p=[...Array(n+1).keys()];
+  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++){ c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); } p=c; }
+  return p[n];
+}
+function aehnlich(a,b){ if(!a||!b) return 0; return 1 - lev(a,b)/Math.max(a.length,b.length); }
+
+// Vorlage und Erkanntes Wort für Wort ausrichten (Needleman-Wunsch)
+function vergleichen(vorlage, erkannt){
+  const T = vorlage.map(norm), R = erkannt.map(norm).filter(Boolean);
+  const sc = (a,b)=> a===b?2 : (!streng && aehnlich(a,b)>=0.6)?1 : -1;
+  const m=T.length,n=R.length, G=-1;
+  const D=Array.from({length:m+1},()=>Array(n+1).fill(0));
+  for(let i=1;i<=m;i++) D[i][0]=i*G;
+  for(let j=1;j<=n;j++) D[0][j]=j*G;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    D[i][j]=Math.max(D[i-1][j-1]+sc(T[i-1],R[j-1]), D[i-1][j]+G, D[i][j-1]+G);
+  const status=Array(m).fill("fehlt");
+  let i=m,j=n;
+  while(i>0&&j>0){
+    const s=sc(T[i-1],R[j-1]);
+    if(D[i][j]===D[i-1][j-1]+s){ status[i-1]= s===2?"ok": s===1?"fast":"fehlt"; i--; j--; }
+    else if(D[i][j]===D[i-1][j]+G){ i--; }
+    else { j--; }
+  }
+  return status;
+}
+
+// Satz anzeigen
+function zeigeSatz(){
+  const satz = liste[index];
+  const el = $("satz"); el.innerHTML="";
+  satz.split(/\s+/).forEach((w,k)=>{
+    const s=document.createElement("span"); s.className="wort"; s.textContent=w; s.dataset.k=k;
+    s.addEventListener("click",()=>sprich(w.replace(/[.,!?;:]/g,""), 0.7));
+    el.appendChild(s); el.appendChild(document.createTextNode(" "));
+  });
+  $("zaehler").textContent = "Satz "+(index+1)+" von "+liste.length;
+  zuruecksetzenErgebnis();
+}
+function zuruecksetzenErgebnis(){
+  const e=$("erkannt"); e.textContent="Drücke auf den roten Knopf und lies den Satz laut vor."; e.classList.add("leer");
+  $("lob").hidden=true; $("legende").hidden=true; $("nachher").hidden = !aufnahmeURL;
+  document.querySelectorAll(".wort").forEach(w=>w.classList.remove("ok","fast","fehlt"));
+}
+function zeigeSterne(){ $("sterne").textContent = sterne ? "★ "+sterne+" Sterne" : ""; }
+
+// Vorlesen
+let stimme=null;
+function waehleStimme(){
+  const v = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.toLowerCase().startsWith("de"));
+  stimme = v.find(x=>/anna|petra|helena|katja|marlene/i.test(x.name)) || v[0] || null;
+}
+if("speechSynthesis" in window){ waehleStimme(); speechSynthesis.onvoiceschanged = waehleStimme; }
+function sprich(text, faktor=1){
+  if(!("speechSynthesis" in window) || laeuft) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang="de-DE"; if(stimme) u.voice=stimme; u.rate = tempo*faktor;
+  speechSynthesis.speak(u);
+}
+
+// Aufnahme + Spracherkennung
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let erkenner=null, recorder=null, stream=null, chunks=[], laeuft=false, transkript="", erkennerFertig=null, aufnahmeURL=null, timer=null;
+
+function hinweis(t){ const h=$("hinweis"); h.textContent=t; h.hidden=!t; }
+if(!SR) hinweis("Dieser Browser kann keine Sprache erkennen. Bitte öffne die Seite auf dem iPad in Safari (nicht als Home-Bildschirm-App) oder am Computer in Chrome. Aufnehmen und Anhören funktioniert trotzdem.");
+
+async function start(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  transkript=""; chunks=[];
+  if(aufnahmeURL){ URL.revokeObjectURL(aufnahmeURL); aufnahmeURL=null; }
+  zuruecksetzenErgebnis();
+  $("erkannt").textContent="Ich höre zu …";
+
+  if(SR){
+    erkenner = new SR(); erkenner.lang="de-DE"; erkenner.continuous=true; erkenner.interimResults=true;
+    erkenner.onresult = ev=>{
+      let t=""; for(let i=0;i<ev.results.length;i++) t+=ev.results[i][0].transcript+" ";
+      transkript=t.trim();
+      const e=$("erkannt"); e.textContent=transkript||"Ich höre zu …"; e.classList.toggle("leer",!transkript);
+    };
+    erkenner.onerror = ev=>{
+      if(ev.error==="service-not-allowed") hinweis("Die Spracherkennung ist ausgeschaltet. Bitte unter Einstellungen → Allgemein → Tastatur die Diktierfunktion einschalten und Siri erlauben. (Fehler: service-not-allowed)");
+      else if(ev.error==="not-allowed") hinweis(location.protocol!=="https:" ? "Die Seite ist nicht über https:// geöffnet. Bitte über die GitHub-Pages-Adresse in Safari öffnen. (Fehler: not-allowed)" : "Safari erlaubt das Mikrofon für diese Seite nicht. Tippe in der Adressleiste auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben, dann neu laden. (Fehler: not-allowed)");
+      else if(ev.error==="audio-capture") hinweis("Das Mikrofon ist gerade belegt. Bitte andere Apps schließen und neu laden. (Fehler: audio-capture)");
+    };
+    erkennerFertig = new Promise(res=>{ erkenner.onend = ()=>{ res(); if(laeuft) stopp(); }; });
+    try{ erkenner.start(); }catch(e){}
+  }
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const typ = ["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+    recorder = new MediaRecorder(stream, typ?{mimeType:typ}:undefined);
+    recorder.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+    recorder.start();
+  }catch(e){
+    recorder=null;
+    if(!SR) { hinweis(location.protocol!=="https:" ? "Die Seite ist nicht über https:// geöffnet. Bitte über die GitHub-Pages-Adresse in Safari öffnen." : "Safari erlaubt das Mikrofon für diese Seite nicht. Tippe auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben. ("+e.name+")"); return; }
+  }
+  laeuft=true;
+  const b=$("btnRec"); b.classList.add("an"); $("recText").textContent="Fertig"; b.setAttribute("aria-label","Aufnahme beenden");
+  timer=setTimeout(()=>{ if(laeuft) stopp(); }, 30000);
+}
+
+async function stopp(){
+  if(!laeuft) return; laeuft=false; clearTimeout(timer);
+  const b=$("btnRec"); b.classList.remove("an"); $("recText").textContent="Aufnehmen"; b.setAttribute("aria-label","Aufnahme starten");
+  const recFertig = new Promise(res=>{
+    if(recorder && recorder.state!=="inactive"){ recorder.onstop=res; recorder.stop(); } else res();
+  });
+  if(erkenner){ try{ erkenner.stop(); }catch(e){} }
+  await Promise.race([Promise.all([recFertig, erkennerFertig||Promise.resolve()]), new Promise(r=>setTimeout(r,2500))]);
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  if(chunks.length){ aufnahmeURL = URL.createObjectURL(new Blob(chunks,{type:chunks[0].type})); $("player").src=aufnahmeURL; }
+  auswerten();
+}
+
+function auswerten(){
+  const worte = liste[index].split(/\s+/);
+  $("nachher").hidden = !aufnahmeURL;
+  $("btnMeine").hidden = !aufnahmeURL;
+  if(!SR) return;
+  const e=$("erkannt");
+  if(!transkript){
+    e.textContent="Ich habe nichts gehört. Sprich ruhig etwas lauter und drücke noch einmal."; e.classList.add("leer");
+    $("lob").hidden=true; $("nachher").hidden=false; return;
+  }
+  e.textContent=transkript; e.classList.remove("leer");
+  const st = vergleichen(worte, transkript.split(/\s+/));
+  document.querySelectorAll(".wort").forEach((w,k)=>{ w.classList.remove("ok","fast","fehlt"); w.classList.add(st[k]); });
+  const ok = st.filter(s=>s==="ok").length, fast = st.filter(s=>s==="fast").length, n = st.length;
+  let text;
+  if(ok===n){ text="Super! Alle "+n+" Wörter waren deutlich. ★"; sterne++; speichern("sterne",sterne); zeigeSterne(); }
+  else if(ok+fast===n){ text="Toll! Alle Wörter erkannt, "+ok+" ganz deutlich. Übe die gelben Wörter noch einmal."; }
+  else if((ok+fast)/n>=0.6){ text="Gut gemacht! "+(ok+fast)+" von "+n+" Wörtern erkannt. Tippe auf die bunten Wörter und übe sie."; }
+  else { text="Prima, dass du es versuchst! Hör dir den Satz noch einmal an und lies langsam."; }
+  const l=$("lob"); l.textContent=text; l.hidden=false;
+  $("legende").hidden=false; $("nachher").hidden=false;
+}
+
+// Knöpfe
+$("btnRec").addEventListener("click",()=> laeuft ? stopp() : start());
+$("btnVorlesen").addEventListener("click",()=>sprich(liste[index]));
+$("btnWeiter").addEventListener("click",()=>{ if(laeuft) return; if(aufnahmeURL){URL.revokeObjectURL(aufnahmeURL);aufnahmeURL=null;} index=(index+1)%liste.length; if(index===0) liste=mischen(aktuelleListe()); zeigeSatz(); });
+$("btnMeine").addEventListener("click",()=>{ const p=$("player"); p.currentTime=0; p.play().catch(()=>{}); });
+$("btnNochmal").addEventListener("click",()=>{ zuruecksetzenErgebnis(); $("nachher").hidden=!aufnahmeURL; });
+
+function setzeStufe(s){
+  stufe=s; speichern("stufe",s);
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.stufe===s?"true":"false"));
+  liste=mischen(aktuelleListe()); index=0;
+  if(aufnahmeURL){URL.revokeObjectURL(aufnahmeURL);aufnahmeURL=null;}
+  zeigeSatz();
+}
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{ if(!laeuft) setzeStufe(c.dataset.stufe); }));
+
+// Lehrkraft
+function anwendenGroesse(){ document.documentElement.style.setProperty("--satz", groesse+"rem"); }
+$("btnLehrer").addEventListener("click",()=>{
+  $("eigeneSaetze").value=eigene.join("\n");
+  $("tempo").value=tempo; $("tempoWert").textContent=Math.round(tempo*100)+" %";
+  $("groesse").value=groesse; $("groesseWert").textContent=groesse.toFixed(1);
+  $("streng").checked=streng;
+  $("dlg").showModal();
+});
+$("tempo").addEventListener("input",e=>$("tempoWert").textContent=Math.round(e.target.value*100)+" %");
+$("groesse").addEventListener("input",e=>{ $("groesseWert").textContent=(+e.target.value).toFixed(1); groesse=+e.target.value; anwendenGroesse(); });
+$("formLehrer").addEventListener("submit",()=>{
+  eigene=$("eigeneSaetze").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  tempo=+$("tempo").value; groesse=+$("groesse").value; streng=$("streng").checked;
+  speichern("eigene",eigene); speichern("tempo",tempo); speichern("groesse",groesse); speichern("streng",streng);
+  anwendenGroesse(); setzeStufe(eigene.length && stufe==="eigen" ? "eigen" : stufe);
+});
+$("btnSterneReset").addEventListener("click",()=>{ sterne=0; speichern("sterne",0); zeigeSterne(); });
+
+anwendenGroesse(); zeigeSterne(); setzeStufe(stufe);
+</script>
+</body>
+</html>
