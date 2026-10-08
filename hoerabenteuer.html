@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HörAbenteuer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@700;800&display=swap">
+<style>
+/* Layout: eine ruhige, zentrierte Spalte – pro Bildschirm genau eine Aufgabe, große Tippflächen */
+:root{
+  --bg:#e9f2f1; --surface:#ffffff; --ink:#1d3a3c; --muted:#56706f; --line:#cadedb;
+  --accent:#2c7a7d; --accent-ink:#ffffff; --accent-soft:#d3e9e7;
+  --sun:#eeac2f; --good:#368f53; --good-soft:#d9f0e0; --retry:#c9653f; --retry-soft:#f9e1d6;
+  --font-body:"Andika","Comic Sans MS",system-ui,sans-serif;
+  --font-display:"Grandstander","Andika",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#122224; --surface:#1b3133; --ink:#e6f2f0; --muted:#9db6b4; --line:#2d4a4c;
+  --accent:#5fb7b9; --accent-ink:#0d1f20; --accent-soft:#234345;
+  --sun:#f3bd4f; --good:#5cc07c; --good-soft:#1f3d2a; --retry:#ec8a63; --retry-soft:#43281e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#122224; --surface:#1b3133; --ink:#e6f2f0; --muted:#9db6b4; --line:#2d4a4c;
+  --accent:#5fb7b9; --accent-ink:#0d1f20; --accent-soft:#234345;
+  --sun:#f3bd4f; --good:#5cc07c; --good-soft:#1f3d2a; --retry:#ec8a63; --retry-soft:#43281e; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:20px;line-height:1.45;
+  padding-inline:16px;padding-block:20px 40px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:2.2rem;color:var(--accent)}
+h2{font-size:1.6rem}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,select:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+button:disabled{opacity:.4;cursor:default}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ghost{padding:10px 14px;border-radius:12px;color:var(--muted);font-size:1rem}
+.ghost:hover{background:var(--accent-soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:60px;padding:12px 22px;
+  border-radius:18px;font-weight:700;font-size:1.1rem;background:var(--surface);border:2px solid var(--line)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn svg{width:26px;height:26px;flex:none}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.lead{color:var(--muted);font-size:1.1rem}
+
+/* Start */
+.hero{display:flex;flex-direction:column;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.story{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:18px;background:var(--surface);
+  border:2px solid var(--line);text-align:left;min-height:78px}
+.story:hover{border-color:var(--accent)}
+.story .ico{font-size:2rem;line-height:1;flex:none}
+.story .t{font-weight:700;font-size:1.02rem;line-height:1.2;min-width:0}
+.story .st{display:block;font-weight:400;color:var(--sun);font-size:.95rem;letter-spacing:.08em;margin-top:3px}
+
+/* Hören */
+.stage{background:var(--surface);border-radius:28px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
+.ring{position:relative;width:180px;height:180px;display:grid;place-items:center}
+.ring span{position:absolute;inset:0;border-radius:50%;border:4px solid var(--accent);opacity:0}
+.speaking .ring span{animation:wave 2.4s ease-out infinite}
+.speaking .ring span:nth-child(2){animation-delay:.8s}
+.speaking .ring span:nth-child(3){animation-delay:1.6s}
+@keyframes wave{0%{transform:scale(.62);opacity:.55}100%{transform:scale(1.08);opacity:0}}
+.bigplay{position:relative;width:128px;height:128px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;box-shadow:0 8px 0 rgba(0,0,0,.12)}
+.bigplay:active{transform:translateY(3px);box-shadow:0 5px 0 rgba(0,0,0,.12)}
+.bigplay svg{width:58px;height:58px}
+.status{font-size:1.25rem;font-weight:700;min-height:1.8em}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:420px}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--line);transition:background .3s,transform .3s}
+.dots i.done{background:var(--accent)}
+.dots i.now{background:var(--sun);transform:scale(1.35)}
+.dotlabel{font-size:.9rem;color:var(--muted)}
+
+.speedbox{display:flex;flex-direction:column;gap:8px;align-items:center}
+.speedbox .lbl{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.speed{display:flex;background:var(--bg);border-radius:16px;padding:4px;gap:4px}
+.speed button{min-width:92px;min-height:56px;border-radius:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;padding:6px 10px}
+.speed button small{font-weight:400;font-size:.78rem;color:var(--muted)}
+.speed button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.speed button[aria-pressed="true"] small{color:var(--accent-ink)}
+
+/* Mini-Player bei den Fragen */
+.mini{background:var(--surface);border-radius:20px;padding:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px}
+.mini .speed button{min-width:70px;min-height:48px}
+.mini .btn{min-height:52px;padding:8px 16px;font-size:1rem}
+.mini.speaking .playlbl{color:var(--accent)}
+
+/* Fragen */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-weight:700}
+.qdots{display:flex;gap:6px}
+.qdots i{width:22px;height:8px;border-radius:4px;background:var(--line)}
+.qdots i.ok{background:var(--good)} .qdots i.miss{background:var(--retry)} .qdots i.now{background:var(--sun)}
+.qcard{background:var(--surface);border-radius:24px;padding:22px;display:flex;gap:14px;align-items:flex-start}
+.qtext{font-size:1.5rem;font-weight:700;line-height:1.3;flex:1;min-width:0}
+.say{flex:none;width:58px;height:58px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.say svg{width:30px;height:30px}
+.answers{display:flex;flex-direction:column;gap:12px}
+.ans{min-height:72px;padding:14px 20px;border-radius:20px;background:var(--surface);border:3px solid var(--line);font-size:1.3rem;font-weight:700;text-align:left;display:flex;align-items:center;gap:14px}
+.ans .letter{flex:none;width:40px;height:40px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:1.05rem}
+.ans:hover:not(:disabled){border-color:var(--accent)}
+.ans.right{background:var(--good-soft);border-color:var(--good);opacity:1}
+.ans.right .letter{background:var(--good);color:#fff}
+.ans.wrong{background:var(--retry-soft);border-color:var(--retry);opacity:.75}
+.ans.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+.feedback{min-height:1.6em;font-size:1.25rem;font-weight:700;text-align:center}
+.feedback.ok{color:var(--good)} .feedback.no{color:var(--retry)}
+
+/* Ergebnis */
+.result{background:var(--surface);border-radius:28px;padding:28px 20px;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
+.stars{display:flex;gap:8px;font-size:3rem;line-height:1}
+.stars .off{filter:grayscale(1);opacity:.3}
+.stars span{display:inline-block;animation:pop .5s backwards}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.teacher{font-size:.95rem;color:var(--muted);border-top:2px dashed var(--line);padding-top:14px;width:100%;font-variant-numeric:tabular-nums}
+
+/* Einstellungen */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:grid;place-items:center;padding:16px;z-index:10}
+.panel{background:var(--surface);border-radius:24px;padding:22px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow:auto}
+.panel label{display:flex;gap:12px;align-items:center;font-size:1.05rem}
+.panel input[type=checkbox]{width:26px;height:26px;accent-color:var(--accent);flex:none}
+.panel select{font:inherit;font-size:1rem;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.hint{font-size:.9rem;color:var(--muted)}
+.warn{background:var(--retry-soft);border-radius:16px;padding:14px 16px;font-size:1rem}
+
+@media (max-width:520px){
+  body{font-size:18px} h1{font-size:1.8rem} .qtext{font-size:1.3rem} .ans{font-size:1.15rem}
+  .speed button{min-width:76px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section id="scrStart">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="hero">
+          <h1>HörAbenteuer</h1>
+          <p class="lead">Hör genau zu und beantworte die Fragen!</p>
+        </div>
+        <button class="ghost" id="btnSettings" aria-label="Einstellungen">⚙️ Einstellungen</button>
+      </div>
+      <div class="warn" id="noSpeech" hidden>Dieses Gerät kann keine Texte vorlesen. Bitte öffne die App in Safari, Chrome oder Edge.</div>
+      <div class="row">
+        <button class="btn primary" id="btnRandom">🎲 Zufällige Geschichte</button>
+      </div>
+      <div class="grid" id="storyGrid"></div>
+    </div>
+  </section>
+
+  <!-- HÖREN -->
+  <section id="scrListen" hidden>
+    <div class="wrap">
+      <div class="topbar">
+        <button class="ghost" data-home>← Übersicht</button>
+      </div>
+      <div class="stage" id="stage">
+        <h2 id="lTitle"></h2>
+        <div class="ring"><span></span><span></span><span></span>
+          <button class="bigplay" id="bigPlay" aria-label="Abspielen"></button>
+        </div>
+        <p class="status" id="lStatus" aria-live="polite"></p>
+        <div class="dots" id="lDots" aria-hidden="true"></div>
+        <div class="speedbox"><span class="lbl">Tempo</span><div class="speed" data-speed></div></div>
+        <div class="row" style="justify-content:center">
+          <button class="btn" id="btnRestart"></button>
+          <button class="btn primary" id="btnToQuiz" disabled>Zu den Fragen →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FRAGEN -->
+  <section id="scrQuiz" hidden>
+    <div class="wrap">
+      <div class="topbar">
+        <button class="ghost" data-home>← Übersicht</button>
+      </div>
+      <div class="mini" id="mini">
+        <button class="btn" id="miniPlay"></button>
+        <button class="btn" id="miniRestart"></button>
+        <div class="speed" data-speed></div>
+      </div>
+      <div class="qhead"><span id="qCount"></span><span class="qdots" id="qDots"></span></div>
+      <div class="qcard">
+        <p class="qtext" id="qText"></p>
+        <button class="say" id="btnSay" aria-label="Frage vorlesen"></button>
+      </div>
+      <div class="answers" id="answers"></div>
+      <p class="feedback" id="feedback" aria-live="polite"></p>
+      <div class="row" style="justify-content:center">
+        <button class="btn primary" id="btnNext" hidden>Weiter →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ERGEBNIS -->
+  <section id="scrResult" hidden>
+    <div class="wrap">
+      <div class="result">
+        <h2 id="rTitle"></h2>
+        <div class="stars" id="rStars"></div>
+        <p class="lead" id="rMsg"></p>
+        <div class="row" style="justify-content:center">
+          <button class="btn" id="btnAgain">🔁 Nochmal hören</button>
+          <button class="btn primary" id="btnNextStory">Nächste Geschichte →</button>
+        </div>
+        <button class="ghost" data-home>Zur Übersicht</button>
+        <p class="teacher" id="rTeacher"></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- EINSTELLUNGEN -->
+<div class="overlay" id="settings" hidden>
+  <div class="panel" role="dialog" aria-label="Einstellungen">
+    <h2>Einstellungen</h2>
+    <div>
+      <p style="font-weight:700;margin-bottom:6px">Stimme</p>
+      <select id="voiceSel"></select>
+      <p class="hint" style="margin-top:6px">Auf dem iPad klingen die Stimmen „Anna“ oder „Helena“ meist am besten. Weitere Stimmen: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen.</p>
+      <button class="btn" id="btnTestVoice" style="margin-top:10px">🔊 Stimme testen</button>
+    </div>
+    <label><input type="checkbox" id="optGaps"> Kurze Pause nach jedem Satz (hilft beim Merken)</label>
+    <label><input type="checkbox" id="optAutoRead"> Fragen automatisch vorlesen</label>
+    <label><input type="checkbox" id="optRelisten"> Geschichte bei den Fragen nochmal hören erlauben</label>
+    <label><input type="checkbox" id="optSounds"> Töne bei richtig und falsch</label>
+    <button class="ghost" id="btnReset" style="align-self:flex-start">Sterne zurücksetzen</button>
+    <p class="hint" id="resetHint" hidden>Alle Sterne wurden gelöscht.</p>
+    <button class="btn primary" id="btnCloseSettings">Fertig</button>
+  </div>
+</div>
+
+<script>
+/* ---------- Geschichten ---------- */
+const STORIES = [
+ {id:"bauernhof", icon:"🐄", title:"Ausflug zum Bauernhof", text:[
+  "Heute fährt die Klasse 4b zum Bauernhof.","Der Bus ist gelb.","Die Bäuerin heißt Frau Berg.","Sie zeigt den Kindern den Stall.",
+  "Dort wohnen drei Kühe und zwei Pferde.","Das kleine Kalb heißt Lotte.","Lotte ist braun mit weißen Flecken.","Mia darf das Kalb streicheln.",
+  "Das Fell ist ganz weich.","Danach sammeln die Kinder Eier im Hühnerstall.","Tom findet sechs Eier.",
+  "Zum Schluss gibt es frische Milch und Brot mit Butter.","Auf der Rückfahrt singen alle ein Lied."],
+  q:[["Welche Farbe hat der Bus?","gelb","rot","blau"],
+     ["Wie heißt das kleine Kalb?","Lotte","Luna","Lisa"],
+     ["Wie viele Eier findet Tom?","sechs Eier","drei Eier","zehn Eier"],
+     ["Was gibt es zum Schluss?","Milch und Brot","Kuchen und Saft","Äpfel und Wasser"]]},
+ {id:"drache", icon:"🪁", title:"Paul und sein Drache", text:[
+  "Es ist Herbst.","Der Wind weht stark.","Paul hat einen neuen Drachen.","Der Drache ist rot und hat ein lachendes Gesicht.",
+  "Paul geht mit seinem Opa auf die Wiese hinter dem Haus.","Opa hält die Schnur fest.","Paul rennt los.","Hoch fliegt der Drache in den Himmel!",
+  "Plötzlich bleibt er an einem Baum hängen.","Paul ist traurig.","Opa holt eine lange Leiter.","Vorsichtig klettert er hinauf und holt den Drachen herunter.",
+  "Paul lacht wieder.","Zu Hause trinken die beiden heißen Kakao."],
+  q:[["Welche Jahreszeit ist es?","Herbst","Sommer","Winter"],
+     ["Mit wem geht Paul auf die Wiese?","mit Opa","mit Mama","mit seinem Freund"],
+     ["Wo bleibt der Drache hängen?","an einem Baum","auf dem Dach","an einem Zaun"],
+     ["Was trinken die beiden zu Hause?","Kakao","Tee","Saft"]]},
+ {id:"minka", icon:"🐱", title:"Wo ist Minka?", text:[
+  "Minka ist eine kleine graue Katze.","Sie wohnt bei Familie Schmitt.","Am liebsten schläft Minka auf dem Sofa.","Eines Morgens ist Minka weg.",
+  "Lena sucht überall.","Sie schaut im Garten nach.","Sie schaut unter dem Bett nach.","Aber Minka ist nicht da.","Lena ist sehr traurig.",
+  "Am Abend hört Lena ein leises Miauen.","Es kommt aus dem Wäschekorb!","Dort liegt Minka zwischen den warmen Handtüchern.",
+  "Neben ihr liegen drei winzige Katzenbabys.","Lena freut sich riesig."],
+  q:[["Welche Farbe hat Minka?","grau","schwarz","weiß"],
+     ["Wo schläft Minka am liebsten?","auf dem Sofa","im Bett","auf der Fensterbank"],
+     ["Wo findet Lena die Katze?","im Wäschekorb","im Garten","im Keller"],
+     ["Wie viele Katzenbabys liegen bei Minka?","drei","zwei","fünf"]]},
+ {id:"geburtstag", icon:"🎂", title:"Bens Geburtstag", text:[
+  "Ben wird heute neun Jahre alt.","Er hat fünf Freunde eingeladen.","Mama hat einen Schokoladenkuchen gebacken.",
+  "Auf dem Kuchen stehen neun blaue Kerzen.","Ben pustet alle Kerzen auf einmal aus.","Dann packt er seine Geschenke aus.",
+  "Von Oma bekommt er ein Buch über Dinosaurier.","Von seinen Freunden bekommt er einen Fußball.","Draußen spielen die Kinder Fußball im Garten.",
+  "Danach gibt es Würstchen und Pommes.","Am Abend ist Ben müde, aber sehr glücklich."],
+  q:[["Wie alt wird Ben?","neun Jahre","acht Jahre","zehn Jahre"],
+     ["Was für einen Kuchen hat Mama gebacken?","Schokoladenkuchen","Erdbeerkuchen","Apfelkuchen"],
+     ["Was schenkt Oma?","ein Buch über Dinosaurier","ein Puzzle","einen Teddy"],
+     ["Was essen die Kinder?","Würstchen und Pommes","Pizza","Nudeln"]]},
+ {id:"schwimmbad", icon:"🏊", title:"Im Schwimmbad", text:[
+  "Am Samstag geht Emma mit ihrem Papa ins Schwimmbad.","Emma packt ihre Badetasche.","Sie nimmt ihren grünen Badeanzug, ein Handtuch und ihre Schwimmbrille mit.",
+  "Im Schwimmbad ist es laut und warm.","Zuerst duschen die beiden.","Dann springt Emma ins Wasser.","Sie übt das Tauchen.",
+  "Sie holt einen Ring vom Boden hoch.","Papa klatscht.","Danach rutschen sie zusammen die lange Rutsche hinunter.","Das macht großen Spaß.",
+  "Zum Schluss isst jeder ein Eis."],
+  q:[["An welchem Tag geht Emma ins Schwimmbad?","am Samstag","am Sonntag","am Montag"],
+     ["Welche Farbe hat Emmas Badeanzug?","grün","rot","gelb"],
+     ["Was machen die beiden zuerst?","duschen","rutschen","tauchen"],
+     ["Was gibt es zum Schluss?","ein Eis","Pommes","einen Apfel"]]},
+ {id:"schneemann", icon:"⛄", title:"Herr Frost", text:[
+  "In der Nacht hat es geschneit.","Am Morgen ist alles weiß.","Jonas und seine Schwester Ella ziehen ihre Mützen und Handschuhe an.",
+  "Im Garten bauen sie einen Schneemann.","Zuerst rollen sie eine große Kugel für den Bauch.","Dann rollen sie eine kleine Kugel für den Kopf.",
+  "Die Nase ist eine Karotte.","Die Augen sind zwei schwarze Steine.","Ella bindet dem Schneemann ihren roten Schal um.",
+  "Der Schneemann bekommt den Namen Herr Frost.","Am Nachmittag scheint die Sonne.","Der Schneemann wird ein bisschen kleiner."],
+  q:[["Wie heißt die Schwester von Jonas?","Ella","Emma","Elif"],
+     ["Woraus ist die Nase?","aus einer Karotte","aus einer Gurke","aus einem Stein"],
+     ["Was bindet Ella dem Schneemann um?","ihren roten Schal","ihre blaue Mütze","eine Kette"],
+     ["Warum wird der Schneemann kleiner?","Die Sonne scheint.","Ein Hund frisst ihn.","Jonas nimmt Schnee weg."]]},
+ {id:"einkauf", icon:"🛒", title:"Sara kauft ein", text:[
+  "Mama schreibt einen Einkaufszettel.","Darauf stehen Äpfel, Nudeln, Käse und Milch.","Sara darf mit in den Supermarkt.","Sie schiebt den Einkaufswagen.",
+  "Zuerst holen sie die Äpfel.","Sara sucht sechs rote Äpfel aus.","Dann holen sie die Nudeln und den Käse.","Fast hätten sie die Milch vergessen!",
+  "Sara läuft schnell zurück und holt sie.","An der Kasse bezahlt Mama.","Die Kassiererin schenkt Sara einen Aufkleber mit einem Stern.",
+  "Zu Hause kochen die beiden Nudeln mit Käsesoße."],
+  q:[["Wer schiebt den Einkaufswagen?","Sara","Mama","Papa"],
+     ["Wie viele Äpfel sucht Sara aus?","sechs","vier","acht"],
+     ["Was hätten sie fast vergessen?","die Milch","den Käse","die Nudeln"],
+     ["Was schenkt die Kassiererin Sara?","einen Aufkleber","ein Bonbon","einen Luftballon"]]},
+ {id:"bruno", icon:"🐕", title:"Bruno im Park", text:[
+  "Bruno ist ein großer brauner Hund.","Er gehört Herrn Klein.","Jeden Morgen gehen die beiden im Park spazieren.","Bruno liebt es, Stöckchen zu holen.",
+  "Heute wirft Herr Klein das Stöckchen weit weg.","Es fällt in den Teich.","Bruno springt ins Wasser und schwimmt los.","Er bringt das Stöckchen zurück.",
+  "Dann schüttelt er sich.","Herr Klein wird ganz nass!","Ein Mädchen auf der Bank lacht laut.","Herr Klein lacht auch.","Zu Hause bekommt Bruno ein Leckerli."],
+  q:[["Welche Farbe hat Bruno?","braun","schwarz","weiß"],
+     ["Wohin fällt das Stöckchen?","in den Teich","ins Gebüsch","auf den Weg"],
+     ["Wer wird ganz nass?","Herr Klein","das Mädchen","niemand"],
+     ["Was bekommt Bruno zu Hause?","ein Leckerli","einen Knochen","einen Ball"]]},
+ {id:"martin", icon:"🏮", title:"Der Laternenumzug", text:[
+  "Im November feiert die Schule das Martinsfest.","Lukas hat in der Schule eine Laterne gebastelt.","Sie sieht aus wie ein Mond.",
+  "Am Abend treffen sich alle Kinder auf dem Schulhof.","Es ist schon dunkel.","Die Laternen leuchten bunt.","Vorne reitet ein Mann auf einem weißen Pferd.",
+  "Er spielt Sankt Martin.","Die Kinder singen Laternenlieder.","Ein Mann mit einer Trompete spielt die Musik.",
+  "Am Ende gibt es am Feuer für jedes Kind einen Weckmann.","Lukas teilt seinen Weckmann mit seiner kleinen Schwester."],
+  q:[["Wie sieht die Laterne von Lukas aus?","wie ein Mond","wie ein Stern","wie eine Sonne"],
+     ["Welche Farbe hat das Pferd?","weiß","braun","schwarz"],
+     ["Wer spielt die Musik?","ein Mann mit einer Trompete","eine Frau mit einer Gitarre","Kinder mit Trommeln"],
+     ["Mit wem teilt Lukas seinen Weckmann?","mit seiner Schwester","mit seinem Freund","mit seiner Mama"]]},
+ {id:"zoo", icon:"🦒", title:"Ein Tag im Zoo", text:[
+  "Die Klasse 4a besucht den Zoo.","Zuerst gehen die Kinder zu den Affen.","Ein kleiner Affe schaukelt an einem Seil.","Dann sehen sie die Giraffen.",
+  "Die Giraffen haben sehr lange Hälse.","Sie fressen Blätter von den hohen Bäumen.","Beim Elefanten bleiben die Kinder lange stehen.",
+  "Der Elefant spritzt mit seinem Rüssel Wasser.","Ali ruft: Das ist wie eine Dusche!","In der Mittagspause essen alle ihre Brote auf einer Wiese.",
+  "Zum Schluss dürfen sie die Ziegen im Streichelzoo füttern."],
+  q:[["Zu welchen Tieren gehen die Kinder zuerst?","zu den Affen","zu den Giraffen","zu den Elefanten"],
+     ["Was fressen die Giraffen?","Blätter","Bananen","Fische"],
+     ["Was macht der Elefant?","Er spritzt Wasser.","Er schläft.","Er frisst Heu."],
+     ["Welche Tiere dürfen die Kinder füttern?","Ziegen","Hasen","Pferde"]]},
+ {id:"regentag", icon:"🌧️", title:"Die Höhle im Wohnzimmer", text:[
+  "Es regnet den ganzen Tag.","Marie kann nicht draußen spielen.","Sie langweilt sich.","Da hat Papa eine Idee.","Sie bauen zusammen eine Höhle im Wohnzimmer.",
+  "Sie nehmen zwei Stühle und eine große Decke.","In die Höhle legen sie Kissen und eine Taschenlampe.","Marie holt ihr Lieblingsbuch.",
+  "Es ist ein Buch über Piraten.","Papa liest ihr in der Höhle vor.","Danach malt Marie ein Bild von einem Piratenschiff.",
+  "Am Abend hört der Regen auf.","Am Himmel ist ein Regenbogen."],
+  q:[["Warum kann Marie nicht draußen spielen?","Es regnet.","Sie ist krank.","Es ist schon dunkel."],
+     ["Was bauen Marie und Papa?","eine Höhle","einen Turm","ein Schiff"],
+     ["Wovon handelt Maries Lieblingsbuch?","von Piraten","von Prinzessinnen","von Dinosauriern"],
+     ["Was ist am Abend am Himmel?","ein Regenbogen","viele Sterne","ein Flugzeug"]]},
+ {id:"garten", icon:"🍎", title:"Ernte bei Oma", text:[
+  "Oma hat einen großen Garten.","Im Herbst hilft Felix ihr bei der Ernte.","Am Apfelbaum hängen viele Äpfel.","Felix steigt auf eine kleine Leiter.",
+  "Er pflückt die Äpfel und legt sie in einen Korb.","Ein Apfel ist ganz faul.","Felix wirft ihn auf den Komposthaufen.","Dann ernten sie Kürbisse.",
+  "Der größte Kürbis ist so schwer, dass Felix ihn nicht tragen kann.","Oma holt die Schubkarre.","Am Nachmittag backen die beiden einen Apfelkuchen.",
+  "Das ganze Haus duftet danach."],
+  q:[["Wobei hilft Felix seiner Oma?","bei der Ernte","beim Rasenmähen","beim Putzen"],
+     ["Wohin wirft Felix den faulen Apfel?","auf den Komposthaufen","in den Mülleimer","auf die Wiese"],
+     ["Womit fahren sie den großen Kürbis?","mit der Schubkarre","mit dem Auto","mit dem Fahrrad"],
+     ["Was backen Felix und Oma?","einen Apfelkuchen","Plätzchen","ein Brot"]]}
+];
+
+/* ---------- Icons ---------- */
+const IC = {
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.5" height="14" rx="1.2"/><rect x="13.5" y="5" width="4.5" height="14" rx="1.2"/></svg>',
+  restart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>',
+  speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>'
+};
+
+/* ---------- Einstellungen & Fortschritt ---------- */
+const KEY = "hoerabenteuer-v1";
+let store = {best:{}, voice:"", gaps:true, autoRead:true, relisten:true, sounds:true, rate:1};
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) store = Object.assign(store, s); } catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(store)); }catch(e){} }
+
+/* ---------- Sprachausgabe ---------- */
+const synth = window.speechSynthesis;
+const hasSpeech = !!(synth && window.SpeechSynthesisUtterance);
+let voices = [], voice = null, unlocked = false;
+
+function loadVoices(){
+  if (!hasSpeech) return;
+  voices = synth.getVoices().filter(v => (v.lang||"").toLowerCase().replace("_","-").startsWith("de"));
+  const pref = ["Anna","Helena","Petra","Google Deutsch","Katja","Hedda","Marlene","Vicki"];
+  voice = voices.find(v => v.voiceURI === store.voice)
+       || voices.find(v => pref.some(p => v.name.includes(p)) && /premium|enhanced|erweitert/i.test(v.name))
+       || voices.find(v => pref.some(p => v.name.includes(p)))
+       || voices.find(v => /de-DE/i.test(v.lang)) || voices[0] || null;
+  const sel = document.getElementById("voiceSel");
+  sel.innerHTML = voices.length ? "" : '<option>Standardstimme</option>';
+  voices.forEach(v => { const o = document.createElement("option"); o.value = v.voiceURI; o.textContent = v.name + " (" + v.lang + ")"; if (voice && v.voiceURI === voice.voiceURI) o.selected = true; sel.appendChild(o); });
+}
+if (hasSpeech){ loadVoices(); synth.onvoiceschanged = loadVoices; }
+
+function unlock(){ // iPad: die erste Sprachausgabe muss direkt durch Tippen starten
+  if (unlocked || !hasSpeech) return; unlocked = true;
+  const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u);
+}
+function utter(text, rate){
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE"; if (voice) u.voice = voice; u.rate = rate; u.pitch = 1;
+  return u;
+}
+
+/* Satzweises Abspielen: zuverlässig zu pausieren, Tempo wirkt sofort */
+let gen = 0;
+const player = { sents:[], idx:0, playing:false, done:false };
+function gapMs(){ if (!store.gaps) return 80; return store.rate >= 1 ? 450 : store.rate >= .9 ? 600 : 750; }
+
+function stopAll(){ gen++; player.playing = false; if (hasSpeech) synth.cancel(); render(); }
+function playFrom(i){
+  if (!hasSpeech) return;
+  unlock();
+  player.idx = Math.max(0, Math.min(i, player.sents.length - 1));
+  player.playing = true; player.done = false;
+  const g = ++gen;
+  if (synth.speaking || synth.pending){ synth.cancel(); setTimeout(() => step(g), 120); } else step(g);
+  render();
+}
+function step(g){
+  if (g !== gen || !player.playing) return;
+  if (player.idx >= player.sents.length){ finishListening(); return; }
+  const u = utter(player.sents[player.idx], store.rate);
+  u.onend = () => { if (g !== gen) return; player.idx++; render(); setTimeout(() => step(g), gapMs()); };
+  u.onerror = e => { if (g !== gen || e.error === "interrupted" || e.error === "canceled") return; player.idx++; step(g); };
+  synth.speak(u); render();
+}
+function togglePlay(){
+  if (player.playing){ gen++; player.playing = false; synth.cancel(); render(); }
+  else playFrom(player.done ? 0 : player.idx);
+}
+function setRate(r){
+  store.rate = r; if (r < session.slowest) session.slowest = r; save();
+  if (player.playing) playFrom(player.idx); else render();
+}
+function sayLines(lines){ // Fragen / Rückmeldungen vorlesen
+  if (!hasSpeech) return;
+  unlock();
+  gen++; player.playing = false; synth.cancel();
+  const g = gen;
+  setTimeout(() => { if (g !== gen) return; lines.forEach(t => synth.speak(utter(t, Math.min(store.rate, 1)))); }, 120);
+  render();
+}
+
+/* ---------- Töne ---------- */
+let actx = null;
+function tone(ok){
+  if (!store.sounds) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = ok ? [660, 880] : [330, 262];
+    notes.forEach((f, i) => {
+      const o = actx.createOscillator(), gn = actx.createGain(), t = actx.currentTime + i * .13;
+      o.type = "sine"; o.frequency.value = f;
+      gn.gain.setValueAtTime(0, t); gn.gain.linearRampToValueAtTime(.18, t + .02); gn.gain.exponentialRampToValueAtTime(.001, t + .35);
+      o.connect(gn).connect(actx.destination); o.start(t); o.stop(t + .4);
+    });
+  }catch(e){}
+}
+
+/* ---------- Ablauf ---------- */
+const $ = id => document.getElementById(id);
+let story = null, session = null, qi = 0, order = [], tries = 0, answered = false;
+
+function show(id){
+  ["scrStart","scrListen","scrQuiz","scrResult"].forEach(s => $(s).hidden = s !== id);
+  window.scrollTo(0, 0);
+}
+function home(){ stopAll(); buildGrid(); show("scrStart"); }
+
+function buildGrid(){
+  const g = $("storyGrid"); g.innerHTML = "";
+  STORIES.forEach(s => {
+    const b = document.createElement("button"); b.className = "story";
+    const best = store.best[s.id];
+    b.innerHTML = `<span class="ico" aria-hidden="true">${s.icon}</span><span class="t">${s.title}${best !== undefined ? `<span class="st">${"★".repeat(best)}${"☆".repeat(s.q.length - best)}</span>` : ""}</span>`;
+    b.onclick = () => startStory(s);
+    g.appendChild(b);
+  });
+}
+
+function startStory(s){
+  unlock();
+  story = s;
+  session = { listens:0, slowest:store.rate, firstTry:0, results:[] };
+  player.sents = [s.title + "."].concat(s.text);
+  player.idx = 0; player.playing = false; player.done = false;
+  $("lTitle").textContent = s.icon + " " + s.title;
+  $("btnToQuiz").disabled = true;
+  $("lDots").innerHTML = player.sents.map(() => "<i></i>").join("");
+  show("scrListen"); render();
+}
+
+function finishListening(){
+  player.playing = false; player.done = true; player.idx = player.sents.length;
+  session.listens++;
+  $("btnToQuiz").disabled = false;
+  render();
+}
+
+function render(){
+  const listenVisible = !$("scrListen").hidden;
+  const sp = player.playing;
+  // großer Knopf
+  $("bigPlay").innerHTML = sp ? IC.pause : IC.play;
+  $("bigPlay").setAttribute("aria-label", sp ? "Pause" : "Abspielen");
+  $("stage").classList.toggle("speaking", sp && listenVisible);
+  let st;
+  if (sp) st = "Hör gut zu …";
+  else if (player.done) st = "Fertig! Jetzt kommen die Fragen.";
+  else if (player.idx > 0) st = "Pause. Tippe zum Weiterhören.";
+  else st = "Tippe auf den Knopf und hör gut zu!";
+  $("lStatus").textContent = st;
+  // Fortschritt
+  [...$("lDots").children].forEach((d, i) => {
+    d.className = (player.done || i < player.idx) ? "done" : (sp && i === player.idx ? "now" : "");
+  });
+  // Mini-Player
+  $("miniPlay").innerHTML = (sp ? IC.pause : IC.play) + `<span class="playlbl">${sp ? "Pause" : (player.idx > 0 && !player.done ? "Weiterhören" : "Geschichte hören")}</span>`;
+  $("mini").classList.toggle("speaking", sp);
+  // Tempo
+  document.querySelectorAll("[data-speed] button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.rate === store.rate)));
+}
+
+function buildSpeed(){
+  const opts = [[1,"1,0","normal"],[.9,"0,9","langsamer"],[.8,"0,8","langsam"]];
+  document.querySelectorAll("[data-speed]").forEach(box => {
+    box.innerHTML = "";
+    opts.forEach(([r, n, l]) => {
+      const b = document.createElement("button"); b.dataset.rate = r;
+      b.innerHTML = `${n}×<small>${l}</small>`; b.setAttribute("aria-label", "Tempo " + l);
+      b.onclick = () => setRate(r); box.appendChild(b);
+    });
+  });
+}
+
+/* ---------- Fragen ---------- */
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function startQuiz(){
+  stopAll();
+  player.idx = 0; player.done = false;
+  qi = 0; session.results = []; session.firstTry = 0;
+  $("mini").hidden = !store.relisten;
+  show("scrQuiz"); showQuestion();
+}
+function showQuestion(){
+  const [q, ...opts] = story.q[qi];
+  tries = 0; answered = false;
+  order = shuffle(opts.map((t, i) => ({t, right: i === 0})));
+  $("qCount").textContent = `Frage ${qi + 1} von ${story.q.length}`;
+  $("qDots").innerHTML = story.q.map((_, i) => `<i class="${i < qi ? (session.results[i] ? "ok" : "miss") : i === qi ? "now" : ""}"></i>`).join("");
+  $("qText").textContent = q;
+  $("feedback").textContent = ""; $("feedback").className = "feedback";
+  $("btnNext").hidden = true;
+  const box = $("answers"); box.innerHTML = "";
+  order.forEach((o, i) => {
+    const b = document.createElement("button"); b.className = "ans";
+    b.innerHTML = `<span class="letter">${"ABC"[i]}</span><span>${o.t}</span>`;
+    b.onclick = () => choose(b, o);
+    box.appendChild(b);
+  });
+  if (store.autoRead) sayLines([q]);
+}
+function readQuestion(){
+  const q = story.q[qi][0];
+  sayLines([q].concat(order.map((o, i) => "ABC"[i] + ": " + o.t + ".")));
+}
+function choose(btn, o){
+  if (answered) return;
+  tries++;
+  if (o.right){
+    answered = true;
+    btn.classList.add("right");
+    session.results[qi] = tries === 1;
+    if (tries === 1) session.firstTry++;
+    $("feedback").textContent = tries === 1 ? "Richtig! Super zugehört! ⭐" : "Richtig! Gut gemacht!";
+    $("feedback").className = "feedback ok";
+    tone(true); sayLines(["Richtig!"]);
+    lockAnswers(); $("btnNext").hidden = false;
+  } else {
+    btn.classList.add("wrong", "shake"); btn.disabled = true;
+    tone(false);
+    if (tries >= 2){
+      answered = true; session.results[qi] = false;
+      const right = [...$("answers").children][order.findIndex(x => x.right)];
+      right.classList.add("right");
+      $("feedback").textContent = "Die richtige Antwort ist grün.";
+      $("feedback").className = "feedback no";
+      sayLines(["Die richtige Antwort ist: " + order.find(x => x.right).t]);
+      lockAnswers(); $("btnNext").hidden = false;
+    } else {
+      $("feedback").textContent = "Noch nicht. Versuch es nochmal!";
+      $("feedback").className = "feedback no";
+      sayLines(["Versuch es nochmal."]);
+    }
+  }
+}
+function lockAnswers(){ [...$("answers").children].forEach(b => { if (!b.classList.contains("right")) b.disabled = true; else b.onclick = null; }); }
+function nextQuestion(){
+  qi++;
+  if (qi < story.q.length) showQuestion(); else showResult();
+}
+
+/* ---------- Ergebnis ---------- */
+function showResult(){
+  stopAll();
+  const n = story.q.length, s = session.firstTry;
+  store.best[story.id] = Math.max(store.best[story.id] || 0, s); save();
+  $("rTitle").textContent = s === n ? "Toll gemacht!" : s >= n / 2 ? "Gut gemacht!" : "Du hast fleißig geübt!";
+  $("rStars").innerHTML = Array.from({length:n}, (_, i) => `<span class="${i < s ? "" : "off"}" style="animation-delay:${i * .15}s">⭐</span>`).join("");
+  $("rMsg").textContent = s === n ? "Du hast ganz genau zugehört." : "Hör die Geschichte nochmal und versuche es wieder.";
+  const rateTxt = session.slowest >= 1 ? "1,0× (normal)" : session.slowest >= .9 ? "0,9× (langsamer)" : "0,8× (langsam)";
+  $("rTeacher").textContent = `Für Lehrkräfte: Beim 1. Versuch richtig: ${s} von ${n} · Ganz gehört: ${session.listens}-mal · Langsamstes Tempo: ${rateTxt}`;
+  show("scrResult");
+  sayLines([$("rTitle").textContent + " Du hast " + s + " von " + n + " Sternen."]);
+}
+
+/* ---------- Einstellungen ---------- */
+function openSettings(){
+  $("optGaps").checked = store.gaps; $("optAutoRead").checked = store.autoRead;
+  $("optRelisten").checked = store.relisten; $("optSounds").checked = store.sounds;
+  $("resetHint").hidden = true; $("settings").hidden = false;
+}
+$("btnSettings").onclick = openSettings;
+$("btnCloseSettings").onclick = () => { $("settings").hidden = true; };
+$("settings").onclick = e => { if (e.target.id === "settings") $("settings").hidden = true; };
+$("voiceSel").onchange = e => { voice = voices.find(v => v.voiceURI === e.target.value) || voice; store.voice = voice ? voice.voiceURI : ""; save(); };
+$("btnTestVoice").onclick = () => sayLines(["Hallo! So klinge ich. Hör gut zu!"]);
+[["optGaps","gaps"],["optAutoRead","autoRead"],["optRelisten","relisten"],["optSounds","sounds"]]
+  .forEach(([id, k]) => $(id).onchange = e => { store[k] = e.target.checked; save(); });
+$("btnReset").onclick = () => { store.best = {}; save(); buildGrid(); $("resetHint").hidden = false; };
+
+/* ---------- Verknüpfungen ---------- */
+document.querySelectorAll("[data-home]").forEach(b => b.onclick = home);
+$("btnRandom").onclick = () => {
+  const pool = STORIES.filter(s => !story || s.id !== story.id);
+  startStory(pool[Math.floor(Math.random() * pool.length)]);
+};
+$("bigPlay").onclick = togglePlay;
+$("btnRestart").innerHTML = IC.restart + "Von vorn";
+$("btnRestart").onclick = () => playFrom(0);
+$("btnToQuiz").onclick = startQuiz;
+$("miniPlay").onclick = () => { togglePlay(); };
+$("miniRestart").innerHTML = IC.restart + "Von vorn";
+$("miniRestart").onclick = () => playFrom(0);
+// Bei den Fragen zählt ein komplettes Nochmal-Hören mit, schaltet aber nichts frei
+$("btnSay").innerHTML = IC.speaker;
+$("btnSay").onclick = readQuestion;
+$("btnNext").onclick = nextQuestion;
+$("btnAgain").onclick = () => startStory(story);
+$("btnNextStory").onclick = () => {
+  const i = STORIES.findIndex(s => s.id === story.id);
+  startStory(STORIES[(i + 1) % STORIES.length]);
+};
+document.addEventListener("visibilitychange", () => { if (document.hidden && player.playing) togglePlay(); });
+
+if (!hasSpeech) $("noSpeech").hidden = false;
+buildSpeed(); buildGrid(); render();
+</script>
+</body>
+</html>
