@@ -128,6 +128,20 @@ button:disabled{opacity:.4;cursor:default}
 .hint{font-size:.9rem;color:var(--muted)}
 .warn{background:var(--retry-soft);border-radius:16px;padding:14px 16px;font-size:1rem}
 
+/* Eigene Aufnahmen */
+.bar{width:100%;max-width:420px;height:14px;border-radius:7px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:7px;transition:width .25s linear}
+.recpanel{background:var(--surface);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.btn.rec{background:var(--retry);border-color:var(--retry);color:#fff}
+.btn.small{min-height:48px;padding:6px 14px;font-size:1rem}
+.btn.small svg{width:22px;height:22px}
+.readtext{background:var(--surface);border-radius:24px;padding:22px;font-size:1.35rem;line-height:1.7;display:flex;flex-direction:column;gap:6px}
+.readtext .rt-title{font-family:var(--font-display);font-size:1.5rem;color:var(--accent)}
+.qrec{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);border-radius:18px;padding:12px 14px}
+.qrec p{flex:1 1 220px;min-width:0;font-weight:700}
+.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--line);color:var(--muted);margin-top:4px}
+.chip.ok{background:var(--good-soft);color:var(--good)}
+
 @media (max-width:520px){
   body{font-size:18px} h1{font-size:1.8rem} .qtext{font-size:1.3rem} .ans{font-size:1.15rem}
   .speed button{min-width:76px}
@@ -170,6 +184,7 @@ button:disabled{opacity:.4;cursor:default}
         </div>
         <p class="status" id="lStatus" aria-live="polite"></p>
         <div class="dots" id="lDots" aria-hidden="true"></div>
+        <div class="bar" id="lBar" hidden><i id="lBarFill"></i></div>
         <div class="speedbox"><span class="lbl">Tempo</span><div class="speed" data-speed></div></div>
         <div class="row" style="justify-content:center">
           <button class="btn" id="btnRestart"></button>
@@ -219,12 +234,60 @@ button:disabled{opacity:.4;cursor:default}
       </div>
     </div>
   </section>
+
+  <!-- EINSPRECHEN: Liste -->
+  <section id="scrRecList" hidden>
+    <div class="wrap">
+      <div class="topbar"><button class="ghost" data-home>← Zurück zur App</button></div>
+      <h2>Geschichten selbst einsprechen</h2>
+      <p class="lead">Wähle eine Geschichte. Du siehst den Text und nimmst ihn mit deiner Stimme auf. Eingesprochene Geschichten spielt die App mit deiner Stimme ab, alle anderen mit der Computerstimme.</p>
+      <div class="warn" id="noMic" hidden>Aufnehmen geht hier nicht. Öffne die App in Safari: bellie161.github.io/Leseapp/hoerabenteuer.html</div>
+      <div class="grid" id="recGrid"></div>
+      <div class="recpanel">
+        <p style="font-weight:700">Sicherung</p>
+        <p class="hint">Die Aufnahmen sind nur auf diesem iPad gespeichert, und zwar genau dort, wo du sie aufgenommen hast (Safari oder App auf dem Home-Bildschirm). Speichere ab und zu eine Sicherung in „Dateien“, damit nichts verloren geht. Mit „Sicherung laden“ kannst du sie auch auf ein anderes Gerät holen.</p>
+        <div class="row">
+          <button class="btn small" id="btnExport">💾 Sicherung speichern</button>
+          <button class="btn small" id="btnImport">📂 Sicherung laden</button>
+          <input type="file" id="importFile" accept=".json,application/json" hidden>
+        </div>
+        <p class="hint" id="backupMsg" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EINSPRECHEN: eine Geschichte -->
+  <section id="scrRecStory" hidden>
+    <div class="wrap">
+      <div class="topbar"><button class="ghost" id="btnRecBack">← Alle Geschichten</button></div>
+      <h2 id="rsTitle"></h2>
+      <div class="recpanel">
+        <p class="status" id="rsStatus" aria-live="polite" style="min-height:0"></p>
+        <div class="row"><button class="btn primary" id="rsRec"></button></div>
+        <div class="row" id="rsPending" hidden>
+          <button class="btn small" id="rsListen">▶ Anhören</button>
+          <button class="btn small primary" id="rsSave">✓ Speichern</button>
+          <button class="btn small" id="rsDiscard">Verwerfen</button>
+        </div>
+        <div class="row" id="rsSaved" hidden>
+          <button class="btn small" id="rsPlaySaved">▶ Gespeicherte Aufnahme anhören</button>
+          <button class="btn small" id="rsDelete">🗑 Löschen</button>
+        </div>
+        <p class="hint">Tipp: Fang mit der Überschrift an. Lies ruhig und deutlich, mit einer kleinen Pause nach jedem Satz. Das Tempo 0,9× und 0,8× funktioniert auch mit deiner Aufnahme.</p>
+      </div>
+      <div class="readtext" id="rsText"></div>
+      <h2 style="font-size:1.3rem">Fragen einsprechen (freiwillig)</h2>
+      <p class="hint">Eingesprochene Fragen liest die App mit deiner Stimme vor. Sprich nur die Frage, nicht die Antworten. Jede Aufnahme wird beim Stoppen gleich gespeichert.</p>
+      <div class="answers" id="rsQuestions"></div>
+    </div>
+  </section>
 </div>
 
 <!-- EINSTELLUNGEN -->
 <div class="overlay" id="settings" hidden>
   <div class="panel" role="dialog" aria-label="Einstellungen">
     <h2>Einstellungen</h2>
+    <button class="btn primary" id="btnOpenRec">🎙️ Geschichten selbst einsprechen</button>
     <div>
       <p style="font-weight:700;margin-bottom:6px">Stimme</p>
       <select id="voiceSel"></select>
@@ -235,6 +298,7 @@ button:disabled{opacity:.4;cursor:default}
     <label><input type="checkbox" id="optAutoRead"> Fragen automatisch vorlesen</label>
     <label><input type="checkbox" id="optRelisten"> Geschichte bei den Fragen nochmal hören erlauben</label>
     <label><input type="checkbox" id="optSounds"> Töne bei richtig und falsch</label>
+    <label><input type="checkbox" id="optSpoken"> Rückmeldungen wie „Richtig!“ mit der Computerstimme sprechen</label>
     <button class="ghost" id="btnReset" style="align-self:flex-start">Sterne zurücksetzen</button>
     <p class="hint" id="resetHint" hidden>Alle Sterne wurden gelöscht.</p>
     <button class="btn primary" id="btnCloseSettings">Fertig</button>
@@ -358,16 +422,73 @@ const IC = {
   play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
   pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.5" height="14" rx="1.2"/><rect x="13.5" y="5" width="4.5" height="14" rx="1.2"/></svg>',
   restart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>',
-  speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>'
+  speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>'
 };
 
 /* ---------- Einstellungen & Fortschritt ---------- */
 const KEY = "hoerabenteuer-v1";
-let store = {best:{}, voice:"", gaps:true, autoRead:true, relisten:true, sounds:true, rate:1};
+let store = {best:{}, voice:"", gaps:true, autoRead:true, relisten:true, sounds:true, spokenFeedback:true, rate:1};
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) store = Object.assign(store, s); } catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(store)); }catch(e){} }
 
-/* ---------- Sprachausgabe ---------- */
+/* ---------- Eigene Aufnahmen (bleiben auf diesem Gerät) ---------- */
+const DB = {
+  db:null,
+  open(){ return new Promise(res => { try{
+    const r = indexedDB.open("hoerabenteuer", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("rec");
+    r.onsuccess = () => { DB.db = r.result; res(true); };
+    r.onerror = () => res(false);
+  }catch(e){ res(false); } }); },
+  os(mode){ return DB.db.transaction("rec", mode).objectStore("rec"); },
+  req(r){ return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  get(k){ return DB.db ? DB.req(DB.os("readonly").get(k)) : Promise.resolve(null); },
+  put(k, v){ return DB.req(DB.os("readwrite").put(v, k)); },
+  del(k){ return DB.req(DB.os("readwrite").delete(k)); },
+  keys(){ return DB.db ? DB.req(DB.os("readonly").getAllKeys()) : Promise.resolve([]); }
+};
+let recKeys = new Set();
+const kStory = id => "story:" + id, kQ = (id, n) => "q:" + id + ":" + n;
+async function refreshKeys(){ recKeys = new Set(await DB.keys().catch(() => [])); }
+async function getRec(k){ const v = await DB.get(k).catch(() => null); return v ? {blob:new Blob([v.data], {type:v.type}), dur:v.dur || 0} : null; }
+async function saveRec(k, blob, dur){
+  const data = await blob.arrayBuffer();
+  await DB.put(k, {type: blob.type || "audio/mp4", data, dur, saved: Date.now()});
+  recKeys.add(k);
+}
+async function deleteRec(k){ await DB.del(k).catch(() => {}); recKeys.delete(k); }
+
+/* ---------- Aufnehmen ---------- */
+const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+const recorder = { mr:null, stream:null, chunks:[], t0:0, target:null };
+async function recStart(target){
+  recorder.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true}});
+  const mt = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+  recorder.mr = new MediaRecorder(recorder.stream, mt ? {mimeType: mt} : undefined);
+  recorder.chunks = []; recorder.target = target;
+  recorder.mr.ondataavailable = e => { if (e.data && e.data.size) recorder.chunks.push(e.data); };
+  recorder.mr.start(); recorder.t0 = Date.now();
+}
+function recStop(){
+  return new Promise(res => {
+    const mr = recorder.mr;
+    mr.onstop = () => {
+      recorder.stream.getTracks().forEach(t => t.stop());
+      const out = {blob: new Blob(recorder.chunks, {type: mr.mimeType || "audio/mp4"}), dur: (Date.now() - recorder.t0) / 1000};
+      recorder.mr = null; recorder.target = null; res(out);
+    };
+    mr.stop();
+  });
+}
+function micError(e){
+  return (e && e.name === "NotAllowedError")
+    ? "Das Mikrofon ist gesperrt. Tippe oben in Safari auf „aA“ → Website-Einstellungen → Mikrofon → Erlauben."
+    : "Die Aufnahme konnte nicht starten. Bitte öffne die App in Safari und versuche es nochmal.";
+}
+
+/* ---------- Sprachausgabe (Computerstimme) ---------- */
 const synth = window.speechSynthesis;
 const hasSpeech = !!(synth && window.SpeechSynthesisUtterance);
 let voices = [], voice = null, unlocked = false;
@@ -377,7 +498,7 @@ function loadVoices(){
   voices = synth.getVoices().filter(v => (v.lang||"").toLowerCase().replace("_","-").startsWith("de"));
   const pref = ["Anna","Helena","Petra","Google Deutsch","Katja","Hedda","Marlene","Vicki"];
   voice = voices.find(v => v.voiceURI === store.voice)
-       || voices.find(v => pref.some(p => v.name.includes(p)) && /premium|enhanced|erweitert/i.test(v.name))
+       || voices.find(v => pref.some(p => v.name.includes(p)) && /premium|enhanced|verbessert|erweitert/i.test(v.name))
        || voices.find(v => pref.some(p => v.name.includes(p)))
        || voices.find(v => /de-DE/i.test(v.lang)) || voices[0] || null;
   const sel = document.getElementById("voiceSel");
@@ -396,15 +517,24 @@ function utter(text, rate){
   return u;
 }
 
-/* Satzweises Abspielen: zuverlässig zu pausieren, Tempo wirkt sofort */
+/* ---------- Abspielen ---------- */
+function prepAudio(a){ a.preservesPitch = true; a.mozPreservesPitch = true; a.webkitPreservesPitch = true; a.playsInline = true; a.preload = "auto"; return a; }
+const audio = prepAudio(new Audio());   // eigene Aufnahme der Geschichte
+const clip = prepAudio(new Audio());    // eingesprochene Fragen, Probehören
+let audioUrl = null, clipUrl = null, audioDur = 0;
+
 let gen = 0;
-const player = { sents:[], idx:0, playing:false, done:false };
+const player = { mode:"tts", sents:[], idx:0, playing:false, done:false };
+const isPlaying = () => player.mode === "audio" ? !audio.paused : player.playing;
+const started = () => player.mode === "audio" ? audio.currentTime > 0.05 : player.idx > 0;
 function gapMs(){ if (!store.gaps) return 80; return store.rate >= 1 ? 450 : store.rate >= .9 ? 600 : 750; }
 
-function stopAll(){ gen++; player.playing = false; if (hasSpeech) synth.cancel(); render(); }
-function playFrom(i){
+function quiet(){ gen++; player.playing = false; if (hasSpeech) synth.cancel(); audio.pause(); clip.pause(); }
+function stopAll(){ quiet(); render(); }
+
+function playFrom(i){ // Computerstimme, satzweise
   if (!hasSpeech) return;
-  unlock();
+  unlock(); clip.pause();
   player.idx = Math.max(0, Math.min(i, player.sents.length - 1));
   player.playing = true; player.done = false;
   const g = ++gen;
@@ -419,22 +549,43 @@ function step(g){
   u.onerror = e => { if (g !== gen || e.error === "interrupted" || e.error === "canceled") return; player.idx++; step(g); };
   synth.speak(u); render();
 }
+function playAudio(fromStart){
+  gen++; player.playing = false; if (hasSpeech) synth.cancel(); clip.pause();
+  if (fromStart || player.done){ audio.currentTime = 0; player.done = false; }
+  audio.defaultPlaybackRate = store.rate; audio.playbackRate = store.rate;
+  audio.play().catch(() => {});
+}
 function togglePlay(){
+  if (player.mode === "audio"){ if (!audio.paused) audio.pause(); else playAudio(false); return; }
   if (player.playing){ gen++; player.playing = false; synth.cancel(); render(); }
   else playFrom(player.done ? 0 : player.idx);
 }
+function restart(){ if (player.mode === "audio") playAudio(true); else playFrom(0); }
 function setRate(r){
-  store.rate = r; if (r < session.slowest) session.slowest = r; save();
-  if (player.playing) playFrom(player.idx); else render();
+  store.rate = r; if (session && r < session.slowest) session.slowest = r; save();
+  if (player.mode === "audio"){ audio.playbackRate = r; render(); }
+  else if (player.playing) playFrom(player.idx); else render();
 }
-function sayLines(lines){ // Fragen / Rückmeldungen vorlesen
+audio.onplay = audio.onpause = audio.ontimeupdate = () => render();
+audio.onended = () => finishListening();
+
+function sayLines(lines){ // Fragen / Rückmeldungen mit Computerstimme
   if (!hasSpeech) return;
-  unlock();
-  gen++; player.playing = false; synth.cancel();
+  unlock(); quiet();
   const g = gen;
   setTimeout(() => { if (g !== gen) return; lines.forEach(t => synth.speak(utter(t, Math.min(store.rate, 1)))); }, 120);
   render();
 }
+function feedbackSay(lines){ if (store.spokenFeedback) sayLines(lines); }
+function playBlob(blob, rate){
+  quiet();
+  if (clipUrl) URL.revokeObjectURL(clipUrl);
+  clipUrl = URL.createObjectURL(blob); clip.src = clipUrl;
+  clip.defaultPlaybackRate = rate || 1; clip.playbackRate = rate || 1;
+  clip.play().catch(() => {});
+  render();
+}
+async function playKey(k, rate){ const r = await getRec(k); if (r) playBlob(r.blob, rate); }
 
 /* ---------- Töne ---------- */
 let actx = null;
@@ -455,11 +606,9 @@ function tone(ok){
 /* ---------- Ablauf ---------- */
 const $ = id => document.getElementById(id);
 let story = null, session = null, qi = 0, order = [], tries = 0, answered = false;
+const SCREENS = ["scrStart","scrListen","scrQuiz","scrResult","scrRecList","scrRecStory"];
 
-function show(id){
-  ["scrStart","scrListen","scrQuiz","scrResult"].forEach(s => $(s).hidden = s !== id);
-  window.scrollTo(0, 0);
-}
+function show(id){ SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); }
 function home(){ stopAll(); buildGrid(); show("scrStart"); }
 
 function buildGrid(){
@@ -473,46 +622,57 @@ function buildGrid(){
   });
 }
 
-function startStory(s){
-  unlock();
+async function startStory(s){
+  unlock(); quiet();
   story = s;
   session = { listens:0, slowest:store.rate, firstTry:0, results:[] };
   player.sents = [s.title + "."].concat(s.text);
-  player.idx = 0; player.playing = false; player.done = false;
+  player.idx = 0; player.playing = false; player.done = false; player.mode = "tts";
+  if (recKeys.has(kStory(s.id))){
+    const r = await getRec(kStory(s.id));
+    if (r){
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(r.blob); audio.src = audioUrl; audioDur = r.dur;
+      player.mode = "audio";
+    }
+  }
   $("lTitle").textContent = s.icon + " " + s.title;
   $("btnToQuiz").disabled = true;
   $("lDots").innerHTML = player.sents.map(() => "<i></i>").join("");
+  $("lDots").hidden = player.mode === "audio";
+  $("lBar").hidden = player.mode !== "audio";
   show("scrListen"); render();
 }
 
 function finishListening(){
   player.playing = false; player.done = true; player.idx = player.sents.length;
-  session.listens++;
+  if (session) session.listens++;
   $("btnToQuiz").disabled = false;
   render();
 }
 
 function render(){
   const listenVisible = !$("scrListen").hidden;
-  const sp = player.playing;
-  // großer Knopf
+  const sp = isPlaying();
   $("bigPlay").innerHTML = sp ? IC.pause : IC.play;
   $("bigPlay").setAttribute("aria-label", sp ? "Pause" : "Abspielen");
   $("stage").classList.toggle("speaking", sp && listenVisible);
   let st;
   if (sp) st = "Hör gut zu …";
   else if (player.done) st = "Fertig! Jetzt kommen die Fragen.";
-  else if (player.idx > 0) st = "Pause. Tippe zum Weiterhören.";
+  else if (started()) st = "Pause. Tippe zum Weiterhören.";
   else st = "Tippe auf den Knopf und hör gut zu!";
   $("lStatus").textContent = st;
-  // Fortschritt
-  [...$("lDots").children].forEach((d, i) => {
-    d.className = (player.done || i < player.idx) ? "done" : (sp && i === player.idx ? "now" : "");
-  });
-  // Mini-Player
-  $("miniPlay").innerHTML = (sp ? IC.pause : IC.play) + `<span class="playlbl">${sp ? "Pause" : (player.idx > 0 && !player.done ? "Weiterhören" : "Geschichte hören")}</span>`;
+  if (player.mode === "audio"){
+    const d = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : audioDur;
+    $("lBarFill").style.width = (player.done ? 100 : d ? Math.min(100, audio.currentTime / d * 100) : 0) + "%";
+  } else {
+    [...$("lDots").children].forEach((d, i) => {
+      d.className = (player.done || i < player.idx) ? "done" : (sp && i === player.idx ? "now" : "");
+    });
+  }
+  $("miniPlay").innerHTML = (sp ? IC.pause : IC.play) + `<span class="playlbl">${sp ? "Pause" : (started() && !player.done ? "Weiterhören" : "Geschichte hören")}</span>`;
   $("mini").classList.toggle("speaking", sp);
-  // Tempo
   document.querySelectorAll("[data-speed] button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.rate === store.rate)));
 }
 
@@ -534,6 +694,7 @@ function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ cons
 function startQuiz(){
   stopAll();
   player.idx = 0; player.done = false;
+  if (player.mode === "audio") audio.currentTime = 0;
   qi = 0; session.results = []; session.firstTry = 0;
   $("mini").hidden = !store.relisten;
   show("scrQuiz"); showQuestion();
@@ -554,9 +715,13 @@ function showQuestion(){
     b.onclick = () => choose(b, o);
     box.appendChild(b);
   });
-  if (store.autoRead) sayLines([q]);
+  if (store.autoRead){
+    if (recKeys.has(kQ(story.id, qi))) playKey(kQ(story.id, qi), store.rate);
+    else sayLines([q]);
+  }
 }
 function readQuestion(){
+  if (recKeys.has(kQ(story.id, qi))){ playKey(kQ(story.id, qi), store.rate); return; }
   const q = story.q[qi][0];
   sayLines([q].concat(order.map((o, i) => "ABC"[i] + ": " + o.t + ".")));
 }
@@ -570,7 +735,7 @@ function choose(btn, o){
     if (tries === 1) session.firstTry++;
     $("feedback").textContent = tries === 1 ? "Richtig! Super zugehört! ⭐" : "Richtig! Gut gemacht!";
     $("feedback").className = "feedback ok";
-    tone(true); sayLines(["Richtig!"]);
+    tone(true); feedbackSay(["Richtig!"]);
     lockAnswers(); $("btnNext").hidden = false;
   } else {
     btn.classList.add("wrong", "shake"); btn.disabled = true;
@@ -581,20 +746,17 @@ function choose(btn, o){
       right.classList.add("right");
       $("feedback").textContent = "Die richtige Antwort ist grün.";
       $("feedback").className = "feedback no";
-      sayLines(["Die richtige Antwort ist: " + order.find(x => x.right).t]);
+      feedbackSay(["Die richtige Antwort ist: " + order.find(x => x.right).t]);
       lockAnswers(); $("btnNext").hidden = false;
     } else {
       $("feedback").textContent = "Noch nicht. Versuch es nochmal!";
       $("feedback").className = "feedback no";
-      sayLines(["Versuch es nochmal."]);
+      feedbackSay(["Versuch es nochmal."]);
     }
   }
 }
 function lockAnswers(){ [...$("answers").children].forEach(b => { if (!b.classList.contains("right")) b.disabled = true; else b.onclick = null; }); }
-function nextQuestion(){
-  qi++;
-  if (qi < story.q.length) showQuestion(); else showResult();
-}
+function nextQuestion(){ qi++; if (qi < story.q.length) showQuestion(); else showResult(); }
 
 /* ---------- Ergebnis ---------- */
 function showResult(){
@@ -607,13 +769,123 @@ function showResult(){
   const rateTxt = session.slowest >= 1 ? "1,0× (normal)" : session.slowest >= .9 ? "0,9× (langsamer)" : "0,8× (langsam)";
   $("rTeacher").textContent = `Für Lehrkräfte: Beim 1. Versuch richtig: ${s} von ${n} · Ganz gehört: ${session.listens}-mal · Langsamstes Tempo: ${rateTxt}`;
   show("scrResult");
-  sayLines([$("rTitle").textContent + " Du hast " + s + " von " + n + " Sternen."]);
+  feedbackSay([$("rTitle").textContent + " Du hast " + s + " von " + n + " Sternen."]);
+}
+
+/* ---------- Einsprechen ---------- */
+let recStory = null, pending = null, timerId = null, deleteArmed = false;
+const fmt = sec => { sec = Math.round(sec); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); };
+
+function openRecList(){
+  stopAll(); $("settings").hidden = true;
+  $("noMic").hidden = canRecord;
+  buildRecList(); show("scrRecList");
+}
+function buildRecList(){
+  const g = $("recGrid"); g.innerHTML = "";
+  STORIES.forEach(s => {
+    const has = recKeys.has(kStory(s.id));
+    const qn = s.q.filter((_, n) => recKeys.has(kQ(s.id, n))).length;
+    const b = document.createElement("button"); b.className = "story";
+    b.innerHTML = `<span class="ico" aria-hidden="true">${s.icon}</span><span class="t">${s.title}<br><span class="chip ${has ? "ok" : ""}">${has ? "✓ eingesprochen" : "noch nicht"}</span>${qn ? ` <span class="chip ok">Fragen ${qn}/${s.q.length}</span>` : ""}</span>`;
+    b.onclick = () => openRecStory(s);
+    g.appendChild(b);
+  });
+}
+function openRecStory(s){
+  recStory = s; pending = null; deleteArmed = false;
+  $("rsTitle").textContent = s.icon + " " + s.title;
+  $("rsText").innerHTML = `<p class="rt-title">${s.title}</p>` + s.text.map(t => `<p>${t}</p>`).join("");
+  renderRecStory(); buildRecQuestions(); show("scrRecStory");
+}
+function renderRecStory(msg){
+  if (!recStory) return;
+  const k = kStory(recStory.id), has = recKeys.has(k);
+  const recording = recorder.mr && recorder.target === k;
+  $("rsRec").innerHTML = recording ? IC.stop + "Aufnahme beenden" : IC.mic + (has || pending ? "Neu aufnehmen" : "Aufnahme starten");
+  $("rsRec").classList.toggle("rec", !!recording);
+  $("rsRec").disabled = !canRecord || (recorder.mr && !recording);
+  $("rsPending").hidden = !pending || recording;
+  $("rsSaved").hidden = !has || !!pending || recording;
+  $("rsDelete").textContent = deleteArmed ? "Wirklich löschen?" : "🗑 Löschen";
+  $("rsStatus").textContent = msg || (recording ? "● Aufnahme läuft … " + fmt((Date.now() - recorder.t0) / 1000)
+    : pending ? `Aufnahme fertig (${fmt(pending.dur)}). Hör sie an und speichere sie.`
+    : has ? "✓ Gespeichert. Die App liest diese Geschichte mit deiner Stimme vor."
+    : "Noch nicht eingesprochen. Die App nutzt bis dahin die Computerstimme.");
+}
+async function toggleStoryRec(){
+  const k = kStory(recStory.id);
+  if (recorder.mr){
+    if (recorder.target !== k) return;
+    clearInterval(timerId);
+    pending = await recStop();
+    renderRecStory(); buildRecQuestions(); return;
+  }
+  stopAll(); pending = null; deleteArmed = false;
+  try{ await recStart(k); timerId = setInterval(() => renderRecStory(), 500); renderRecStory(); buildRecQuestions(); }
+  catch(e){ renderRecStory(micError(e)); }
+}
+function buildRecQuestions(){
+  const box = $("rsQuestions"); box.innerHTML = "";
+  recStory.q.forEach((q, n) => {
+    const k = kQ(recStory.id, n), has = recKeys.has(k), recording = recorder.mr && recorder.target === k;
+    const row = document.createElement("div"); row.className = "qrec";
+    row.innerHTML = `<p>${n + 1}. ${q[0]}</p>`;
+    const r = document.createElement("button"); r.className = "btn small" + (recording ? " rec" : "");
+    r.innerHTML = recording ? IC.stop + "Stopp" : IC.mic + (has ? "Neu" : "Aufnehmen");
+    r.disabled = !canRecord || (recorder.mr && !recording);
+    r.onclick = () => toggleQRec(n);
+    const p = document.createElement("button"); p.className = "btn small"; p.innerHTML = IC.play + "Anhören";
+    p.disabled = !has || !!recorder.mr; p.onclick = () => playKey(k);
+    const d = document.createElement("button"); d.className = "btn small"; d.textContent = "🗑";
+    d.setAttribute("aria-label", "Frage-Aufnahme löschen");
+    d.disabled = !has || !!recorder.mr;
+    d.onclick = async () => { if (d.dataset.armed){ await deleteRec(k); buildRecQuestions(); } else { d.dataset.armed = "1"; d.textContent = "Löschen?"; } };
+    row.append(r, p, d); box.appendChild(row);
+  });
+}
+async function toggleQRec(n){
+  const k = kQ(recStory.id, n);
+  if (recorder.mr){
+    if (recorder.target !== k) return;
+    const out = await recStop();
+    if (out.dur > 0.5) await saveRec(k, out.blob, out.dur).catch(() => {});
+    buildRecQuestions(); renderRecStory(); return;
+  }
+  stopAll();
+  try{ await recStart(k); buildRecQuestions(); renderRecStory(); }
+  catch(e){ renderRecStory(micError(e)); }
+}
+
+/* Sicherung: Aufnahmen als Datei speichern / laden */
+function blobToDataURL(b){ return new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(b); }); }
+async function exportBackup(){
+  const keys = [...recKeys];
+  if (!keys.length){ $("backupMsg").textContent = "Es gibt noch keine Aufnahmen."; return; }
+  $("backupMsg").textContent = "Sicherung wird erstellt …";
+  const items = [];
+  for (const k of keys){ const r = await getRec(k); if (r) items.push({k, dur:r.dur, data: await blobToDataURL(r.blob)}); }
+  const file = new Blob([JSON.stringify({app:"hoerabenteuer", v:1, items})], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(file); a.download = "hoerabenteuer-aufnahmen.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  $("backupMsg").textContent = `Sicherung mit ${items.length} Aufnahmen erstellt. Lege sie in „Dateien“ ab.`;
+}
+async function importBackup(file){
+  try{
+    const data = JSON.parse(await file.text());
+    if (data.app !== "hoerabenteuer") throw 0;
+    for (const it of data.items){ const blob = await (await fetch(it.data)).blob(); await saveRec(it.k, blob, it.dur); }
+    buildRecList();
+    $("backupMsg").textContent = `${data.items.length} Aufnahmen geladen.`;
+  }catch(e){ $("backupMsg").textContent = "Diese Datei ist keine HörAbenteuer-Sicherung."; }
 }
 
 /* ---------- Einstellungen ---------- */
 function openSettings(){
   $("optGaps").checked = store.gaps; $("optAutoRead").checked = store.autoRead;
   $("optRelisten").checked = store.relisten; $("optSounds").checked = store.sounds;
+  $("optSpoken").checked = store.spokenFeedback;
   $("resetHint").hidden = true; $("settings").hidden = false;
 }
 $("btnSettings").onclick = openSettings;
@@ -621,9 +893,10 @@ $("btnCloseSettings").onclick = () => { $("settings").hidden = true; };
 $("settings").onclick = e => { if (e.target.id === "settings") $("settings").hidden = true; };
 $("voiceSel").onchange = e => { voice = voices.find(v => v.voiceURI === e.target.value) || voice; store.voice = voice ? voice.voiceURI : ""; save(); };
 $("btnTestVoice").onclick = () => sayLines(["Hallo! So klinge ich. Hör gut zu!"]);
-[["optGaps","gaps"],["optAutoRead","autoRead"],["optRelisten","relisten"],["optSounds","sounds"]]
+[["optGaps","gaps"],["optAutoRead","autoRead"],["optRelisten","relisten"],["optSounds","sounds"],["optSpoken","spokenFeedback"]]
   .forEach(([id, k]) => $(id).onchange = e => { store[k] = e.target.checked; save(); });
 $("btnReset").onclick = () => { store.best = {}; save(); buildGrid(); $("resetHint").hidden = false; };
+$("btnOpenRec").onclick = openRecList;
 
 /* ---------- Verknüpfungen ---------- */
 document.querySelectorAll("[data-home]").forEach(b => b.onclick = home);
@@ -633,12 +906,11 @@ $("btnRandom").onclick = () => {
 };
 $("bigPlay").onclick = togglePlay;
 $("btnRestart").innerHTML = IC.restart + "Von vorn";
-$("btnRestart").onclick = () => playFrom(0);
+$("btnRestart").onclick = restart;
 $("btnToQuiz").onclick = startQuiz;
-$("miniPlay").onclick = () => { togglePlay(); };
+$("miniPlay").onclick = togglePlay;
 $("miniRestart").innerHTML = IC.restart + "Von vorn";
-$("miniRestart").onclick = () => playFrom(0);
-// Bei den Fragen zählt ein komplettes Nochmal-Hören mit, schaltet aber nichts frei
+$("miniRestart").onclick = restart;
 $("btnSay").innerHTML = IC.speaker;
 $("btnSay").onclick = readQuestion;
 $("btnNext").onclick = nextQuestion;
@@ -647,10 +919,30 @@ $("btnNextStory").onclick = () => {
   const i = STORIES.findIndex(s => s.id === story.id);
   startStory(STORIES[(i + 1) % STORIES.length]);
 };
-document.addEventListener("visibilitychange", () => { if (document.hidden && player.playing) togglePlay(); });
+$("btnRecBack").onclick = () => { if (recorder.mr) return; stopAll(); buildRecList(); show("scrRecList"); };
+$("rsRec").onclick = toggleStoryRec;
+$("rsListen").onclick = () => pending && playBlob(pending.blob);
+$("rsSave").onclick = async () => {
+  try{ await saveRec(kStory(recStory.id), pending.blob, pending.dur); pending = null; renderRecStory(); }
+  catch(e){ renderRecStory("Speichern hat nicht geklappt. Ist der Speicher des iPads voll?"); }
+};
+$("rsDiscard").onclick = () => { pending = null; clip.pause(); renderRecStory(); };
+$("rsPlaySaved").onclick = () => playKey(kStory(recStory.id));
+$("rsDelete").onclick = async () => {
+  if (!deleteArmed){ deleteArmed = true; renderRecStory(); return; }
+  deleteArmed = false; await deleteRec(kStory(recStory.id)); renderRecStory();
+};
+$("btnExport").onclick = exportBackup;
+$("btnImport").onclick = () => $("importFile").click();
+$("importFile").onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ""; };
+document.addEventListener("visibilitychange", () => { if (document.hidden && isPlaying()) togglePlay(); });
 
 if (!hasSpeech) $("noSpeech").hidden = false;
 buildSpeed(); buildGrid(); render();
+(async () => {
+  await DB.open(); await refreshKeys();
+  try{ if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+})();
 </script>
 </body>
 </html>
