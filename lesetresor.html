@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lese-Tresor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF5EA; --paper:#FFFDF8; --ink:#2A2733; --muted:#6B6577; --line:#E8DFCF;
+  --vault:#1F3A4D; --vault2:#2C5470; --gold:#E8B04A; --ok:#2E8B57; --okbg:#E3F4EA;
+  --bad:#C8553D; --badbg:#FBE9E4; --accent:#3B6EA5; --mark:#FFE58A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Andika","Trebuchet MS",sans-serif;font-size:19px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,.baloo{font-family:"Baloo 2","Andika",sans-serif;line-height:1.2;margin:0}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 40px}
+
+/* Header */
+.hero{background:linear-gradient(160deg,var(--vault),var(--vault2));color:#fff;padding:28px 16px 34px;text-align:center;border-radius:0 0 28px 28px;margin-bottom:22px}
+.hero h1{font-size:2.3rem;font-weight:800;letter-spacing:.5px}
+.hero h1 span{color:var(--gold)}
+.hero p{margin:8px auto 0;max-width:520px;opacity:.92;font-size:1.02rem}
+.hero .total{display:inline-block;margin-top:14px;background:rgba(255,255,255,.14);padding:6px 16px;border-radius:999px;font-weight:700}
+
+/* Cards */
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:16px;text-align:left;display:flex;gap:14px;align-items:flex-start;transition:transform .15s,border-color .15s;width:100%}
+.card:active{transform:scale(.98)}
+.card .emo{font-size:2.6rem;width:64px;height:64px;flex:0 0 64px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:color-mix(in srgb,var(--c) 14%,#fff)}
+.card h3{font-size:1.2rem;color:var(--c)}
+.card .theme{font-size:.85rem;color:var(--muted)}
+.bar{height:10px;background:var(--line);border-radius:999px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c);border-radius:999px}
+.card .meta{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-top:6px}
+.badge-done{font-weight:700;color:var(--ok)}
+
+/* Top bar */
+.top{display:flex;align-items:center;gap:10px;padding:14px 0 10px;position:sticky;top:0;background:var(--bg);z-index:5}
+.back{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:6px 14px;font-weight:700}
+.top .ttl{flex:1;min-width:0}
+.top .ttl h2{font-size:1.15rem;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dots{display:flex;gap:6px;margin-top:4px}
+.dots b{width:26px;height:8px;border-radius:999px;background:var(--line)}
+.dots b.on{background:var(--c)}
+.dots b.now{background:color-mix(in srgb,var(--c) 45%,#fff)}
+
+/* Reading */
+.paper{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:22px 20px;margin-top:6px}
+.paper h3{font-size:1.05rem;color:var(--muted);margin-bottom:10px;font-weight:600}
+.story p{margin:0 0 1em;font-size:1.15rem;line-height:1.75}
+.story p:last-child{margin-bottom:0}
+.recap{background:color-mix(in srgb,var(--c) 8%,#fff);border-left:5px solid var(--c);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:1rem;color:var(--muted)}
+.recap b{color:var(--ink)}
+.btn{display:block;width:100%;border:none;border-radius:18px;padding:16px 18px;font-weight:700;font-size:1.1rem;margin-top:16px;position:relative;overflow:hidden}
+.btn.primary{background:var(--c,var(--accent));color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--c,var(--accent)) 70%,#000)}
+.btn.primary:active{transform:translateY(2px);box-shadow:0 2px 0 color-mix(in srgb,var(--c,var(--accent)) 70%,#000)}
+.btn:disabled{background:#CFC8BB;box-shadow:none;color:#fff;cursor:default}
+.btn .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.28);width:0;transition:width .5s linear}
+.btn .lbl{position:relative}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.link{background:none;border:none;color:var(--muted);text-decoration:underline;padding:10px;display:block;margin:6px auto 0;font-size:1rem}
+.navrow{display:flex;gap:10px}
+.navrow .btn{flex:1}
+
+/* Quiz */
+.locks{display:flex;justify-content:center;gap:12px;font-size:2.1rem;margin:4px 0 10px}
+.locks span{display:inline-block;transition:transform .3s}
+.locks span.open{animation:pop .6s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.5) rotate(-12deg)}100%{transform:scale(1)}}
+.qnum{font-size:.9rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.qcard h2{font-size:1.35rem;margin:6px 0 16px;font-family:"Andika",sans-serif;font-weight:700}
+.answers{display:flex;flex-direction:column;gap:10px}
+.ans{background:#fff;border:3px solid var(--line);border-radius:16px;padding:14px 16px;text-align:left;font-size:1.08rem;transition:border-color .15s,background .15s}
+.ans.sel{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,#fff)}
+.ans .no{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--line);align-items:center;justify-content:center;font-weight:700;margin-right:10px;font-size:.95rem}
+.ans.sel .no{background:var(--c);color:#fff}
+.wordrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:1.15rem}
+.wordrow input{flex:1;min-width:160px;font-family:inherit;font-size:1.2rem;padding:12px 14px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
+.wordrow input:focus{outline:none;border-color:var(--c)}
+.hint{font-size:.92rem;color:var(--muted);margin-top:8px}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:14px;font-weight:700;display:none}
+.feedback.ok{display:block;background:var(--okbg);color:var(--ok)}
+.feedback.soft{display:block;background:#FFF4D6;color:#8A6110}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+/* Overlay */
+.ov{position:fixed;inset:0;background:rgba(20,28,38,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:0}
+@media(min-width:620px){.ov{align-items:center;padding:20px}}
+.sheet{background:var(--paper);width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:22px 20px 26px}
+@media(min-width:620px){.sheet{border-radius:24px}}
+.sheet h2{font-size:1.4rem;margin-bottom:6px}
+.sheet .story p{font-size:1.08rem}
+mark{background:var(--mark);padding:1px 3px;border-radius:4px;box-shadow:0 0 0 2px var(--mark)}
+.passage{background:#fff;border:2px dashed var(--gold);border-radius:16px;padding:14px 16px;margin:12px 0}
+.timer{display:flex;align-items:center;gap:14px;margin-top:6px}
+.ring{width:64px;height:64px;flex:0 0 64px;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.bad{color:var(--bad)}
+
+/* Unlock / Done */
+.center{text-align:center}
+.big{font-size:5rem;line-height:1;margin:10px 0}
+.stars{font-size:1.8rem;letter-spacing:4px;margin:8px 0}
+.vaultdoor{animation:swing 1s ease-out}
+@keyframes swing{0%{transform:scale(.5) rotate(-30deg);opacity:0}60%{transform:scale(1.15) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+
+/* Adults */
+.foot{text-align:center;margin-top:26px}
+.hold{background:none;border:2px solid var(--line);border-radius:999px;padding:8px 18px;color:var(--muted);font-size:.9rem;position:relative;overflow:hidden}
+.hold i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--line)}
+.hold span{position:relative}
+table{width:100%;border-collapse:collapse;font-size:.95rem;margin:8px 0 14px}
+th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:700}
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.set select{font-family:inherit;font-size:1rem;padding:6px 10px;border-radius:10px;border:2px solid var(--line);background:#fff}
+.small{font-size:.88rem;color:var(--muted)}
+.danger{background:var(--badbg);color:var(--bad);border:none;border-radius:12px;padding:10px 14px;font-weight:700;margin:4px 6px 4px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/*DATA_START*/
+const STORIES = [
+{
+ id:"villa", titel:"Die Spürnasen: Licht in der Villa", emoji:"🔍", thema:"Detektive", farbe:"#6C4AB6",
+ abzeichen:"Spürnasen-Abzeichen", abzeichenEmoji:"🕵️",
+ teile:[
+  {text:[
+   "Ben, Mira und Tim sind die Spürnasen. So nennen sich die drei Freunde, seit sie im letzten Sommer die verschwundene Katze von Frau Kessler gefunden haben. Ihre Zentrale ist ein alter Bauwagen am Ende von Tims Garten. Dort gibt es einen wackeligen Tisch, drei Stühle, eine Taschenlampe und ein dickes Notizbuch für alle Hinweise.",
+   "„Ich habe einen neuen Fall für uns“, sagt Mira an einem kalten Dienstag im Oktober. Sie lässt ihr Fahrrad ins Gras fallen und schnauft. „Die Villa Lindner! Dort brennt nachts Licht.“",
+   "Ben runzelt die Stirn. „Das kann nicht sein. Frau Lindner wohnt doch seit dem Frühling im Altenheim. Das Haus steht leer.“",
+   "„Eben!“, ruft Mira. „Mein Bruder hat es gestern um zehn Uhr abends gesehen. Ein kleines Licht, das sich im ersten Stock hin und her bewegt hat.“",
+   "Tim schreibt alles in das Notizbuch. Dann klappt er es zu. „Heute Abend gehen wir hin. Aber nur bis zum Gartenzaun. Wir beobachten nur.“",
+   "Um halb neun stehen die drei Spürnasen hinter der dicken Hecke vor der Villa. Es ist dunkel und still. Nur der Wind rauscht in den Bäumen. Mira zittert ein bisschen, aber nicht nur vor Kälte. Plötzlich stößt Ben sie an. „Da! Schaut mal nach oben!“ Hinter einem Fenster im ersten Stock flackert ein Licht. Und davor bewegt sich ein großer, dunkler Schatten …"
+  ], fragen:[
+   {t:"mc", q:"Wo ist die Zentrale der Spürnasen?", a:["In einem alten Bauwagen in Tims Garten","Im Keller von Bens Haus","In der Villa Lindner","In einem Baumhaus im Wald"], b:"Ihre Zentrale ist ein alter Bauwagen am Ende von Tims Garten."},
+   {t:"mc", q:"Warum ist es seltsam, dass in der Villa Licht brennt?", a:["Weil Frau Lindner im Altenheim wohnt und das Haus leer steht","Weil die Villa keinen Strom hat","Weil Frau Lindner nachts immer schläft","Weil die Villa abgerissen werden soll"], b:"Frau Lindner wohnt doch seit dem Frühling im Altenheim. Das Haus steht leer."},
+   {t:"wort", q:"Wer hat das Licht zuerst gesehen?", pre:"Miras", l:["Bruder"], b:"Mein Bruder hat es gestern um zehn Uhr abends gesehen."},
+   {t:"mc", q:"Was haben die Kinder an diesem Abend vor?", a:["Sie wollen nur vom Gartenzaun aus beobachten.","Sie wollen in die Villa einsteigen.","Sie wollen die Polizei rufen.","Sie wollen Frau Lindner besuchen."], b:"Aber nur bis zum Gartenzaun. Wir beobachten nur."}
+  ]},
+  {text:[
+   "Die drei halten den Atem an. Der Schatten bleibt kurz stehen. Dann geht das Licht aus. „Das war eine Taschenlampe“, flüstert Tim. „Da ist wirklich jemand drin!“",
+   "Ben zeigt auf den Weg zur Haustür. Im Licht der Straßenlaterne sieht man Fußspuren im feuchten Boden. Sie sind groß, und an manchen Stellen kleben rote Erdklumpen. „Rote Erde?“, wundert sich Mira. „Die gibt es hier im Garten doch gar nicht. Hier ist alles braun.“",
+   "Tim macht schnell ein Foto mit seinem Handy. Dann entdeckt er noch etwas. Am Straßenrand parkt ein weißer Lieferwagen. Auf der Seite steht in grünen Buchstaben: Gärtnerei Grünblatt. „Wer arbeitet denn nachts im Garten?“, fragt Ben leise.",
+   "In diesem Moment knarrt die Gartentür der Villa. Sie steht einen Spalt weit offen. Mira schaut die anderen an. „Nur ganz kurz gucken“, wispert sie. „Nur bis zur Terrasse.“",
+   "Langsam schleichen sie über den Rasen. Die Terrassentür ist nicht abgeschlossen. Tim leuchtet mit der Taschenlampe hinein. Ein großes Zimmer mit Möbeln unter weißen Tüchern. Es riecht nach Staub. Ben macht einen Schritt hinein, dann noch einen. Die anderen folgen ihm. Da kracht es hinter ihnen. Die Terrassentür ist zugefallen. Und als Tim an der Klinke zieht, bewegt sie sich keinen Millimeter."
+  ], fragen:[
+   {t:"mc", q:"Was war das Licht im ersten Stock?", a:["Eine Taschenlampe","Eine Kerze","Ein Fernseher","Eine Lichterkette"], b:"„Das war eine Taschenlampe“, flüstert Tim."},
+   {t:"mc", q:"Was ist an den Fußspuren besonders?", a:["An ihnen klebt rote Erde.","Sie sind ganz klein.","Es sind Pfotenabdrücke.","Sie führen zum Bauwagen."], b:"an manchen Stellen kleben rote Erdklumpen"},
+   {t:"wort", q:"Wie heißt die Gärtnerei auf dem Lieferwagen?", pre:"Gärtnerei", l:["Grünblatt"], b:"Gärtnerei Grünblatt"},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Mira erzählt vom Licht in der Villa.","Die Kinder sehen einen Schatten am Fenster.","Tim fotografiert die Fußspuren.","Die Terrassentür fällt zu."]}
+  ]},
+  {text:[
+   "„Wir sind eingesperrt!“, flüstert Mira. Ihr Herz klopft so laut, dass sie glaubt, die anderen können es hören. „Keine Panik“, sagt Ben, obwohl seine Stimme auch zittert. „Es gibt bestimmt noch einen anderen Ausgang.“",
+   "Vorsichtig gehen sie durch das Zimmer. Tim leuchtet mit der Taschenlampe auf den Boden. Dort liegen wieder die roten Erdklumpen. Sie führen in den Flur und weiter zu einer schmalen Treppe, die nach unten in den Keller geht.",
+   "„Seht mal“, sagt Mira und zeigt auf die Wand. Dort hängen viele alte Bilder. Aber an einer Stelle ist nur ein heller Fleck auf der Tapete. Darunter steht ein leerer Bilderrahmen auf dem Boden. „Hier hat ein Bild gehangen“, sagt Ben. „Und jemand hat es mitgenommen.“",
+   "Tim holt sein Handy heraus. „Ich rufe meine Mutter an. Sie soll …“ Aber das Display bleibt schwarz. Der Akku ist leer.",
+   "Da hören sie ein Geräusch. Es kommt aus dem Keller. Erst ein Rumpeln, dann Schritte auf der Treppe. Langsam, Stufe für Stufe, kommen sie nach oben. Ben knipst die Taschenlampe aus. Die drei drücken sich in eine dunkle Ecke hinter ein großes Sofa. Die Schritte kommen näher. Eine tiefe Stimme brummt: „Ich weiß, dass hier jemand ist.“"
+  ], fragen:[
+   {t:"mc", q:"Wohin führen die roten Erdklumpen im Haus?", a:["Zur Treppe in den Keller","In die Küche","Zur Haustür","In den ersten Stock"], b:"Sie führen in den Flur und weiter zu einer schmalen Treppe, die nach unten in den Keller geht."},
+   {t:"mc", q:"Was entdeckt Mira an der Wand?", a:["Einen hellen Fleck, wo ein Bild gehangen hat","Ein Loch in der Wand","Einen geheimen Schalter","Eine Nachricht von Frau Lindner"], b:"Aber an einer Stelle ist nur ein heller Fleck auf der Tapete."},
+   {t:"mc", q:"Warum kann Tim seine Mutter nicht anrufen?", a:["Der Akku ist leer.","Er hat im Haus kein Netz.","Er kennt die Nummer nicht.","Das Handy ist ins Wasser gefallen."], b:"Der Akku ist leer."},
+   {t:"wort", q:"Wo verstecken sich die drei?", pre:"Hinter einem großen", l:["Sofa"], b:"hinter ein großes Sofa"}
+  ]},
+  {text:[
+   "Der Lichtstrahl einer Taschenlampe wandert durch das Zimmer. Er streift das Sofa, die Tücher, den leeren Rahmen. Dann bleibt er stehen – genau auf Bens Turnschuh, der hinter dem Sofa hervorschaut.",
+   "„Kommt raus“, sagt die tiefe Stimme. Zitternd stehen die Spürnasen auf. Vor ihnen steht ein großer Mann mit einer Mütze. Er trägt Gummistiefel. Und an den Stiefeln klebt rote Erde.",
+   "Doch bevor der Mann noch etwas sagen kann, klingelt es Sturm an der Haustür. Dann hört man laute Stimmen: „Polizei! Aufmachen!“ Der Mann erschrickt und lässt die Taschenlampe fallen. Er rennt zur Hintertür, aber dort warten schon zwei Polizisten.",
+   "Später sitzen die Spürnasen mit einer Decke um die Schultern in der Küche der Villa. Miras Bruder hatte sich Sorgen gemacht, weil sie nicht nach Hause kamen. Er hatte die Polizei gerufen. Kommissarin Weber erklärt: „Der Mann hat in der Gärtnerei gearbeitet und wusste, dass das Haus leer steht. Im Keller haben wir das Bild und viele andere wertvolle Sachen gefunden. Er wollte alles mit dem Lieferwagen wegbringen.“",
+   "Tim zeigt ihr das Foto von den Fußspuren. Die Kommissarin nickt anerkennend. „Gute Arbeit, ihr drei. Aber versprecht mir eins: Beim nächsten Mal ruft ihr uns, bevor ihr in ein fremdes Haus geht.“ Die Spürnasen nicken. Und am nächsten Tag schreibt Tim in das Notizbuch: Fall Villa Lindner – gelöst!"
+  ], fragen:[
+   {t:"mc", q:"Wie entdeckt der Mann die Kinder?", a:["Er sieht Bens Turnschuh hinter dem Sofa.","Mira muss niesen.","Tims Handy klingelt.","Er hört Ben husten."], b:"genau auf Bens Turnschuh, der hinter dem Sofa hervorschaut"},
+   {t:"mc", q:"Woran erkennen die Kinder, dass der Mann die Fußspuren gemacht hat?", a:["An seinen Gummistiefeln klebt rote Erde.","Er trägt eine grüne Jacke.","Er hat das Bild in der Hand.","Er sagt es ihnen."], b:"Und an den Stiefeln klebt rote Erde."},
+   {t:"mc", q:"Wer hat die Polizei gerufen?", a:["Miras Bruder","Frau Lindner","Tims Mutter","Ein Nachbar"], b:"Er hatte die Polizei gerufen."},
+   {t:"mc", q:"Was sollen die Kinder der Kommissarin versprechen?", a:["Beim nächsten Mal zuerst die Polizei zu rufen","Nie wieder Detektiv zu spielen","Abends immer zu Hause zu bleiben","Frau Lindner im Altenheim zu besuchen"], b:"Beim nächsten Mal ruft ihr uns, bevor ihr in ein fremdes Haus geht."}
+  ]}
+ ]
+},
+{
+ id:"kira", titel:"Kira findet den Weg", emoji:"🐕", thema:"Hunde", farbe:"#B86B1E",
+ abzeichen:"Pfoten-Held", abzeichenEmoji:"🐾",
+ teile:[
+  {text:[
+   "Jonas wohnt mit seinen Eltern und seiner kleinen Schwester Lena auf einem Bauernhof am Waldrand. Sein bester Freund hat vier Pfoten, ein langes, goldbraunes Fell und eine weiße Brust. Es ist Kira, die Hündin der Familie. Kira ist klug. Sie kann Türen mit der Pfote öffnen, und sie bringt jeden Morgen die Zeitung vom Briefkasten ins Haus.",
+   "An einem Samstag im November ist es draußen grau und neblig. Papa repariert den Traktor in der Scheune. Mama ist mit dem Auto zum Einkaufen gefahren. „Pass bitte ein bisschen auf Lena auf“, hatte sie zu Jonas gesagt.",
+   "Lena ist fünf Jahre alt. Sie spielt im Hof mit ihrem roten Ball. Jonas sitzt auf der Bank vor dem Haus und liest in seinem Lieblingscomic. Es ist gerade so spannend. Er liest eine Seite, dann noch eine und noch eine.",
+   "Plötzlich bellt Kira. Einmal, zweimal, ganz laut. Jonas schaut hoch. Der rote Ball liegt mitten im Hof. Aber Lena ist nicht mehr da.",
+   "„Lena?“, ruft Jonas. Keine Antwort. Er läuft um das Haus herum, in den Garten, zum Hühnerstall. Nichts. Der Nebel ist jetzt so dicht, dass er kaum bis zum Zaun sehen kann. Dann entdeckt Jonas, dass das Gartentor zum Wald weit offen steht. Und hinter dem Tor beginnt der dunkle, neblige Wald, in dem man sich so leicht verirren kann …"
+  ], fragen:[
+   {t:"mc", q:"Wie sieht Kira aus?", a:["Sie hat langes, goldbraunes Fell und eine weiße Brust.","Sie ist klein und schwarz.","Sie hat kurzes, graues Fell.","Sie ist weiß mit braunen Punkten."], b:"ein langes, goldbraunes Fell und eine weiße Brust"},
+   {t:"mc", q:"Was macht Kira jeden Morgen?", a:["Sie bringt die Zeitung ins Haus.","Sie weckt Lena auf.","Sie jagt die Hühner.","Sie holt die Brötchen."], b:"sie bringt jeden Morgen die Zeitung vom Briefkasten ins Haus"},
+   {t:"mc", q:"Warum merkt Jonas nicht, dass Lena weggeht?", a:["Er liest in seinem spannenden Comic.","Er hilft Papa in der Scheune.","Er schläft auf der Bank.","Er spielt mit Kira."], b:"liest in seinem Lieblingscomic"},
+   {t:"wort", q:"Was liegt mitten im Hof, als Lena weg ist?", pre:"Der rote", l:["Ball"], b:"Der rote Ball liegt mitten im Hof."}
+  ]},
+  {text:[
+   "„Papa! Lena ist weg!“, schreit Jonas und rennt zur Scheune. Papa lässt sofort den Schraubenschlüssel fallen. Er holt seine Taschenlampe und ruft Mama auf dem Handy an. „Wir suchen im Wald“, sagt er. „Ruf bitte die Nachbarn an.“",
+   "Kira steht schon am Gartentor. Sie hält die Nase dicht über den Boden und schnüffelt. Dann winselt sie leise und schaut Jonas an. „Sie hat Lenas Spur gefunden!“, ruft Jonas. „Such, Kira! Such Lena!“",
+   "Kira läuft los. Papa und Jonas laufen hinterher. Der Waldweg ist matschig, und die Bäume sehen im Nebel aus wie graue Riesen. Nach einer Weile bleibt Kira an einer Weggabelung stehen. Links geht es zum Bach. Rechts geht es zum alten Steinbruch. Kira schnüffelt in beide Richtungen.",
+   "Dann findet Jonas etwas im Matsch: eine kleine rosa Haarspange mit einem Schmetterling. „Die gehört Lena!“, ruft er. Kira bellt und rennt nach rechts, in Richtung Steinbruch. Papa wird blass. „Der Steinbruch ist gefährlich“, sagt er. „Dort geht es steil nach unten.“",
+   "Sie laufen, so schnell sie können. Kira ist so schnell, dass sie bald im Nebel verschwindet. Nur ihr Bellen ist noch zu hören. Dann wird es plötzlich still im Wald. Ganz still. Und aus der Ferne hören Jonas und Papa ein leises Weinen."
+  ], fragen:[
+   {t:"mc", q:"Was macht Papa, als er hört, dass Lena weg ist?", a:["Er holt die Taschenlampe und ruft Mama an.","Er repariert weiter den Traktor.","Er schickt Jonas ins Haus.","Er wartet, bis Lena zurückkommt."], b:"Er holt seine Taschenlampe und ruft Mama auf dem Handy an."},
+   {t:"wort", q:"Was findet Jonas im Matsch?", pre:"Eine kleine rosa", l:["Haarspange","Spange"], b:"eine kleine rosa Haarspange mit einem Schmetterling"},
+   {t:"mc", q:"Wohin führt der rechte Weg an der Gabelung?", a:["Zum alten Steinbruch","Zum Bach","Zurück zum Bauernhof","Ins Nachbardorf"], b:"Rechts geht es zum alten Steinbruch."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Lena spielt mit ihrem roten Ball.","Kira bellt ganz laut.","Jonas findet die Haarspange.","Kira verschwindet im Nebel."]}
+  ]},
+  {text:[
+   "„Lena!“, ruft Papa. „Wo bist du?“ – „Hier unten!“, kommt eine dünne Stimme zurück. Am Rand des Steinbruchs steht Kira. Sie bellt und schaut immer wieder nach unten.",
+   "Papa leuchtet mit der Taschenlampe in die Tiefe. Etwa drei Meter unter ihnen sitzt Lena auf einem schmalen Felsvorsprung. Ihre Jacke ist schmutzig, und sie hält sich an einer Wurzel fest. „Ich wollte den Hasen streicheln“, schluchzt sie. „Und dann bin ich abgerutscht.“",
+   "„Bleib ganz still sitzen, mein Schatz“, sagt Papa ruhig. „Wir holen dich.“ Er legt sich auf den Bauch und streckt den Arm aus. Aber er kommt nicht bis zu Lena. Es fehlt fast ein ganzer Meter.",
+   "„Wir brauchen ein Seil“, sagt Papa. „Jonas, du bleibst hier und redest mit Lena. Ich laufe zurück zum Hof.“ – „Das dauert viel zu lange!“, ruft Jonas. Da springt Kira plötzlich auf, dreht sich um und rast in den Nebel davon. „Kira! Komm zurück!“, ruft Jonas. Doch Kira ist schon weg.",
+   "Ein kleiner Stein löst sich unter Lena und fällt in die Tiefe. Man hört ihn lange nicht aufschlagen. Lena wimmert. „Jonas, die Wurzel wackelt!“"
+  ], fragen:[
+   {t:"mc", q:"Wo sitzt Lena?", a:["Auf einem schmalen Felsvorsprung im Steinbruch","Oben auf einem hohen Baum","Am Ufer vom Bach","In einer Höhle im Wald"], b:"sitzt Lena auf einem schmalen Felsvorsprung"},
+   {t:"mc", q:"Warum ist Lena in den Wald gelaufen?", a:["Sie wollte einen Hasen streicheln.","Sie wollte ihren Ball holen.","Sie hat Kira gesucht.","Sie wollte zu Mama."], b:"„Ich wollte den Hasen streicheln“, schluchzt sie."},
+   {t:"mc", q:"Warum kann Papa Lena nicht hochziehen?", a:["Sein Arm ist fast einen Meter zu kurz.","Er hat sich am Fuß verletzt.","Lena will nicht.","Es ist zu dunkel."], b:"Es fehlt fast ein ganzer Meter."},
+   {t:"mc", q:"Was macht Kira, als Papa ein Seil holen will?", a:["Sie rennt in den Nebel davon.","Sie springt zu Lena hinunter.","Sie legt sich neben Jonas.","Sie bellt einen Hasen an."], b:"rast in den Nebel davon"}
+  ]},
+  {text:[
+   "„Halt dich gut fest und schau zu mir hoch, nicht nach unten“, sagt Jonas. Er versucht, ganz ruhig zu klingen. Dann erzählt er Lena die Geschichte aus seinem Comic, von dem kleinen Ritter und dem Drachen. Lena hört zu und schnieft. Sie bewegt sich nicht.",
+   "Die Minuten kommen Jonas vor wie Stunden. Dann hört er ein Bellen im Wald. Und Stimmen! Aus dem Nebel kommt Kira angerannt. Hinter ihr laufen Mama und Herr Becker, der Nachbar. Herr Becker trägt ein dickes Seil über der Schulter.",
+   "„Kira stand plötzlich vor unserem Auto auf dem Feldweg“, keucht Mama. „Sie hat gebellt und ist immer wieder ein Stück vorgelaufen. Da wussten wir, dass wir ihr folgen müssen.“",
+   "Herr Becker knotet das Seil um einen dicken Baum. Papa bindet es sich um den Bauch und klettert vorsichtig ein Stück hinunter. Dann greift er Lena unter den Armen. Mama und Herr Becker ziehen am Seil, Stück für Stück. Endlich sind beide oben.",
+   "Lena fällt Jonas um den Hals. Dann kniet sie sich hin und drückt Kira ganz fest. Kira leckt ihr über das Gesicht. Am Abend bekommt Kira eine extra große Wurst. Und Jonas legt seinen Comic weg. Heute will er lieber neben Kira auf dem Teppich liegen – neben der echten Heldin des Tages."
+  ], fragen:[
+   {t:"mc", q:"Wie beruhigt Jonas seine Schwester?", a:["Er erzählt ihr die Geschichte aus seinem Comic.","Er singt ihr ein Lied vor.","Er wirft ihr Schokolade zu.","Er klettert zu ihr hinunter."], b:"Dann erzählt er Lena die Geschichte aus seinem Comic"},
+   {t:"mc", q:"Wen bringt Kira mit?", a:["Mama und den Nachbarn Herrn Becker","Die Feuerwehr","Oma und Opa","Einen Förster mit seinem Hund"], b:"Hinter ihr laufen Mama und Herr Becker, der Nachbar."},
+   {t:"mc", q:"Woher wusste Mama, dass sie Kira folgen muss?", a:["Kira hat gebellt und ist immer wieder ein Stück vorgelaufen.","Jonas hat sie angerufen.","Sie hat Lena weinen gehört.","Herr Becker hat es ihr gesagt."], b:"Sie hat gebellt und ist immer wieder ein Stück vorgelaufen."},
+   {t:"wort", q:"Was bekommt Kira am Abend?", pre:"Eine extra große", l:["Wurst"], b:"eine extra große Wurst"}
+  ]}
+ ]
+},
+{
+ id:"perla", titel:"Perla, der weiße Delfin", emoji:"🐬", thema:"Meer & Delfine", farbe:"#1A7F9E",
+ abzeichen:"Meeresretter-Abzeichen", abzeichenEmoji:"🌊",
+ teile:[
+  {text:[
+   "Nele verbringt die Herbstferien bei ihrem Opa auf einer kleinen Insel im Meer. Opa Hinnerk war früher Fischer. Jetzt fährt er nur noch zum Spaß mit seinem alten blauen Boot hinaus. Das Boot heißt Möwe.",
+   "„Heute zeige ich dir etwas ganz Besonderes“, sagt Opa am ersten Morgen. „Aber nur, wenn du ganz leise bist.“ Sie fahren hinaus aufs Meer. Die Sonne glitzert auf den Wellen, und der Wind riecht nach Salz.",
+   "Nach einer Weile stellt Opa den Motor ab. Das Boot schaukelt sanft. „Und jetzt warten wir“, flüstert er. Nele wartet. Und wartet. Gerade als sie ungeduldig wird, taucht neben dem Boot etwas auf. Etwas Weißes, Glänzendes.",
+   "Es ist ein Delfin! Aber kein grauer, wie Nele sie aus Büchern kennt. Dieser Delfin ist ganz weiß, fast wie Perlmutt. „Das ist Perla“, sagt Opa leise. „Sie kommt seit drei Jahren in unsere Bucht. Weiße Delfine sind sehr, sehr selten.“",
+   "Perla schwimmt einmal um das Boot herum. Dann hebt sie den Kopf aus dem Wasser und macht ein Geräusch, das wie Kichern klingt. Nele lacht vor Freude. Von diesem Tag an fahren die beiden jeden Morgen hinaus. Doch am vierten Tag kommt Perla nicht. Sie warten eine ganze Stunde. Dann sieht Nele es: Weit draußen, bei den Felsen, wirbelt das Wasser. Etwas Weißes zappelt dort – und es sieht so aus, als könnte es nicht mehr richtig auftauchen."
+  ], fragen:[
+   {t:"wort", q:"Wie heißt Opas Boot?", pre:"Das Boot heißt", l:["Möwe"], b:"Das Boot heißt Möwe."},
+   {t:"mc", q:"Was war Opa Hinnerk früher von Beruf?", a:["Fischer","Kapitän auf einem großen Schiff","Leuchtturmwärter","Lehrer"], b:"Opa Hinnerk war früher Fischer."},
+   {t:"mc", q:"Was ist an Perla besonders?", a:["Sie ist ganz weiß.","Sie kann sprechen.","Sie ist winzig klein.","Sie hat nur eine Flosse."], b:"Dieser Delfin ist ganz weiß, fast wie Perlmutt."},
+   {t:"mc", q:"Was passiert am vierten Tag?", a:["Perla kommt nicht zum Boot.","Opas Boot geht kaputt.","Nele fährt nach Hause.","Es regnet den ganzen Tag."], b:"Doch am vierten Tag kommt Perla nicht."}
+  ]},
+  {text:[
+   "„Schnell, Opa!“, ruft Nele. Opa startet den Motor, und die Möwe fährt auf die Felsen zu. Je näher sie kommen, desto besser kann Nele sehen, was los ist. Perla hat sich in einem alten Fischernetz verfangen. Das Netz ist um ihre Flosse und ihren Bauch gewickelt.",
+   "„Oh nein“, murmelt Opa. „Solche alten Netze treiben manchmal herrenlos im Meer. Sie sind gefährlich für die Tiere.“ Perla zappelt und schlägt mit dem Schwanz. Aber je mehr sie zappelt, desto fester zieht sich das Netz zu.",
+   "„Delfine müssen zum Atmen an die Oberfläche“, erklärt Opa schnell. „Wenn das Netz sie nach unten zieht, bekommt sie keine Luft.“ Nele bekommt einen Kloß im Hals. „Dann müssen wir sie befreien! Sofort!“",
+   "Opa holt sein altes Fischermesser aus der Kiste. Er lehnt sich weit über den Bootsrand. Perla ist ganz nah. Nele sieht ihr dunkles Auge, das sie anschaut. Es sieht aus, als würde Perla um Hilfe bitten.",
+   "Opa schneidet die erste Schnur durch. Dann die zweite. Doch plötzlich kommt eine hohe Welle. Das Boot schwankt heftig. Opa rutscht aus und hält sich gerade noch fest. Aber das Messer gleitet ihm aus der Hand und versinkt im dunklen Wasser. Und Perla wird vom Netz langsam nach unten gezogen …"
+  ], fragen:[
+   {t:"mc", q:"Warum kann Perla nicht richtig auftauchen?", a:["Sie hat sich in einem alten Fischernetz verfangen.","Sie ist krank.","Ein Hai jagt sie.","Sie hat sich an den Felsen verletzt."], b:"Perla hat sich in einem alten Fischernetz verfangen."},
+   {t:"mc", q:"Warum ist das Netz so gefährlich für Perla?", a:["Delfine müssen zum Atmen an die Oberfläche.","Das Netz ist giftig.","Das Netz ist sehr heiß.","Perla kann darin nichts sehen."], b:"„Delfine müssen zum Atmen an die Oberfläche“, erklärt Opa schnell."},
+   {t:"mc", q:"Was passiert, wenn Perla zappelt?", a:["Das Netz zieht sich noch fester zu.","Das Netz reißt kaputt.","Opa fällt ins Wasser.","Sie schwimmt davon."], b:"desto fester zieht sich das Netz zu"},
+   {t:"mc", q:"Warum fällt Opa das Messer aus der Hand?", a:["Eine hohe Welle bringt das Boot zum Schwanken.","Perla stößt ihn an.","Nele erschreckt ihn.","Das Messer ist zu schwer."], b:"Doch plötzlich kommt eine hohe Welle."}
+  ]},
+  {text:[
+   "„Das Messer!“, schreit Nele. Opa starrt ins Wasser. „Weg“, sagt er. „Es ist weg.“ Nele schaut sich verzweifelt im Boot um. Eine Angel, ein Eimer, eine Rettungsweste, Opas Thermoskanne. Und dann fällt ihr etwas ein.",
+   "„Opa, die Schere! In meinem Rucksack ist die Bastelschere!“ Am Vortag hatte Nele Muscheln gesammelt und daraus eine Kette gebastelt. Die kleine Schere mit den gelben Griffen ist noch in der Seitentasche.",
+   "Opa nimmt die Schere. Sie ist klein, aber scharf. Er beugt sich wieder über den Bootsrand. „Halt meine Jacke fest, Nele! Ganz fest!“ Nele hält mit beiden Händen und stemmt die Füße gegen den Boden des Bootes.",
+   "Schnipp. Eine Schnur ist durch. Schnipp. Noch eine. Perla taucht kurz auf und holt pustend Luft. Dann wird sie wieder nach unten gezogen. „Schneller, Opa!“, ruft Nele.",
+   "Noch drei Schnüre. Noch zwei. Opas Arm ist schon bis zur Schulter nass. Da bemerkt Nele, wie dunkle Wolken über den Himmel ziehen. Der Wind wird stärker. Und Opa sagt mit ernster Stimme: „Die letzte Schnur ist ganz eng um ihre Flosse gewickelt. Da komme ich mit der Schere nicht ran, ohne Perla zu verletzen.“"
+  ], fragen:[
+   {t:"mc", q:"Was benutzt Opa statt des Messers?", a:["Neles Bastelschere","Eine Angel","Seine Zähne","Ein Stück Glas"], b:"In meinem Rucksack ist die Bastelschere!"},
+   {t:"wort", q:"Was hat Nele am Vortag gesammelt?", pre:"Sie hat", post:"gesammelt.", l:["Muscheln","Muschel"], b:"Am Vortag hatte Nele Muscheln gesammelt"},
+   {t:"mc", q:"Wie hilft Nele ihrem Opa?", a:["Sie hält seine Jacke ganz fest.","Sie steuert das Boot.","Sie springt ins Wasser.","Sie ruft mit dem Handy Hilfe."], b:"Nele hält mit beiden Händen und stemmt die Füße gegen den Boden des Bootes."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Nele sieht Perla zum ersten Mal.","Perla hat sich im Netz verfangen.","Das Messer versinkt im Wasser.","Opa schneidet mit der Schere."]}
+  ]},
+  {text:[
+   "Nele erinnert sich an etwas, das Opa gesagt hat: Je mehr Perla zappelt, desto fester zieht sich das Netz zu. „Opa“, flüstert sie. „Wenn sie ganz ruhig wird, wird das Netz vielleicht lockerer.“",
+   "Nele beugt sich über den Rand und spricht ganz leise und sanft mit Perla. „Ruhig, Perla. Wir helfen dir. Ganz ruhig.“ Sie weiß nicht, ob der Delfin sie versteht. Aber Perla hört auf zu zappeln. Sie treibt still im Wasser und schaut Nele an.",
+   "Und tatsächlich: Das Netz um die Flosse wird ein kleines bisschen lockerer. Opa schiebt vorsichtig zwei Finger darunter und schneidet. Schnipp! Die letzte Schnur ist durch.",
+   "Perla ist frei! Sie schießt aus dem Wasser, hoch in die Luft, und landet mit einem riesigen Platsch neben dem Boot. Nele und Opa werden von oben bis unten nass. Aber das ist ihnen egal. Sie lachen und jubeln.",
+   "Opa fischt das alte Netz mit einem Haken aus dem Wasser, damit sich kein anderes Tier darin verfängt. Dann fahren sie schnell nach Hause, bevor der Sturm kommt. Am nächsten Morgen ist das Meer wieder ruhig. Und neben der Möwe taucht etwas Weißes auf. Perla schwimmt eine Runde um das Boot und kichert. Nele ist sicher: Das ist ihr Dankeschön."
+  ], fragen:[
+   {t:"mc", q:"An welchen Satz von Opa erinnert sich Nele?", a:["Je mehr Perla zappelt, desto fester zieht sich das Netz zu.","Weiße Delfine sind sehr selten.","Halt meine Jacke fest!","Heute zeige ich dir etwas Besonderes."], b:"Je mehr Perla zappelt, desto fester zieht sich das Netz zu."},
+   {t:"mc", q:"Was macht Perla, als Nele leise mit ihr spricht?", a:["Sie hört auf zu zappeln.","Sie schwimmt weg.","Sie beißt ins Netz.","Sie springt ins Boot."], b:"Aber Perla hört auf zu zappeln."},
+   {t:"mc", q:"Warum fischt Opa das alte Netz aus dem Wasser?", a:["Damit sich kein anderes Tier darin verfängt","Weil er es wieder benutzen will","Weil es ihm gehört","Weil Nele es behalten möchte"], b:"damit sich kein anderes Tier darin verfängt"},
+   {t:"mc", q:"Wie bedankt sich Perla am nächsten Morgen – so glaubt Nele?", a:["Sie schwimmt um das Boot und kichert.","Sie bringt einen Fisch mit.","Sie springt über das Boot.","Sie bringt das Messer zurück."], b:"Perla schwimmt eine Runde um das Boot und kichert."}
+  ]}
+ ]
+},
+{
+ id:"luna", titel:"Alarm auf der Mondstation", emoji:"🚀", thema:"Weltraum", farbe:"#3D3F96",
+ abzeichen:"Mond-Medaille", abzeichenEmoji:"🌙",
+ teile:[
+  {text:[
+   "Im Jahr 2085 ist es nichts Besonderes mehr, auf dem Mond zu wohnen. Trotzdem ist Ella furchtbar aufgeregt. Zum ersten Mal darf sie ihre Mutter für zwei Wochen auf die Mondstation Luna 7 begleiten. Ihre Mutter ist Forscherin. Sie untersucht, wie Pflanzen auf dem Mond wachsen.",
+   "Der Flug dauert drei Tage. Als Ella endlich ankommt, drückt sie ihre Nase an das große runde Fenster. Draußen ist alles grau und staubig. Der Himmel ist schwarz, obwohl die Sonne scheint. Und ganz weit weg schwebt eine blau-weiße Kugel: die Erde.",
+   "„Willkommen auf Luna 7!“, piepst eine Stimme. Vor Ella rollt ein kleiner Roboter. Er ist so groß wie ein Mülleimer, rund und silbern, und hat zwei Greifarme. Auf seinem Bildschirm leuchten zwei freundliche Augen. „Ich bin Pixel. Ich zeige dir alles.“",
+   "Pixel führt Ella durch die Station. Sie sehen die Küche, die Schlafkabinen und den Fitnessraum. Am schönsten findet Ella das Gewächshaus. Dort wachsen unter hellen Lampen Tomaten, Salat und sogar Erdbeeren. „Die Pflanzen helfen uns, frische Luft zu machen“, erklärt Pixel.",
+   "Am dritten Abend liegt Ella in ihrer Schlafkabine. Sie ist fast eingeschlafen. Da gibt es einen lauten Knall. Die ganze Station zittert. Das Licht geht aus, und eine rote Lampe beginnt zu blinken. Eine Computerstimme sagt: „Achtung! Achtung! Druckverlust in Abschnitt C!“ Ella setzt sich erschrocken auf. Abschnitt C – dort ist das Gewächshaus. Und dort arbeitet ihre Mutter heute Abend noch …"
+  ], fragen:[
+   {t:"wort", q:"Wie heißt die Mondstation?", pre:"Luna", l:["7","sieben"], b:"Mondstation Luna 7"},
+   {t:"mc", q:"Was untersucht Ellas Mutter?", a:["Wie Pflanzen auf dem Mond wachsen","Wie Steine auf dem Mond entstehen","Wie Roboter denken","Wie lange man ohne Schlaf auskommt"], b:"Sie untersucht, wie Pflanzen auf dem Mond wachsen."},
+   {t:"mc", q:"Wie sieht Pixel aus?", a:["Rund und silbern, mit zwei Greifarmen","Groß und eckig, mit vier Beinen","Klein und grün, mit Flügeln","Wie ein Mensch mit Helm"], b:"rund und silbern, und hat zwei Greifarme"},
+   {t:"mc", q:"Warum macht sich Ella Sorgen um ihre Mutter?", a:["Ihre Mutter arbeitet im Gewächshaus, wo der Druckverlust ist.","Ihre Mutter ist zur Erde geflogen.","Ihre Mutter ist krank.","Ihre Mutter hat Ella vergessen."], b:"Abschnitt C – dort ist das Gewächshaus."}
+  ]},
+  {text:[
+   "Ella springt aus dem Bett. Im Flur blinkt überall das rote Licht. Pixel rollt auf sie zu. „Ella, du musst in die Schutzkabine“, piepst er. „Das ist die Regel bei Alarm.“ – „Aber meine Mama!“, ruft Ella. „Sie ist im Gewächshaus!“",
+   "Pixel blinkt nachdenklich. Dann sagt er: „Ich prüfe das.“ Auf seinem Bildschirm erscheint ein Plan der Station. Abschnitt C leuchtet rot. „Ein kleiner Meteorit hat ein Loch in die Wand gerissen“, erklärt Pixel. „Die Luft entweicht langsam. Die Türen zu Abschnitt C haben sich automatisch geschlossen, damit die restliche Station sicher bleibt.“",
+   "„Und Mama?“ Pixel zeigt ein kleines grünes Licht in Abschnitt C. „Deine Mutter ist dort. Ihr Notfall-Armband sendet. Es geht ihr gut. Aber sie ist eingeschlossen.“",
+   "Ella holt tief Luft. „Kann man das Loch flicken?“ – „Ja“, sagt Pixel. „Mit einem Flickenset. Das liegt im Werkzeugraum. Ich kann es durch den engen Wartungsschacht zum Gewächshaus bringen. Aber dafür brauche ich Hilfe. Meine Greifarme reichen nicht bis zur Klappe oben am Schacht.“",
+   "Gemeinsam rennen sie zum Werkzeugraum. Ella findet das Flickenset in einer gelben Kiste. Dann hebt sie Pixel hoch und öffnet die Klappe zum Schacht. Pixel rollt mit dem Set hinein. „Ich melde mich über Funk“, piepst er. Ella wartet. Eine Minute. Zwei Minuten. Dann knistert der Funk: „Ella … mein Akku … nur noch drei Prozent …“ Danach ist es still."
+  ], fragen:[
+   {t:"mc", q:"Was hat den Alarm ausgelöst?", a:["Ein kleiner Meteorit hat ein Loch in die Wand gerissen.","Ein Feuer in der Küche","Pixel hat einen falschen Knopf gedrückt.","Ein Raumschiff ist gelandet."], b:"Ein kleiner Meteorit hat ein Loch in die Wand gerissen"},
+   {t:"mc", q:"Warum haben sich die Türen zu Abschnitt C geschlossen?", a:["Damit die restliche Station sicher bleibt","Weil es Nacht ist","Weil Ellas Mutter es so wollte","Weil Pixel sie abgeschlossen hat"], b:"damit die restliche Station sicher bleibt"},
+   {t:"mc", q:"Woher weiß Pixel, dass es Ellas Mutter gut geht?", a:["Ihr Notfall-Armband sendet ein Signal.","Sie hat Ella angerufen.","Pixel kann durch Wände sehen.","Ella hört sie rufen."], b:"Ihr Notfall-Armband sendet."},
+   {t:"wort", q:"Welche Farbe hat die Kiste mit dem Flickenset?", pre:"Die Kiste ist", l:["gelb","gelbe","gelben"], b:"in einer gelben Kiste"}
+  ]},
+  {text:[
+   "„Pixel? Pixel!“, ruft Ella in den Funk. Keine Antwort. Ella leuchtet mit einer Taschenlampe in den Schacht. Er ist eng und dunkel. Ganz hinten sieht sie ein schwaches Blinken. Das ist Pixel. Er ist mitten im Schacht stehen geblieben.",
+   "Da knackt der Funk. Es ist Kommandant Okafor aus der Zentrale. „Ella, ich sehe dich auf der Kamera. Der Schacht ist zu eng für uns Erwachsene. Aber du könntest es schaffen. Die Luft im Schacht ist sicher. Traust du dich?“ Ella schluckt. Dann sagt sie: „Ja.“",
+   "Sie steckt ein Ladekabel in ihre Hosentasche und kriecht in den Schacht. Es ist kalt, und die Metallwände drücken gegen ihre Schultern. Meter für Meter schiebt sie sich vorwärts. Endlich erreicht sie Pixel. Seine Augen auf dem Bildschirm sind fast ganz dunkel.",
+   "Ella steckt das Ladekabel in Pixels Anschluss und das andere Ende in eine Steckdose an der Schachtwand. Ein leises Summen. Pixels Augen flackern. „Ella?“, piepst er schwach. „Du bist gekommen!“ – „Natürlich“, sagt Ella. „Wir sind doch ein Team.“",
+   "Nach ein paar Minuten hat Pixel wieder genug Strom. Zusammen kriechen und rollen sie bis zum Ende des Schachts. Dort ist ein kleines Fenster zum Gewächshaus. Ella schaut hindurch. Sie sieht ihre Mutter. Sie trägt eine Sauerstoffmaske und winkt. Aber hinter ihr, an der Wand, ist der Riss größer geworden. Die Tomatenpflanzen flattern im Luftzug. Und Pixel sagt: „Wir müssen uns beeilen. Die Luft reicht nur noch für zehn Minuten.“"
+  ], fragen:[
+   {t:"mc", q:"Warum kriecht Ella in den Schacht und nicht ein Erwachsener?", a:["Der Schacht ist zu eng für Erwachsene.","Die Erwachsenen schlafen alle.","Ella hat es niemandem gesagt.","Pixel will nur mit Ella arbeiten."], b:"Der Schacht ist zu eng für uns Erwachsene."},
+   {t:"wort", q:"Wie heißt der Kommandant der Station?", pre:"Kommandant", l:["Okafor"], b:"Kommandant Okafor"},
+   {t:"mc", q:"Was nimmt Ella mit in den Schacht?", a:["Ein Ladekabel","Eine Sauerstoffmaske","Das Flickenset","Eine Tomate"], b:"Sie steckt ein Ladekabel in ihre Hosentasche"},
+   {t:"mc", q:"Was sagt Ella zu Pixel?", a:["„Wir sind doch ein Team.“","„Du bist ein kaputter Roboter.“","„Ich will nach Hause.“","„Ich habe Angst im Dunkeln.“"], b:"Wir sind doch ein Team."}
+  ]},
+  {text:[
+   "Neben dem Fenster gibt es ein kleines Schleusenfach. Damit kann man Dinge ins Gewächshaus schicken, ohne dass Luft entweicht. Pixel legt das Flickenset hinein und drückt auf einen Knopf. Zisch! Auf der anderen Seite nimmt Ellas Mutter das Set heraus.",
+   "Ella sieht durch das Fenster zu. Ihre Mutter klappt das Set auf. Darin ist ein großer silberner Flicken, der wie ein Pflaster aussieht. Sie zieht die Schutzfolie ab und drückt den Flicken fest auf den Riss. Dann sprüht sie noch grauen Schaum über die Ränder.",
+   "Die Tomatenpflanzen hören auf zu flattern. Pixel piept fröhlich. „Der Druck steigt wieder. Das Loch ist dicht!“ Kurz darauf meldet sich Kommandant Okafor: „Gute Arbeit, ihr drei. Ich öffne jetzt die Türen zu Abschnitt C.“",
+   "Mit einem Zischen gleitet die Tür auf. Ellas Mutter nimmt die Maske ab und schließt Ella ganz fest in die Arme. „Du warst unglaublich mutig“, flüstert sie. „Pixel auch“, sagt Ella. Pixel lässt auf seinem Bildschirm ein kleines rotes Herz erscheinen.",
+   "Am nächsten Tag bekommen Ella und Pixel eine Medaille. Darauf steht: Für Mut und Teamarbeit auf Luna 7. Ella hängt sie über ihr Bett. Und jedes Mal, wenn sie durch das runde Fenster auf die blaue Erde schaut, denkt sie: Das muss ich unbedingt meiner Klasse erzählen. Ob die mir das glauben?"
+  ], fragen:[
+   {t:"mc", q:"Wie kommt das Flickenset zu Ellas Mutter?", a:["Durch ein kleines Schleusenfach","Ella wirft es durch die Tür.","Pixel rollt ins Gewächshaus.","Durch das Loch in der Wand"], b:"Neben dem Fenster gibt es ein kleines Schleusenfach."},
+   {t:"mc", q:"Wie sieht der Flicken aus?", a:["Wie ein großes silbernes Pflaster","Wie ein bunter Teppich","Wie ein Stück Holz","Wie ein roter Luftballon"], b:"ein großer silberner Flicken, der wie ein Pflaster aussieht"},
+   {t:"mc", q:"Woran merkt man, dass das Loch dicht ist?", a:["Die Tomatenpflanzen hören auf zu flattern.","Die rote Lampe wird grün.","Ella hört einen Knall.","Die Erde wird größer."], b:"Die Tomatenpflanzen hören auf zu flattern."},
+   {t:"wort", q:"Was lässt Pixel auf seinem Bildschirm erscheinen?", pre:"Ein kleines rotes", l:["Herz"], b:"ein kleines rotes Herz"}
+  ]}
+ ]
+},
+{
+ id:"polizei", titel:"Kommissarin Demir und die Fahrraddiebe", emoji:"🚓", thema:"Polizei", farbe:"#2456A6",
+ abzeichen:"Polizeistern", abzeichenEmoji:"⭐",
+ teile:[
+  {text:[
+   "Luis hat zum Geburtstag ein neues Fahrrad bekommen. Es ist dunkelblau, hat 21 Gänge und eine Klingel, die wie ein Fußball aussieht. Unten auf den Rahmen hat Luis einen Aufkleber mit einem gelben Blitz geklebt. Jeden Morgen fährt er stolz damit zur Schule und schließt es am Fahrradständer ab.",
+   "Am Donnerstag nach der sechsten Stunde rennt Luis als Erster aus dem Schulhaus. Er freut sich auf das Fußballtraining. Doch am Fahrradständer bleibt er wie angewurzelt stehen. Sein Fahrrad ist weg. Nur das Schloss liegt noch auf dem Boden. Es ist durchgeschnitten.",
+   "„Das gibt es doch nicht“, flüstert Luis. Seine Freundin Aylin kommt dazu. „Bei mir in der Straße wurden letzte Woche auch zwei Fahrräder geklaut“, sagt sie. „Und beim Schwimmbad eins.“",
+   "Luis' Mutter ruft die Polizei an. Am Nachmittag klingelt es an der Tür. Eine Polizistin in Uniform steht davor. „Guten Tag, ich bin Kommissarin Demir“, sagt sie freundlich. „Ich möchte dir ein paar Fragen zu deinem Fahrrad stellen.“",
+   "Luis erzählt ihr alles: von den Gängen, der Fußballklingel und dem Aufkleber. Kommissarin Demir schreibt alles auf. „Seit einem Monat werden in unserer Stadt viele Fahrräder gestohlen“, sagt sie. „Wir glauben, es ist immer dieselbe Bande. Aber wir wissen nicht, wo sie die Räder verstecken.“ Sie gibt Luis eine kleine Karte mit ihrer Telefonnummer. „Wenn dir etwas auffällt, ruf mich sofort an. Aber versuch nie, selbst einen Dieb zu fangen.“",
+   "Am Samstag geht Luis mit Aylin über den Flohmarkt auf dem Marktplatz. Plötzlich packt Aylin ihn am Arm. „Luis! Da hinten! Ist das nicht …?“"
+  ], fragen:[
+   {t:"mc", q:"Woran kann man Luis' Fahrrad gut erkennen?", a:["An dem Aufkleber mit dem gelben Blitz","An dem roten Korb","An den Blumen am Lenker","An einem Namensschild"], b:"einen Aufkleber mit einem gelben Blitz"},
+   {t:"mc", q:"Was liegt noch am Fahrradständer?", a:["Das durchgeschnittene Schloss","Die Fußballklingel","Ein Zettel vom Dieb","Luis' Helm"], b:"Nur das Schloss liegt noch auf dem Boden."},
+   {t:"wort", q:"Wie heißt die Polizistin?", pre:"Kommissarin", l:["Demir"], b:"ich bin Kommissarin Demir"},
+   {t:"mc", q:"Was soll Luis tun, wenn ihm etwas auffällt?", a:["Sofort die Kommissarin anrufen","Den Dieb selbst festhalten","Es seiner Lehrerin erzählen","Ein Foto in der Zeitung zeigen"], b:"Wenn dir etwas auffällt, ruf mich sofort an."}
+  ]},
+  {text:[
+   "Zwischen einem Stand mit alten Büchern und einem Stand mit Spielzeug stehen viele Fahrräder in einer Reihe. Ein Mann mit Sonnenbrille und einer grünen Mütze verkauft sie. Ganz am Ende steht ein dunkelblaues Fahrrad.",
+   "Luis' Herz klopft schneller. Das Fahrrad sieht genauso aus wie seins. Aber die Fußballklingel fehlt. Stattdessen ist da eine ganz normale silberne Klingel. „Vielleicht ist es doch nicht deins“, sagt Aylin leise. „Es gibt viele blaue Fahrräder.“",
+   "Luis schleicht näher heran. Er tut so, als würde er sich die Bücher am Nachbarstand ansehen. Dann bückt er sich und schaut unten auf den Rahmen. Dort hat jemand mit schwarzer Farbe über eine Stelle gesprüht. Aber an einer Ecke ist die Farbe abgeblättert. Darunter schimmert etwas Gelbes hervor. Ein Stück von einem Blitz!",
+   "„Das ist es!“, flüstert Luis. „Das ist mein Fahrrad!“ Am liebsten würde er es sofort packen und wegfahren. Aber Aylin hält ihn zurück. „Nicht!“, zischt sie. „Denk an das, was Kommissarin Demir gesagt hat. Wir sollen sie anrufen, wenn uns etwas auffällt.“",
+   "Luis holt die Karte aus seiner Hosentasche. Aylin leiht ihm ihr Handy. Mit zitternden Fingern tippt er die Nummer. Es klingelt einmal, zweimal. Da dreht sich der Mann mit der grünen Mütze um. Er schaut genau in ihre Richtung. Dann nimmt er sein eigenes Handy und sagt etwas hinein. Und schon schiebt er die Fahrräder hastig zu einem grauen Lastwagen …"
+  ], fragen:[
+   {t:"mc", q:"Was ist anders an dem Fahrrad auf dem Flohmarkt?", a:["Es hat eine normale silberne Klingel statt der Fußballklingel.","Es ist rot statt blau.","Es hat nur drei Gänge.","Es hat keinen Sattel."], b:"Stattdessen ist da eine ganz normale silberne Klingel."},
+   {t:"mc", q:"Wie findet Luis heraus, dass es sein Fahrrad ist?", a:["Unter der schwarzen Farbe schimmert ein Stück vom gelben Blitz.","Sein Name steht auf dem Sattel.","Der Verkäufer sagt es ihm.","Die Fußballklingel liegt daneben."], b:"Darunter schimmert etwas Gelbes hervor."},
+   {t:"mc", q:"Warum hält Aylin Luis zurück?", a:["Sie sollen die Kommissarin anrufen und nichts allein unternehmen.","Sie glaubt nicht, dass es sein Fahrrad ist.","Sie will das Fahrrad selbst haben.","Sie will zuerst Bücher kaufen."], b:"Wir sollen sie anrufen, wenn uns etwas auffällt."},
+   {t:"wort", q:"Welche Farbe hat die Mütze des Verkäufers?", pre:"Die Mütze ist", l:["grün","grüne","grünen"], b:"einer grünen Mütze"}
+  ]},
+  {text:[
+   "„Kommissarin Demir“, meldet sich endlich eine Stimme am Telefon. Luis spricht so schnell, dass er sich fast verhaspelt. „Hier ist Luis. Mein Fahrrad ist auf dem Flohmarkt! Der Mann lädt gerade alle Räder in einen grauen Lastwagen!“",
+   "„Bleibt, wo ihr seid“, sagt die Kommissarin ruhig. „Könnt ihr das Nummernschild erkennen?“ Luis kneift die Augen zusammen. Der Lastwagen steht schräg hinter einem Gemüsestand. Er kann nur die ersten Buchstaben sehen: IGB.",
+   "„Gut gemacht“, sagt Kommissarin Demir. „Wir sind gleich da.“ Aber der Mann ist schnell. Er hat schon fast alle Fahrräder eingeladen. Jetzt schiebt er auch Luis' Fahrrad die Rampe hinauf. Dann knallt er die Ladetür zu.",
+   "„Er fährt gleich weg!“, ruft Aylin. Luis schaut sich um. Der Marktplatz hat nur eine Ausfahrt. Und genau dort steht ein Lieferwagen vom Bäcker, der gerade Brot auslädt. Der graue Lastwagen kommt nicht vorbei. Der Mann hupt wütend.",
+   "Der Bäcker winkt nur und lädt weiter Brot aus. Da springt der Mann mit der grünen Mütze aus dem Führerhaus. Er schaut sich um. Dann sieht er Luis und Aylin, die immer noch mit dem Handy hinter dem Bücherstand stehen. Er kneift die Augen zusammen und kommt mit großen Schritten direkt auf sie zu."
+  ], fragen:[
+   {t:"wort", q:"Mit welchen Buchstaben beginnt das Nummernschild?", pre:"Es beginnt mit", l:["IGB"], b:"Er kann nur die ersten Buchstaben sehen: IGB."},
+   {t:"mc", q:"Was sagt die Kommissarin am Telefon zu den Kindern?", a:["„Bleibt, wo ihr seid.“","„Lauft dem Lastwagen hinterher.“","„Fahrt mit dem Bus nach Hause.“","„Haltet den Mann fest.“"], b:"Bleibt, wo ihr seid"},
+   {t:"mc", q:"Warum kann der Lastwagen nicht wegfahren?", a:["Ein Lieferwagen vom Bäcker steht in der Ausfahrt.","Er hat einen platten Reifen.","Die Polizei steht schon davor.","Er hat kein Benzin mehr."], b:"Und genau dort steht ein Lieferwagen vom Bäcker, der gerade Brot auslädt."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Luis' Fahrrad wird an der Schule gestohlen.","Kommissarin Demir besucht Luis zu Hause.","Luis entdeckt den gelben Blitz unter der Farbe.","Der Mann lädt die Fahrräder in den Lastwagen."]}
+  ]},
+  {text:[
+   "Luis wird ganz kalt. Aylin greift seine Hand. „Schnell, zu den Leuten!“, flüstert sie. Die beiden laufen zum Stand mit dem Spielzeug, wo viele Erwachsene stehen. Dort fühlen sie sich sicherer.",
+   "Doch der Mann kommt nicht weit. Mit Blaulicht biegen zwei Polizeiautos auf den Marktplatz. Die Türen fliegen auf. Kommissarin Demir und drei Polizisten steigen aus. Der Mann mit der grünen Mütze bleibt stehen. Er weiß, dass er verloren hat.",
+   "Im Lastwagen finden die Polizisten zwölf gestohlene Fahrräder. Und in einer Kiste unter dem Sitz liegen viele Klingeln, Lampen und Körbe. Ganz oben liegt eine Klingel, die aussieht wie ein Fußball.",
+   "„Die Bande hat die Räder umlackiert und Teile ausgetauscht, damit niemand sie wiedererkennt“, erklärt Kommissarin Demir. „Aber euren Augen ist nichts entgangen. Und ihr habt genau richtig gehandelt: Ihr habt uns angerufen und seid nicht selbst hinter dem Dieb hergelaufen.“",
+   "Eine Woche später kommt Kommissarin Demir in Luis' Klasse. Sie bringt sein Fahrrad mit. Die schwarze Farbe ist entfernt, und die Fußballklingel ist wieder dran. Die ganze Klasse klatscht. Und Luis klebt einen zweiten Aufkleber auf den Rahmen: einen kleinen Polizeistern."
+  ], fragen:[
+   {t:"mc", q:"Wohin laufen Luis und Aylin, als der Mann auf sie zukommt?", a:["Zum Spielzeugstand, wo viele Erwachsene sind","Nach Hause","Zum grauen Lastwagen","In die Bäckerei"], b:"Die beiden laufen zum Stand mit dem Spielzeug, wo viele Erwachsene stehen."},
+   {t:"wort", q:"Wie viele gestohlene Fahrräder finden die Polizisten?", pre:"Sie finden", post:"Fahrräder.", l:["zwölf","12"], b:"zwölf gestohlene Fahrräder"},
+   {t:"mc", q:"Warum hat die Bande die Räder umlackiert?", a:["Damit niemand sie wiedererkennt","Weil die alte Farbe kaputt war","Weil Schwarz schöner ist","Damit sie schneller fahren"], b:"damit niemand sie wiedererkennt"},
+   {t:"mc", q:"Was lobt die Kommissarin besonders?", a:["Dass die Kinder angerufen haben und nicht selbst hinter dem Dieb hergelaufen sind","Dass Luis so schnell rennen kann","Dass Aylin ein Handy hat","Dass die Kinder den Dieb festgehalten haben"], b:"Ihr habt uns angerufen und seid nicht selbst hinter dem Dieb hergelaufen."}
+  ]}
+ ]
+},
+{
+ id:"feuer", titel:"Einsatz für Löschzug 3", emoji:"🚒", thema:"Feuerwehr", farbe:"#C0392B",
+ abzeichen:"Feuerwehr-Abzeichen", abzeichenEmoji:"🧯",
+ teile:[
+  {text:[
+   "Pauls Tante Mia ist bei der Feuerwehr. Heute ist Tag der offenen Tür in der Feuerwache, und Paul darf den ganzen Nachmittag dabei sein. Er hat sich schon die ganze Woche darauf gefreut.",
+   "Tante Mia zeigt ihm alles. Die großen roten Fahrzeuge glänzen in der Halle. Paul darf in das Führerhaus vom Löschfahrzeug klettern. Er sieht die vielen Knöpfe, das Funkgerät und das Lenkrad, das größer ist als ein Pizzablech.",
+   "Dann zeigt Tante Mia ihm ihre Schutzkleidung. Die Jacke ist dick und schwer. „Die schützt vor Hitze und Flammen“, erklärt sie. „Und das hier ist mein Atemschutzgerät. Damit bekomme ich frische Luft, auch wenn überall Rauch ist.“ Paul probiert den Helm auf. Er rutscht ihm fast über die Nase.",
+   "„Weißt du, was bei einem Brand das Gefährlichste ist?“, fragt Tante Mia. „Das Feuer?“, rät Paul. „Nein, der Rauch“, sagt sie. „Er ist giftig. Deshalb ist es so wichtig, dass jede Wohnung einen Rauchmelder hat. Der piept, wenn es brennt, auch wenn man schläft.“",
+   "Gerade will Paul fragen, wie die lange Rutschstange funktioniert. Da schrillt plötzlich ein lauter Ton durch die ganze Wache. Ein Lautsprecher knackt. „Alarm für Löschzug 3! Brand in einer Scheune, Lindenhof, Waldstraße 12. Menschen und Tiere möglicherweise in Gefahr!“ Tante Mia rennt sofort los. „Paul, bleib bei Herrn Krause!“, ruft sie über die Schulter. Paul schaut ihr hinterher. Der Lindenhof – dort wohnt doch seine Freundin Emma …"
+  ], fragen:[
+   {t:"mc", q:"Warum ist Paul in der Feuerwache?", a:["Es ist Tag der offenen Tür, und seine Tante arbeitet dort.","Er hat einen Brand gemeldet.","Er macht eine Prüfung für die Feuerwehr.","Seine Klasse macht einen Ausflug."], b:"Heute ist Tag der offenen Tür in der Feuerwache"},
+   {t:"mc", q:"Wozu braucht Tante Mia das Atemschutzgerät?", a:["Damit sie frische Luft bekommt, auch wenn überall Rauch ist","Damit sie unter Wasser tauchen kann","Damit sie im Dunkeln besser sieht","Damit sie mit den anderen funken kann"], b:"Damit bekomme ich frische Luft, auch wenn überall Rauch ist."},
+   {t:"mc", q:"Was ist bei einem Brand am gefährlichsten – sagt Tante Mia?", a:["Der giftige Rauch","Die Flammen","Das Löschwasser","Die laute Sirene"], b:"Er ist giftig."},
+   {t:"wort", q:"Was sollte jede Wohnung haben?", pre:"Einen", l:["Rauchmelder"], b:"dass jede Wohnung einen Rauchmelder hat"}
+  ]},
+  {text:[
+   "Herr Krause ist schon älter und leitet die Jugendfeuerwehr. Er legt Paul die Hand auf die Schulter. „Keine Sorge“, sagt er. „Deine Tante und ihr Team sind die Besten.“ Durch das große Tor sieht Paul, wie die Feuerwehrleute in ihre Stiefel springen, die Jacken überziehen und in die Fahrzeuge klettern. Keine zwei Minuten später rasen sie mit Blaulicht und Martinshorn vom Hof.",
+   "„Herr Krause, auf dem Lindenhof wohnt meine Freundin Emma“, sagt Paul mit zitternder Stimme. Herr Krause überlegt kurz. Dann nimmt er seinen Autoschlüssel. „Ich muss sowieso zum Einsatzort und Ersatzschläuche bringen. Du kommst mit. Aber du bleibst die ganze Zeit im Auto oder direkt neben mir. Versprochen?“ – „Versprochen!“",
+   "Schon von Weitem sieht Paul die dicke, schwarze Rauchwolke über den Bäumen. Als sie ankommen, stellt Herr Krause das Auto weit weg vom Feuer auf eine Wiese. Die Scheune brennt lichterloh. Flammen schlagen aus dem Dach. Es knistert und kracht.",
+   "Die Feuerwehrleute rollen Schläuche aus. Wasser schießt in hohem Bogen auf das Feuer. Am Rand der Wiese steht Emma mit ihren Eltern. Sie sind in Sicherheit. Paul atmet erleichtert auf. Doch Emma weint. Paul geht mit Herrn Krause zu ihr. „Was ist los?“, fragt er.",
+   "„Flocke“, schluchzt Emma. „Unsere Katze. Sie hat heute Morgen in der Scheune ihre Babys bekommen. Vier kleine Kätzchen! Sie sind noch drin!“ Paul schaut zur Scheune. In diesem Moment kracht ein brennender Balken vom Dach herunter."
+  ], fragen:[
+   {t:"mc", q:"Wer ist Herr Krause?", a:["Der Leiter der Jugendfeuerwehr","Emmas Vater","Der Bürgermeister","Pauls Lehrer"], b:"leitet die Jugendfeuerwehr"},
+   {t:"mc", q:"Was muss Paul Herrn Krause versprechen?", a:["Dass er im Auto oder direkt neben ihm bleibt","Dass er beim Löschen hilft","Dass er niemandem davon erzählt","Dass er Emma allein sucht"], b:"Aber du bleibst die ganze Zeit im Auto oder direkt neben mir."},
+   {t:"mc", q:"Wo parkt Herr Krause das Auto?", a:["Weit weg vom Feuer auf einer Wiese","Direkt neben der Scheune","Im Hof der Feuerwache","Vor Emmas Haustür"], b:"weit weg vom Feuer auf eine Wiese"},
+   {t:"wort", q:"Wie heißt Emmas Katze?", pre:"Die Katze heißt", l:["Flocke"], b:"„Flocke“, schluchzt Emma."}
+  ]},
+  {text:[
+   "Funken fliegen durch die Luft. Herr Krause zieht Paul und Emma ein paar Schritte zurück. „Die Kätzchen!“, ruft Emma und will losrennen. Doch ihr Vater hält sie fest. „Nein, Emma. Das ist viel zu gefährlich.“",
+   "Paul denkt an das, was Tante Mia ihm erzählt hat: Feuerwehrleute haben Schutzkleidung und Atemschutz. Nur sie dürfen in ein brennendes Gebäude. „Wir müssen es der Feuerwehr sagen!“, ruft Paul. „Sofort!“",
+   "Herr Krause nickt und geht mit den Kindern schnell zum Einsatzleiter. Das ist ein Mann mit einem weißen Helm. Er steht neben dem Löschfahrzeug und spricht in sein Funkgerät. „In der Scheune sind noch eine Katze und vier Kätzchen!“, ruft Paul. „Wo genau?“, fragt der Einsatzleiter. Emma überlegt. „In der hinteren Ecke, links. In einer Kiste mit Stroh.“",
+   "Der Einsatzleiter spricht in sein Funkgerät: „Trupp 2, Tiere in der Scheune. Hintere linke Ecke, Kiste mit Stroh.“ Zwei Feuerwehrleute mit Atemschutzmasken laufen los. Einer davon ist Tante Mia! Paul erkennt sie an dem roten Streifen auf ihrem Helm.",
+   "Die beiden verschwinden im Rauch. Paul hält den Atem an. Emma drückt sich ganz fest an ihre Mutter. Eine Minute vergeht. Dann zwei. Aus der Scheune quillt immer mehr Rauch. Plötzlich gibt es ein lautes Knacken, und ein Teil des Daches stürzt ein. Genau über der Ecke, in die Tante Mia gelaufen ist."
+  ], fragen:[
+   {t:"mc", q:"Warum darf Emma nicht in die Scheune laufen?", a:["Weil es viel zu gefährlich ist","Weil die Tür abgeschlossen ist","Weil die Kätzchen schon draußen sind","Weil sie keine Schuhe anhat"], b:"Das ist viel zu gefährlich."},
+   {t:"mc", q:"Was ist Pauls gute Idee?", a:["Der Feuerwehr Bescheid zu sagen","Selbst in die Scheune zu laufen","Wasser mit einem Eimer zu holen","Die Katze ganz laut zu rufen"], b:"Wir müssen es der Feuerwehr sagen!"},
+   {t:"mc", q:"Woran erkennt man den Einsatzleiter?", a:["An seinem weißen Helm","An seiner roten Mütze","An seiner Trillerpfeife","An seinem langen Bart"], b:"Das ist ein Mann mit einem weißen Helm."},
+   {t:"mc", q:"Warum ist es wichtig, dass Emma genau sagt, wo die Kätzchen sind?", a:["Damit die Feuerwehrleute sie im Rauch schnell finden","Damit Emma selbst hineingehen kann","Damit Paul es aufschreiben kann","Damit Flocke ihren Namen hört"], b:"In der hinteren Ecke, links. In einer Kiste mit Stroh."}
+  ]},
+  {text:[
+   "„Mia!“, schreit Paul. Der Einsatzleiter drückt auf sein Funkgerät. „Trupp 2, bitte melden!“ Es rauscht. Nichts. Dann noch einmal: „Trupp 2, bitte melden!“",
+   "Endlich knackt es im Funkgerät. „Hier Trupp 2. Alles in Ordnung. Wir haben die Tiere und kommen durch das hintere Tor raus.“ Paul spürt, wie seine Beine vor Erleichterung ganz weich werden.",
+   "Kurz darauf kommen die beiden Feuerwehrleute um die Ecke der Scheune. Tante Mia trägt eine Kiste mit Stroh im Arm. Darin liegen vier winzige Kätzchen, die leise fiepen. Ihr Kollege hält eine fauchende, rußige Katze fest: Flocke.",
+   "Emma weint wieder, aber diesmal vor Freude. Ein Sanitäter untersucht die Tiere. „Ein bisschen Rauch geschluckt, aber sie sind gesund“, sagt er. Nach zwei Stunden ist das Feuer gelöscht. Die Scheune ist kaputt, aber alle Menschen und Tiere sind gerettet.",
+   "Am Abend sitzt Paul mit Tante Mia in der Feuerwache und isst Pizza. „Du hast heute genau richtig gehandelt“, sagt sie. „Du bist nicht selbst ins Feuer gelaufen, sondern hast uns gesagt, was los ist. Das ist das Wichtigste.“ Paul grinst. Und zwei Wochen später bekommt er von Emma ein Geschenk: Er darf einem der Kätzchen einen Namen geben. Er nennt es Funke."
+  ], fragen:[
+   {t:"mc", q:"Wie kommen die Feuerwehrleute aus der Scheune?", a:["Durch das hintere Tor","Durch das Dach","Durch ein Fenster","Durch die Vordertür"], b:"kommen durch das hintere Tor raus"},
+   {t:"mc", q:"Was trägt Tante Mia im Arm?", a:["Eine Kiste mit vier Kätzchen","Die Katze Flocke","Einen Feuerlöscher","Emmas Puppe"], b:"Tante Mia trägt eine Kiste mit Stroh im Arm."},
+   {t:"folge", q:"Was ist in der Geschichte passiert? Tippe in der richtigen Reihenfolge.", a:["Paul probiert den Helm auf.","Der Alarm schrillt durch die Wache.","Emma erzählt von den Kätzchen.","Tante Mia bringt die Kätzchen aus der Scheune."]},
+   {t:"wort", q:"Welchen Namen gibt Paul dem Kätzchen?", pre:"Er nennt es", l:["Funke"], b:"Er nennt es Funke."}
+  ]}
+ ]
+}
+];
+/*DATA_END*/
+
+/* ================= App ================= */
+const KEY = "lesetresor_v1";
+const $app = document.getElementById("app");
+let timers = [];
+function clearTimers(){ timers.forEach(t=>{clearInterval(t);clearTimeout(t)}); timers=[]; }
+
+function load(){
+  try{ const r = localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){}
+  return null;
+}
+let st = load() || {};
+st.s = st.s || {};
+st.set = Object.assign({pause:10, lesezeit:true, ton:true}, st.set||{});
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+function ss(id){
+  if(!st.s[id]) st.s[id] = {teil:0, phase:"read", done:false, sterne:[], fehler:[]};
+  return st.s[id];
+}
+const byId = id => STORIES.find(x=>x.id===id);
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const sum = a => (a||[]).reduce((x,y)=>x+(y||0),0);
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+
+/* Ton */
+let actx=null;
+function tone(freqs, dur){
+  if(!st.set.ton) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type="sine"; o.frequency.value=f;
+      const t0=actx.currentTime+i*0.11;
+      g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.18,t0+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+      o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0+dur+0.05);
+    });
+  }catch(e){}
+}
+const sndOk = ()=>tone([660,880],0.25);
+const sndBad = ()=>tone([220],0.3);
+const sndOpen = ()=>tone([523,659,784,1047],0.35);
+
+function setColor(c){ document.body.style.setProperty("--c", c||"var(--accent)"); }
+
+/* ---------- Übersicht ---------- */
+function home(){
+  clearTimers(); setColor(null); window.scrollTo(0,0);
+  const totalStars = STORIES.reduce((n,s)=>n+sum(ss(s.id).sterne),0);
+  const maxStars = STORIES.reduce((n,s)=>n+s.teile.length*4,0);
+  let h = `<header class="hero"><h1>Lese-<span>Tresor</span> 🔐</h1>
+    <p>Spannende Geschichten in mehreren Teilen. Jeder neue Teil ist verschlossen – beantworte 4 Fragen richtig, dann knackst du das Schloss!</p>
+    <div class="total">⭐ ${totalStars} von ${maxStars} Sternen</div></header><div class="wrap"><div class="grid">`;
+  STORIES.forEach(s=>{
+    const p = ss(s.id), n = s.teile.length;
+    const doneParts = p.done ? n : p.teil;
+    const pct = Math.round(doneParts/n*100);
+    const status = p.done ? `<span class="badge-done">${s.abzeichenEmoji} geschafft!</span>` : (doneParts===0 && p.phase==="read" ? "Neu" : `Teil ${p.teil+1} von ${n}`);
+    h += `<button class="card" style="--c:${s.farbe}" data-id="${s.id}">
+      <div class="emo">${s.emoji}</div>
+      <div style="flex:1;min-width:0"><h3>${esc(s.titel)}</h3><div class="theme">${esc(s.thema)}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="meta"><span>${status}</span><span>⭐ ${sum(p.sterne)}/${n*4}</span></div></div></button>`;
+  });
+  h += `</div><div class="foot"><button class="hold" id="hold"><i></i><span>⚙︎ Für Erwachsene (gedrückt halten)</span></button></div></div>`;
+  $app.innerHTML = h;
+  $app.querySelectorAll(".card").forEach(b=>b.onclick=()=>openStory(b.dataset.id));
+  setupHold(document.getElementById("hold"), adults);
+}
+
+function openStory(id){
+  const p = ss(id);
+  if(p.done) return read(id, 0);
+  if(p.phase==="quiz") return quiz(id);
+  if(p.phase==="unlocked") return unlocked(id);
+  read(id);
+}
+
+/* ---------- Lesen ---------- */
+function topbar(s, active){
+  const p = ss(s.id);
+  let dots = s.teile.map((_,i)=>{
+    const cls = (p.done || i<p.teil) ? "on" : (i===active ? "now" : "");
+    return `<b class="${cls}"></b>`;
+  }).join("");
+  return `<div class="top"><button class="back" id="back">← Übersicht</button>
+    <div class="ttl"><h2>${s.emoji} ${esc(s.titel)}</h2><div class="dots">${dots}</div></div></div>`;
+}
+function paras(arr){ return arr.map(t=>`<p>${esc(t)}</p>`).join(""); }
+function words(arr){ return arr.join(" ").split(/\s+/).length; }
+
+function read(id, freeIdx){
+  clearTimers(); window.scrollTo(0,0);
+  const s = byId(id), p = ss(id); setColor(s.farbe);
+  const free = p.done;
+  const idx = free ? (freeIdx||0) : p.teil;
+  const teil = s.teile[idx];
+  let recap = "";
+  if(idx>0){
+    const prev = s.teile[idx-1].text;
+    recap = `<div class="recap"><b>Was zuletzt geschah:</b> ${esc(prev[prev.length-1])}</div>`;
+  }
+  let h = `<div class="wrap">${topbar(s, idx)}<div class="paper"><h3>Teil ${idx+1} von ${s.teile.length}</h3>${recap}<div class="story">${paras(teil.text)}</div></div>`;
+  if(free){
+    h += `<div class="navrow">${idx>0?`<button class="btn ghost" id="prev">← Teil ${idx}</button>`:""}
+      ${idx<s.teile.length-1?`<button class="btn primary" id="next">Teil ${idx+2} →</button>`:`<button class="btn primary" id="fin">Zur Übersicht</button>`}</div>`;
+  } else {
+    h += `<button class="btn primary" id="go"><span class="fill" id="fill"></span><span class="lbl" id="golbl">🔐 Zum Schloss – Fragen beantworten</span></button>`;
+    if(idx>0) h += `<button class="link" id="older">📖 Frühere Teile nochmal lesen</button>`;
+  }
+  h += `</div>`;
+  $app.innerHTML = h;
+  document.getElementById("back").onclick = home;
+  if(free){
+    const pv=document.getElementById("prev"), nx=document.getElementById("next"), fi=document.getElementById("fin");
+    if(pv) pv.onclick=()=>read(id,idx-1);
+    if(nx) nx.onclick=()=>read(id,idx+1);
+    if(fi) fi.onclick=home;
+    return;
+  }
+  const older=document.getElementById("older"); if(older) older.onclick=()=>textOverlay(s, idx-1);
+  const go = document.getElementById("go"), fill=document.getElementById("fill"), lbl=document.getElementById("golbl");
+  const need = st.set.lesezeit ? Math.round(words(teil.text)*0.3) : 0; // Sekunden
+  const t0 = Date.now();
+  const startQuiz = ()=>{ p.phase="quiz"; save(); quiz(id); };
+  if(need>0){
+    go.disabled = true;
+    const tick = ()=>{
+      const el = (Date.now()-t0)/1000;
+      const left = Math.max(0, Math.ceil(need-el));
+      fill.style.width = Math.min(100, el/need*100)+"%";
+      if(left>0){ lbl.textContent = `📖 Erst in Ruhe lesen … (${left})`; }
+      else { go.disabled=false; fill.style.width="0"; lbl.textContent="🔐 Zum Schloss – Fragen beantworten"; clearTimers(); }
+    };
+    tick(); timers.push(setInterval(tick, 500));
+  }
+  go.onclick = ()=>{ if(!go.disabled) startQuiz(); };
+}
+
+/* Text-Overlay (nachsehen) */
+function textOverlay(s, upto){
+  const ov = document.createElement("div"); ov.className="ov";
+  let h = `<div class="sheet" style="--c:${s.farbe}"><h2>📖 ${esc(s.titel)}</h2>`;
+  for(let i=0;i<=upto;i++){
+    h += `<div class="paper" style="margin-top:14px"><h3>Teil ${i+1}</h3><div class="story">${paras(s.teile[i].text)}</div></div>`;
+  }
+  h += `<button class="btn primary" id="close">Schließen</button></div>`;
+  ov.innerHTML = h; document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector("#close").onclick=close;
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+}
+
+/* ---------- Fragen ---------- */
+let Q = null;
+function quiz(id){
+  clearTimers(); window.scrollTo(0,0);
+  const s = byId(id), p = ss(id); setColor(s.farbe);
+  const teil = s.teile[p.teil];
+  Q = { id, s, p, teil, list: teil.fragen.map(f=>({f, tries:0, order:null})), cur:0, opened:0, stars:0, sel:null, seq:[] };
+  Q.list.forEach(it=>prepare(it));
+  p.fehler[p.teil] = p.fehler[p.teil]||0;
+  renderQ();
+}
+function prepare(it){
+  const f = it.f;
+  if(f.t==="mc"){
+    const old = it.order ? it.order.indexOf(0) : -1;
+    let ord; do{ ord = shuffle([0,1,2,3].slice(0,f.a.length)); }while(old!==-1 && ord.indexOf(0)===old);
+    it.order = ord;
+  } else if(f.t==="folge"){
+    let ord; do{ ord = shuffle(f.a.map((_,i)=>i)); }while(ord.every((v,i)=>v===i));
+    it.order = ord;
+  }
+}
+function renderQ(){
+  const {s,p,list,cur} = Q; const it = list[cur], f = it.f;
+  Q.sel = null; Q.seq = [];
+  const locks = list.map((_,i)=>`<span class="${i<Q.opened?'':''}">${i<Q.opened?"🔓":"🔒"}</span>`).join("");
+  let body = "";
+  if(f.t==="mc"){
+    body = `<div class="answers">${it.order.map((k,n)=>`<button class="ans" data-k="${k}"><span class="no">${"ABCD"[n]}</span>${esc(f.a[k])}</button>`).join("")}</div>`;
+  } else if(f.t==="wort"){
+    body = `<div class="wordrow"><span>${esc(f.pre||"")}</span><input id="w" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Wort eintippen">${f.post?`<span>${esc(f.post)}</span>`:""}</div><div class="hint">✏️ Das Wort steht so im Text. Schreib es ab, wenn du es gefunden hast.</div>`;
+  } else if(f.t==="folge"){
+    body = `<div class="answers" id="fl">${it.order.map(k=>`<button class="ans" data-k="${k}"><span class="no">·</span>${esc(f.a[k])}</button>`).join("")}</div><button class="link" id="reset">↺ Neu anfangen</button>`;
+  }
+  $app.innerHTML = `<div class="wrap">${topbar(s,p.teil)}
+    <div class="locks" id="locks">${locks}</div>
+    <div class="paper qcard" id="qc"><div class="qnum">Schloss ${cur+1} von ${list.length}</div><h2>${esc(f.q)}</h2>${body}<div class="feedback" id="fb"></div></div>
+    <button class="btn primary" id="check" disabled>Prüfen</button>
+    <button class="link" id="peek">📖 Im Text nachsehen</button></div>`;
+  document.getElementById("back").onclick = home;
+  document.getElementById("peek").onclick = ()=>textOverlay(s, p.teil);
+  const btn = document.getElementById("check");
+  if(f.t==="mc"){
+    $app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>{
+      $app.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel"); Q.sel = +b.dataset.k; btn.disabled=false;
+    });
+  } else if(f.t==="wort"){
+    const w = document.getElementById("w");
+    w.oninput = ()=>{ btn.disabled = w.value.trim().length===0; };
+    w.onkeydown = e=>{ if(e.key==="Enter" && !btn.disabled) btn.click(); };
+  } else if(f.t==="folge"){
+    const upd = ()=>{
+      $app.querySelectorAll("#fl .ans").forEach(b=>{
+        const k=+b.dataset.k, pos=Q.seq.indexOf(k);
+        b.classList.toggle("sel", pos>-1);
+        b.querySelector(".no").textContent = pos>-1 ? pos+1 : "·";
+      });
+      btn.disabled = Q.seq.length !== f.a.length;
+    };
+    $app.querySelectorAll("#fl .ans").forEach(b=>b.onclick=()=>{
+      const k=+b.dataset.k, pos=Q.seq.indexOf(k);
+      if(pos>-1) Q.seq = Q.seq.slice(0,pos); else Q.seq.push(k);
+      upd();
+    });
+    document.getElementById("reset").onclick=()=>{Q.seq=[];upd();};
+  }
+  btn.onclick = check;
+}
+
+function norm(x){
+  return String(x).toLowerCase().replace(/[„“"'.,!?;:()\-]/g,"").replace(/\s+/g,"")
+    .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss");
+}
+function lev(a,b){
+  const m=a.length,n=b.length; const d=Array.from({length:m+1},(_,i)=>[i]);
+  for(let j=1;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];
+}
+
+function check(){
+  const it = Q.list[Q.cur], f = it.f;
+  const btn = document.getElementById("check"), fb = document.getElementById("fb");
+  let ok=false;
+  if(f.t==="mc") ok = Q.sel===0;
+  else if(f.t==="folge") ok = Q.seq.every((v,i)=>v===i);
+  else if(f.t==="wort"){
+    const v = norm(document.getElementById("w").value);
+    const sol = f.l.map(norm);
+    ok = sol.includes(v);
+    if(!ok && v.length>=4 && sol.some(x=>x.length>=4 && lev(v,x)===1)){
+      fb.className="feedback soft"; fb.textContent="Fast! Schau noch einmal genau, wie das Wort im Text geschrieben ist.";
+      return;
+    }
+  }
+  btn.disabled = true;
+  if(ok){
+    if(it.tries===0) Q.stars++;
+    Q.opened++;
+    sndOk();
+    fb.className="feedback ok"; fb.textContent = it.tries===0 ? "Richtig – beim ersten Versuch! ⭐ Schloss geknackt!" : "Richtig! Schloss geknackt! 🔓";
+    const lk = document.querySelectorAll("#locks span")[Q.cur];
+    if(lk){ lk.textContent="🔓"; lk.classList.add("open"); }
+    $app.querySelectorAll(".ans").forEach(b=>b.disabled=true);
+    timers.push(setTimeout(()=>{
+      Q.cur++;
+      if(Q.cur>=Q.list.length) finishQuiz(); else renderQ();
+    }, 1400));
+  } else {
+    it.tries++;
+    Q.p.fehler[Q.p.teil] = (Q.p.fehler[Q.p.teil]||0)+1; save();
+    sndBad();
+    const qc=document.getElementById("qc"); qc.classList.remove("shake"); void qc.offsetWidth; qc.classList.add("shake");
+    timers.push(setTimeout(()=>pauseOverlay(it), 500));
+  }
+}
+
+function highlightPara(s, f, teilIdx){
+  if(!f.b) return null;
+  const ti = (f.bt!=null) ? f.bt : teilIdx;
+  const tx = s.teile[ti].text;
+  const para = tx.find(p=>p.includes(f.b));
+  if(!para) return null;
+  const i = para.indexOf(f.b);
+  return esc(para.slice(0,i)) + "<mark>" + esc(f.b) + "</mark>" + esc(para.slice(i+f.b.length));
+}
+
+function pauseOverlay(it){
+  const {s,p} = Q, f = it.f;
+  const secs = Math.min(40, st.set.pause + 5*(it.tries-1));
+  const passage = highlightPara(s, f, p.teil);
+  const ov = document.createElement("div"); ov.className="ov";
+  const msg = f.t==="folge"
+    ? `<p>Überlege noch einmal: Was ist <b>zuerst</b> passiert, was danach? Du kannst im Text nachsehen.</p>`
+    : `<p>Lies diese Stelle noch einmal <b>ganz genau</b>. Dort findest du die Antwort:</p>
+       <div class="passage story"><p>${passage||""}</p></div>`;
+  const R=26, C=2*Math.PI*R;
+  ov.innerHTML = `<div class="sheet" style="--c:${s.farbe}">
+    <h2><span class="bad">Hmm, das stimmt noch nicht.</span></h2>
+    ${msg}
+    <div class="timer"><div class="ring"><svg width="64" height="64"><circle cx="32" cy="32" r="${R}" fill="none" stroke="#E8DFCF" stroke-width="7"/>
+      <circle id="rc" cx="32" cy="32" r="${R}" fill="none" stroke="${s.farbe}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg><b id="rs">${secs}</b></div>
+      <div class="small">Denkpause: Nimm dir Zeit zum Nachlesen. Raten lohnt sich nicht – jede falsche Antwort macht die Pause länger.</div></div>
+    ${f.t==="folge"?`<button class="btn ghost" id="look">📖 Text ansehen</button>`:""}
+    <button class="btn primary" id="again" disabled>⏳ Bitte warten …</button></div>`;
+  document.body.appendChild(ov);
+  const look = ov.querySelector("#look"); if(look) look.onclick=()=>textOverlay(s,p.teil);
+  const again = ov.querySelector("#again"), rc=ov.querySelector("#rc"), rs=ov.querySelector("#rs");
+  const t0 = Date.now();
+  const iv = setInterval(()=>{
+    const el=(Date.now()-t0)/1000, left=Math.max(0,Math.ceil(secs-el));
+    rs.textContent = left; rc.setAttribute("stroke-dashoffset", String(C*Math.min(1,el/secs)));
+    if(left<=0){ clearInterval(iv); again.disabled=false; again.textContent="Ich habe nachgelesen – nochmal versuchen"; rs.textContent="✓"; }
+  },200);
+  timers.push(iv);
+  again.onclick=()=>{ ov.remove(); prepare(it); renderQ(); };
+}
+
+function finishQuiz(){
+  const {id,s,p} = Q;
+  p.sterne[p.teil] = Math.max(p.sterne[p.teil]||0, Q.stars);
+  if(p.teil >= s.teile.length-1){ p.done=true; p.phase="read"; save(); return done(id); }
+  p.phase="unlocked"; save(); unlocked(id, Q.stars);
+}
+
+function unlocked(id, stars){
+  clearTimers(); window.scrollTo(0,0);
+  const s=byId(id), p=ss(id); setColor(s.farbe);
+  const st_ = stars!=null ? stars : (p.sterne[p.teil]||0);
+  sndOpen();
+  $app.innerHTML = `<div class="wrap">${topbar(s,p.teil)}<div class="paper center">
+    <div class="big vaultdoor">🔓</div><h2 style="font-size:1.8rem;color:${s.farbe}">Tresor geknackt!</h2>
+    <div class="stars">${"⭐".repeat(st_)}${"☆".repeat(4-st_)}</div>
+    <p>${st_===4?"Wow – alle Fragen beim ersten Versuch!":"Super gemacht! Sterne gibt es für Antworten, die beim ersten Versuch stimmen."}</p>
+    <p><b>Teil ${p.teil+2}</b> wartet auf dich. Wie geht es wohl weiter?</p></div>
+    <button class="btn primary" id="go">Weiterlesen →</button>
+    <button class="link" id="later">Später weiterlesen</button></div>`;
+  document.getElementById("back").onclick=home;
+  document.getElementById("later").onclick=()=>{ p.teil++; p.phase="read"; save(); home(); };
+  document.getElementById("go").onclick=()=>{ p.teil++; p.phase="read"; save(); read(id); };
+}
+
+function done(id){
+  clearTimers(); window.scrollTo(0,0);
+  const s=byId(id), p=ss(id); setColor(s.farbe);
+  const tot = sum(p.sterne), max = s.teile.length*4;
+  tone([523,659,784,1047,1319],0.4);
+  $app.innerHTML = `<div class="wrap">${topbar(s,s.teile.length-1)}<div class="paper center">
+    <div class="big vaultdoor">${s.abzeichenEmoji}</div>
+    <h2 style="font-size:1.8rem;color:${s.farbe}">Geschichte geschafft!</h2>
+    <p>Du hast das <b>${esc(s.abzeichen)}</b> bekommen.</p>
+    <div class="stars">⭐ ${tot} von ${max}</div>
+    <p class="small">Du kannst die Geschichte jederzeit noch einmal ganz lesen.</p></div>
+    <button class="btn primary" id="home">Zur Übersicht</button>
+    <button class="link" id="again">📖 Ganze Geschichte nochmal lesen</button></div>`;
+  document.getElementById("back").onclick=home;
+  document.getElementById("home").onclick=home;
+  document.getElementById("again").onclick=()=>read(id,0);
+}
+
+/* ---------- Erwachsenen-Bereich ---------- */
+function setupHold(el, fn){
+  let t=null, iv=null, start=0; const bar=el.querySelector("i");
+  const stop=()=>{ clearTimeout(t); clearInterval(iv); bar.style.width="0"; };
+  const begin=e=>{ e.preventDefault(); start=Date.now();
+    iv=setInterval(()=>{ bar.style.width=Math.min(100,(Date.now()-start)/1500*100)+"%"; },50);
+    t=setTimeout(()=>{ stop(); fn(); },1500); };
+  el.addEventListener("pointerdown",begin); el.addEventListener("pointerup",stop); el.addEventListener("pointerleave",stop); el.addEventListener("pointercancel",stop);
+  el.addEventListener("contextmenu",e=>e.preventDefault());
+}
+function adults(){
+  const ov=document.createElement("div"); ov.className="ov";
+  let rows="";
+  STORIES.forEach(s=>{
+    const p=ss(s.id);
+    const parts=s.teile.map((_,i)=>{
+      const reached = p.done || i<p.teil || (i===p.teil && p.phase!=="read");
+      return reached ? `${p.fehler[i]||0} / ${p.sterne[i]!=null?p.sterne[i]+"⭐":"–"}` : "–";
+    }).join("</td><td>");
+    rows+=`<tr><td>${s.emoji}</td><td>${parts}</td><td><button class="danger" data-r="${s.id}" style="padding:4px 8px;margin:0">↺</button></td></tr>`;
+  });
+  ov.innerHTML=`<div class="sheet"><h2>⚙︎ Für Erwachsene</h2>
+    <p class="small">Pro Teil: Fehlversuche / Sterne (Sterne = beim ersten Versuch richtig, max. 4). Viele Fehlversuche bei wenig Sternen zeigen, wo das Kind noch geraten hat.</p>
+    <table><tr><th></th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th></th></tr>${rows}</table>
+    <div class="set"><span>Denkpause nach falscher Antwort<br><span class="small">wird pro weiterem Fehler um 5 s länger</span></span>
+      <select id="sp">${[5,10,15,20].map(v=>`<option ${st.set.pause===v?"selected":""} value="${v}">${v} Sekunden</option>`).join("")}</select></div>
+    <div class="set"><span>Mindest-Lesezeit vor den Fragen</span><select id="sl"><option value="1" ${st.set.lesezeit?"selected":""}>an</option><option value="0" ${!st.set.lesezeit?"selected":""}>aus</option></select></div>
+    <div class="set"><span>Töne</span><select id="st"><option value="1" ${st.set.ton?"selected":""}>an</option><option value="0" ${!st.set.ton?"selected":""}>aus</option></select></div>
+    <p class="small" style="margin-top:12px">↺ setzt eine einzelne Geschichte zurück.</p>
+    <button class="danger" id="all">Alles zurücksetzen</button>
+    <button class="btn primary" id="close">Schließen</button></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("#sp").onchange=e=>{st.set.pause=+e.target.value;save();};
+  ov.querySelector("#sl").onchange=e=>{st.set.lesezeit=e.target.value==="1";save();};
+  ov.querySelector("#st").onchange=e=>{st.set.ton=e.target.value==="1";save();};
+  ov.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
+    const s=byId(b.dataset.r);
+    if(confirm(`„${s.titel}“ wirklich zurücksetzen?`)){ delete st.s[s.id]; save(); ov.remove(); home(); }
+  });
+  ov.querySelector("#all").onclick=()=>{ if(confirm("Wirklich den ganzen Fortschritt löschen?")){ st.s={}; save(); ov.remove(); home(); } };
+  ov.querySelector("#close").onclick=()=>{ ov.remove(); home(); };
+}
+
+home();
+</script>
+</body>
+</html>
