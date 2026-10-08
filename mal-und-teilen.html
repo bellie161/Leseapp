@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mal &amp; Teilen">
+<title>Mal &amp; Teilen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+/* Layout: one calm column (max 860px), big touch targets; each Reihe keeps the colour of the printed Übungspaket.
+   Deliberately one light look so the colours match the paper sheets exactly. */
+:root{
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme: light;
+  --bg:#EDF2F7;
+  --paper:#FFFFFF;
+  --ink:#1E2B45;
+  --muted:#5B6B86;
+  --line:#C9D4E3;
+  --ok:#1F9D63;
+  --okl:#DDF5E9;
+  --sun:#F5B700;
+  --s2:#2F6FB5;  --s2l:#E3EEF9;
+  --s10:#2E8B57; --s10l:#E2F3EA;
+  --s5:#E07B1F;  --s5l:#FCEBDB;
+  --s0:#7A4FA0;  --s0l:#EEE6F5;
+  --c:var(--s2); --cl:var(--s2l);
+  --f-display:"Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --f-body:"Andika", "Comic Sans MS", system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;min-height:100%}
+button{font-family:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.1}
+
+/* ---------- top bars ---------- */
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.bar h1{font-size:clamp(2rem,6vw,2.8rem);font-weight:800}
+.bar .grow{flex:1;min-width:0}
+.iconbtn{width:56px;height:56px;border-radius:16px;border:2px solid var(--line);background:var(--paper);display:grid;place-items:center;flex:none}
+.iconbtn svg{width:28px;height:28px}
+.starcount{display:flex;align-items:center;gap:6px;font-weight:700;font-size:1.25rem;background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;font-variant-numeric:tabular-nums}
+.starcount svg{width:26px;height:26px}
+
+/* ---------- home ---------- */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.tiles{grid-template-columns:1fr}}
+.tile{display:flex;flex-direction:column;gap:14px;align-items:flex-start;text-align:left;padding:20px;border-radius:24px;border:3px solid var(--c);background:var(--cl);box-shadow:0 6px 0 var(--c);min-height:190px;transition:transform .1s}
+.tile:active{transform:translateY(4px);box-shadow:0 2px 0 var(--c)}
+.tile h2{font-size:2rem;color:var(--c)}
+.tile .sub{color:var(--muted);font-size:1rem;margin-top:auto}
+.intro{color:var(--muted);margin:0 0 18px;max-width:60ch}
+
+/* ---------- stages ---------- */
+.stages{display:flex;flex-direction:column;gap:12px}
+.stage{display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:14px 16px;border-radius:20px;border:3px solid var(--line);background:var(--paper)}
+.stage:active{transform:translateY(2px)}
+.letter{flex:none;width:56px;height:56px;border-radius:16px;background:var(--c);color:#fff;font-family:var(--f-display);font-weight:800;font-size:1.9rem;display:grid;place-items:center}
+.stage .txt{flex:1;min-width:0}
+.stage .t{font-weight:700;font-size:1.35rem}
+.stage .d{color:var(--muted);font-size:1rem}
+.stars3{display:flex;gap:2px;flex:none}
+.stars3 svg{width:28px;height:28px}
+
+/* ---------- play ---------- */
+.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dots i{width:16px;height:16px;border-radius:50%;border:3px solid var(--c);background:var(--paper)}
+.dots i.done{background:var(--c)}
+.dots i.now{box-shadow:0 0 0 3px var(--cl)}
+.card{background:var(--paper);border-radius:28px;border:3px solid var(--cl);padding:20px 16px 24px;display:flex;flex-direction:column;gap:18px;align-items:stretch}
+.prompt{font-size:clamp(1.25rem,3.6vw,1.6rem);font-weight:700;color:var(--c);text-align:center;margin:0;text-wrap:balance}
+.area{display:flex;flex-direction:column;align-items:center;gap:14px;min-width:0}
+.area:empty{display:none}
+.lbl{font-size:.95rem;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+
+.groups{display:grid;grid-template-columns:repeat(var(--cols,5),auto);gap:14px 12px;justify-content:center;min-height:34px}
+.grp{position:relative;display:flex;gap:5px;padding:6px 8px;border:3px solid var(--c);border-radius:999px;background:var(--paper);transition:transform .25s, box-shadow .25s}
+.grp.ten{border-radius:10px;gap:0;padding:4px}
+.grp.pop{animation:pop .35s ease-out}
+.grp.lit{box-shadow:0 0 0 5px var(--sun);transform:scale(1.06)}
+.dot{width:22px;height:22px;border-radius:50%;background:var(--c);display:block;flex:none}
+.cell{width:14px;height:24px;background:var(--c);border-right:1px solid var(--paper);display:block;flex:none}
+.cell:last-of-type{border-right:0}
+.cnt{position:absolute;top:-18px;right:-12px;min-width:32px;height:32px;padding:0 6px;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;font-size:1.1rem;display:none;place-items:center;font-variant-numeric:tabular-nums}
+.grp.lit .cnt{display:grid}
+
+.vorrat{display:grid;grid-template-columns:repeat(10,auto);gap:6px;justify-content:center;align-content:center;padding:16px 18px;border:3px dashed var(--muted);border-radius:22px;background:var(--bg);min-height:70px;min-width:min(100%,280px)}
+.vorrat .dot:nth-child(10n+5){margin-right:10px}
+.vorrat.ten{gap:4px 0}
+.vorrat.ten .cell{border-right:1px solid var(--bg)}
+button.vorrat:active{transform:scale(.98)}
+.vorrat.empty{border-color:var(--line)}
+.vorrat.empty::after{content:"leer";grid-column:1/-1;color:var(--muted);font-size:1rem}
+
+.plates{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.plate{width:clamp(112px,24vw,170px);aspect-ratio:1;max-width:100%;border-radius:50%;border:5px solid var(--c);background:var(--paper);box-shadow:inset 0 0 0 9px var(--paper),inset 0 0 0 12px var(--cl);display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:5px;padding:24px}
+.plate:active{transform:scale(.97)}
+.plate .dot{cursor:pointer}
+.plate .dot.lit{box-shadow:0 0 0 4px var(--sun)}
+.plate:disabled{cursor:default;opacity:1}
+
+.eqs{display:flex;flex-direction:column;gap:10px;align-items:center}
+.eq{display:flex;align-items:center;justify-content:center;gap:.28em;font-size:clamp(2.5rem,9vw,4.4rem);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.eq.div{color:var(--c)}
+.eq .op{font-weight:700}
+.box{min-width:1.5em;text-align:center;border:4px dashed var(--line);border-radius:16px;padding:0 .12em;color:var(--line)}
+.box.filled{border-style:solid;border-color:var(--ok);color:var(--ok);background:var(--okl);animation:pop .35s ease-out}
+
+.fb{text-align:center;font-size:1.35rem;font-weight:700;min-height:1.9em;margin:0;color:var(--ink)}
+.fb.good{color:var(--ok)}
+
+.choices{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+.choice{min-width:118px;min-height:92px;padding:0 18px;font-size:2.7rem;font-weight:700;border-radius:22px;border:3px solid var(--line);background:var(--paper);box-shadow:0 6px 0 var(--line);font-variant-numeric:tabular-nums;transition:transform .08s}
+.choice:active{transform:translateY(4px);box-shadow:0 2px 0 var(--line)}
+.choice.right{background:var(--ok);border-color:var(--ok);color:#fff;box-shadow:0 6px 0 #157249}
+.choice.wrong{opacity:.3;animation:shake .4s}
+.choice:disabled{cursor:default}
+
+.tools{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.soft{min-height:56px;padding:0 20px;border-radius:16px;border:2px solid var(--c);background:var(--cl);color:var(--c);font-weight:700;font-size:1.15rem}
+.big{min-height:72px;padding:0 36px;border-radius:22px;border:0;background:var(--c);color:#fff;font-weight:700;font-size:1.6rem;box-shadow:0 6px 0 rgba(0,0,0,.18);align-self:center}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+
+/* ---------- done ---------- */
+.done{text-align:center;align-items:center}
+.done h2{font-size:clamp(2.2rem,7vw,3.2rem);color:var(--c)}
+.bigstars{display:flex;gap:10px;justify-content:center}
+.bigstars svg{width:clamp(70px,18vw,104px);height:auto}
+.bigstars svg.on{animation:pop .5s ease-out both}
+.bigstars svg:nth-child(2).on{animation-delay:.25s}
+.bigstars svg:nth-child(3).on{animation-delay:.5s}
+.row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.ghost{min-height:72px;padding:0 28px;border-radius:22px;border:3px solid var(--line);background:var(--paper);font-weight:700;font-size:1.4rem}
+
+/* ---------- settings ---------- */
+.panel{display:flex;flex-direction:column;gap:22px}
+.field{display:flex;flex-direction:column;gap:10px}
+.field>span{font-weight:700;font-size:1.15rem}
+.field small{color:var(--muted);font-size:.95rem}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{min-width:64px;min-height:52px;border-radius:14px;border:2px solid var(--line);background:var(--paper);font-weight:700;font-size:1.2rem;padding:0 14px}
+.seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.note{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:16px;color:var(--ink);font-size:1rem;max-width:65ch}
+.note p{margin:0 0 8px}.note p:last-child{margin:0}
+.danger{color:#B4321F;border-color:#E9B8AF}
+
+@keyframes pop{0%{transform:scale(.6);opacity:.2}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:520px){
+  .dot{width:18px;height:18px}
+  .cell{width:11px;height:20px}
+  .choice{min-width:92px;min-height:80px;font-size:2.2rem}
+  .vorrat{gap:4px;padding:12px}
+  .vorrat .dot:nth-child(10n+5){margin-right:6px}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <!-- HOME -->
+  <section id="home">
+    <div class="bar">
+      <h1 class="grow">Mal &amp; Teilen</h1>
+      <div class="starcount" title="Meine Sterne"><svg><use href="#star" fill="var(--sun)" stroke="#C99600" stroke-width="1.2"/></svg><span id="totalStars">0</span></div>
+      <button class="iconbtn" id="openSettings" type="button" aria-label="Einstellungen für Erwachsene">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg>
+      </button>
+    </div>
+    <p class="intro">Wähle eine Reihe.</p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <!-- STAGES -->
+  <section id="stagesScreen" hidden>
+    <div class="bar">
+      <button class="iconbtn" type="button" data-go="home" aria-label="Zurück">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1 class="grow" id="stagesTitle" style="color:var(--c)">2er-Reihe</h1>
+    </div>
+    <div class="stages" id="stageList"></div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" hidden>
+    <div class="bar">
+      <button class="iconbtn" type="button" id="quit" aria-label="Übung beenden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="grow"><div class="dots" id="dots"></div></div>
+      <button class="iconbtn" type="button" id="speak" aria-label="Aufgabe vorlesen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/></svg>
+      </button>
+    </div>
+    <div class="card">
+      <p class="prompt" id="prompt"></p>
+      <div class="area" id="area"></div>
+      <div class="eqs" id="eqs"></div>
+      <p class="fb" id="fb" aria-live="polite"></p>
+      <div class="choices" id="choices"></div>
+      <div class="tools" id="tools"></div>
+      <button class="big" type="button" id="next" hidden>Weiter</button>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="doneScreen" hidden>
+    <div class="card done">
+      <h2 id="doneTitle">Geschafft!</h2>
+      <div class="bigstars" id="bigStars"></div>
+      <p class="fb" id="doneText"></p>
+      <div class="row">
+        <button class="big" type="button" id="again">Nochmal</button>
+        <button class="ghost" type="button" id="toStages">Andere Übung</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" hidden>
+    <div class="bar">
+      <button class="iconbtn" type="button" data-go="home" aria-label="Zurück">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1 class="grow">Für Erwachsene</h1>
+    </div>
+    <div class="panel">
+      <div class="field"><span>Antwort-Knöpfe pro Aufgabe</span>
+        <div class="seg" id="segChoices"><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button></div>
+        <small>Mit 2 Knöpfen gibt es weniger Gelegenheit zum Raten. Später auf 3 oder 4 erhöhen.</small></div>
+      <div class="field"><span>Aufgaben pro Runde</span>
+        <div class="seg" id="segRound"><button type="button" data-v="4">4</button><button type="button" data-v="6">6</button><button type="button" data-v="8">8</button></div></div>
+      <div class="field"><span>Aufgaben automatisch vorlesen</span>
+        <div class="seg" id="segSpeak"><button type="button" data-v="0">Aus</button><button type="button" data-v="1">An</button></div>
+        <small>Der Lautsprecher-Knopf liest die Aufgabe immer vor, auch wenn dies aus ist.</small></div>
+      <div class="field"><span>Sterne</span>
+        <div class="seg"><button type="button" id="reset" class="danger">Alle Sterne löschen</button></div>
+        <small id="resetHint"></small></div>
+      <div class="note">
+        <p><b>Aufbau wie im Übungspaket „Teilen lernen“:</b> A Mal auffrischen · B Aufteilen · C Verteilen · D Aufgabenpaare · E Gemischt. Farben: 2er blau, 10er grün, 5er orange.</p>
+        <p>Bei einer falschen Antwort sagt die App „Lass uns nachzählen“ und zählt die Gruppen am Bild vor. Danach wählt Ihr Kind noch einmal. Sterne am Ende: 3 Sterne bei höchstens einem Fehler, 2 bei höchstens drei, sonst 1.</p>
+        <p>Die Sterne werden nur auf diesem Gerät gespeichert.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+const reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- storage (optional) ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("mt_" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("mt_" + k, JSON.stringify(v)); } catch (e) {} }
+};
+let best = store.get("best", {});
+let total = store.get("total", 0);
+let settings = Object.assign({ choices: 3, round: 6, speak: 0 }, store.get("settings", {}));
+
+/* ---------- data ---------- */
+const SER = {
+  2:  { name: "2er-Reihe",  c: "var(--s2)",  cl: "var(--s2l)",  stages: ["A","B","C","D","E"] },
+  10: { name: "10er-Reihe", c: "var(--s10)", cl: "var(--s10l)", stages: ["A","B","D","E"] },
+  5:  { name: "5er-Reihe",  c: "var(--s5)",  cl: "var(--s5l)",  stages: ["A","B","C","D","E"] },
+  0:  { name: "Alle Reihen", c: "var(--s0)", cl: "var(--s0l)", stages: ["E"] }
+};
+const ORDER = [2, 10, 5, 0];
+const STAGE = {
+  A: { t: "Mal auffrischen", d: "Gruppen zählen" },
+  B: { t: "Aufteilen",       d: "Gruppen bilden und zählen" },
+  C: { t: "Verteilen",       d: "Gerecht auf Teller verteilen" },
+  D: { t: "Aufgabenpaare",   d: "Ein Bild, zwei Aufgaben" },
+  E: { t: "Gemischt",        d: "Mal und Geteilt, Bild als Hilfe" }
+};
+const stageTitle = (s, st) => s === 0 ? "Alle Reihen gemischt" : STAGE[st].t;
+
+/* ---------- screens ---------- */
+const screens = ["home", "stagesScreen", "play", "doneScreen", "settings"];
+function show(id) { screens.forEach(s => $("#" + s).hidden = s !== id); window.scrollTo(0, 0); if (id !== "play") stopCount(); }
+function tint(k) { const s = SER[k]; document.documentElement.style.setProperty("--c", s.c); document.documentElement.style.setProperty("--cl", s.cl); }
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "home") renderHome(); show(b.dataset.go); });
+
+/* ---------- sound + speech ---------- */
+let actx = null;
+function audio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (actx && actx.state === "suspended") actx.resume(); return actx; }
+function tone(freq, start, dur, vol = 0.18, type = "sine") {
+  const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = freq;
+  const t = a.currentTime + start; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+const chime = () => { tone(660, 0, .25); tone(880, .12, .35); };
+const tick = () => tone(520, 0, .12, .12, "triangle");
+const fanfare = () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .14, .4, .16)); };
+function say(text) {
+  if (!("speechSynthesis" in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "de-DE"; u.rate = 0.85; speechSynthesis.speak(u); } catch (e) {}
+}
+const spoken = q => `${q.a} ${q.op === "·" ? "mal" : "geteilt durch"} ${q.b}`;
+
+/* ---------- stars ---------- */
+const starSvg = (on, cls = "") => `<svg class="${cls}${on ? " on" : ""}" viewBox="0 0 24 24"><use href="#star" fill="${on ? "var(--sun)" : "none"}" stroke="${on ? "#C99600" : "var(--line)"}" stroke-width="1.6"/></svg>`;
+const key = (s, st) => `${s}${st}`;
+
+/* ---------- HOME ---------- */
+function renderHome() {
+  $("#totalStars").textContent = total;
+  const tiles = $("#tiles"); tiles.innerHTML = "";
+  ORDER.forEach(k => {
+    const s = SER[k];
+    const got = s.stages.reduce((sum, st) => sum + (best[key(k, st)] || 0), 0);
+    const b = el("button", "tile"); b.type = "button";
+    b.style.setProperty("--c", s.c); b.style.setProperty("--cl", s.cl);
+    b.appendChild(el("h2", "", s.name));
+    const pic = el("div", "groups"); pic.style.setProperty("--cols", 3);
+    if (k === 0) { [2, 5, 10].forEach(kk => { const g = groupEl(kk); g.style.setProperty("--c", SER[kk].c); pic.appendChild(g); }); pic.style.setProperty("--cols", 1); pic.style.justifyContent = "start"; }
+    else { const n = k === 2 ? 3 : 1; for (let i = 0; i < n; i++) pic.appendChild(groupEl(k)); pic.style.setProperty("--cols", n); pic.style.justifyContent = "start"; }
+    b.appendChild(pic);
+    b.appendChild(el("div", "sub", `${got} von ${s.stages.length * 3} Sternen`));
+    b.onclick = () => { audio(); if (k === 0) start(0, "E"); else openStages(k); };
+    tiles.appendChild(b);
+  });
+}
+
+/* ---------- STAGES ---------- */
+let curSeries = 2;
+function openStages(k) {
+  curSeries = k; tint(k);
+  $("#stagesTitle").textContent = SER[k].name;
+  const list = $("#stageList"); list.innerHTML = "";
+  SER[k].stages.forEach(st => {
+    const b = el("button", "stage"); b.type = "button";
+    const got = best[key(k, st)] || 0;
+    b.innerHTML = `<span class="letter">${st}</span><span class="txt"><span class="t">${STAGE[st].t}</span><br><span class="d">${STAGE[st].d}</span></span><span class="stars3">${[0,1,2].map(i => starSvg(i < got)).join("")}</span>`;
+    b.onclick = () => start(k, st);
+    list.appendChild(b);
+  });
+  show("stagesScreen");
+}
+
+/* ---------- pictures ---------- */
+function groupEl(k) {
+  const g = el("div", "grp" + (k === 10 ? " ten" : ""));
+  for (let i = 0; i < k; i++) g.appendChild(el("span", k === 10 ? "cell" : "dot"));
+  g.appendChild(el("span", "cnt"));
+  return g;
+}
+function colsFor(n, k) {
+  const w = Math.min(860, document.documentElement.clientWidth) - 70;
+  const small = document.documentElement.clientWidth <= 520;
+  const gw = k === 10 ? (small ? 118 : 148) : k * (small ? 23 : 27) + 18;
+  return Math.max(1, Math.min(5, n, Math.floor(w / (gw + 12))));
+}
+function groupsEl(n, k, colsN = n) {
+  const wrap = el("div", "groups"); wrap.style.setProperty("--cols", colsFor(colsN, k));
+  for (let i = 0; i < n; i++) wrap.appendChild(groupEl(k));
+  return wrap;
+}
+let countTimer = null;
+function stopCount() { clearInterval(countTimer); countTimer = null; }
+function countAlong(container, k, mode) {
+  stopCount();
+  const gs = [...container.querySelectorAll(".grp")];
+  gs.forEach(g => g.classList.remove("lit"));
+  let i = 0;
+  const step = () => {
+    if (i >= gs.length) { stopCount(); return; }
+    const v = mode === "groups" ? i + 1 : (i + 1) * k;
+    gs[i].classList.add("lit"); gs[i].querySelector(".cnt").textContent = v; tick();
+    i++;
+  };
+  step(); countTimer = setInterval(step, reduced ? 450 : 850);
+}
+function countPlate(plate) {
+  stopCount();
+  const ds = [...plate.querySelectorAll(".dot")]; ds.forEach(d => d.classList.remove("lit"));
+  let i = 0; const nums = [];
+  const step = () => {
+    if (i >= ds.length) { stopCount(); return; }
+    ds[i].classList.add("lit"); nums.push(i + 1); $("#fb").textContent = "Auf einem Teller: " + nums.join(", "); tick(); i++;
+  };
+  step(); countTimer = setInterval(step, reduced ? 450 : 800);
+}
+
+/* ---------- round ---------- */
+let S = null;
+function pickNs(min, max, count) { let pool = []; while (pool.length < count) pool = pool.concat(shuffle(range(min, max))); return pool.slice(0, count); }
+function makeTasks(series, stage) {
+  const R = settings.round;
+  const [mn, mx] = stage === "B" ? [1, 6] : stage === "C" ? [2, 6] : [1, 10];
+  const ns = pickNs(mn, mx, R);
+  const ops = shuffle(range(0, R - 1).map(i => i % 2 ? "div" : "mul"));
+  return ns.map((n, i) => ({ n, k: series === 0 ? shuffle([2, 5, 10])[0] : series, op: ops[i] }));
+}
+function start(series, stage) {
+  audio();
+  S = { series, stage, i: 0, mistakes: 0, tasks: makeTasks(series, stage), q: null };
+  tint(series); show("play"); renderTask();
+}
+$("#quit").onclick = () => { stopCount(); if (S.series === 0) { renderHome(); show("home"); } else openStages(S.series); };
+$("#speak").onclick = () => { if (S && S.q) say(spoken(S.q)); else say($("#prompt").textContent); };
+
+function updateDots() {
+  const d = $("#dots"); d.innerHTML = "";
+  S.tasks.forEach((_, i) => d.appendChild(el("i", i < S.i ? "done" : i === S.i ? "now" : "")));
+}
+
+function renderTask() {
+  stopCount();
+  const t = S.tasks[S.i], k = t.k, n = t.n;
+  tint(S.series === 0 ? k : S.series);
+  const area = $("#area"), prompt = $("#prompt"), tools = $("#tools");
+  area.innerHTML = ""; $("#eqs").innerHTML = ""; $("#choices").innerHTML = ""; tools.innerHTML = "";
+  $("#fb").textContent = ""; $("#fb").className = "fb"; $("#next").hidden = true; S.q = null;
+  updateDots();
+
+  if (S.stage === "A") {
+    prompt.textContent = k === 10 ? "Wie viele sind es? Zähle in Zehner-Schritten." : `Wie viele sind es? Zähle in ${k}er-Schritten.`;
+    const pic = groupsEl(n, k); area.appendChild(pic);
+    toolBtn("Zählen", () => countAlong(pic, k, "total"));
+    ask({ a: n, op: "·", b: k, ans: n * k, help: () => countAlong(pic, k, "total") }, finish);
+  }
+
+  if (S.stage === "B") {
+    const tot = n * k;
+    prompt.textContent = k === 10 ? `Hier sind ${tot} Kästchen. Tippe: Immer 10 werden eine Stange.` : `Hier sind ${tot} Punkte. Tippe: Immer ${k} kommen in eine Gruppe.`;
+    area.appendChild(el("div", "lbl", "Vorrat"));
+    const vor = el("button", "vorrat" + (k === 10 ? " ten" : "")); vor.type = "button"; vor.setAttribute("aria-label", "Vorrat, tippen für eine Gruppe");
+    for (let i = 0; i < tot; i++) vor.appendChild(el("span", k === 10 ? "cell" : "dot"));
+    area.appendChild(vor);
+    area.appendChild(el("div", "lbl", k === 10 ? "Stangen" : "Gruppen"));
+    const gw = groupsEl(0, k, n); area.appendChild(gw);
+    let made = 0;
+    vor.onclick = () => {
+      const items = vor.querySelectorAll(k === 10 ? ".cell" : ".dot");
+      if (!items.length) return;
+      for (let j = 0; j < k; j++) items[items.length - 1 - j].remove();
+      const g = groupEl(k); g.classList.add("pop"); gw.appendChild(g); tick(); made++;
+      if (made === n) {
+        vor.disabled = true; vor.classList.add("empty");
+        prompt.textContent = k === 10 ? "Wie viele Stangen sind es?" : "Wie viele Gruppen sind es?";
+        ask({ a: tot, op: ":", b: k, ans: n, help: () => countAlong(gw, k, "groups") }, finish);
+      }
+    };
+  }
+
+  if (S.stage === "C") {
+    const tot = n * k;
+    prompt.textContent = `Verteile ${tot} Punkte gerecht auf ${k} Teller. Tippe auf einen Teller.`;
+    area.appendChild(el("div", "lbl", "Vorrat"));
+    const vor = el("div", "vorrat"); for (let i = 0; i < tot; i++) vor.appendChild(el("span", "dot"));
+    area.appendChild(vor);
+    const plates = el("div", "plates"); const ps = [];
+    let locked = false;
+    for (let p = 0; p < k; p++) {
+      const pl = el("button", "plate"); pl.type = "button"; pl.setAttribute("aria-label", "Teller " + (p + 1));
+      pl.onclick = () => {
+        if (locked) return; const d = vor.querySelector(".dot"); if (!d) return;
+        d.remove(); const nd = el("span", "dot");
+        nd.onclick = e => { e.stopPropagation(); if (locked) return; nd.remove(); vor.appendChild(el("span", "dot")); check(); };
+        pl.appendChild(nd); tick(); check();
+      };
+      ps.push(pl); plates.appendChild(pl);
+    }
+    area.appendChild(plates);
+    const helper = toolBtn("Hilf mir: eins für jeden", () => { for (const pl of ps) { if (!vor.querySelector(".dot")) break; pl.click(); } });
+    function check() {
+      vor.classList.toggle("empty", !vor.querySelector(".dot"));
+      if (vor.querySelector(".dot")) { $("#fb").textContent = ""; return; }
+      const counts = ps.map(p => p.querySelectorAll(".dot").length);
+      if (counts.every(c => c === counts[0])) {
+        locked = true; ps.forEach(p => p.disabled = true); helper.remove();
+        $("#fb").textContent = "Jeder Teller hat gleich viel.";
+        prompt.textContent = "Wie viele sind auf jedem Teller?";
+        ask({ a: tot, op: ":", b: k, ans: n, help: () => countPlate(ps[0]) }, finish);
+      } else {
+        $("#fb").textContent = "Nicht jeder Teller hat gleich viel. Tippe auf einen Punkt, dann geht er zurück.";
+      }
+    }
+  }
+
+  if (S.stage === "D") {
+    prompt.textContent = "Ein Bild, zwei Aufgaben.";
+    const pic = groupsEl(n, k); area.appendChild(pic);
+    ask({ a: n, op: "·", b: k, ans: n * k, help: () => countAlong(pic, k, "total") }, () => {
+      prompt.textContent = "Und jetzt rückwärts:";
+      pic.querySelectorAll(".grp").forEach(g => g.classList.remove("lit"));
+      ask({ a: n * k, op: ":", b: k, ans: n, help: () => countAlong(pic, k, "groups") }, finish, true);
+    });
+  }
+
+  if (S.stage === "E") {
+    prompt.textContent = t.op === "mul" ? "Rechne. Das Bild hilft dir." : "Rechne. Das Bild hilft dir.";
+    let pic = null;
+    const showPic = () => { if (!pic) { pic = groupsEl(n, k); area.appendChild(pic); picBtn.remove(); } return pic; };
+    const picBtn = toolBtn("Bild zeigen", showPic);
+    const q = t.op === "mul"
+      ? { a: n, op: "·", b: k, ans: n * k, help: () => countAlong(showPic(), k, "total") }
+      : { a: n * k, op: ":", b: k, ans: n, help: () => countAlong(showPic(), k, "groups") };
+    ask(q, () => { picBtn.remove(); finish(); });
+  }
+}
+function toolBtn(label, fn) { const b = el("button", "soft", label); b.type = "button"; b.onclick = fn; $("#tools").appendChild(b); return b; }
+
+function eqLine(q) {
+  return el("div", "eq" + (q.op === ":" ? " div" : ""),
+    `<span>${q.a}</span><span class="op">${q.op}</span><span>${q.b}</span><span class="op">=</span><span class="box">?</span>`);
+}
+function options(q) {
+  const c = q.ans, st = q.op === "·" ? q.b : 1;
+  const cand = shuffle([c - st, c + st, c - 2 * st, c + 2 * st, c + 3 * st].filter(x => x > 0 && x !== c))
+    .sort((a, b) => Math.abs(a - c) - Math.abs(b - c));
+  return shuffle([c, ...cand.slice(0, settings.choices - 1)]);
+}
+function praise(q) {
+  if (q.b === 10) return q.op === ":" ? `Richtig! ${q.a} sind ${q.ans} Zehner.` : `Richtig! ${q.a} Zehner sind ${q.ans}.`;
+  return shuffle(["Super!", "Richtig!", "Klasse!", "Prima gemacht!", "Toll gerechnet!"])[0];
+}
+function ask(q, onDone, keep) {
+  if (!keep) $("#eqs").innerHTML = "";
+  const line = eqLine(q); $("#eqs").appendChild(line); S.q = q;
+  if (settings.speak) say(spoken(q));
+  const ch = $("#choices"); ch.innerHTML = "";
+  options(q).forEach(v => {
+    const b = el("button", "choice", String(v)); b.type = "button";
+    b.onclick = () => {
+      audio();
+      if (v === q.ans) {
+        stopCount();
+        b.classList.add("right"); ch.querySelectorAll("button").forEach(x => x.disabled = true);
+        const box = line.querySelector(".box"); box.textContent = v; box.classList.add("filled");
+        chime(); const fb = $("#fb"); fb.textContent = praise(q); fb.className = "fb good";
+        if (settings.speak) setTimeout(() => say(`${spoken(q)} ist ${q.ans}`), 300);
+        setTimeout(() => { ch.innerHTML = ""; onDone(); }, 900);
+      } else {
+        S.mistakes++; b.classList.add("wrong"); b.disabled = true;
+        const fb = $("#fb"); fb.textContent = "Lass uns nachzählen."; fb.className = "fb";
+        if (q.help) q.help();
+      }
+    };
+    ch.appendChild(b);
+  });
+}
+function finish() { $("#tools").innerHTML = ""; const nx = $("#next"); nx.hidden = false; nx.focus({ preventScroll: true }); }
+$("#next").onclick = () => { S.i++; if (S.i >= S.tasks.length) done(); else renderTask(); };
+
+/* ---------- done ---------- */
+function done() {
+  const got = S.mistakes <= 1 ? 3 : S.mistakes <= 3 ? 2 : 1;
+  const k = key(S.series, S.stage);
+  best[k] = Math.max(best[k] || 0, got); total += got;
+  store.set("best", best); store.set("total", total);
+  tint(S.series);
+  $("#doneTitle").textContent = got === 3 ? "Super gemacht!" : got === 2 ? "Gut gemacht!" : "Geschafft!";
+  $("#bigStars").innerHTML = [0, 1, 2].map(i => starSvg(i < got)).join("");
+  $("#doneText").textContent = `Du hast ${S.tasks.length} Aufgaben gerechnet. ${SER[S.series].name} · ${stageTitle(S.series, S.stage)}`;
+  show("doneScreen"); fanfare();
+}
+$("#again").onclick = () => start(S.series, S.stage);
+$("#toStages").onclick = () => { if (S.series === 0) { renderHome(); show("home"); } else openStages(S.series); };
+
+/* ---------- settings ---------- */
+function seg(id, prop) {
+  const box = $(id);
+  const paint = () => box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.v === +settings[prop])));
+  box.querySelectorAll("button").forEach(b => b.onclick = () => { settings[prop] = +b.dataset.v; store.set("settings", settings); paint(); });
+  paint();
+}
+seg("#segChoices", "choices"); seg("#segRound", "round"); seg("#segSpeak", "speak");
+let resetArmed = false;
+$("#reset").onclick = () => {
+  if (!resetArmed) { resetArmed = true; $("#reset").textContent = "Wirklich löschen? Nochmal tippen"; $("#resetHint").textContent = ""; return; }
+  best = {}; total = 0; store.set("best", best); store.set("total", total);
+  resetArmed = false; $("#reset").textContent = "Alle Sterne löschen"; $("#resetHint").textContent = "Alle Sterne wurden gelöscht.";
+};
+$("#openSettings").onclick = () => { resetArmed = false; $("#reset").textContent = "Alle Sterne löschen"; $("#resetHint").textContent = ""; show("settings"); };
+
+renderHome();
+})();
+</script>
+</body>
+</html>
