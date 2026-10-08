@@ -27,6 +27,8 @@ h1,h2,h3,.baloo{font-family:"Baloo 2","Andika",sans-serif;line-height:1.2;margin
 .hero .total{display:inline-block;margin-top:14px;background:rgba(255,255,255,.14);padding:6px 16px;border-radius:999px;font-weight:700}
 
 /* Cards */
+.serie{font-size:1.25rem;margin:22px 4px 10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.serie span{font-family:"Andika",sans-serif;font-size:.85rem;color:var(--muted);font-weight:400}
 .grid{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
 .card{background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:16px;text-align:left;display:flex;gap:14px;align-items:flex-start;transition:transform .15s,border-color .15s;width:100%}
@@ -780,10 +782,666 @@ const STORIES = [
    {t:"mc", q:"Wie funktioniert Herrn Schulzes neuer Rauchmelder?", a:["Er blinkt hell und lässt ein Kissen vibrieren.","Er ruft automatisch Paul an.","Er spielt laute Musik.","Er löscht das Feuer selbst."], b:"Wenn es brennt, blinkt er hell und lässt ein Kissen unter seinem Kopf vibrieren."}
   ]}
  ]
+},
+{
+ id:"uhrturm", titel:"Die Spürnasen: Spuk im Uhrturm", emoji:"🕰️", thema:"Detektive · 3. Fall", farbe:"#6C4AB6",
+ abzeichen:"Geisterjäger-Abzeichen", abzeichenEmoji:"👻",
+ teile:[
+  {text:[
+   "In der Mitte des Marktplatzes steht ein alter Turm mit einer großen Uhr. Zu jeder vollen Stunde schlägt eine Glocke. Um zwölf Uhr mittags schlägt sie zwölfmal, um drei Uhr dreimal. So ist es seit über hundert Jahren.",
+   "Doch seit einer Woche passiert etwas Seltsames. Jede Nacht um Mitternacht schlägt die Glocke nicht zwölfmal, sondern dreizehnmal! In der Zeitung steht schon eine Überschrift: Spukt es im Uhrturm?",
+   "„Gespenster gibt es nicht“, sagt Ben in der Zentrale. „Es gibt immer eine Erklärung.“ Mira nickt. „Und Frau Kessler hat mir erzählt, dass nachts jemand das Katzenfutter von ihrer Terrasse klaut. Sie wohnt direkt neben dem Turm.“ Tim notiert beides im Notizbuch.",
+   "Am Freitag dürfen die drei bei Tim übernachten. Aus seinem Zimmerfenster kann man genau auf den Uhrturm schauen. Sie bleiben bis kurz vor Mitternacht wach. Ben hat ein Fernglas dabei.",
+   "Es ist eine Minute vor zwölf. Alle starren auf das große Zifferblatt. Da stößt Mira einen leisen Schrei aus. „Da oben! Neben der Zahl Zwölf!“ Ben reißt das Fernglas hoch. Hinter dem Zifferblatt leuchten zwei kleine Augen in der Dunkelheit. Und dann beginnt die Glocke zu schlagen: eins, zwei, drei …"
+  ], fragen:[
+   {t:"mc", q:"Wie oft schlägt die Glocke seit einer Woche um Mitternacht?", a:["Dreizehnmal","Zwölfmal","Gar nicht","Nur einmal"], b:"sondern dreizehnmal!"},
+   {t:"mc", q:"Was sagt Ben über Gespenster?", a:["Es gibt sie nicht – es gibt immer eine Erklärung.","Er hat schon eins gesehen.","Sie wohnen in alten Türmen.","Man muss sie mit Katzenfutter füttern."], b:"Es gibt immer eine Erklärung."},
+   {t:"mc", q:"Was hat Frau Kessler erzählt?", a:["Nachts klaut jemand das Katzenfutter von ihrer Terrasse.","Sie hat ein Gespenst gesehen.","Ihre Katze ist verschwunden.","Die Uhr geht falsch."], b:"dass nachts jemand das Katzenfutter von ihrer Terrasse klaut"},
+   {t:"wort", q:"Was hat Ben bei der Übernachtung dabei?", pre:"Ein", l:["Fernglas"], b:"Ben hat ein Fernglas dabei."}
+  ]},
+  {text:[
+   "Am nächsten Morgen klingeln die Spürnasen bei Herrn Kowalski. Er ist Uhrmacher und kümmert sich seit vielen Jahren um die Turmuhr. „Dreizehn Schläge?“, brummt er. „Das kann ich mir nicht erklären. Das Uhrwerk ist in Ordnung.“",
+   "„Dürfen wir mit Ihnen in den Turm?“, fragt Tim. Herr Kowalski überlegt. Dann holt er einen großen eisernen Schlüssel. „Aber ihr bleibt immer bei mir. Die Treppe ist alt und steil.“",
+   "Die Wendeltreppe hat 112 Stufen. Es ist staubig und riecht muffig. Auf halber Höhe bleibt Mira stehen. „Seht mal!“ Im Staub auf den Stufen sind kleine Abdrücke. Sie sehen aus wie winzige Hände mit fünf langen Fingern.",
+   "Ein Stück weiter findet Ben eine zerrissene Packung. „Katzenfutter!“, ruft er. „Das ist bestimmt die Packung von Frau Kessler.“ Tim macht ein Foto und schreibt: Spuren wie kleine Hände. Katzenfutter. Wer klettert hier hoch?",
+   "Endlich sind sie oben. Vor ihnen ist eine Holztür zum Raum mit dem Uhrwerk. Sie steht einen Spalt offen. Von drinnen hört man das laute Ticken der großen Zahnräder. Und dann noch etwas anderes: ein Kratzen. Und ein leises Fauchen in der Dunkelheit."
+  ], fragen:[
+   {t:"mc", q:"Wer ist Herr Kowalski?", a:["Ein Uhrmacher, der sich um die Turmuhr kümmert","Der Bürgermeister","Tims Opa","Ein Polizist"], b:"Er ist Uhrmacher und kümmert sich seit vielen Jahren um die Turmuhr."},
+   {t:"wort", q:"Wie viele Stufen hat die Wendeltreppe?", pre:"Sie hat", post:"Stufen.", l:["112","hundertzwölf"], b:"Die Wendeltreppe hat 112 Stufen."},
+   {t:"mc", q:"Wie sehen die Abdrücke im Staub aus?", a:["Wie winzige Hände mit fünf langen Fingern","Wie große Stiefel","Wie Vogelfüße","Wie Katzenpfoten"], b:"Sie sehen aus wie winzige Hände mit fünf langen Fingern."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Die Glocke schlägt um Mitternacht dreizehnmal.","Die Spürnasen sehen zwei leuchtende Augen am Turm.","Mira entdeckt die Abdrücke im Staub.","Ben findet die Packung Katzenfutter."]}
+  ]},
+  {text:[
+   "Herr Kowalski knipst das Licht an. Der Raum ist voller Zahnräder, Stangen und Drähte. In der Mitte hängt ein langer Draht, der hinauf zum Glockenhammer führt. Aber niemand ist zu sehen. Das Kratzen hat aufgehört.",
+   "Mira leuchtet hinter das große Zahnrad. „Hier ist etwas!“ In einer Ecke liegt ein weiches Nest aus alten Zeitungen, Stroh und Wolle. Es ist leer, aber noch warm. „Hier wohnt jemand“, flüstert Ben.",
+   "Herr Kowalski untersucht den Draht. „Seht ihr das? Der Draht ist ganz zerkratzt. Wenn jemand daran zieht, schlägt der Hammer gegen die Glocke. Dann gibt es einen Schlag zu viel.“ Tim schreibt schnell mit: Jemand zieht am Draht. Aber wer?",
+   "Ben hat eine Idee. „Mein Papa hat eine Wildkamera. Damit fotografiert er Vögel im Garten. Die Kamera macht von allein ein Foto, sobald sich etwas bewegt.“ Herr Kowalski ist einverstanden. Am Nachmittag hängen sie die Kamera gegenüber vom Nest auf.",
+   "Am Sonntagmorgen holen sie die Kamera wieder ab. Mit klopfendem Herzen schauen sie sich die Bilder an. Die ersten Fotos sind fast schwarz. Auf einem sieht man nur einen Schwanz mit Ringeln. Dann kommt das letzte Bild. Und darauf ist ein Gesicht mit einer schwarzen Maske – ganz nah vor der Kamera!"
+  ], fragen:[
+   {t:"mc", q:"Was finden die Kinder hinter dem Zahnrad?", a:["Ein warmes Nest aus Zeitungen, Stroh und Wolle","Eine Kiste mit Gold","Ein altes Gespenstertuch","Eine Taschenlampe"], b:"In einer Ecke liegt ein weiches Nest aus alten Zeitungen, Stroh und Wolle."},
+   {t:"mc", q:"Wie entsteht der dreizehnte Glockenschlag?", a:["Jemand zieht am Draht zum Glockenhammer.","Das Uhrwerk ist kaputt.","Der Wind bewegt die Glocke.","Herr Kowalski macht einen Scherz."], b:"Wenn jemand daran zieht, schlägt der Hammer gegen die Glocke."},
+   {t:"mc", q:"Was macht die Wildkamera?", a:["Sie macht von allein ein Foto, wenn sich etwas bewegt.","Sie filmt die ganze Nacht mit Ton.","Sie macht laute Geräusche.","Sie leuchtet hell auf."], b:"Die Kamera macht von allein ein Foto, sobald sich etwas bewegt."},
+   {t:"wort", q:"Was sieht man auf dem letzten Foto?", pre:"Ein Gesicht mit einer schwarzen", l:["Maske"], b:"ein Gesicht mit einer schwarzen Maske"}
+  ]},
+  {text:[
+   "„Ein Waschbär!“, ruft Tim. „Ganz sicher. Waschbären haben eine schwarze Gesichtsmaske, einen Ringelschwanz und Pfoten, die wie kleine Hände aussehen.“ Ben schaut sich die anderen Fotos noch einmal an. Auf einem sieht man drei kleine Köpfe im Nest. „Und Babys hat sie auch!“",
+   "Jetzt ist alles klar. Die Waschbär-Mama klettert jede Nacht den Turm hinauf und hinunter. Sie holt sich Katzenfutter bei Frau Kessler. Und kurz vor Mitternacht hält sie sich am Draht fest, um zum Nest zu klettern. Dabei zieht sie am Glockenhammer.",
+   "Herr Kowalski lacht so laut, dass es im Turm hallt. „Ein Gespenst mit Ringelschwanz! Das muss ich der Zeitung erzählen.“ Dann wird er ernst. „Aber die Familie kann hier nicht bleiben. Die Zahnräder sind gefährlich für die Kleinen.“",
+   "Sie rufen Frau Ortmann von der Wildtierhilfe an. Sie kommt am Nachmittag mit einer großen Transportbox. „Waschbären sind keine Haustiere“, erklärt sie. „Man darf sie nicht füttern. Auch Katzenfutter draußen lockt sie an.“ Behutsam setzt sie die Mama und die Babys in die Box. Später bringt sie die Familie in einen ruhigen Wald weit weg von der Stadt.",
+   "Frau Kessler stellt das Katzenfutter jetzt immer ins Haus. Und Herr Kowalski baut einen Schutzkasten um den Draht. Seitdem schlägt die Glocke um Mitternacht wieder genau zwölfmal. In der Zeitung steht: Spürnasen lösen Rätsel im Uhrturm. Und Tim klebt den Artikel in das Notizbuch."
+  ], fragen:[
+   {t:"mc", q:"Woran erkennt Tim einen Waschbären?", a:["An der schwarzen Maske, dem Ringelschwanz und den Pfoten wie kleine Hände","An den langen Ohren","An den Flügeln","An dem roten Fell"], b:"Waschbären haben eine schwarze Gesichtsmaske, einen Ringelschwanz und Pfoten, die wie kleine Hände aussehen."},
+   {t:"wort", q:"Wie viele Waschbär-Babys sind im Nest?", pre:"Es sind", post:"Babys.", l:["drei","3"], b:"Auf einem sieht man drei kleine Köpfe im Nest."},
+   {t:"mc", q:"Warum zieht die Waschbär-Mama am Glockenhammer?", a:["Sie hält sich am Draht fest, um zum Nest zu klettern.","Sie spielt gern mit Glocken.","Sie will die Leute erschrecken.","Sie will Futter bestellen."], b:"hält sie sich am Draht fest, um zum Nest zu klettern"},
+   {t:"mc", q:"Was erklärt Frau Ortmann?", a:["Man darf Waschbären nicht füttern.","Waschbären sind tolle Haustiere.","Waschbären fressen nur Gras.","Waschbären schlafen nie."], b:"Man darf sie nicht füttern."}
+  ]}
+ ]
+},
+{
+ id:"botschaft", titel:"Die Spürnasen: Die geheime Botschaft", emoji:"✉️", thema:"Detektive · 4. Fall", farbe:"#6C4AB6",
+ abzeichen:"Messing-Lupe", abzeichenEmoji:"🗝️",
+ teile:[
+  {text:[
+   "An einem Montag liegt ein Briefumschlag auf der Treppe vom Bauwagen. Darauf steht in schöner, geschwungener Schrift: An die Spürnasen. Persönlich! Ben reißt ihn neugierig auf. Darin ist ein Zettel. Aber statt Wörtern stehen nur Zahlen darauf.",
+   "16 – 1 – 18 – 11 – 2 – 1 – 14 – 11. „Was soll das denn heißen?“, fragt Ben. Mira grinst. „Das ist eine Geheimschrift! Ich glaube, jede Zahl ist ein Buchstabe. Die 1 ist das A, die 2 ist das B und so weiter.“",
+   "Tim schreibt das ganze Alphabet in sein Notizbuch und nummeriert es durch. Dann übersetzen sie Zahl für Zahl. Die 16 ist ein P. Die 1 ist ein A. Die 18 ist ein R. Am Ende steht da ein Wort: PARKBANK.",
+   "„Es gibt nur eine Parkbank, die so wichtig ist“, sagt Mira. „Die alte Bank am Ententeich im Stadtpark. Dort sitzen wir doch immer.“ Sie schnappen sich ihre Fahrräder und fahren los.",
+   "Als sie um die letzte Kurve biegen, sehen sie die Bank am Teich. Ein Junge mit einer roten Mütze kniet davor. Er schiebt gerade etwas unter die Bank. Dann hört er die Fahrräder. Er springt auf, schaut kurz zu ihnen herüber und rennt in die Büsche davon."
+  ], fragen:[
+   {t:"mc", q:"Was steht auf dem Zettel im Umschlag?", a:["Nur Zahlen","Ein Foto","Eine Landkarte","Ein Gedicht"], b:"Aber statt Wörtern stehen nur Zahlen darauf."},
+   {t:"mc", q:"Wie funktioniert die Geheimschrift?", a:["Jede Zahl ist ein Buchstabe: 1 ist A, 2 ist B.","Man muss den Zettel rückwärts lesen.","Man muss den Zettel ins Wasser legen.","Jede Zahl ist eine Hausnummer."], b:"Die 1 ist das A, die 2 ist das B und so weiter."},
+   {t:"wort", q:"Welches Wort kommt bei der Geheimschrift heraus?", pre:"Das Wort heißt", l:["Parkbank"], b:"Am Ende steht da ein Wort: PARKBANK."},
+   {t:"mc", q:"Was macht der Junge mit der roten Mütze?", a:["Er schiebt etwas unter die Bank und rennt weg.","Er füttert die Enten.","Er liest ein Buch.","Er winkt den Spürnasen zu."], b:"Er schiebt gerade etwas unter die Bank."}
+  ]},
+  {text:[
+   "„Hinterher!“, ruft Ben. Aber der Junge ist schon zwischen den dichten Büschen verschwunden. Tim kniet sich vor die Bank. Darunter klebt eine kleine blaue Dose mit Klebeband. Er löst sie vorsichtig ab.",
+   "In der Dose liegen ein alter, verschnörkelter Schlüssel und ein neuer Zettel. Diesmal ist es keine Zahlenschrift, sondern ein Rätsel: Ich habe viele Seiten, aber ich bin kein Haus. Ich erzähle Geschichten, doch ich habe keinen Mund. Wo viele von mir wohnen, geht es weiter.",
+   "Die drei denken nach. „Viele Seiten …“, murmelt Ben. „Ein Würfel?“ Mira schüttelt den Kopf. „Ein Würfel erzählt keine Geschichten. Es ist ein Buch! Und wo viele Bücher wohnen, das ist …“ – „Die Bücherei!“, rufen alle drei gleichzeitig.",
+   "Die Stadtbücherei ist nur zwei Straßen weiter. Frau Yilmaz, die Bibliothekarin, lächelt, als sie hereinkommen. „Ah, die Spürnasen“, sagt sie geheimnisvoll. „Ich habe schon auf euch gewartet. Schaut mal im Regal mit den Detektivbüchern nach.“",
+   "Die Spürnasen rennen zum Regal. Doch dort steht schon jemand. Es ist wieder der Junge mit der roten Mütze! Er zieht ein dickes Buch aus dem Regal, klemmt es unter den Arm und läuft schnell zum Ausgang. „Halt!“, ruft Mira. Aber die Tür fällt schon hinter ihm zu."
+  ], fragen:[
+   {t:"mc", q:"Was ist in der blauen Dose?", a:["Ein alter Schlüssel und ein neuer Zettel","Ein Goldstück","Ein Handy","Bonbons"], b:"In der Dose liegen ein alter, verschnörkelter Schlüssel und ein neuer Zettel."},
+   {t:"mc", q:"Was ist die Lösung des Rätsels?", a:["Ein Buch","Ein Würfel","Ein Haus","Ein Brief"], b:"Es ist ein Buch!"},
+   {t:"wort", q:"Wie heißt die Bibliothekarin?", pre:"Frau", l:["Yilmaz"], b:"Frau Yilmaz, die Bibliothekarin"},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Die Spürnasen finden einen Umschlag am Bauwagen.","Sie übersetzen die Zahlen-Geheimschrift.","Tim findet die blaue Dose unter der Bank.","Die Spürnasen lösen das Bücher-Rätsel."]}
+  ]},
+  {text:[
+   "„Er hat das Buch mitgenommen!“, sagt Ben enttäuscht. Doch Frau Yilmaz zwinkert. „Von diesem Buch haben wir zwei. Schaut noch einmal genau hin.“ Tim sucht das Regal ab. Ganz unten steht noch ein Buch mit dem Titel: Die besten Fälle der Kriminalpolizei.",
+   "Als er es aufschlägt, fällt ein gefaltetes Papier heraus. Es ist eine Zeichnung von einem Garten. Man sieht ein großes Haus, einen Teich und ein kleines Gartenhaus. Neben dem Gartenhaus ist ein rotes X. Und darunter steht: Der Schlüssel passt.",
+   "„Den Garten kenne ich!“, ruft Mira. „Das ist die Villa Lindner! Dort haben wir doch unseren ersten großen Fall gelöst.“ Ben nickt aufgeregt. „Frau Lindner ist im Sommer wieder in ihre Villa eingezogen. Mit ihrer Familie.“",
+   "Sie fahren zur Villa. Das Gartentor ist offen, und am Tor hängt ein Schild: Spürnasen willkommen! Leise gehen sie über den Rasen bis zum Gartenhaus. Es ist aus dunklem Holz und hat eine dicke Tür mit einem alten Schloss.",
+   "Tim steckt den verschnörkelten Schlüssel ins Schloss. Er passt! Langsam dreht er ihn um. Knarrend öffnet sich die Tür. Drinnen ist es dunkel. Die drei treten vorsichtig hinein. Da sagt hinter ihnen eine Stimme: „Endlich seid ihr da!“"
+  ], fragen:[
+   {t:"mc", q:"Warum finden die Spürnasen das Buch trotzdem?", a:["Die Bücherei hat dieses Buch zweimal.","Der Junge hat es zurückgebracht.","Tim hatte es schon zu Hause.","Frau Yilmaz hat es schnell gekauft."], b:"Von diesem Buch haben wir zwei."},
+   {t:"mc", q:"Was ist auf der Zeichnung zu sehen?", a:["Ein Garten mit Haus, Teich und Gartenhaus","Ein Schiff auf dem Meer","Ein Plan der Schule","Ein Bild von Frau Lindner"], b:"Man sieht ein großes Haus, einen Teich und ein kleines Gartenhaus."},
+   {t:"mc", q:"Wo ist das rote X?", a:["Neben dem Gartenhaus","Mitten im Teich","Auf dem Dach der Villa","Am Gartentor"], b:"Neben dem Gartenhaus ist ein rotes X."},
+   {t:"wort", q:"Was steht auf dem Schild am Tor?", pre:"Spürnasen", l:["willkommen"], b:"Spürnasen willkommen!"}
+  ]},
+  {text:[
+   "Die Spürnasen fahren herum. Im Licht, das durch die Tür fällt, steht der Junge mit der roten Mütze. Neben ihm sitzt eine alte Dame im Rollstuhl. Es ist Frau Lindner! Sie lacht. „Herzlich willkommen, ihr drei! Das hier ist mein Enkel Max.“",
+   "Max nimmt seine Mütze ab und grinst ein bisschen verlegen. „Tut mir leid, dass ich immer weggerannt bin. Ich sollte die Hinweise verstecken, aber ihr durftet mich nicht sehen. Das war Omas Idee.“",
+   "Frau Lindner erklärt: „Ihr habt damals den Dieb in meiner Villa entdeckt. Dafür wollte ich mich richtig bedanken. Und weil ihr Detektive seid, sollte es eine Schatzsuche sein.“ Sie zeigt auf einen Tisch. Darauf stehen ein großer Schokoladenkuchen und eine alte Holzkiste.",
+   "In der Kiste liegen eine glänzende Lupe aus Messing, ein Fingerabdruck-Set und ein dickes Notizbuch aus Leder. „Das gehörte meinem Mann“, sagt Frau Lindner leise. „Er war viele Jahre Kommissar bei der Kriminalpolizei. Er hätte sich gefreut, dass seine Sachen jetzt echten Detektiven gehören.“",
+   "Beim Kuchenessen erzählt Max, dass er sich die Geheimschrift selbst ausgedacht hat. Ben, Mira und Tim schauen sich an. Dann fragt Mira: „Max, willst du nicht auch eine Spürnase werden?“ Max strahlt. Und am Abend schreibt Tim in das neue Notizbuch: Die Spürnasen – jetzt sind wir zu viert!"
+  ], fragen:[
+   {t:"mc", q:"Wer ist der Junge mit der roten Mütze?", a:["Max, der Enkel von Frau Lindner","Felix aus der 4b","Miras Bruder","Ein Dieb"], b:"Das hier ist mein Enkel Max."},
+   {t:"mc", q:"Warum ist Max immer weggerannt?", a:["Die Spürnasen durften ihn nicht sehen.","Er hatte Angst vor ihnen.","Er hatte etwas gestohlen.","Er musste schnell nach Hause."], b:"Ich sollte die Hinweise verstecken, aber ihr durftet mich nicht sehen."},
+   {t:"mc", q:"Warum möchte sich Frau Lindner bedanken?", a:["Die Spürnasen haben damals den Dieb in ihrer Villa entdeckt.","Die Spürnasen haben ihren Garten gepflegt.","Die Spürnasen haben ihr Bücher gebracht.","Die Spürnasen haben ihren Hund gefunden."], b:"Ihr habt damals den Dieb in meiner Villa entdeckt."},
+   {t:"wort", q:"Was war Frau Lindners Mann von Beruf?", pre:"Er war", l:["Kommissar"], b:"Er war viele Jahre Kommissar bei der Kriminalpolizei."}
+  ]}
+ ]
+},
+{
+ id:"kira3", titel:"Kira und das Lamm auf dem Eis", emoji:"❄️", thema:"Hunde · Kira 3", farbe:"#B86B1E",
+ abzeichen:"Eis-Retterin", abzeichenEmoji:"🐑",
+ teile:[
+  {text:[
+   "Es ist Januar und bitterkalt. Der Teich hinter dem Bauernhof ist zugefroren. Lena möchte unbedingt darauf schlittern. Aber Papa schüttelt den Kopf. „Das Eis ist noch viel zu dünn“, sagt er streng. „Niemals aufs Eis gehen, bevor ein Erwachsener es erlaubt hat! Wer einbricht, kann im eiskalten Wasser in wenigen Minuten erfrieren.“",
+   "Am Nachmittag zieht eine große Schafherde durch das Dorf. Sie gehört der Schäferin Frau Wendt. Sie bringt ihre Schafe auf eine Winterweide hinter dem Wald. Ihr Hütehund Bruno läuft immer um die Herde herum, damit kein Schaf verloren geht.",
+   "Frau Wendt macht eine Pause auf dem Hof. Lena darf die Lämmer streicheln. Ein ganz kleines Lamm hat einen schwarzen Fleck am Ohr. „Das ist Wölkchen“, sagt Frau Wendt. „Sie ist die Neugierigste von allen.“ Kira beobachtet die Schafe ganz aufmerksam. Ihre Ohren sind gespitzt.",
+   "„Kira wäre bestimmt eine gute Hütehündin“, lacht Frau Wendt. „Sie schaut genau wie Bruno.“ Dann zieht die Herde weiter. Lena winkt Wölkchen nach, bis die Schafe im Wald verschwunden sind.",
+   "Am nächsten Morgen klingelt das Telefon. Es ist Frau Wendt. Sie klingt besorgt. „Wölkchen ist weg! Sie muss sich in der Nacht davongeschlichen haben. Bruno hat überall gesucht. Habt ihr sie vielleicht gesehen?“ Jonas schaut aus dem Fenster. Draußen ist frischer Schnee gefallen. Und darin sind kleine Spuren. Sie führen direkt zum Teich."
+  ], fragen:[
+   {t:"mc", q:"Warum dürfen die Kinder nicht aufs Eis?", a:["Das Eis ist noch viel zu dünn.","Der Teich gehört Herrn Becker.","Es ist schon zu dunkel.","Lena hat keine Schlittschuhe."], b:"Das Eis ist noch viel zu dünn"},
+   {t:"wort", q:"Wie heißt der Hütehund von Frau Wendt?", pre:"Er heißt", l:["Bruno"], b:"Ihr Hütehund Bruno läuft immer um die Herde herum"},
+   {t:"mc", q:"Woran erkennt man Wölkchen?", a:["An einem schwarzen Fleck am Ohr","An einer roten Schleife","An ihrem braunen Fell","An einer Glocke am Hals"], b:"Ein ganz kleines Lamm hat einen schwarzen Fleck am Ohr."},
+   {t:"mc", q:"Wohin führen die Spuren im Schnee?", a:["Direkt zum Teich","In den Wald","Zur Scheune","Ins Dorf"], b:"Sie führen direkt zum Teich."}
+  ]},
+  {text:[
+   "Jonas, Lena und Papa ziehen sich schnell warm an. Kira ist schon an der Tür und wedelt aufgeregt mit dem Schwanz. Zusammen folgen sie den kleinen Spuren durch den Schnee. Sie führen über die Wiese, am Zaun entlang und hinunter zum Teich.",
+   "Am Ufer bleiben sie stehen. Lena hält die Luft an. Mitten auf dem Teich steht Wölkchen. Das Lamm zittert und blökt kläglich. Rund um seine Beine ist das Eis dunkel und hat feine Risse. „Es traut sich nicht mehr weiter“, sagt Papa leise.",
+   "„Wir müssen es holen!“, ruft Lena und macht einen Schritt nach vorne. Papa hält sie sofort am Arm fest. „Nein! Denk daran, was ich gesagt habe. Das Eis trägt kein Kind und keinen Erwachsenen. Wir gehen nicht aufs Eis.“ Er holt sein Handy heraus und wählt die 112.",
+   "„Ein Lamm ist auf dem zugefrorenen Teich am Bauernhof, Waldweg 3“, sagt Papa. „Das Eis ist dünn und hat Risse.“ Die Frau am Telefon antwortet: „Die Feuerwehr kommt mit Geräten für die Eisrettung. Bleiben Sie alle am Ufer.“",
+   "Da knackt es laut auf dem Teich. Wölkchen erschrickt und blökt. Und plötzlich reißt sich Kira los. Bevor Jonas sie festhalten kann, rennt sie mit großen Sätzen auf das Eis hinaus, direkt auf das Lamm zu."
+  ], fragen:[
+   {t:"mc", q:"Wo steht Wölkchen?", a:["Mitten auf dem Teich","Am Ufer im Schilf","Im Wald","Im Stall"], b:"Mitten auf dem Teich steht Wölkchen."},
+   {t:"mc", q:"Was sieht man rund um Wölkchens Beine?", a:["Dunkles Eis mit feinen Rissen","Ein großes Loch","Frischen Schnee","Viele Fußspuren"], b:"Rund um seine Beine ist das Eis dunkel und hat feine Risse."},
+   {t:"mc", q:"Was macht Papa, statt aufs Eis zu gehen?", a:["Er ruft die 112 an.","Er holt ein Boot.","Er wirft einen Stein.","Er ruft Frau Wendt an."], b:"Er holt sein Handy heraus und wählt die 112."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Frau Wendt macht mit der Herde Pause auf dem Hof.","Frau Wendt ruft an, weil Wölkchen weg ist.","Sie finden Wölkchen mitten auf dem Teich.","Kira rennt auf das Eis hinaus."]}
+  ]},
+  {text:[
+   "„Kira! Platz!“, schreit Jonas, so laut er kann. Kira hört das Kommando. Mitten auf dem Eis bleibt sie stehen und legt sich flach auf den Bauch. Sie zittert, aber sie bleibt liegen. Jonas' Herz klopft wie verrückt.",
+   "„Gut gemacht, Jonas“, sagt Papa. „Wenn sie flach liegt, verteilt sich ihr Gewicht. Dann bricht das Eis nicht so leicht.“ Ganz ruhig ruft Jonas: „Kira, komm! Langsam!“ Kira robbt auf dem Bauch zurück zum Ufer. Zentimeter für Zentimeter. Endlich ist sie da. Jonas drückt sie ganz fest an sich.",
+   "Wölkchen aber steht immer noch auf dem Eis. Es blökt und macht einen Schritt nach vorne, in Richtung Ufer. Und noch einen. „Bleib stehen!“, ruft Lena. Doch das Lamm versteht sie nicht.",
+   "In der Ferne hören sie schon das Martinshorn. Die Feuerwehr ist unterwegs. Aber Wölkchen läuft weiter. Es ist nur noch fünf Meter vom Ufer entfernt. Dort ist das Eis noch dünner, weil unter dem Schilf eine Quelle sprudelt.",
+   "Plötzlich gibt es ein lautes Krachen. Das Eis bricht unter Wölkchen weg. Mit einem Platsch fällt das kleine Lamm ins eiskalte Wasser. Es strampelt und blökt. Und sein Kopf verschwindet für einen Moment unter der Oberfläche."
+  ], fragen:[
+   {t:"wort", q:"Welches Kommando ruft Jonas?", pre:"Kira,", l:["Platz"], b:"Kira! Platz!"},
+   {t:"mc", q:"Warum ist es gut, dass Kira flach auf dem Eis liegt?", a:["Ihr Gewicht verteilt sich, und das Eis bricht nicht so leicht.","So wird ihr wärmer.","So kann sie besser sehen.","So erschreckt sie das Lamm nicht."], b:"Wenn sie flach liegt, verteilt sich ihr Gewicht."},
+   {t:"mc", q:"Warum ist das Eis am Ufer besonders dünn?", a:["Unter dem Schilf sprudelt eine Quelle.","Dort scheint die Sonne.","Die Feuerwehr hat es aufgehackt.","Dort schwimmen viele Fische."], b:"weil unter dem Schilf eine Quelle sprudelt"},
+   {t:"mc", q:"Was passiert mit Wölkchen am Ende dieses Teils?", a:["Es bricht ein und fällt ins eiskalte Wasser.","Es springt ans Ufer.","Es legt sich auf das Eis.","Es rennt zurück in den Wald."], b:"Mit einem Platsch fällt das kleine Lamm ins eiskalte Wasser."}
+  ]},
+  {text:[
+   "„Schnell!“, ruft Papa. Er legt sich am Ufer flach auf den Boden und hält einen langen Ast aufs Wasser. Aber das Lamm ist zu klein, um sich festzuhalten. Da quietschen Reifen auf dem Waldweg. Das Feuerwehrauto ist da!",
+   "Zwei Feuerwehrleute springen heraus. Sie tragen dicke orange Anzüge, die im Wasser schwimmen. Sie schieben einen flachen Rettungsschlitten aufs Eis. Einer legt sich darauf und rutscht vorsichtig zu dem Loch. Dann greift er ins Wasser und zieht Wölkchen heraus.",
+   "Am Ufer wickeln sie das klatschnasse Lamm in eine warme Decke. Wölkchen zittert und blökt leise. Papa trägt es ins warme Haus. Lena reibt es mit einem Handtuch trocken, und Mama legt eine Wärmflasche dazu. Nach einer halben Stunde steht Wölkchen schon wieder auf seinen wackeligen Beinen.",
+   "Kurz darauf kommt Frau Wendt mit Bruno angelaufen. Sie nimmt Wölkchen glücklich in die Arme. Der Feuerwehrmann sagt zu Jonas: „Das war ganz wichtig, dass ihr alle am Ufer geblieben seid. Und dass du deinen Hund zurückgerufen hast.“",
+   "Zum Dank lädt Frau Wendt Jonas und Kira auf die Winterweide ein. Dort darf Kira zusammen mit Bruno die Herde zusammenhalten. Sie rennt in großen Bögen um die Schafe herum, als hätte sie nie etwas anderes gemacht. „Ich hab's ja gesagt“, lacht Frau Wendt. „Eine geborene Hütehündin.“"
+  ], fragen:[
+   {t:"mc", q:"Warum kann Papa Wölkchen nicht mit dem Ast retten?", a:["Das Lamm ist zu klein, um sich festzuhalten.","Der Ast ist zu kurz.","Papa traut sich nicht.","Kira nimmt ihm den Ast weg."], b:"Aber das Lamm ist zu klein, um sich festzuhalten."},
+   {t:"mc", q:"Wie kommt der Feuerwehrmann zu dem Loch im Eis?", a:["Er rutscht auf einem flachen Rettungsschlitten.","Er läuft einfach über das Eis.","Er schwimmt durch den Teich.","Er kommt mit einem Hubschrauber."], b:"Einer legt sich darauf und rutscht vorsichtig zu dem Loch."},
+   {t:"wort", q:"Was legt Mama zu Wölkchen, damit es warm wird?", pre:"Eine", l:["Wärmflasche"], b:"Mama legt eine Wärmflasche dazu"},
+   {t:"mc", q:"Wofür lobt der Feuerwehrmann die Familie?", a:["Dass alle am Ufer geblieben sind","Dass sie das Lamm selbst aus dem Wasser geholt haben","Dass sie so schnell rennen können","Dass sie Kekse gebacken haben"], b:"Das war ganz wichtig, dass ihr alle am Ufer geblieben seid."}
+  ]}
+ ]
+},
+{
+ id:"kira4", titel:"Kira im Maislabyrinth", emoji:"🌽", thema:"Hunde · Kira 4", farbe:"#B86B1E",
+ abzeichen:"Schulhund-Medaille", abzeichenEmoji:"🎒",
+ teile:[
+  {text:[
+   "Jonas' Mama ist Lehrerin an seiner Schule. Seit einem halben Jahr übt sie mit Kira für eine besondere Aufgabe: Kira soll ein Schulhund werden. Ein Schulhund kommt mit in den Unterricht. Er hilft den Kindern, ruhiger zu werden, und macht vielen Mut.",
+   "Am ersten Schultag mit Kira hängt Mama ein Plakat an die Tafel. Darauf stehen die Hunde-Regeln: Erst fragen, dann streicheln. Kira nicht füttern. Leise sein, nicht rennen. Wenn Kira auf ihrer Decke liegt, hat sie Pause.",
+   "Die meisten Kinder freuen sich riesig. Nur ein Junge versteckt sich hinter dem Schrank. Er heißt Ole. „Ich habe Angst vor Hunden“, flüstert er. „Ein großer Hund ist mal an mir hochgesprungen.“ Mama nickt verständnisvoll. „Du musst nicht zu Kira gehen. Sie kommt auch nicht zu dir, wenn du das nicht willst.“",
+   "Kira legt sich auf ihre Decke, ganz weit weg von Ole. Sie legt den Kopf auf die Pfoten und rührt sich nicht. Ole schaut immer wieder vorsichtig hinter dem Schrank hervor. Am Ende der Stunde setzt er sich schon an seinen Platz.",
+   "Zwei Wochen später ist Wandertag. Die Klasse besucht ein riesiges Maislabyrinth. Die Maispflanzen sind viel höher als die Erwachsenen. Kira darf auch mit. Nach dem Picknick versammeln sich alle am Ausgang. Mama zählt die Kinder. Sie zählt noch einmal. Ein Kind fehlt. Es ist Ole."
+  ], fragen:[
+   {t:"mc", q:"Was macht ein Schulhund?", a:["Er kommt mit in den Unterricht und hilft den Kindern.","Er bewacht nachts die Schule.","Er lernt lesen und schreiben.","Er frisst die Hausaufgaben."], b:"Ein Schulhund kommt mit in den Unterricht."},
+   {t:"mc", q:"Welche Regel steht auf dem Plakat?", a:["Erst fragen, dann streicheln.","Kira jeden Tag füttern.","Mit Kira um die Wette rennen.","Kira immer aufwecken."], b:"Erst fragen, dann streicheln."},
+   {t:"mc", q:"Warum hat Ole Angst vor Hunden?", a:["Ein großer Hund ist mal an ihm hochgesprungen.","Ein Hund hat seine Jacke zerrissen.","Er hat einen gruseligen Film gesehen.","Kira hat ihn angebellt."], b:"Ein großer Hund ist mal an mir hochgesprungen."},
+   {t:"wort", q:"Wohin geht die Klasse am Wandertag?", pre:"In ein riesiges", l:["Maislabyrinth"], b:"Die Klasse besucht ein riesiges Maislabyrinth."}
+  ]},
+  {text:[
+   "„Ole!“, ruft Mama. „Ole, wo bist du?“ Keine Antwort. Nur die Maisblätter rascheln im Wind. Die anderen Kinder schauen sich erschrocken an. Herr Fuchs, der zweite Lehrer, bleibt mit der Klasse am Ausgang. Mama, Jonas und Kira gehen zurück ins Labyrinth.",
+   "Das Labyrinth ist riesig. Überall sehen die Wege gleich aus. Links, rechts, geradeaus – und immer wieder Sackgassen. „Wie sollen wir ihn hier bloß finden?“, fragt Jonas verzweifelt.",
+   "Da hat Mama eine Idee. Auf der Picknickdecke liegt noch Oles grüne Mütze. Mama hält sie Kira unter die Nase. „Kira, such Ole!“ Kira schnüffelt lange an der Mütze. Dann senkt sie die Nase auf den Boden und läuft los, mal nach links, mal nach rechts.",
+   "Jonas und Mama folgen ihr durch die engen Gänge. Kira ist ganz sicher. Nach einer Weile hören sie ein leises Weinen. „Das ist Ole!“, flüstert Jonas. „Er muss ganz nah sein.“",
+   "Doch plötzlich bleibt Kira stocksteif stehen. Ihr Fell sträubt sich, und sie knurrt leise. Vor ihnen raschelt es laut im Mais. Dann schiebt sich ein dunkler, borstiger Kopf zwischen den Pflanzen hervor. Ein großes Wildschwein steht mitten auf dem Weg und schnaubt."
+  ], fragen:[
+   {t:"mc", q:"Wer bleibt mit der Klasse am Ausgang?", a:["Herr Fuchs, der zweite Lehrer","Jonas","Oles Mama","Der Bauer"], b:"Herr Fuchs, der zweite Lehrer, bleibt mit der Klasse am Ausgang."},
+   {t:"mc", q:"Warum ist es so schwer, Ole zu finden?", a:["Im Labyrinth sehen alle Wege gleich aus.","Es ist schon dunkel.","Ole versteckt sich absichtlich.","Es regnet sehr stark."], b:"Überall sehen die Wege gleich aus."},
+   {t:"wort", q:"Woran schnüffelt Kira, um Oles Spur zu finden?", pre:"An Oles grüner", l:["Mütze"], b:"Auf der Picknickdecke liegt noch Oles grüne Mütze."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Mama hängt das Plakat mit den Hunde-Regeln auf.","Ole versteckt sich hinter dem Schrank.","Mama merkt, dass Ole fehlt.","Kira schnüffelt an Oles Mütze."]}
+  ]},
+  {text:[
+   "„Nicht bewegen“, flüstert Mama. „Und auf keinen Fall wegrennen.“ Sie hält Kira ganz fest an der Leine. Jonas steht wie eine Statue. Das Wildschwein schaut sie an. Es grunzt. Dann dreht es sich um und verschwindet raschelnd im Mais.",
+   "„Wildschweine greifen meistens nur an, wenn sie Angst haben oder ihre Jungen beschützen“, erklärt Mama leise. „Wenn man ruhig bleibt und ihnen Platz lässt, laufen sie weg.“ Jonas atmet tief aus. Seine Knie zittern.",
+   "Kira schnüffelt weiter. Zwei Kurven später finden sie Ole. Er sitzt zusammengekauert zwischen den Maispflanzen und hält sich den Fuß. „Ich wollte allein den Ausgang finden“, schluchzt er. „Dann bin ich umgeknickt. Und dann habe ich ein Grunzen gehört und hatte schreckliche Angst.“",
+   "Mama kniet sich neben ihn. „Jetzt bist du nicht mehr allein“, sagt sie sanft. Aber dann sieht Ole Kira. Er reißt die Augen auf und rutscht rückwärts in den Mais. „Nein! Nicht der Hund! Bitte nicht!“",
+   "Kira macht einen Schritt auf Ole zu. Ole schreit auf und hält sich die Arme vors Gesicht. Er zittert am ganzen Körper. „Mama“, flüstert Jonas. „Wie sollen wir ihn hier rausbringen, wenn er solche Angst vor Kira hat? Nur sie kennt den Weg zurück!“"
+  ], fragen:[
+   {t:"mc", q:"Was soll man tun, wenn man einem Wildschwein begegnet?", a:["Ruhig bleiben und nicht wegrennen","Laut schreien und wegrennen","Es streicheln","Es füttern"], b:"Und auf keinen Fall wegrennen."},
+   {t:"mc", q:"Wann greifen Wildschweine meistens an?", a:["Wenn sie Angst haben oder ihre Jungen beschützen","Wenn sie Hunger haben","Immer bei Sonnenschein","Wenn sie Mais sehen"], b:"Wildschweine greifen meistens nur an, wenn sie Angst haben oder ihre Jungen beschützen"},
+   {t:"mc", q:"Warum sitzt Ole im Mais?", a:["Er ist umgeknickt und hat sich den Fuß verletzt.","Er spielt Verstecken.","Er ist eingeschlafen.","Er sucht seine Mütze."], b:"Dann bin ich umgeknickt."},
+   {t:"mc", q:"Warum ist Oles Angst vor Kira jetzt ein großes Problem?", a:["Nur Kira kennt den Weg zurück.","Kira will nach Hause.","Kira ist sehr müde.","Mama ist sauer auf Ole."], b:"Nur sie kennt den Weg zurück!"}
+  ]},
+  {text:[
+   "Mama sagt ruhig: „Kira, Platz.“ Kira legt sich sofort hin. Sie legt den Kopf auf die Pfoten, genau wie im Klassenzimmer. Dann bleibt sie ganz still liegen und schaut Ole nur mit ihren braunen Augen an.",
+   "„Siehst du?“, sagt Jonas leise und setzt sich neben Ole. „Kira springt nie an jemandem hoch. Das hat sie gelernt. Sie wartet einfach.“ Ole schnieft. Ganz langsam nimmt er die Arme vom Gesicht.",
+   "„Wenn du willst, kannst du ihr deine Hand zeigen“, sagt Mama. „Halt sie einfach hin, mit der Faust nach unten. Dann darf sie schnuppern.“ Ole zögert lange. Dann streckt er ganz vorsichtig die Hand aus. Kira schnuppert daran und wedelt sanft mit dem Schwanz. Ole muss fast lachen. „Das kitzelt!“",
+   "Mama hilft Ole hoch und stützt ihn. Jonas nimmt Kiras Leine. „Kira, zum Ausgang!“ Kira läuft voraus, Kurve für Kurve, und führt alle sicher aus dem Labyrinth. Die Klasse jubelt, als sie herauskommen. Herr Fuchs hat schon einen Kühlbeutel für Oles Fuß bereit.",
+   "Ein paar Wochen später besteht Kira die Prüfung zum Schulhund. Und wer sitzt in der ersten Stunde gleich neben ihrer Decke? Ole. Er hat sogar ein Bild für sie gemalt. Darauf ist ein goldbrauner Hund in einem Maisfeld. Und darunter steht: Kira, meine Retterin."
+  ], fragen:[
+   {t:"mc", q:"Was macht Kira, als Mama „Platz“ sagt?", a:["Sie legt sich hin und bleibt ganz still liegen.","Sie springt zu Ole.","Sie bellt laut.","Sie läuft weg."], b:"Dann bleibt sie ganz still liegen und schaut Ole nur mit ihren braunen Augen an."},
+   {t:"mc", q:"Wie soll Ole Kira seine Hand zeigen?", a:["Mit der Faust nach unten, damit sie schnuppern kann","Mit einem Leckerli darin","Ganz schnell vor ihre Nase","Hoch über ihren Kopf"], b:"Halt sie einfach hin, mit der Faust nach unten."},
+   {t:"wort", q:"Was sagt Ole, als Kira an seiner Hand schnuppert?", pre:"Das", l:["kitzelt"], b:"Das kitzelt!"},
+   {t:"mc", q:"Woran merkt man, dass Ole keine Angst mehr vor Kira hat?", a:["Er sitzt neben ihrer Decke und malt ihr ein Bild.","Er bleibt lieber zu Hause.","Er versteckt sich wieder hinter dem Schrank.","Er wechselt die Klasse."], b:"Er hat sogar ein Bild für sie gemalt."}
+  ]}
+ ]
+},
+{
+ id:"perla3", titel:"Perla im Nebel", emoji:"🌫️", thema:"Meer & Delfine · Perla 3", farbe:"#1A7F9E",
+ abzeichen:"Lotsen-Abzeichen", abzeichenEmoji:"🧭",
+ teile:[
+  {text:[
+   "Es ist Opa Hinnerks Geburtstag. Er wünscht sich nur eins: mit Nele zur Vogelinsel fahren. Dort brüten im Sommer Hunderte Seevögel auf den Felsen. Opa packt seinen alten Kompass ein, Nele die Geburtstagskekse.",
+   "Im Radio warnt der Wetterbericht: Am Nachmittag kann Nebel aufziehen. „Bis dahin sind wir längst zurück“, sagt Opa. Er zieht Nele trotzdem eine Rettungsweste an und legt das Funkgerät griffbereit neben das Steuer.",
+   "Die Fahrt dauert eine Stunde. An der Vogelinsel ist es laut. Überall kreischen Möwen, und kleine Papageitaucher mit bunten Schnäbeln sitzen auf den Felsen. Nele zählt sie, bis sie durcheinanderkommt. Dann tauchen Perla und Kiesel neben dem Boot auf und begleiten sie ein Stück.",
+   "Auf der Rückfahrt merkt Nele, dass es kühler wird. Am Horizont liegt ein grauer Streifen. Er wird schnell breiter. „Der Nebel kommt früher als gedacht“, murmelt Opa und gibt mehr Gas.",
+   "Doch der Nebel ist schneller. Nach wenigen Minuten ist um sie herum alles grau. Nele kann nicht einmal mehr das Ende des Bootes richtig sehen. Da beginnt der Motor zu stottern. Er hustet, ruckelt – und geht aus. Plötzlich ist es ganz still."
+  ], fragen:[
+   {t:"mc", q:"Was wünscht sich Opa zum Geburtstag?", a:["Mit Nele zur Vogelinsel zu fahren","Einen neuen Kompass","Ein neues Boot","Einen großen Kuchen"], b:"mit Nele zur Vogelinsel fahren"},
+   {t:"mc", q:"Wovor warnt der Wetterbericht?", a:["Vor Nebel am Nachmittag","Vor einem Gewitter","Vor großer Hitze","Vor Schnee"], b:"Am Nachmittag kann Nebel aufziehen."},
+   {t:"wort", q:"Welche Vögel mit bunten Schnäbeln sitzen auf den Felsen?", pre:"Kleine", l:["Papageitaucher"], b:"kleine Papageitaucher mit bunten Schnäbeln"},
+   {t:"mc", q:"Was passiert, als der Nebel da ist?", a:["Der Motor stottert und geht aus.","Perla springt ins Boot.","Opa schläft ein.","Die Sonne kommt heraus."], b:"Da beginnt der Motor zu stottern."}
+  ]},
+  {text:[
+   "Opa versucht, den Motor wieder anzulassen. Einmal, zweimal, dreimal. Er springt nicht an. „Der Treibstofffilter ist verstopft“, brummt Opa. „Das dauert eine Weile, bis ich ihn sauber habe.“",
+   "Er nimmt das Funkgerät und stellt es auf Kanal 16. Das ist der Notrufkanal für Schiffe. „Hier ist die Möwe“, sagt er ruhig. „Wir treiben mit Motorschaden im Nebel, zwischen Vogelinsel und Hafen.“ Eine Stimme antwortet: „Verstanden, Möwe. Der Seenotrettungskreuzer ist unterwegs. Er braucht etwa vierzig Minuten.“",
+   "Nele schaut auf den Kompass. Die Nadel dreht sich langsam. „Opa, wir drehen uns!“ – „Die Strömung treibt uns“, sagt Opa. Sein Gesicht wird ernst. „Und sie treibt uns nach Westen. Dort liegen die Teufelszähne.“",
+   "Nele weiß, was die Teufelszähne sind. Es sind spitze Felsen, die nur knapp aus dem Wasser ragen. Schon viele Boote sind dort kaputtgegangen. Opa hat ihr das oft erzählt.",
+   "Nele hält den Atem an und lauscht. Durch den dichten Nebel hört sie ein Geräusch. Ein dumpfes Rauschen und Krachen. Es sind Wellen, die gegen Felsen schlagen. Und das Geräusch kommt immer näher."
+  ], fragen:[
+   {t:"mc", q:"Warum springt der Motor nicht an?", a:["Der Treibstofffilter ist verstopft.","Der Tank ist leer.","Perla hat ihn kaputt gemacht.","Der Schlüssel ist ins Wasser gefallen."], b:"Der Treibstofffilter ist verstopft"},
+   {t:"wort", q:"Welchen Kanal stellt Opa am Funkgerät ein?", pre:"Kanal", l:["16","sechzehn"], b:"stellt es auf Kanal 16"},
+   {t:"mc", q:"Wie lange braucht der Seenotrettungskreuzer?", a:["Etwa vierzig Minuten","Fünf Minuten","Zwei Stunden","Einen ganzen Tag"], b:"Er braucht etwa vierzig Minuten."},
+   {t:"mc", q:"Was sind die Teufelszähne?", a:["Spitze Felsen knapp über dem Wasser","Große Haie","Hohe Wellen","Ein alter Leuchtturm"], b:"Es sind spitze Felsen, die nur knapp aus dem Wasser ragen."}
+  ]},
+  {text:[
+   "„Anker werfen!“, ruft Opa. Er wuchtet den schweren Anker über den Bootsrand. Das Seil rauscht ins Wasser. Dann spannt es sich. Das Boot bleibt stehen. „Der Anker hält“, sagt Opa erleichtert. „Jetzt treiben wir nicht weiter.“",
+   "Er beugt sich wieder über den Motor und schraubt am Filter. Nele hält ihm die Taschenlampe. Ihre Hände sind kalt. Durch den Nebel hört sie die Brandung. Sie ist jetzt ganz nah.",
+   "Da bewegt sich etwas im Wasser. Etwas Weißes. „Perla!“, ruft Nele. Und neben ihr taucht eine kleine graue Rückenflosse auf. Kiesel! Die beiden Delfine schwimmen dicht am Boot. Perla pfeift laut, schwimmt ein Stück weg und kommt wieder zurück. Immer wieder in dieselbe Richtung.",
+   "„Sie will uns etwas zeigen“, flüstert Nele. Opa schaut auf. „Delfine kennen sich hier besser aus als jeder Kapitän“, sagt er. „Zwischen den Teufelszähnen gibt es eine tiefe Rinne. Dort schwimmen sie immer hindurch.“",
+   "In diesem Moment kommt eine große Welle. Das Boot wird hochgehoben und reißt am Ankerseil. Es gibt einen lauten Knall. Das Seil ist gerissen! Die Möwe treibt wieder. Und vor ihnen, im Nebel, taucht der erste spitze Felsen auf."
+  ], fragen:[
+   {t:"mc", q:"Warum wirft Opa den Anker?", a:["Damit das Boot nicht weiter treibt","Um Fische zu fangen","Weil der Anker zu schwer ist","Um die Wassertiefe zu messen"], b:"Jetzt treiben wir nicht weiter."},
+   {t:"mc", q:"Was macht Perla immer wieder?", a:["Sie schwimmt weg und kommt zurück – immer in dieselbe Richtung.","Sie springt über das Boot.","Sie stupst den Anker an.","Sie taucht tief hinunter und bleibt weg."], b:"Perla pfeift laut, schwimmt ein Stück weg und kommt wieder zurück."},
+   {t:"mc", q:"Was gibt es zwischen den Teufelszähnen?", a:["Eine tiefe Rinne, durch die Delfine schwimmen","Eine kleine Insel","Einen Hafen","Einen Leuchtturm"], b:"Zwischen den Teufelszähnen gibt es eine tiefe Rinne."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Nele zählt die Papageitaucher.","Der Motor geht im Nebel aus.","Opa funkt auf Kanal 16.","Das Ankerseil reißt."]}
+  ]},
+  {text:[
+   "„Opa, der Motor!“, schreit Nele. Opa dreht ein letztes Mal an der Schraube und reißt am Startseil. Der Motor hustet, spuckt – und läuft! „Halt dich fest!“, ruft Opa und dreht das Steuer herum, gerade noch rechtzeitig vor dem Felsen.",
+   "„Folge Perla!“, ruft Nele und zeigt nach vorne. Dort schwimmt die weiße Delfindame langsam vor dem Boot her. Kiesel ist direkt neben ihr. Opa steuert ganz langsam hinter ihnen her. Links ragt ein Felsen aus dem Wasser, rechts noch einer. Aber das Boot gleitet genau in der Mitte hindurch.",
+   "Nach ein paar bangen Minuten wird das Rauschen der Brandung leiser. Sie haben die Teufelszähne hinter sich gelassen! Und dann sieht Nele ein helles Licht im Nebel. Ein großes oranges Schiff kommt auf sie zu. Es ist der Seenotrettungskreuzer.",
+   "Die Seenotretter begleiten die Möwe sicher in den Hafen. Der Kapitän schüttelt Opa die Hand. „Durch die Teufelszähne, im Nebel? Wie habt ihr das geschafft?“ Opa lächelt und zeigt aufs Wasser. Dort tauchen gerade eine weiße und eine graue Flosse auf und wieder ab.",
+   "Am Abend gibt es doch noch eine Geburtstagsfeier. Opa pustet die Kerzen auf seinem Kuchen aus. „Das war der aufregendste Geburtstag meines Lebens“, sagt er. „Und ich habe zwei neue Lotsen.“ Nele weiß, wen er meint. Ein Lotse ist jemand, der Schiffe sicher durch gefährliche Gewässer führt."
+  ], fragen:[
+   {t:"mc", q:"Was passiert gerade noch rechtzeitig?", a:["Der Motor springt wieder an.","Das Ankerseil wird repariert.","Der Nebel verschwindet.","Opa schwimmt zum Ufer."], b:"Der Motor hustet, spuckt – und läuft!"},
+   {t:"mc", q:"Wie kommt das Boot durch die Teufelszähne?", a:["Es folgt Perla genau durch die Mitte.","Es fährt ganz schnell geradeaus.","Der Kreuzer zieht es an einem Seil.","Es wartet, bis der Nebel weg ist."], b:"Aber das Boot gleitet genau in der Mitte hindurch."},
+   {t:"wort", q:"Welche Farbe hat der Seenotrettungskreuzer?", pre:"Er ist", l:["orange","oranges"], b:"Ein großes oranges Schiff kommt auf sie zu."},
+   {t:"mc", q:"Was ist ein Lotse?", a:["Jemand, der Schiffe sicher durch gefährliche Gewässer führt","Ein Fisch mit langer Nase","Ein Kapitän im Ruhestand","Ein Leuchtturm"], b:"Ein Lotse ist jemand, der Schiffe sicher durch gefährliche Gewässer führt."}
+  ]}
+ ]
+},
+{
+ id:"perla4", titel:"Kiesel und der Plastikring", emoji:"♻️", thema:"Meer & Delfine · Perla 4", farbe:"#1A7F9E",
+ abzeichen:"Strandputz-Held", abzeichenEmoji:"🪣",
+ teile:[
+  {text:[
+   "Diesmal fährt Nele in den Herbstferien zu Opa. Am ersten Tag macht sie einen langen Spaziergang am Strand. Doch sie findet nicht nur Muscheln. Überall liegen Plastikflaschen, Tüten, Strohhalme und kaputte Fischernetze.",
+   "„Das wird jedes Jahr mehr“, sagt Opa traurig. „Der Wind und die Wellen bringen es von weit her. Für die Tiere im Meer ist Plastik sehr gefährlich. Manche fressen es, weil sie es für Futter halten. Andere verheddern sich darin.“",
+   "Nele sammelt eine ganze Tüte voll. Dabei findet sie auch die Plastikringe, mit denen Getränkedosen zusammengehalten werden. „Die sind besonders schlimm“, sagt Opa. „Ein Tier steckt den Kopf hinein und kommt nicht mehr heraus.“",
+   "Am nächsten Morgen fahren sie mit der Möwe in die Bucht. Perla kommt sofort. Aber sie ist ganz anders als sonst. Sie kichert nicht. Sie stupst immer wieder mit der Schnauze gegen das Boot und pfeift aufgeregt.",
+   "„Wo ist Kiesel?“, fragt Nele. Da taucht er hinter seiner Mutter auf. Er ist dünner geworden. Und um seine Schnauze glänzt etwas. Nele kneift die Augen zusammen. Es ist ein durchsichtiger Plastikring. Er ist so eng um Kiesels Maul gewickelt, dass er es kaum noch öffnen kann."
+  ], fragen:[
+   {t:"mc", q:"Was findet Nele am Strand außer Muscheln?", a:["Viel Plastikmüll wie Flaschen, Tüten und Strohhalme","Einen Schatz","Einen Seestern","Ein altes Boot"], b:"Überall liegen Plastikflaschen, Tüten, Strohhalme und kaputte Fischernetze."},
+   {t:"mc", q:"Warum ist Plastik für Meerestiere so gefährlich?", a:["Sie fressen es oder verheddern sich darin.","Es ist zu laut.","Es macht das Wasser warm.","Es blendet sie."], b:"Manche fressen es, weil sie es für Futter halten."},
+   {t:"mc", q:"Wie verhält sich Perla an diesem Morgen?", a:["Sie stupst gegen das Boot und pfeift aufgeregt.","Sie kichert fröhlich.","Sie springt hoch in die Luft.","Sie kommt gar nicht."], b:"Sie stupst immer wieder mit der Schnauze gegen das Boot und pfeift aufgeregt."},
+   {t:"wort", q:"Was steckt um Kiesels Schnauze?", pre:"Ein durchsichtiger", l:["Plastikring","Ring"], b:"Es ist ein durchsichtiger Plastikring."}
+  ]},
+  {text:[
+   "„Er kann nicht richtig fressen!“, ruft Nele. „Deshalb ist er so dünn.“ Opa nickt besorgt. Er ruft sofort Frau Doktor Hansen von der Meeresschutzstation an. Sie erinnert sich noch gut an Kiesel.",
+   "„Den Ring muss man durchschneiden“, sagt sie. „Dafür habe ich eine lange Stange mit einer kleinen, scharfen Klinge vorne dran. Aber Kiesel muss ganz nah an das Boot kommen und dabei ruhig bleiben.“",
+   "Opa schaut aufs Meer. Der Himmel im Westen ist schwarz. „Heute geht es nicht mehr“, sagt Frau Doktor Hansen am Telefon. „Ein Sturm zieht auf. Mit dem Boot ist das viel zu gefährlich. Wir versuchen es morgen ganz früh.“",
+   "In der Nacht heult der Sturm um Opas Haus. Der Regen prasselt gegen die Fenster. Nele kann nicht schlafen. Sie denkt an Kiesel, der draußen im wilden Meer ist und nichts fressen kann. „Halt durch, Kiesel“, flüstert sie in ihr Kissen.",
+   "Am Morgen ist der Sturm vorbei. Nele, Opa und Frau Doktor Hansen fahren mit der Möwe hinaus. Sie suchen die ganze Bucht ab. Eine Stunde lang. Aber nirgendwo ist eine weiße oder graue Flosse zu sehen. Die Bucht ist leer."
+  ], fragen:[
+   {t:"mc", q:"Warum ist Kiesel so dünn geworden?", a:["Er kann wegen des Rings nicht richtig fressen.","Er schwimmt zu viel.","Er ist vom Sturm krank.","Perla gibt ihm keine Milch."], b:"Er kann nicht richtig fressen!"},
+   {t:"mc", q:"Womit will Frau Doktor Hansen den Ring durchschneiden?", a:["Mit einer langen Stange mit einer scharfen Klinge","Mit Opas Küchenschere","Mit einem Taschenmesser","Mit einer Säge"], b:"Dafür habe ich eine lange Stange mit einer kleinen, scharfen Klinge vorne dran."},
+   {t:"mc", q:"Warum können sie es nicht sofort versuchen?", a:["Ein Sturm zieht auf.","Es ist schon Nacht.","Opas Boot ist kaputt.","Frau Doktor Hansen ist im Urlaub."], b:"Ein Sturm zieht auf."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Nele sammelt Plastikmüll am Strand.","Perla stupst aufgeregt gegen das Boot.","Nele entdeckt den Ring um Kiesels Schnauze.","In der Nacht heult der Sturm."]}
+  ]},
+  {text:[
+   "Nele ist den Tränen nahe. Doch dann hat sie eine Idee. Sie setzt sich an den Bootsrand, hält die Hand ins Wasser und macht das Geräusch nach, das Perla immer macht. Ein leises, kicherndes Pfeifen. Immer wieder.",
+   "Nach ein paar Minuten antwortet ein Pfiff. Perla taucht auf! Und hinter ihr kommt langsam Kiesel. Er sieht müde aus. Perla schwimmt ganz dicht an das Boot heran. Kiesel folgt ihr zögernd.",
+   "„Ganz ruhig“, flüstert Frau Doktor Hansen. Sie schiebt die lange Stange vorsichtig ins Wasser. Die kleine Klinge kommt dem Ring immer näher. Noch ein paar Zentimeter. Nele traut sich kaum zu atmen.",
+   "Doch genau in dem Moment klatscht eine Welle gegen das Boot. Die Stange wackelt und stößt gegen Kiesels Kopf. Kiesel erschrickt. Mit einem kräftigen Schlag seiner Schwanzflosse schießt er davon.",
+   "„Nein, Kiesel! Komm zurück!“, ruft Nele. Aber Kiesel taucht ab. Tiefer und tiefer, bis er im dunklen Wasser verschwunden ist. Nele starrt auf die Stelle. Sekunden vergehen. Eine Minute. Zwei Minuten. Kiesel kommt nicht wieder hoch."
+  ], fragen:[
+   {t:"mc", q:"Was ist Neles Idee?", a:["Sie macht Perlas kicherndes Pfeifen nach.","Sie springt ins Wasser.","Sie wirft Fische ins Meer.","Sie hupt mit dem Boot."], b:"macht das Geräusch nach, das Perla immer macht"},
+   {t:"mc", q:"Wer kommt zuerst zum Boot?", a:["Perla","Kiesel","Ein Seehund","Ein anderes Boot"], b:"Perla taucht auf!"},
+   {t:"mc", q:"Warum erschrickt Kiesel?", a:["Eine Welle lässt die Stange gegen seinen Kopf stoßen.","Nele schreit laut.","Der Motor springt an.","Perla stupst ihn weg."], b:"Die Stange wackelt und stößt gegen Kiesels Kopf."},
+   {t:"wort", q:"Womit schlägt Kiesel, als er davonschießt?", pre:"Mit seiner", l:["Schwanzflosse","Flosse"], b:"Mit einem kräftigen Schlag seiner Schwanzflosse schießt er davon."}
+  ]},
+  {text:[
+   "„Delfine können viele Minuten lang tauchen“, sagt Frau Doktor Hansen leise. „Aber er ist geschwächt.“ Da taucht Perla neben dem Boot ab. Nele hält sich am Bootsrand fest und wartet.",
+   "Dann wirbelt das Wasser auf. Perla kommt nach oben. Und sie schiebt mit ihrer Schnauze Kiesel vor sich her, bis er an der Oberfläche ist. Kiesel bläst pustend Luft aus seinem Atemloch. Perla bleibt ganz dicht neben ihm, als wollte sie sagen: Keine Angst, ich bin da.",
+   "Diesmal ist kein Wind. Das Wasser ist glatt. Nele pfeift leise weiter. Frau Doktor Hansen schiebt die Stange ganz langsam unter den Ring. Ein kleiner Ruck – und der Ring springt auf! Er treibt auf dem Wasser, und Opa fischt ihn mit dem Kescher heraus.",
+   "Kiesel öffnet sein Maul weit. Er schüttelt den Kopf, taucht ab und kommt mit einem Fisch im Maul wieder hoch. Nele jubelt so laut, dass die Möwen am Himmel kreischen. „Er frisst!“, ruft sie. „Er kann wieder fressen!“",
+   "Zurück in der Schule erzählt Nele ihrer Klasse alles. Gemeinsam organisieren sie einen Müllsammeltag am Fluss neben der Schule. Sie sammeln zwölf große Säcke voll. Und Nele malt ein Plakat für den Schulflur: Plastikringe immer durchschneiden, bevor sie in den Müll kommen! So kann kein Tier darin hängen bleiben."
+  ], fragen:[
+   {t:"mc", q:"Wie hilft Perla ihrem Baby?", a:["Sie schiebt Kiesel mit der Schnauze an die Oberfläche.","Sie bringt ihm einen Fisch.","Sie beißt den Ring durch.","Sie ruft andere Delfine."], b:"Und sie schiebt mit ihrer Schnauze Kiesel vor sich her, bis er an der Oberfläche ist."},
+   {t:"mc", q:"Warum klappt es beim zweiten Versuch?", a:["Es ist kein Wind, und das Wasser ist glatt.","Kiesel schläft.","Opa hält Kiesel fest.","Sie benutzen eine Schere."], b:"Diesmal ist kein Wind. Das Wasser ist glatt."},
+   {t:"mc", q:"Woran sieht man, dass es Kiesel wieder besser geht?", a:["Er taucht ab und kommt mit einem Fisch im Maul hoch.","Er springt ins Boot.","Er wird weiß wie seine Mutter.","Er schläft sofort ein."], b:"kommt mit einem Fisch im Maul wieder hoch"},
+   {t:"wort", q:"Wie viele Säcke Müll sammelt Neles Klasse?", pre:"Sie sammeln", post:"Säcke.", l:["zwölf","12"], b:"Sie sammeln zwölf große Säcke voll."}
+  ]}
+ ]
+},
+{
+ id:"luna3", titel:"Ein blinder Passagier", emoji:"🐱", thema:"Weltraum · Ella & Pixel 3", farbe:"#3D3F96",
+ abzeichen:"Katzen-Retterin", abzeichenEmoji:"☄️",
+ teile:[
+  {text:[
+   "Diesmal fliegt Ella mit dem Frachtraumschiff Kolibri zum Mond. Es bringt Wasser, Essen und Ersatzteile zur Station Luna 7. Die Pilotin heißt Frau Sato. Sie ist sehr nett und lässt Ella sogar einmal ans Steuer – natürlich nur, wenn der Autopilot an ist.",
+   "Im Raumschiff gibt es keine Schwerkraft. Alles schwebt, wenn man es nicht festmacht. Ella schwebt durch die Gänge wie ein Fisch im Wasser. Sie findet das großartig. Zum Schlafen kriecht sie in einen Schlafsack, der an der Wand befestigt ist.",
+   "Am zweiten Tag passiert etwas Merkwürdiges. Aus Ellas Tasche fehlen drei Kekse. Am Abend fehlt ein Stück Käse aus dem Vorratsfach. Und in der Nacht hört Ella ein leises Kratzen im Frachtraum. „Hast du das auch gehört?“, fragt sie ihre Mutter. Doch die schläft tief und fest.",
+   "Am nächsten Morgen schwebt Ella leise in den Frachtraum. Dort sind viele große Kisten mit Gurten festgemacht. Es ist halbdunkel. Ella schaltet ihre Taschenlampe an und leuchtet zwischen die Kisten.",
+   "Da sieht sie es. Ganz hinten, zwischen zwei Kisten, leuchten zwei grüne Augen. Sie starren Ella an. Dann bewegt sich etwas Kleines, Graues. Und ein leises, heiseres Geräusch kommt aus der Dunkelheit."
+  ], fragen:[
+   {t:"wort", q:"Wie heißt das Frachtraumschiff?", pre:"Es heißt", l:["Kolibri"], b:"mit dem Frachtraumschiff Kolibri"},
+   {t:"mc", q:"Was ist im Raumschiff anders als auf der Erde?", a:["Es gibt keine Schwerkraft, alles schwebt.","Es ist immer dunkel.","Man kann nicht sprechen.","Alles ist aus Gummi."], b:"Im Raumschiff gibt es keine Schwerkraft."},
+   {t:"mc", q:"Was verschwindet am zweiten Tag?", a:["Drei Kekse und ein Stück Käse","Ellas Taschenlampe","Ein Raumanzug","Die Sternenkarte"], b:"Aus Ellas Tasche fehlen drei Kekse."},
+   {t:"mc", q:"Was sieht Ella zwischen den Kisten?", a:["Zwei grüne Augen","Einen Roboter","Ein Loch in der Wand","Ein Funkgerät"], b:"leuchten zwei grüne Augen"}
+  ]},
+  {text:[
+   "„Miau“, macht es. Ganz leise. Ella traut ihren Augen nicht. Zwischen den Kisten schwebt ein kleines graues Kätzchen! Es paddelt mit den Pfoten in der Luft und dreht sich dabei langsam im Kreis. Es sieht sehr verwirrt aus.",
+   "Ella fängt das Kätzchen vorsichtig ein und drückt es an sich. Es schnurrt sofort. Dann bringt sie es zu ihrer Mutter und zu Frau Sato. „Wie kommt denn eine Katze in mein Raumschiff?“, ruft Frau Sato. „Sie muss sich auf der Erde in eine Kiste geschlichen haben, als wir beladen haben.“",
+   "„Auf der Station sind Tiere eigentlich verboten“, sagt Ellas Mutter. „Aber umkehren können wir nicht.“ Frau Sato funkt Kommandant Okafor an. Er seufzt. Dann sagt er: „Na gut. Das Kätzchen darf bleiben. Aber nur in Ellas Kabine. Und es darf nirgendwo hineinkriechen.“",
+   "Ella nennt das Kätzchen Komet, weil es so plötzlich aufgetaucht ist. Zwei Tage später landet die Kolibri auf dem Mond. Pixel rollt zur Begrüßung heran. Als er Komet sieht, blinken auf seinem Bildschirm zwei große Fragezeichen.",
+   "Doch als die Schleuse zur Station aufgeht, passiert es. Komet erschrickt vor dem Zischen. Sie springt aus Ellas Armen, flitzt über den Boden und schlüpft blitzschnell durch ein Gitter in einen Lüftungsschacht. „Komet!“, ruft Ella. Aber vom Kätzchen ist nur noch der graue Schwanz zu sehen. Dann ist es weg."
+  ], fragen:[
+   {t:"mc", q:"Wie ist das Kätzchen in das Raumschiff gekommen?", a:["Es hat sich auf der Erde in eine Kiste geschlichen.","Frau Sato hat es mitgebracht.","Es ist auf dem Mond geboren.","Ella hat es heimlich eingepackt."], b:"Sie muss sich auf der Erde in eine Kiste geschlichen haben"},
+   {t:"mc", q:"Was erlaubt Kommandant Okafor?", a:["Das Kätzchen darf bleiben, aber nur in Ellas Kabine.","Das Kätzchen darf überall herumlaufen.","Das Kätzchen muss sofort zurück.","Das Kätzchen darf bei Pixel wohnen."], b:"Aber nur in Ellas Kabine."},
+   {t:"wort", q:"Welchen Namen gibt Ella dem Kätzchen?", pre:"Sie nennt es", l:["Komet"], b:"Ella nennt das Kätzchen Komet"},
+   {t:"mc", q:"Warum springt Komet aus Ellas Armen?", a:["Sie erschrickt vor dem Zischen der Schleuse.","Sie hat Hunger.","Pixel hat sie angepiept.","Sie will spielen."], b:"Komet erschrickt vor dem Zischen."}
+  ]},
+  {text:[
+   "„Pixel, du musst mir helfen!“, ruft Ella. Pixel blinkt. „Ich habe einen Wärmesensor. Damit kann ich warme Lebewesen auch durch dünne Wände sehen.“ Er rollt langsam an der Wand entlang. Auf seinem Bildschirm erscheint ein kleiner orangefarbener Punkt. „Da! Sie krabbelt im Schacht nach links.“",
+   "Ella und Pixel folgen dem Punkt durch die Gänge. Am Gewächshaus vorbei, an der Küche vorbei, bis zum Maschinenraum. Ellas Mutter und Kommandant Okafor laufen hinterher. „Die Lüftungsschächte führen durch die ganze Station“, sagt Kommandant Okafor besorgt. „Und im Maschinenraum ist der große Lüfter.“",
+   "Der große Lüfter ist wie ein riesiger Ventilator. Er pustet frische Luft durch alle Schächte der Station. Jeden Tag um zwölf Uhr springt er für eine Stunde auf volle Kraft. Ella schaut auf die Uhr an der Wand. Es ist elf Uhr fünfzig.",
+   "Pixel bleibt vor einem großen Gitter stehen. Dahinter dreht sich langsam ein Rad mit breiten Flügeln. Und auf der anderen Seite, direkt vor dem Gitter, sitzt Komet. Das Kätzchen hat sich in den engen Schacht gequetscht und kommt weder vor noch zurück. Es miaut kläglich.",
+   "„Wir müssen den Lüfter ausschalten!“, ruft Ella. Kommandant Okafor drückt auf einen Knopf am Bedienfeld. Nichts passiert. Er drückt noch einmal. Auf dem Bildschirm steht: Automatischer Start in 5 Minuten. Abbrechen nicht möglich."
+  ], fragen:[
+   {t:"mc", q:"Wie findet Pixel das Kätzchen im Schacht?", a:["Mit seinem Wärmesensor","Mit seiner Nase","Mit einer Kamera im Schacht","Er hört es miauen."], b:"Ich habe einen Wärmesensor."},
+   {t:"mc", q:"Was macht der große Lüfter?", a:["Er pustet frische Luft durch alle Schächte.","Er kocht das Essen.","Er macht Strom.","Er wäscht die Kleidung."], b:"Er pustet frische Luft durch alle Schächte der Station."},
+   {t:"wort", q:"Um wie viel Uhr springt der Lüfter jeden Tag an?", pre:"Um", post:"Uhr.", l:["zwölf","12"], b:"Jeden Tag um zwölf Uhr springt er für eine Stunde auf volle Kraft."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Ella entdeckt zwei grüne Augen im Frachtraum.","Kommandant Okafor erlaubt, dass Komet bleibt.","Komet flitzt in einen Lüftungsschacht.","Pixel findet Komet vor dem großen Lüfter."]}
+  ]},
+  {text:[
+   "„Dann müssen wir Komet in fünf Minuten da herausholen“, sagt Ellas Mutter. Kommandant Okafor schraubt schnell das Gitter vom Schacht ab. Aber der Schacht ist eng, und Komet sitzt weit hinten. Keine Hand passt hinein. Und Komet hat zu viel Angst, um herauszukommen.",
+   "Pixel streckt seinen Greifarm aus. Er kann ihn ganz lang und dünn machen. „Ich versuche es“, piepst er. Doch als der Greifarm näher kommt, faucht Komet und weicht noch weiter zurück. Gefährlich nah an das Lüfterrad.",
+   "Da hat Ella eine Idee. Sie rennt in die Küche und kommt mit einer kleinen Dose zurück. Thunfisch! Sie öffnet die Dose und legt etwas Thunfisch auf Pixels Greifarm. Pixel schiebt den Arm wieder in den Schacht. Noch drei Minuten.",
+   "Komet schnuppert. Ihre Nase zuckt. Ganz langsam schiebt sie sich nach vorne und beginnt zu fressen. Stück für Stück zieht Pixel den Arm zurück. Und Komet folgt dem Thunfisch. Noch eine Minute. Dann ist sie am Ausgang. Ella greift zu und zieht das Kätzchen heraus. Im selben Moment brummt der Lüfter los.",
+   "Am Abend liegt Komet zusammengerollt auf Ellas Bett und schnurrt. Kommandant Okafor lässt Gitter mit ganz feinen Löchern vor alle Schächte bauen. „Für unsere neue Mitbewohnerin“, sagt er. Und als Ella zwei Wochen später zur Erde zurückfliegt, fliegt Komet mit. Diesmal ganz offiziell – in einer Katzenbox mit ihrem Namen darauf."
+  ], fragen:[
+   {t:"mc", q:"Warum kann niemand Komet mit der Hand herausholen?", a:["Der Schacht ist zu eng, und Komet sitzt weit hinten.","Komet beißt.","Der Schacht ist zu heiß.","Niemand will helfen."], b:"Aber der Schacht ist eng, und Komet sitzt weit hinten."},
+   {t:"mc", q:"Was macht Komet, als Pixels Greifarm kommt?", a:["Sie faucht und weicht zurück.","Sie springt auf den Arm.","Sie schläft ein.","Sie miaut fröhlich."], b:"faucht Komet und weicht noch weiter zurück"},
+   {t:"wort", q:"Womit lockt Ella das Kätzchen heraus?", pre:"Mit", l:["Thunfisch"], b:"Thunfisch!"},
+   {t:"mc", q:"Was lässt Kommandant Okafor bauen?", a:["Gitter mit ganz feinen Löchern vor alle Schächte","Ein Katzenklo aus Mondstein","Einen neuen Lüfter","Eine Katzenklappe"], b:"Kommandant Okafor lässt Gitter mit ganz feinen Löchern vor alle Schächte bauen."}
+  ]}
+ ]
+},
+{
+ id:"luna4", titel:"Die lange Mondnacht", emoji:"🔦", thema:"Weltraum · Ella & Pixel 4", farbe:"#3D3F96",
+ abzeichen:"Mondnacht-Medaille", abzeichenEmoji:"🌑",
+ teile:[
+  {text:[
+   "Auf dem Mond dauert ein Tag fast einen ganzen Monat. Zwei Wochen lang scheint die Sonne. Dann ist es zwei Wochen lang dunkel. Diese Zeit nennt man die Mondnacht. Draußen wird es dann eiskalt, bis zu minus 170 Grad.",
+   "Ella ist diesmal genau zur Mondnacht auf Luna 7. „Wie bekommt die Station Strom, wenn die Sonne nicht scheint?“, fragt sie Pixel. „Am Tag sammeln die Solarzellen draußen Sonnenstrom“, erklärt Pixel. „Den speichern wir in riesigen Batterien. Davon leben wir in der Nacht.“",
+   "Pixel zeigt Ella auch die Eingangshalle. Dort hängt eine glänzende Tafel aus Metall. Darauf steht: Station Luna 7 – eröffnet am 12. April 2061. „Das ist der Geburtstag der Station“, piepst Pixel stolz. „Jedes Jahr feiern wir ihn mit Mondkuchen.“",
+   "In der dritten Nacht sitzt Ella mit ihrer Mutter im Aufenthaltsraum. Durch das große Fenster sieht man die Erde. Sie leuchtet blau und weiß und taucht die Mondlandschaft in ein sanftes Licht. „Das nennt man Erdschein“, sagt ihre Mutter.",
+   "Da flackert plötzlich das Licht. Einmal, zweimal. Dann wird es dunkel. Die Lüftung verstummt. Auch die Heizung hört auf zu summen. Nur ein paar rote Notlampen glimmen noch. Und eine Computerstimme sagt: „Achtung. Hauptbatterie ausgefallen. Notstrom für sechs Stunden.“"
+  ], fragen:[
+   {t:"mc", q:"Wie lange dauert die Mondnacht?", a:["Zwei Wochen","Eine Nacht wie auf der Erde","Ein ganzes Jahr","Drei Stunden"], b:"Dann ist es zwei Wochen lang dunkel."},
+   {t:"mc", q:"Woher bekommt die Station in der Mondnacht Strom?", a:["Aus riesigen Batterien mit gespeichertem Sonnenstrom","Von der Erde über ein langes Kabel","Aus einem Lagerfeuer","Vom Erdschein"], b:"Den speichern wir in riesigen Batterien."},
+   {t:"wort", q:"In welchem Jahr wurde die Station eröffnet?", pre:"Im Jahr", l:["2061"], b:"eröffnet am 12. April 2061"},
+   {t:"mc", q:"Was passiert am Ende dieses Teils?", a:["Die Hauptbatterie fällt aus, und es wird dunkel.","Ein Raumschiff landet.","Die Sonne geht auf.","Pixel schläft ein."], b:"Hauptbatterie ausgefallen."}
+  ]},
+  {text:[
+   "Kommandant Okafor kommt mit einer Stirnlampe in den Raum. „Ein Kabel zwischen den Batterien und der Station ist durchgebrochen“, erklärt er ruhig. „Wahrscheinlich wegen der Kälte. Ich gehe mit deiner Mutter hinaus und repariere es.“",
+   "„Und was ist mit dem Gewächshaus?“, fragt Ella. Kommandant Okafor runzelt die Stirn. „Gute Frage. Ohne Heizung wird es dort schnell kalt. Die Pflanzen könnten erfrieren. Und wir brauchen sie für frische Luft und frisches Essen.“",
+   "„Pixel und ich bringen die Pflanzen in den Notfallraum“, sagt Ella. „Der hat eine eigene Heizung mit Notstrom.“ Ihre Mutter nickt. „Gute Idee. Aber zieh dich warm an.“ Dann gehen die beiden Erwachsenen zur Schleuse und ziehen ihre Raumanzüge an.",
+   "Ella und Pixel tragen Pflanzkiste um Pflanzkiste durch den dunklen Gang. Tomaten, Salat, Erdbeeren. Im Gewächshaus wird es immer kälter. Ellas Atem macht schon kleine weiße Wölkchen. Pixel rollt gerade noch einmal ins Gewächshaus, um die Kräuter zu holen.",
+   "Da gibt es ein lautes Klacken. Die schwere Tür zum Gewächshaus fährt zu. Pixel ist drinnen. Ella steht draußen. „Ella!“, piepst Pixel durch die Tür. „Die Tür hat sich wegen der Kälte automatisch verriegelt! Und meine Batterie wird in der Kälte ganz schnell leer!“"
+  ], fragen:[
+   {t:"mc", q:"Warum ist die Hauptbatterie ausgefallen?", a:["Ein Kabel ist wegen der Kälte durchgebrochen.","Ein Meteorit hat sie getroffen.","Pixel hat den Stecker gezogen.","Die Sonne scheint zu stark."], b:"Ein Kabel zwischen den Batterien und der Station ist durchgebrochen"},
+   {t:"mc", q:"Warum sind die Pflanzen so wichtig?", a:["Sie sorgen für frische Luft und frisches Essen.","Sie sehen schön aus.","Sie machen Strom.","Sie halten die Türen offen."], b:"Und wir brauchen sie für frische Luft und frisches Essen."},
+   {t:"mc", q:"Wohin bringen Ella und Pixel die Pflanzen?", a:["In den Notfallraum mit eigener Heizung","In Ellas Kabine","Nach draußen","In die Küche"], b:"Der hat eine eigene Heizung mit Notstrom."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Pixel zeigt Ella die Tafel in der Eingangshalle.","Ella sieht den Erdschein durch das Fenster.","Die Hauptbatterie fällt aus.","Die Tür zum Gewächshaus verriegelt sich."]}
+  ]},
+  {text:[
+   "Ella rüttelt an der Tür. Sie bewegt sich nicht. Neben der Tür ist ein roter Kasten mit der Aufschrift: Notöffnung. Ella klappt ihn auf. Darin steckt eine Kurbel. Sie dreht daran, so fest sie kann. Aber die Kurbel ist eingefroren und bewegt sich keinen Millimeter.",
+   "Ella überlegt. Dann denkt sie an den Werkzeugraum. Sie rennt los und kommt mit einem langen Schraubenschlüssel zurück. Sie steckt ihn über den Griff der Kurbel. Jetzt hat sie einen viel längeren Hebel. Sie drückt mit ihrem ganzen Gewicht. Knirsch! Die Kurbel dreht sich.",
+   "Langsam öffnet sich die Tür einen Spalt. Pixel rollt heraus. Er ist ganz langsam, und seine Augen auf dem Bildschirm sind trüb. Ella schließt ihn im Notfallraum sofort an ein Ladekabel an. „Danke, Ella“, piepst er schwach. „Du bist die beste Ingenieurin der Station.“",
+   "Da knackt das Funkgerät. Es ist ihre Mutter. „Ella, hörst du mich? Wir haben das Kabel draußen repariert. Aber die Hauptbatterie springt nicht von allein wieder an. Jemand muss drinnen im Technikraum den Neustart machen.“",
+   "Ella läuft in den Technikraum. Dort leuchtet ein Bildschirm. Darauf steht: Neustart der Hauptbatterie. Bitte Code eingeben. Und darunter in roter Schrift: Noch 3 Versuche. Danach wird das System für 24 Stunden gesperrt."
+  ], fragen:[
+   {t:"mc", q:"Warum lässt sich die Kurbel zuerst nicht drehen?", a:["Sie ist eingefroren.","Sie ist abgebrochen.","Sie ist zu klein.","Pixel hält sie fest."], b:"Aber die Kurbel ist eingefroren und bewegt sich keinen Millimeter."},
+   {t:"mc", q:"Wie schafft Ella es, die Kurbel zu drehen?", a:["Mit einem langen Schraubenschlüssel als Hebel","Mit heißem Wasser","Mit einem Hammer","Mit Pixels Greifarm"], b:"Jetzt hat sie einen viel längeren Hebel."},
+   {t:"mc", q:"Was muss im Technikraum gemacht werden?", a:["Der Neustart der Hauptbatterie","Das Licht ausschalten","Das Funkgerät reparieren","Die Heizung abstellen"], b:"Jemand muss drinnen im Technikraum den Neustart machen."},
+   {t:"wort", q:"Wie viele Versuche hat Ella für den Code?", pre:"Noch", post:"Versuche", l:["3","drei"], b:"Noch 3 Versuche."}
+  ]},
+  {text:[
+   "„Mama, wie heißt der Code?“, fragt Ella ins Funkgerät. Ihre Mutter antwortet, aber es knistert und rauscht. „Der Code ist … rrrsch … Geburtstag … rrrsch … Station.“ Dann ist die Verbindung weg.",
+   "Ella denkt nach. Der Geburtstag der Station? Plötzlich erinnert sie sich an die glänzende Tafel in der Eingangshalle. Station Luna 7 – eröffnet am 12. April 2061. Der 12. April. Der zwölfte Tag im vierten Monat.",
+   "Mit zitternden Fingern tippt Ella: 1 – 2 – 0 – 4. Sie hält den Atem an und drückt auf Bestätigen. Der Bildschirm blinkt. Einmal. Zweimal. Dann erscheint ein grüner Haken: Code richtig. Neustart läuft.",
+   "Überall in der Station flackern die Lichter auf. Die Lüftung beginnt wieder zu rauschen. Die Heizung summt. Und aus dem Funkgerät hört Ella Jubel. „Ella, du hast es geschafft!“, ruft Kommandant Okafor. „Woher wusstest du den Code?“ – „Von der Tafel in der Eingangshalle“, sagt Ella stolz.",
+   "Am nächsten Tag gibt es Mondkuchen, obwohl gar nicht der Geburtstag der Station ist. Kommandant Okafor lässt eine kleine Tafel machen und hängt sie neben die große. Darauf steht: Ella – Retterin der langen Mondnacht. Und Pixel? Der hat sich einen warmen Wollschal um seinen Bildschirm gewickelt. Nur für alle Fälle."
+  ], fragen:[
+   {t:"mc", q:"Warum versteht Ella den Code nicht ganz?", a:["Das Funkgerät knistert und rauscht.","Ihre Mutter spricht zu leise.","Pixel ist zu laut.","Sie hat ihn vergessen."], b:"Ihre Mutter antwortet, aber es knistert und rauscht."},
+   {t:"wort", q:"Welchen Code tippt Ella ein?", pre:"Code:", l:["1204"], b:"1 – 2 – 0 – 4"},
+   {t:"mc", q:"Woher weiß Ella den Code?", a:["Von der Tafel mit dem Geburtstag der Station","Aus ihrem Tagebuch","Pixel hat ihn verraten","Sie hat einfach geraten"], b:"Plötzlich erinnert sie sich an die glänzende Tafel in der Eingangshalle."},
+   {t:"mc", q:"Was hat sich Pixel um den Bildschirm gewickelt?", a:["Einen warmen Wollschal","Ein Pflaster","Ein Ladekabel","Eine Medaille"], b:"Der hat sich einen warmen Wollschal um seinen Bildschirm gewickelt."}
+  ]}
+ ]
+},
+{
+ id:"polizei3", titel:"Polizeihund Rocky ermittelt", emoji:"🐕‍🦺", thema:"Polizei · Luis & Aylin 3", farbe:"#2456A6",
+ abzeichen:"Spürhund-Abzeichen", abzeichenEmoji:"🦴",
+ teile:[
+  {text:[
+   "Heute ist ein besonderer Tag. Luis und Aylin dürfen Kommissarin Demir einen Vormittag lang im Polizeirevier besuchen. Die Kommissarin zeigt ihnen die Funkzentrale, die Büros und die Streifenwagen in der Garage. Luis darf sogar einmal das Blaulicht einschalten.",
+   "Dann gehen sie ins Labor. Dort zeigt Kommissarin Demir, wie man Fingerabdrücke sichtbar macht. Sie streut ein feines graues Pulver auf ein Glas und pinselt vorsichtig darüber. Plötzlich erscheinen viele kleine Linien. „Jeder Mensch hat ganz eigene Fingerabdrücke“, erklärt sie. „Keine zwei sind gleich.“",
+   "Zum Schluss lernen sie Rocky kennen. Rocky ist ein Schäferhund mit schwarzem Rücken und braunen Beinen. Er ist ein Polizeihund. Sein Hundeführer heißt Herr Klein. „Rockys Nase ist viele tausend Mal besser als unsere“, sagt Herr Klein. „Er kann einer Spur folgen, die viele Stunden alt ist.“",
+   "Aylin darf Rocky streicheln, nachdem sie Herrn Klein gefragt hat. Rocky wedelt freundlich mit dem Schwanz. „Wenn er arbeitet, ist er ganz ernst“, sagt Herr Klein. „Aber jetzt hat er Pause.“",
+   "Da piept das Funkgerät der Kommissarin. Eine Stimme sagt: „Einbruch in der Grundschule am Rosenhügel. Der Computerraum. Mehrere Laptops gestohlen.“ Luis und Aylin schauen sich erschrocken an. Die Grundschule am Rosenhügel – das ist ihre Schule!"
+  ], fragen:[
+   {t:"mc", q:"Was darf Luis auf dem Revier ausprobieren?", a:["Das Blaulicht einschalten","Eine Uniform anziehen","Mit Rocky spazieren gehen","Ein Polizeiauto fahren"], b:"Luis darf sogar einmal das Blaulicht einschalten."},
+   {t:"mc", q:"Was ist besonders an Fingerabdrücken?", a:["Keine zwei sind gleich.","Sie sind immer rot.","Man sieht sie nur nachts.","Sie verschwinden sofort."], b:"Keine zwei sind gleich."},
+   {t:"wort", q:"Wie heißt der Polizeihund?", pre:"Er heißt", l:["Rocky"], b:"Zum Schluss lernen sie Rocky kennen."},
+   {t:"mc", q:"Was wurde aus der Schule gestohlen?", a:["Mehrere Laptops aus dem Computerraum","Der Fußballpokal","Bücher aus der Bücherei","Das Geld vom Schulfest"], b:"Mehrere Laptops gestohlen."}
+  ]},
+  {text:[
+   "Kommissarin Demir fährt sofort los. Luis und Aylin dürfen mitkommen, aber sie müssen im Büro der Schulsekretärin warten. Durch das Fenster können sie den Schulhof sehen. Ein Fenster vom Computerraum ist eingeschlagen. Überall liegen Glasscherben.",
+   "Zwei Polizisten von der Spurensicherung arbeiten im Computerraum. Sie tragen weiße Anzüge und Handschuhe. Sie streuen graues Pulver auf die Tische und fotografieren alles. Im weichen Blumenbeet unter dem Fenster finden sie Schuhabdrücke. Die Sohle hat ein Muster aus kleinen Sternen.",
+   "Dann kommt Herr Klein mit Rocky. Rocky schnüffelt am Fenster, dann im Blumenbeet. Plötzlich zieht er an der Leine. Mit der Nase am Boden läuft er über den Schulhof, durch das Tor und die Straße hinunter. Herr Klein läuft hinterher.",
+   "Nach zehn Minuten kommen die beiden zurück. Herr Klein schüttelt den Kopf. „Die Spur endet an der Bushaltestelle. Der Dieb ist mit dem Bus weggefahren. Da verliert auch Rocky die Spur.“ Die Kommissarin seufzt. „Dann brauchen wir einen anderen Hinweis.“",
+   "Aylin hat genau zugehört. Auf dem Weg zum Revier sind sie heute Morgen an dieser Bushaltestelle vorbeigefahren. Dort saß ein Mann mit einem großen schwarzen Rucksack. Er hatte Turnschuhe an. Und auf den Schuhen waren kleine silberne Sterne. Aylin springt auf. „Frau Demir! Ich glaube, ich habe den Dieb gesehen!“"
+  ], fragen:[
+   {t:"mc", q:"Wo müssen Luis und Aylin warten?", a:["Im Büro der Schulsekretärin","Im Streifenwagen","Im Computerraum","Zu Hause"], b:"aber sie müssen im Büro der Schulsekretärin warten"},
+   {t:"mc", q:"Welches Muster hat die Schuhsohle im Blumenbeet?", a:["Kleine Sterne","Kleine Herzen","Zickzack-Streifen","Kreise"], b:"Die Sohle hat ein Muster aus kleinen Sternen."},
+   {t:"mc", q:"Warum verliert Rocky die Spur?", a:["Der Dieb ist an der Bushaltestelle in einen Bus gestiegen.","Es hat stark geregnet.","Rocky war müde.","Eine Katze hat ihn abgelenkt."], b:"Der Dieb ist mit dem Bus weggefahren."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Kommissarin Demir zeigt die Fingerabdrücke im Labor.","Das Funkgerät meldet den Einbruch.","Rocky folgt der Spur bis zur Bushaltestelle.","Aylin erinnert sich an den Mann mit den Stern-Schuhen."]}
+  ]},
+  {text:[
+   "Kommissarin Demir setzt sich zu Aylin. „Erzähl mir alles ganz genau. Jede Kleinigkeit kann wichtig sein.“ Aylin schließt die Augen und erinnert sich. „Er war groß und hatte eine graue Kapuzenjacke an. Der Rucksack war schwarz und ganz dick. Und er hat immer wieder auf die Uhr geschaut, als hätte er es eilig.“",
+   "Luis ergänzt: „An der Haltestelle fährt nur die Linie 4. Die fährt zum Bahnhof.“ Die Kommissarin nickt anerkennend und funkt die Beschreibung an ihre Kollegen. „Ein Mann, groß, graue Kapuzenjacke, schwarzer Rucksack, Turnschuhe mit silbernen Sternen. Vermutlich mit Linie 4 zum Bahnhof.“",
+   "Am Nachmittag klingelt Kommissarin Demirs Telefon. Ein Kollege hat im Internet eine Anzeige gefunden. Dort verkauft jemand fünf gebrauchte Laptops, ganz billig. Auf einem Foto erkennt man einen Aufkleber auf einem Laptop. Darauf steht: Eigentum der Grundschule am Rosenhügel.",
+   "„Der ist aber nicht schlau“, sagt Luis. Die Kommissarin lacht. „Viele Diebe sind nicht so schlau, wie sie denken.“ Ein Polizist meldet sich als Käufer und verabredet sich mit dem Verkäufer. Treffpunkt: morgen um 15 Uhr am Bahnhofsplatz.",
+   "Am nächsten Tag sitzen Luis und Aylin mit Kommissarin Demir in einem Auto ohne Polizeiaufschrift. Es parkt weit weg vom Bahnhofsplatz. Durch ein Fernglas beobachten sie den Platz. Punkt 15 Uhr kommt ein großer Mann mit einer grauen Kapuzenjacke. Er trägt einen dicken schwarzen Rucksack. Er schaut sich nervös um. Dann sieht er einen Streifenwagen an der Ecke – und rennt los."
+  ], fragen:[
+   {t:"mc", q:"Was soll Aylin der Kommissarin erzählen?", a:["Alles ganz genau, jede Kleinigkeit","Nur den Namen des Mannes","Wo sie wohnt","Was sie gefrühstückt hat"], b:"Jede Kleinigkeit kann wichtig sein."},
+   {t:"wort", q:"Welche Buslinie fährt an der Haltestelle?", pre:"Linie", l:["4","vier"], b:"An der Haltestelle fährt nur die Linie 4."},
+   {t:"mc", q:"Wodurch verrät sich der Dieb im Internet?", a:["Auf einem Foto sieht man den Aufkleber der Schule.","Er schreibt seinen Namen dazu.","Er verkauft die Laptops sehr teuer.","Er zeigt sein Gesicht."], b:"Darauf steht: Eigentum der Grundschule am Rosenhügel."},
+   {t:"mc", q:"Was macht der Mann, als er den Streifenwagen sieht?", a:["Er rennt los.","Er winkt.","Er setzt sich auf eine Bank.","Er gibt den Rucksack ab."], b:"Dann sieht er einen Streifenwagen an der Ecke – und rennt los."}
+  ]},
+  {text:[
+   "„Rocky, fass!“, ruft Herr Klein, der hinter einem Kiosk gewartet hat. Rocky schießt los wie ein Pfeil. Er ist viel schneller als der Mann. Nach wenigen Metern hat er ihn eingeholt und packt ihn am Ärmel der Jacke. Der Mann stolpert und bleibt stehen. „Ruf ihn zurück!“, ruft er ängstlich.",
+   "„Rocky, aus!“, sagt Herr Klein. Sofort lässt Rocky los und setzt sich brav hin. Zwei Polizisten legen dem Mann Handschellen an. In seinem Rucksack finden sie die fünf Laptops aus der Schule. Und an seinen Füßen trägt er Turnschuhe mit kleinen silbernen Sternen.",
+   "Später vergleicht die Spurensicherung seine Schuhe mit den Abdrücken im Blumenbeet. Sie passen genau. Auch seine Fingerabdrücke finden sie auf einem Tisch im Computerraum. „Jetzt haben wir alle Beweise“, sagt Kommissarin Demir zufrieden.",
+   "Ein paar Tage später kommt die Kommissarin mit Herrn Klein und Rocky in die Schule. In der Turnhalle sitzen alle Klassen. Die Schulleiterin bedankt sich bei der Polizei. Und die Kommissarin bedankt sich bei Aylin und Luis. „Ihr habt genau hingeschaut und euch alles gut gemerkt. Das ist das Wichtigste bei der Polizeiarbeit.“",
+   "Dann darf Rocky zeigen, was er kann. Herr Klein versteckt einen Schlüsselbund irgendwo in der Turnhalle. Rocky findet ihn in weniger als einer Minute, unter einer Matte ganz hinten. Alle Kinder klatschen. Und Aylin weiß jetzt genau, was sie später einmal werden will: Hundeführerin bei der Polizei."
+  ], fragen:[
+   {t:"mc", q:"Was macht Rocky auf das Kommando „Aus“?", a:["Er lässt los und setzt sich brav hin.","Er rennt weiter.","Er bellt laut.","Er läuft weg."], b:"Sofort lässt Rocky los und setzt sich brav hin."},
+   {t:"mc", q:"Was finden die Polizisten im Rucksack?", a:["Die fünf Laptops aus der Schule","Geld und Schmuck","Ein Fahrrad","Nur Butterbrote"], b:"In seinem Rucksack finden sie die fünf Laptops aus der Schule."},
+   {t:"mc", q:"Welche Beweise passen zum Dieb?", a:["Seine Schuhe und seine Fingerabdrücke","Seine Haare und seine Stimme","Seine Mütze und sein Fahrrad","Sein Name auf einem Zettel"], b:"Auch seine Fingerabdrücke finden sie auf einem Tisch im Computerraum."},
+   {t:"wort", q:"Was will Aylin später werden?", pre:"Sie will", post:"bei der Polizei werden.", l:["Hundeführerin"], b:"Hundeführerin bei der Polizei"}
+  ]}
+ ]
+},
+{
+ id:"polizei4", titel:"Die Fahrradprüfung", emoji:"🚲", thema:"Polizei · Luis & Aylin 4", farbe:"#2456A6",
+ abzeichen:"Fahrradführerschein", abzeichenEmoji:"🪖",
+ teile:[
+  {text:[
+   "In der vierten Klasse machen alle Kinder die Fahrradprüfung. Dafür kommt Polizeihauptmeister Wagner in die Schule. Er übt mit den Kindern auf dem Verkehrsübungsplatz. Dort gibt es kleine Straßen, Ampeln, Zebrastreifen und Verkehrsschilder, genau wie in echt.",
+   "„Das Allerwichtigste ist der Helm“, sagt Herr Wagner. „Der Helm schützt euren Kopf, wenn ihr stürzt. Ohne Helm fährt niemand los.“ Dann zeigt er den Kindern den Schulterblick. „Bevor ihr abbiegt, schaut ihr immer über die Schulter nach hinten. Und ihr streckt den Arm aus, damit alle sehen, wohin ihr wollt.“",
+   "Luis und Aylin üben fleißig. Linksabbiegen ist am schwersten. Man muss sich einordnen, den Schulterblick machen, den Arm ausstrecken und auf den Gegenverkehr achten. Aber nach ein paar Runden klappt es immer besser.",
+   "Nach der Übungsstunde fahren die beiden zusammen nach Hause. Sie tragen ihre Helme und fahren hintereinander am rechten Rand der Straße. Aylin fährt vorne. An der Kreuzung beim Supermarkt macht sie einen Schulterblick und streckt den rechten Arm aus. Alles richtig.",
+   "Doch da kommt ein silbernes Auto von hinten. Es fährt viel zu schnell und viel zu dicht an Aylin vorbei. Der Außenspiegel streift ihren Lenker. Aylin schwankt, verliert das Gleichgewicht und stürzt auf die Straße. Das Auto bremst nicht. Es fährt einfach weiter."
+  ], fragen:[
+   {t:"mc", q:"Wer übt mit den Kindern für die Fahrradprüfung?", a:["Polizeihauptmeister Wagner","Kommissarin Demir","Herr Klein mit Rocky","Die Klassenlehrerin"], b:"Dafür kommt Polizeihauptmeister Wagner in die Schule."},
+   {t:"mc", q:"Was ist laut Herrn Wagner das Allerwichtigste?", a:["Der Helm","Eine laute Klingel","Ein schnelles Fahrrad","Eine helle Lampe"], b:"Das Allerwichtigste ist der Helm"},
+   {t:"wort", q:"Wie heißt der Blick über die Schulter vor dem Abbiegen?", pre:"Der", l:["Schulterblick"], b:"Dann zeigt er den Kindern den Schulterblick."},
+   {t:"mc", q:"Was macht das silberne Auto?", a:["Es fährt zu dicht vorbei und streift Aylins Lenker.","Es hält an der Ampel.","Es hupt freundlich.","Es parkt am Supermarkt."], b:"Der Außenspiegel streift ihren Lenker."}
+  ]},
+  {text:[
+   "„Aylin!“ Luis springt von seinem Fahrrad und rennt zu ihr. Aylin sitzt auf der Straße und hält sich das Knie. Ihre Hose ist zerrissen, und das Knie blutet. Ihr Helm hat eine lange Schramme. „Mein Kopf ist auf die Straße geknallt“, sagt sie zitternd. „Aber der Helm hat mich geschützt.“",
+   "Luis hilft ihr vorsichtig an den Straßenrand. Eine Frau vom Supermarkt kommt angelaufen und bringt ein Pflaster. Luis holt sein Handy heraus und wählt die 110. „Ein Auto hat meine Freundin mit dem Fahrrad umgefahren und ist einfach weitergefahren“, sagt er. „An der Kreuzung beim Supermarkt.“",
+   "Während sie warten, schaut sich Luis auf der Straße um. Da liegt etwas Glänzendes. Es ist ein abgebrochenes Stück von einem Außenspiegel. Silberfarben, mit einem gezackten Rand. Luis rührt es nicht an. „Das ist ein Beweisstück“, sagt er zu Aylin. „Das darf nur die Polizei aufheben.“",
+   "Aylin denkt nach. „Auf der Heckklappe vom Auto war ein Aufkleber“, sagt sie. „Ein Hund mit einem Herz. Und darunter stand: Ich bremse auch für Tiere.“ Luis muss trotz allem grinsen. „Für Tiere bremst er, aber nicht für Kinder auf dem Fahrrad.“",
+   "Ein paar Minuten später hält ein Streifenwagen an der Kreuzung. Kommissarin Demir steigt aus. „Ihr zwei schon wieder!“, sagt sie und kniet sich besorgt neben Aylin. In diesem Moment stößt Luis sie an. „Da! Da vorne an der Ampel!“ Ein silbernes Auto biegt gerade um die Ecke. Auf der Heckklappe klebt ein Aufkleber mit einem Hund. Und der rechte Außenspiegel fehlt."
+  ], fragen:[
+   {t:"mc", q:"Was hat Aylins Kopf beim Sturz geschützt?", a:["Ihr Helm","Ihre Kapuze","Ihr Rucksack","Luis"], b:"Aber der Helm hat mich geschützt."},
+   {t:"mc", q:"Was findet Luis auf der Straße?", a:["Ein Stück von einem Außenspiegel","Einen Autoschlüssel","Ein Nummernschild","Eine Brieftasche"], b:"Es ist ein abgebrochenes Stück von einem Außenspiegel."},
+   {t:"mc", q:"Warum hebt Luis das Spiegelstück nicht auf?", a:["Es ist ein Beweisstück, das nur die Polizei aufheben darf.","Es ist zu heiß.","Es ist zu schwer.","Er hat Angst davor."], b:"Das darf nur die Polizei aufheben."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Herr Wagner erklärt den Schulterblick.","Das silberne Auto streift Aylins Lenker.","Luis ruft die 110 an.","Luis sieht das silberne Auto an der Ampel."]}
+  ]},
+  {text:[
+   "„Sein Kennzeichen!“, ruft Kommissarin Demir. Luis kneift die Augen zusammen. „IGB – K – 22!“ Die Kommissarin gibt es sofort über Funk durch. Dann sagt sie zu einem Sanitäter, der gerade angekommen ist: „Bitte kümmern Sie sich um das Mädchen.“ Sie springt in den Streifenwagen und fährt los.",
+   "Der Sanitäter reinigt Aylins Knie und klebt ein großes Pflaster darauf. „Das wird wieder“, sagt er freundlich. „Du hattest großes Glück. Ohne Helm wäre das viel schlimmer ausgegangen.“ Dann ruft er Aylins Eltern an.",
+   "Ein Polizist sichert das Spiegelstück. Er zieht Handschuhe an und legt es in eine durchsichtige Tüte. Er macht auch Fotos von Aylins blauem Fahrrad. Am Lenker ist ein Kratzer, und dort klebt etwas silberne Farbe.",
+   "Aylins Papa kommt mit dem Auto und nimmt sie in den Arm. Luis wartet mit ihnen. Alle sind gespannt. Nach einer halben Stunde knistert das Funkgerät des Polizisten. Es ist Kommissarin Demir.",
+   "„Wir haben das Auto gefunden“, sagt sie. „Es stand vor einem Café in der Bahnhofstraße. Aber der Fahrer behauptet, dass er es nicht war. Er sagt, der Spiegel ist schon seit Wochen kaputt. Und er hat heute kein Mädchen auf einem Fahrrad gesehen.“"
+  ], fragen:[
+   {t:"wort", q:"Wie lautet das Kennzeichen des Autos?", pre:"Kennzeichen:", l:["IGBK22"], b:"IGB – K – 22!"},
+   {t:"mc", q:"Was sagt der Sanitäter?", a:["Ohne Helm wäre das viel schlimmer ausgegangen.","Aylin muss eine Woche ins Krankenhaus.","Aylin darf nie wieder Fahrrad fahren.","Das Knie ist gebrochen."], b:"Ohne Helm wäre das viel schlimmer ausgegangen."},
+   {t:"mc", q:"Was entdeckt der Polizist an Aylins Lenker?", a:["Einen Kratzer mit silberner Farbe","Einen Fingerabdruck","Ein Stück vom Nummernschild","Einen Aufkleber mit einem Hund"], b:"Am Lenker ist ein Kratzer, und dort klebt etwas silberne Farbe."},
+   {t:"mc", q:"Was behauptet der Fahrer?", a:["Er war es nicht, und der Spiegel ist schon lange kaputt.","Er hat Aylin absichtlich angefahren.","Er hat sein Auto verliehen.","Er hat gar kein Auto."], b:"Er sagt, der Spiegel ist schon seit Wochen kaputt."}
+  ]},
+  {text:[
+   "Kommissarin Demir lässt das Spiegelstück zum Auto bringen. Die Spurensicherung hält es an den abgebrochenen Spiegel. Es passt genau, wie das letzte Teil eines Puzzles. Der gezackte Rand fügt sich perfekt in die Lücke.",
+   "Und am Spiegel des Autos finden sie winzige Spuren von blauer Farbe. Genau das Blau von Aylins Fahrrad. „Der Spiegel war also nicht seit Wochen kaputt“, sagt die Kommissarin zu dem Fahrer. „Er ist heute an diesem Fahrrad abgebrochen.“",
+   "Da gibt der Mann es endlich zu. Er war spät dran und hat beim Fahren auf sein Handy geschaut. Deshalb hat er Aylin nicht richtig gesehen. Und dann hatte er Angst und ist einfach weitergefahren. „Das nennt man Unfallflucht“, erklärt die Kommissarin später. „Das ist verboten. Wer einen Unfall hat, muss immer anhalten und helfen.“",
+   "Der Mann muss eine hohe Strafe bezahlen. Außerdem darf er drei Monate lang nicht Auto fahren. Seinen Führerschein muss er abgeben. Er schreibt Aylin einen Brief und entschuldigt sich. Und er bezahlt ihr einen neuen Helm.",
+   "Eine Woche später ist die Fahrradprüfung. Aylin hat noch ein Pflaster am Knie, aber sie fährt sicher und konzentriert. Schulterblick, Arm raus, Gegenverkehr beachten – alles richtig. Luis schafft es auch. Herr Wagner überreicht beiden ihren Fahrradführerschein. Und Aylin klebt einen Aufkleber von der Polizei auf ihren neuen Helm: Helm auf – Kopf schlau!"
+  ], fragen:[
+   {t:"mc", q:"Wie beweist die Polizei, dass es dieses Auto war?", a:["Das Spiegelstück passt genau, und am Spiegel ist blaue Farbe vom Fahrrad.","Der Fahrer hat ein Foto gemacht.","Rocky hat den Fahrer gefunden.","Eine Kamera hat alles gefilmt."], b:"Es passt genau, wie das letzte Teil eines Puzzles."},
+   {t:"mc", q:"Warum hat der Fahrer Aylin nicht richtig gesehen?", a:["Er hat beim Fahren auf sein Handy geschaut.","Es war dunkel.","Er hatte keine Brille auf.","Die Sonne hat ihn geblendet."], b:"hat beim Fahren auf sein Handy geschaut"},
+   {t:"wort", q:"Wie nennt man es, wenn jemand nach einem Unfall einfach weiterfährt?", pre:"Das nennt man", l:["Unfallflucht"], b:"Das nennt man Unfallflucht"},
+   {t:"mc", q:"Was steht auf Aylins Helm-Aufkleber?", a:["Helm auf – Kopf schlau!","Ich bremse auch für Tiere","Polizei","Schnell wie der Wind"], b:"Helm auf – Kopf schlau!"}
+  ]}
+ ]
+},
+{
+ id:"feuer3", titel:"Hochwasser am Mühlbach", emoji:"🌧️", thema:"Feuerwehr · Paul 3", farbe:"#C0392B",
+ abzeichen:"Sandsack-Held", abzeichenEmoji:"💪",
+ teile:[
+  {text:[
+   "Seit fünf Tagen regnet es ohne Pause. Der kleine Mühlbach, der mitten durch Pauls Stadt fließt, ist zu einem braunen, reißenden Fluss geworden. Das Wasser steht schon fast bis zum Rand der Ufermauer.",
+   "Paul ist seit einem Monat bei der Jugendfeuerwehr. Am Samstagmorgen ruft Herr Krause alle Jugendlichen in die Feuerwache. „Wir müssen Sandsäcke füllen“, sagt er. „Wenn das Wasser über die Ufer tritt, bauen die Feuerwehrleute damit Mauern vor den Häusern.“",
+   "Paul schaufelt Sand in Säcke, bis seine Arme brennen. Ein Sack ist ganz schön schwer. Neben ihm arbeitet Emma. Sie ist auch in die Jugendfeuerwehr gekommen. Ihr kleiner Bruder Tom, sieben Jahre alt, schaut zu. „Ich will das Hochwasser sehen!“, ruft er immer wieder. „Das ist bestimmt total spannend!“",
+   "Herr Krause schüttelt ernst den Kopf. „Hochwasser ist nicht spannend, sondern gefährlich. Das Wasser ist viel stärker, als es aussieht. Es kann dich umreißen, selbst wenn es nur bis zu den Knien geht. Und unter dem braunen Wasser kann ein offener Gullydeckel sein. Niemals in Hochwasser hineingehen!“",
+   "Am Nachmittag heulen plötzlich die Sirenen. Der Mühlbach ist über die Ufer getreten. In der Mühlenstraße steht das Wasser schon auf der Straße. Die Feuerwehrleute rennen zu den Fahrzeugen. Und da klingelt Emmas Handy. Sie hört kurz zu und wird blass. „Das war Mama“, flüstert sie. „Tom ist weg!“"
+  ], fragen:[
+   {t:"mc", q:"Warum ist der Mühlbach so voll?", a:["Es regnet seit fünf Tagen ohne Pause.","Ein Damm ist gebrochen.","Der Schnee schmilzt.","Jemand hat Wasser hineingepumpt."], b:"Seit fünf Tagen regnet es ohne Pause."},
+   {t:"wort", q:"Was füllt die Jugendfeuerwehr in der Feuerwache?", pre:"Sie füllen", l:["Sandsäcke","Säcke"], b:"Wir müssen Sandsäcke füllen"},
+   {t:"mc", q:"Warum ist Hochwasser so gefährlich?", a:["Das Wasser kann einen umreißen, und darunter können offene Gullys sein.","Das Wasser ist sehr heiß.","Im Wasser schwimmen Haie.","Das Wasser ist giftig grün."], b:"Es kann dich umreißen, selbst wenn es nur bis zu den Knien geht."},
+   {t:"mc", q:"Was erfährt Emma am Telefon?", a:["Ihr Bruder Tom ist verschwunden.","Ihr Haus ist trocken geblieben.","Die Schule fällt aus.","Die Katze hat Junge bekommen."], b:"Tom ist weg!"}
+  ]},
+  {text:[
+   "„Er wollte unbedingt das Hochwasser sehen“, schluchzt Emma. „Mama hat nur kurz die Wäsche aufgehängt. Da war er weg. Seine Gummistiefel fehlen auch.“ Herr Krause meldet es sofort über Funk an die Einsatzleitung. „Vermisstes Kind, sieben Jahre alt, wahrscheinlich in Richtung Mühlbach unterwegs.“",
+   "Die Jugendfeuerwehr darf nicht mit zum Einsatz. Das ist viel zu gefährlich. Paul, Emma und die anderen bleiben mit Herrn Krause in der Feuerwache. Aus dem Funkgerät hören sie, wie die Feuerwehrleute nach Tom suchen. Aber sie finden ihn nicht.",
+   "Paul denkt angestrengt nach. Wo könnte Tom hingegangen sein? Dann fällt es ihm ein. „Emma, die alte Steinbrücke!“, ruft er. „Weißt du noch? Im Sommer haben wir dort mit Tom Stöckchen-Rennen gespielt. Wir haben Stöcke ins Wasser geworfen und geschaut, welcher zuerst unter der Brücke durchschwimmt. Das hat er so geliebt!“",
+   "Emma reißt die Augen auf. „Die Brücke im Mühlenweg! Da wollte er bestimmt hin!“ Herr Krause gibt die Information sofort weiter. „Einsatzleitung, hier Jugendfeuerwehr. Bitte an der alten Steinbrücke im Mühlenweg suchen.“",
+   "Wenige Minuten später knistert das Funkgerät. Es ist Tante Mia. „Kind gefunden, an der Steinbrücke im Mühlenweg. Es steht auf dem Dach eines Autos mitten im Wasser. Die Strömung ist sehr stark.“ Dann eine Pause. „Achtung! Das Auto bewegt sich! Die Strömung schiebt es weg!“"
+  ], fragen:[
+   {t:"mc", q:"Warum darf die Jugendfeuerwehr nicht mit zum Einsatz?", a:["Es ist viel zu gefährlich.","Sie müssen Hausaufgaben machen.","Es gibt kein Auto für sie.","Sie sind zu müde."], b:"Das ist viel zu gefährlich."},
+   {t:"mc", q:"Woran erinnert sich Paul?", a:["An das Stöckchen-Rennen an der alten Steinbrücke","An Toms Geburtstagsfeier","An einen Ausflug ans Meer","An Toms Lieblingsfilm"], b:"Im Sommer haben wir dort mit Tom Stöckchen-Rennen gespielt."},
+   {t:"wort", q:"In welcher Straße ist die alte Steinbrücke?", pre:"Im", l:["Mühlenweg"], b:"Die Brücke im Mühlenweg!"},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Paul füllt in der Feuerwache Sandsäcke.","Die Sirenen heulen.","Emma erfährt, dass Tom weg ist.","Tante Mia meldet, dass Tom gefunden ist."]}
+  ]},
+  {text:[
+   "In der Feuerwache wird es ganz still. Alle starren auf das Funkgerät. Emma hält Pauls Hand so fest, dass es wehtut. Herr Krause legt beiden einen Arm um die Schultern.",
+   "Dann hören sie wieder Tante Mias Stimme. Sie spricht schnell, aber ruhig. „Strömungsretter ins Wasser. Seil sichern. Das Auto ist an einem Baum hängen geblieben. Wir haben ein paar Minuten.“ Herr Krause erklärt leise: „Strömungsretter sind besonders ausgebildete Feuerwehrleute. Sie tragen Neoprenanzüge und Schwimmwesten und sind an einem Seil gesichert.“",
+   "Im Funk hört man Wasserrauschen und Rufe. „Ich bin am Auto … Der Junge hat große Angst … Ich gebe ihm eine Rettungsweste …“ Dann knackt es lange. Niemand in der Feuerwache sagt ein Wort.",
+   "„Seil festhalten! Zieht!“, ruft eine Stimme. Und dann endlich: „Wir haben ihn! Wir haben das Kind! Wir sind am Ufer.“ In der Feuerwache brechen alle in Jubel aus. Emma fällt Paul weinend um den Hals.",
+   "Doch dann ruft Tante Mia noch einmal ins Funkgerät. Ihre Stimme klingt ernst. „Einsatzleitung, wir brauchen Hilfe am Kindergarten in der Mühlenstraße. Das Wasser steigt dort weiter. Die Sandsackmauer ist zu niedrig. Wenn wir sie nicht schnell höher machen, läuft das Wasser in den Keller mit der Heizung!“"
+  ], fragen:[
+   {t:"mc", q:"Was hält das Auto auf?", a:["Es ist an einem Baum hängen geblieben.","Ein Feuerwehrauto steht davor.","Das Wasser ist plötzlich weg.","Tom hat gebremst."], b:"Das Auto ist an einem Baum hängen geblieben."},
+   {t:"mc", q:"Was sind Strömungsretter?", a:["Ausgebildete Feuerwehrleute, die an einem Seil gesichert ins Wasser gehen","Boote mit großem Motor","Hunde, die gut schwimmen können","Hubschrauber der Polizei"], b:"Strömungsretter sind besonders ausgebildete Feuerwehrleute."},
+   {t:"wort", q:"Was gibt der Strömungsretter Tom zuerst?", pre:"Eine", l:["Rettungsweste"], b:"Ich gebe ihm eine Rettungsweste"},
+   {t:"mc", q:"Welches neue Problem gibt es am Ende?", a:["Die Sandsackmauer am Kindergarten ist zu niedrig.","Tom ist wieder verschwunden.","Das Funkgerät ist kaputt.","Es fängt an zu schneien."], b:"Die Sandsackmauer ist zu niedrig."}
+  ]},
+  {text:[
+   "Herr Krause schaut auf die Jugendfeuerwehr. Dann auf die vielen gefüllten Sandsäcke in der Halle. „Die Säcke, die ihr heute gefüllt habt, werden jetzt gebraucht“, sagt er. „Wir laden sie auf den Lastwagen. Ihr tragt sie nur bis zum Tor. Weiter geht ihr nicht.“",
+   "Alle packen mit an. Paul und Emma tragen zu zweit einen Sack nach dem anderen zum Tor. Dort laden ihn Feuerwehrleute auf den Lastwagen. Nach zwanzig Minuten ist der Lastwagen voll und fährt mit Blaulicht los.",
+   "Eine Stunde später kommt die Nachricht über Funk: „Kindergarten gesichert. Die Mauer hält. Der Keller ist trocken.“ Herr Krause klatscht in die Hände. „Das war eure Arbeit! Ohne eure Sandsäcke hätten wir das nicht geschafft.“",
+   "Am Abend kommt Tante Mia in die Feuerwache. Sie ist klatschnass und müde. Hinter ihr kommen Emmas Eltern mit Tom. Tom ist in eine Decke gewickelt und schaut auf den Boden. „Entschuldigung“, flüstert er. „Ich wollte nur das Wasser sehen. Ich wusste nicht, dass es so stark ist.“",
+   "Tante Mia kniet sich zu ihm. „Jetzt weißt du es. Hochwasser schaut man sich nur von ganz weit weg an. Oder gar nicht.“ Dann wendet sie sich an Paul. „Und du hast heute zweimal geholfen: mit deinem guten Gedächtnis und mit deinen starken Armen.“ Paul wird ein bisschen rot. Aber er strahlt."
+  ], fragen:[
+   {t:"mc", q:"Bis wohin dürfen die Jugendlichen die Sandsäcke tragen?", a:["Nur bis zum Tor der Feuerwache","Bis zum Kindergarten","Bis zum Mühlbach","Bis nach Hause"], b:"Ihr tragt sie nur bis zum Tor."},
+   {t:"mc", q:"Was meldet der Funk nach einer Stunde?", a:["Der Kindergarten ist gesichert, und der Keller ist trocken.","Der Kindergarten ist überschwemmt.","Tom ist wieder verschwunden.","Der Regen hat aufgehört."], b:"Kindergarten gesichert."},
+   {t:"mc", q:"Was sagt Tom, als er sich entschuldigt?", a:["Er wusste nicht, dass das Wasser so stark ist.","Er hat sich verlaufen.","Er wollte schwimmen lernen.","Emma hat ihn geschickt."], b:"Ich wusste nicht, dass es so stark ist."},
+   {t:"mc", q:"Womit hat Paul laut Tante Mia zweimal geholfen?", a:["Mit seinem guten Gedächtnis und seinen starken Armen","Mit seinem Handy und seinem Fahrrad","Mit Kochen und Putzen","Mit Singen und Malen"], b:"mit deinem guten Gedächtnis und mit deinen starken Armen"}
+  ]}
+ ]
+},
+{
+ id:"feuer4", titel:"Feuer am Zeltlager", emoji:"⛺", thema:"Feuerwehr · Paul 4", farbe:"#C0392B",
+ abzeichen:"Zeltlager-Abzeichen", abzeichenEmoji:"🌲",
+ teile:[
+  {text:[
+   "In den Sommerferien fährt die Jugendfeuerwehr ins Zeltlager. Die Zelte stehen auf einer großen Wiese an einem See. Dahinter beginnt ein Kiefernwald. Paul teilt sich ein Zelt mit Emma und mit Lars, einem Jungen aus der Nachbarstadt. Lars hört abends immer Musik mit großen Kopfhörern.",
+   "Es ist sehr heiß. Seit Wochen hat es nicht geregnet. Das Gras ist gelb und knistert unter den Schuhen. Am ersten Abend erklärt Herr Krause: „Heute gibt es kein Lagerfeuer. Im Wald gilt die höchste Waldbrandstufe. Ein einziger Funke kann reichen, und der ganze Wald brennt.“",
+   "Stattdessen kochen sie Nudeln auf einem Gaskocher, auf einer Steinplatte weit weg vom Gras. Danach erklärt Herr Krause noch etwas Wichtiges. „Wenn nachts etwas passiert, treffen wir uns alle am Sammelplatz. Das ist der große Steg am See. Dort zählen wir durch, ob alle da sind.“",
+   "Nach dem Abendessen gehen die Kinder schwimmen. Am anderen Ende der Wiese hat eine Familie gegrillt. Als sie nach Hause fahren, sieht Paul, dass sie ihren kleinen Einweggrill einfach im Gras am Waldrand stehen lassen. „Die haben ihren Müll vergessen“, denkt er.",
+   "Mitten in der Nacht wacht Paul auf. Er muss aufs Klo. Als er aus dem Zelt kriecht, riecht er etwas. Rauch! Er schaut zum Waldrand. Zwischen den Bäumen flackert ein orangefarbenes Licht."
+  ], fragen:[
+   {t:"mc", q:"Mit wem teilt sich Paul das Zelt?", a:["Mit Emma und Lars","Mit Tante Mia","Mit Herrn Krause","Mit Tom und Ole"], b:"Paul teilt sich ein Zelt mit Emma und mit Lars"},
+   {t:"mc", q:"Warum gibt es kein Lagerfeuer?", a:["Im Wald gilt die höchste Waldbrandstufe.","Es regnet zu stark.","Sie haben kein Holz dabei.","Herr Krause mag kein Feuer."], b:"Im Wald gilt die höchste Waldbrandstufe."},
+   {t:"wort", q:"Wo ist der Sammelplatz?", pre:"Am großen", l:["Steg"], b:"Das ist der große Steg am See."},
+   {t:"mc", q:"Was lässt die Familie am Waldrand stehen?", a:["Ihren Einweggrill","Ihr Zelt","Ihren Hund","Ihr Fahrrad"], b:"ihren kleinen Einweggrill einfach im Gras am Waldrand stehen lassen"}
+  ]},
+  {text:[
+   "Paul läuft nicht allein zum Feuer. Er rennt, so schnell er kann, zum Zelt von Herrn Krause. „Herr Krause! Aufwachen! Am Waldrand brennt es!“ Herr Krause ist sofort wach. Er schnappt sich den Feuerlöscher, der vor seinem Zelt steht, und läuft mit Paul los.",
+   "Am Waldrand sehen sie, was passiert ist. Der Einweggrill war noch heiß. Er hat das trockene Gras darunter angezündet. Jetzt brennt ein Kreis, so groß wie ein Trampolin. Die Flammen sind noch klein, aber sie wandern langsam auf die ersten Bäume zu.",
+   "Herr Krause sprüht mit dem Feuerlöscher auf die Flammen. Ein weißer Nebel zischt heraus. Das Feuer wird kleiner. „Paul, weck die anderen Betreuer!“, ruft er. „Sie sollen Eimer mit Wasser vom See holen. Ihr Kinder bleibt auf der Wiese!“",
+   "Paul rennt zurück. Bald stehen die Betreuer in einer Reihe vom See bis zum Waldrand und reichen sich Eimer weiter. Das nennt man eine Eimerkette. Eimer um Eimer fliegt das Wasser auf die Flammen. Das Feuer zischt und qualmt.",
+   "Doch dann kommt ein starker Windstoß. Er wirbelt glühende Funken hoch in die Luft. Die Funken fliegen über die Köpfe der Betreuer hinweg. Und landen in einem dichten, trockenen Gebüsch am Hang. Mit einem Fauchen schlagen dort neue Flammen hoch."
+  ], fragen:[
+   {t:"mc", q:"Was macht Paul, als er das Feuer sieht?", a:["Er weckt sofort Herrn Krause.","Er läuft allein zum Feuer.","Er versteckt sich im Zelt.","Er macht ein Foto."], b:"Er rennt, so schnell er kann, zum Zelt von Herrn Krause."},
+   {t:"mc", q:"Wie ist das Feuer entstanden?", a:["Der heiße Einweggrill hat das trockene Gras angezündet.","Ein Blitz hat eingeschlagen.","Jemand hat eine Kerze vergessen.","Die Sonne hat das Gras angezündet."], b:"Er hat das trockene Gras darunter angezündet."},
+   {t:"wort", q:"Wie heißt es, wenn viele Menschen sich in einer Reihe Eimer weiterreichen?", pre:"Eine", l:["Eimerkette"], b:"Das nennt man eine Eimerkette."},
+   {t:"folge", q:"Was ist bis jetzt passiert? Tippe in der richtigen Reihenfolge.", a:["Herr Krause erklärt, warum es kein Lagerfeuer gibt.","Die Familie lässt den Einweggrill stehen.","Paul riecht in der Nacht Rauch.","Ein Windstoß wirbelt Funken ins Gebüsch."]}
+  ]},
+  {text:[
+   "„Das schaffen wir nicht mehr allein!“, ruft Herr Krause. Er holt sein Handy heraus und wählt die 112. „Waldbrand am Zeltlager am Kiefernsee. Das Feuer breitet sich am Hang aus. Im Lager sind zwanzig Kinder.“",
+   "Dann dreht er sich zu Paul um. „Paul, du kennst den Plan. Weck alle Kinder. Alle gehen sofort zum Sammelplatz am Steg. Nichts mitnehmen. Nur Schuhe anziehen.“ Paul nickt. Sein Herz hämmert, aber er weiß genau, was zu tun ist.",
+   "Er rennt von Zelt zu Zelt und ruft: „Feuer! Alle zum Steg! Sofort!“ Überall krabbeln verschlafene Kinder heraus. Einige weinen. Die Betreuer helfen den Kleinen. Emma nimmt ein Mädchen an die Hand, das vor Angst ganz starr ist.",
+   "Am Steg zählt eine Betreuerin laut durch. „Achtzehn … neunzehn …“ Dann stockt sie. Sie zählt noch einmal. „Neunzehn. Es fehlt jemand!“ Paul schaut sich um. Emma ist da. Die beiden Zwillinge aus dem Nachbarzelt sind da. Aber wo ist Lars?",
+   "Paul schaut zurück zur Wiese. Der Rauch zieht jetzt in dicken Schwaden über die Zelte. Und das Feuer am Hang ist schon ganz nah am letzten Zelt in der Reihe. Es ist das Zelt, in dem Paul, Emma und Lars schlafen."
+  ], fragen:[
+   {t:"wort", q:"Wie viele Kinder sind im Zeltlager?", pre:"Es sind", post:"Kinder.", l:["zwanzig","20"], b:"Im Lager sind zwanzig Kinder."},
+   {t:"mc", q:"Was sollen alle Kinder tun?", a:["Sofort zum Sammelplatz am Steg gehen","Ihre Sachen packen","Beim Löschen helfen","In den Zelten bleiben"], b:"Alle gehen sofort zum Sammelplatz am Steg."},
+   {t:"mc", q:"Wie hilft Emma?", a:["Sie nimmt ein ängstliches Mädchen an die Hand.","Sie löscht das Feuer.","Sie ruft die Feuerwehr.","Sie packt die Zelte ein."], b:"Emma nimmt ein Mädchen an die Hand, das vor Angst ganz starr ist."},
+   {t:"mc", q:"Wer fehlt am Sammelplatz?", a:["Lars","Emma","Herr Krause","Die Zwillinge"], b:"Aber wo ist Lars?"}
+  ]},
+  {text:[
+   "Paul denkt blitzschnell nach. Lars hört nachts immer Musik mit seinen großen Kopfhörern! „Er hört uns nicht!“, ruft Paul. „Er schläft bestimmt noch im Zelt und hat seine Kopfhörer auf!“ Herr Krause rennt sofort los, quer über die Wiese. Paul bleibt am Steg, so wie es abgemacht ist.",
+   "Herr Krause reißt das Zelt auf. Tatsächlich: Lars liegt im Schlafsack und schläft tief und fest. Die Kopfhörer sind auf seinen Ohren. Herr Krause zieht ihn hoch und läuft mit ihm zum Steg. Lars ist ganz verwirrt. „Was ist denn los?“ Dann sieht er die Flammen und wird ganz blass.",
+   "In diesem Moment hört man die Martinshörner. Drei Löschfahrzeuge rollen auf die Wiese. Eins davon ist vom Löschzug 3. Tante Mia springt heraus. Die Feuerwehrleute rollen Schläuche aus und pumpen Wasser aus dem See. Nach einer Stunde ist das Feuer gelöscht. Nur ein schwarzer Streifen am Hang und ein verbranntes Zelt sind übrig.",
+   "Tante Mia kommt zum Steg und schaut sich die Kinder an. Alle sind da, alle sind gesund. „Ihr habt alles richtig gemacht“, sagt sie. „Ihr seid zum Sammelplatz gegangen und habt durchgezählt. Und Paul hat sofort einen Erwachsenen geweckt, statt selbst zu löschen.“",
+   "Am nächsten Morgen schreibt die Jugendfeuerwehr einen Brief an die Gemeinde. Sie bitten um ein neues Schild am Waldrand. Zwei Wochen später steht es da: Kein Grillen im Wald! Einweggrills können noch Stunden später Brände auslösen. Und Lars? Der schläft im Zeltlager jetzt immer ohne Kopfhörer. Dafür mit einer Taschenlampe unter dem Kopfkissen."
+  ], fragen:[
+   {t:"mc", q:"Warum hat Lars nichts gehört?", a:["Er hatte seine Kopfhörer auf.","Er war beim Schwimmen.","Er war schon nach Hause gefahren.","Er hat sich versteckt."], b:"Die Kopfhörer sind auf seinen Ohren."},
+   {t:"mc", q:"Woher holt die Feuerwehr das Löschwasser?", a:["Aus dem See","Aus einem Brunnen","Aus einem Schwimmbad","Aus Regentonnen"], b:"pumpen Wasser aus dem See"},
+   {t:"mc", q:"Was hat Paul laut Tante Mia richtig gemacht?", a:["Er hat sofort einen Erwachsenen geweckt, statt selbst zu löschen.","Er hat das Feuer allein gelöscht.","Er hat seine Sachen gerettet.","Er hat die Familie mit dem Grill gesucht."], b:"Und Paul hat sofort einen Erwachsenen geweckt, statt selbst zu löschen."},
+   {t:"wort", q:"Was hat Lars jetzt unter dem Kopfkissen?", pre:"Eine", l:["Taschenlampe"], b:"Dafür mit einer Taschenlampe unter dem Kopfkissen."}
+  ]}
+ ]
 }
 ];
 /*DATA_END*/
-const ORDER=["villa","pokal","kira","kira2","perla","perla2","luna","luna2","polizei","polizei2","feuer","feuer2"];
+const SERIES=[
+ {name:"Die Spürnasen", emoji:"🔍", ids:["villa","pokal","uhrturm","botschaft"]},
+ {name:"Kira", emoji:"🐕", ids:["kira","kira2","kira3","kira4"]},
+ {name:"Perla, der weiße Delfin", emoji:"🐬", ids:["perla","perla2","perla3","perla4"]},
+ {name:"Ella & Pixel im Weltraum", emoji:"🚀", ids:["luna","luna2","luna3","luna4"]},
+ {name:"Kommissarin Demir", emoji:"🚓", ids:["polizei","polizei2","polizei3","polizei4"]},
+ {name:"Paul & die Feuerwehr", emoji:"🚒", ids:["feuer","feuer2","feuer3","feuer4"]}
+];
+const ORDER=SERIES.flatMap(x=>x.ids);
 STORIES.sort((a,b)=>ORDER.indexOf(a.id)-ORDER.indexOf(b.id));
 
 
@@ -838,8 +1496,11 @@ function home(){
   const maxStars = STORIES.reduce((n,s)=>n+s.teile.length*4,0);
   let h = `<header class="hero"><h1>Lese-<span>Tresor</span> 🔐</h1>
     <p>Spannende Geschichten in mehreren Teilen. Jeder neue Teil ist verschlossen – beantworte 4 Fragen richtig, dann knackst du das Schloss!</p>
-    <div class="total">⭐ ${totalStars} von ${maxStars} Sternen</div></header><div class="wrap"><div class="grid">`;
-  STORIES.forEach(s=>{
+    <div class="total">⭐ ${totalStars} von ${maxStars} Sternen</div></header><div class="wrap">`;
+  SERIES.forEach(se=>{
+   const done = se.ids.filter(id=>ss(id).done).length;
+   h += `<h2 class="serie">${se.emoji} ${esc(se.name)} <span>${done}/${se.ids.length} geschafft</span></h2><div class="grid">`;
+   se.ids.map(byId).forEach(s=>{
     const p = ss(s.id), n = s.teile.length;
     const doneParts = p.done ? n : p.teil;
     const pct = Math.round(doneParts/n*100);
@@ -849,8 +1510,10 @@ function home(){
       <div style="flex:1;min-width:0"><h3>${esc(s.titel)}</h3><div class="theme">${esc(s.thema)}</div>
       <div class="bar"><i style="width:${pct}%"></i></div>
       <div class="meta"><span>${status}</span><span>⭐ ${sum(p.sterne)}/${n*4}</span></div></div></button>`;
+   });
+   h += `</div>`;
   });
-  h += `</div><div class="foot"><button class="hold" id="hold"><i></i><span>⚙︎ Für Erwachsene (gedrückt halten)</span></button></div></div>`;
+  h += `<div class="foot"><button class="hold" id="hold"><i></i><span>⚙︎ Für Erwachsene (gedrückt halten)</span></button></div></div>`;
   $app.innerHTML = h;
   $app.querySelectorAll(".card").forEach(b=>b.onclick=()=>openStory(b.dataset.id));
   setupHold(document.getElementById("hold"), adults);
@@ -1010,7 +1673,7 @@ function renderQ(){
 }
 
 function norm(x){
-  return String(x).toLowerCase().replace(/[„“"'.,!?;:()\-]/g,"").replace(/\s+/g,"")
+  return String(x).toLowerCase().replace(/[„“"'.,!?;:()\-–—]/g,"").replace(/\s+/g,"")
     .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss");
 }
 function lev(a,b){
