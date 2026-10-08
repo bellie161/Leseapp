@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Geldladen</title>
+<meta name="description" content="Rechenapp zum Umgang mit Geld für die Förderschule Lernen">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+/* Layout: eine ruhige Spalte wie ein Ladentisch; Geldbilder sind die einzigen kräftigen Farben. */
+:root{
+  --bg:#E8F0ED; --surface:#FFFFFF; --surface-2:#F2F7F5; --ink:#17302B; --muted:#566B65; --line:#CBDBD5;
+  --accent:#0F7A68; --accent-ink:#FFFFFF; --accent-soft:#D5EDE7;
+  --gold:#D9A300; --gold-soft:#FBEFC6;
+  --ok:#2A8449; --ok-bg:#E1F3E7; --bad:#B9442B; --bad-bg:#FBE6E0; --hint-bg:#FFF4D1; --hint-line:#E8CF7A;
+  --coin-gold:#E2B63A; --coin-silver:#CED5D8; --coin-ink:#2B2410;
+  --n5:#77897F; --n10:#C35650; --n20:#4672BA; --n50:#D5823C; --n100:#3B925E; --n200:#AF8935; --n500:#7E61AA;
+  --display:'Fredoka','Andika',system-ui,sans-serif;
+  --body:'Andika','Trebuchet MS',system-ui,sans-serif;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F1E1B; --surface:#172A26; --surface-2:#1D332E; --ink:#E5F0EC; --muted:#9CB2AB; --line:#2D4741;
+  --accent:#3EC1A5; --accent-ink:#04231C; --accent-soft:#1D4038;
+  --gold:#F0C445; --gold-soft:#3A3115;
+  --ok:#5FCB86; --ok-bg:#183826; --bad:#F08B71; --bad-bg:#3D211A; --hint-bg:#352E15; --hint-line:#6E5C22;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F1E1B; --surface:#172A26; --surface-2:#1D332E; --ink:#E5F0EC; --muted:#9CB2AB; --line:#2D4741;
+  --accent:#3EC1A5; --accent-ink:#04231C; --accent-soft:#1D4038;
+  --gold:#F0C445; --gold-soft:#3A3115;
+  --ok:#5FCB86; --ok-bg:#183826; --bad:#F08B71; --bad-bg:#3D211A; --hint-bg:#352E15; --hint-line:#6E5C22;
+  color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.45;padding-inline:16px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:0 auto;padding-block:16px 48px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(28px,5vw,40px)} h2{font-size:clamp(22px,3.6vw,28px)} h3{font-size:20px}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:0 1px 0 var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:0 22px;border-radius:14px;font-family:var(--display);font-weight:600;font-size:20px;background:var(--surface-2);border:2px solid var(--line)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.gold{background:var(--gold);color:#2B2208;border-color:var(--gold)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:default}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+
+/* Kopf */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:22px;color:var(--accent)}
+.brand .coin{--sz:34px;font-size:13px}
+.icon-btn{min-height:48px;min-width:48px;padding:0 14px;border-radius:12px;background:var(--surface);border:2px solid var(--line);font-family:var(--display);font-weight:600;font-size:17px;display:inline-flex;align-items:center;gap:6px}
+
+/* Geld */
+.m{position:relative;flex:none;user-select:none;-webkit-user-select:none}
+.coin{width:var(--sz);height:var(--sz);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;color:var(--coin-ink);box-shadow:inset 0 0 0 2px rgba(0,0,0,.16),0 2px 3px rgba(0,0,0,.22)}
+.coin b{font-size:calc(var(--sz)*.42);line-height:1}
+.coin i{font-style:normal;font-size:calc(var(--sz)*.26);margin-left:1px}
+.c1{background:radial-gradient(circle,var(--coin-silver) 0 55%,var(--coin-gold) 57% 100%)}
+.c2{background:radial-gradient(circle,var(--coin-gold) 0 55%,var(--coin-silver) 57% 100%)}
+.note{width:var(--w);height:var(--h);border-radius:6px;background:var(--nc);color:#fff;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 2px 3px rgba(0,0,0,.22)}
+.note::before{content:"";position:absolute;inset:4px;border:1.5px solid rgba(255,255,255,.55);border-radius:4px}
+.note::after{content:"";position:absolute;left:9%;top:22%;width:26%;height:56%;border-radius:50%;background:rgba(255,255,255,.2)}
+.note b{position:relative;z-index:1;font-family:var(--display);font-weight:700;font-size:calc(var(--h)*.48);line-height:1;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.note .cv{position:absolute;top:5px;right:8px;font-family:var(--display);font-size:calc(var(--h)*.2);font-weight:600;z-index:1}
+.note small{position:absolute;bottom:5px;right:8px;font-size:calc(var(--h)*.15);letter-spacing:.08em;text-transform:uppercase;z-index:1;opacity:.9}
+.n5{--nc:var(--n5)}.n10{--nc:var(--n10)}.n20{--nc:var(--n20)}.n50{--nc:var(--n50)}.n100{--nc:var(--n100)}.n200{--nc:var(--n200)}.n500{--nc:var(--n500)}
+.m.gone{opacity:.42}
+.m.gone::after{content:"";position:absolute;inset:auto;left:-6%;right:-6%;top:calc(50% - 3px);height:6px;background:var(--bad);border-radius:3px;transform:rotate(-24deg);z-index:2;width:auto}
+.coin.gone::after{left:-8%;right:-8%}
+.money-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.mwrap{display:inline-flex;flex-direction:column;align-items:center;gap:4px}
+.mwrap em{font-style:normal;font-family:var(--display);font-weight:600;font-size:15px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:0 6px;font-variant-numeric:tabular-nums}
+
+/* Startseite */
+.hello{display:flex;flex-direction:column;gap:6px}
+.zr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.zr-card{text-align:left;background:var(--surface);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;border:3px solid transparent;box-shadow:0 1px 0 var(--line)}
+.zr-card:hover{border-color:var(--accent-soft)}
+.zr-num{font-family:var(--display);font-weight:700;font-size:52px;line-height:1;color:var(--accent)}
+.zr-num span{font-size:20px;color:var(--muted);font-weight:500;margin-right:6px}
+.zr-money{min-height:56px}
+.bar{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:var(--gold);border-radius:6px}
+.eis-strip{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-size:15px;font-weight:700;background:var(--surface);border:2px solid var(--line)}
+.chip.E{border-color:#D5823C;color:inherit} .chip.I{border-color:#4672BA} .chip.S{border-color:var(--accent)} .chip.Sach{border-color:var(--gold)}
+.arrow{color:var(--muted);font-weight:700}
+
+/* Stufen */
+.stage-list{display:flex;flex-direction:column;gap:12px}
+.stage{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;text-align:left;background:var(--surface);border-radius:var(--r);padding:16px;border:3px solid transparent;box-shadow:0 1px 0 var(--line)}
+.stage:not([disabled]):hover{border-color:var(--accent-soft)}
+.stage[disabled]{opacity:.55;cursor:default}
+.stage.current{border-color:var(--accent)}
+.snum{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:22px;background:var(--surface-2);border:2px solid var(--line)}
+.stage.done .snum{background:var(--gold);border-color:var(--gold);color:#2B2208}
+.sbody{min-width:0;display:flex;flex-direction:column;gap:6px}
+.sbody .row{gap:8px}
+.scount{font-family:var(--display);font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);font-size:16px;white-space:nowrap}
+.teacher-note{font-size:15px;color:var(--muted);border-left:3px solid var(--gold);padding-left:8px}
+
+/* Übung */
+.ex-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ex-title{display:flex;flex-direction:column;min-width:0}
+.ex-title small{color:var(--muted);font-size:15px}
+.piggy{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.slots{display:flex;flex-wrap:wrap;gap:5px}
+.slot{width:24px;height:24px;border-radius:50%;border:2px dashed var(--line);background:var(--surface)}
+.slot.full{border:0;background:radial-gradient(circle,var(--coin-gold) 0 55%,var(--coin-silver) 57% 100%);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.slot.pop{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.piggy-label{font-family:var(--display);font-weight:600;font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums}
+.prompt{display:flex;gap:12px;align-items:flex-start}
+.prompt h2{flex:1;min-width:0}
+.speak{flex:none;width:52px;height:52px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.speak svg{width:26px;height:26px}
+.work{display:flex;flex-direction:column;gap:18px;margin-top:16px}
+.feedback{border-radius:14px;padding:14px 16px;font-size:20px;font-weight:700;display:flex;gap:10px;align-items:flex-start}
+.feedback.ok{background:var(--ok-bg);color:var(--ok)}
+.feedback.bad{background:var(--bad-bg);color:var(--bad)}
+.hint{background:var(--hint-bg);border:2px solid var(--hint-line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.hint-title{font-family:var(--display);font-weight:600;font-size:18px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.repeat-tag{display:inline-block;font-size:14px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 10px;margin-bottom:6px}
+
+/* Auswahl */
+.choice-grid{display:flex;flex-wrap:wrap;gap:14px}
+.choice{min-height:84px;min-width:84px;padding:12px 16px;border-radius:16px;background:var(--surface-2);border:3px solid var(--line);display:inline-flex;align-items:center;justify-content:center}
+.choice:hover{border-color:var(--accent)}
+.choice.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.choice.sol{border-color:var(--ok);background:var(--ok-bg)}
+.choice.txt{font-family:var(--display);font-weight:600;font-size:28px;min-width:130px;font-variant-numeric:tabular-nums}
+.choice.op{font-family:var(--display);font-weight:600;font-size:26px;flex:1;min-width:200px;flex-direction:column;gap:2px}
+.choice.op small{font-family:var(--body);font-size:15px;font-weight:400;color:var(--muted)}
+
+/* Legen */
+.tablezone{border:3px dashed var(--line);border-radius:16px;padding:14px;min-height:120px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.zone-label{display:flex;justify-content:space-between;gap:10px;font-family:var(--display);font-weight:600;color:var(--muted)}
+.zone-sum{color:var(--accent);font-variant-numeric:tabular-nums}
+.placed{display:flex;flex-wrap:wrap;gap:10px;align-items:center;min-height:60px}
+.placed button{padding:2px;border-radius:8px}
+.tray{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--surface-2);border-radius:16px;padding:14px}
+.tray button{padding:6px;border-radius:12px;border:2px solid transparent}
+.tray button:hover{border-color:var(--accent)}
+.tray-label{font-family:var(--display);font-weight:600;color:var(--muted)}
+
+/* Rechnung */
+.equation{font-family:var(--display);font-weight:600;font-size:clamp(30px,7vw,46px);display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-variant-numeric:tabular-nums}
+.equation .op{color:var(--accent)}
+.eq-small{font-family:var(--display);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums}
+.slotbox{min-width:120px;min-height:64px;border-radius:12px;border:3px solid var(--accent);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;padding:0 14px}
+.slotbox.empty{color:var(--muted)}
+.pic-sum{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.pic-group{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;border-radius:14px;background:var(--surface-2);border:2px solid var(--line)}
+.bigop{font-family:var(--display);font-weight:700;font-size:44px;color:var(--accent)}
+
+/* Zahlenfeld */
+.numpad-wrap{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.np-display{font-family:var(--display);font-weight:600;font-size:40px;min-width:180px;min-height:70px;border-radius:14px;border:3px solid var(--accent);background:var(--surface);display:flex;align-items:center;justify-content:flex-end;padding:0 18px;font-variant-numeric:tabular-nums}
+.np-display .ph{color:var(--muted)}
+.numpad{display:grid;grid-template-columns:repeat(5,minmax(56px,72px));gap:10px}
+.numpad button{min-height:62px;border-radius:14px;background:var(--surface-2);border:2px solid var(--line);font-family:var(--display);font-weight:600;font-size:28px}
+.numpad button:active{background:var(--accent-soft)}
+.numpad .del{font-size:20px}
+@media (max-width:420px){.numpad{grid-template-columns:repeat(4,minmax(52px,1fr));width:100%}}
+
+/* Einkaufen */
+.shop{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
+@media (max-width:640px){.shop{grid-template-columns:1fr}}
+.shelf{display:flex;flex-wrap:wrap;gap:12px}
+.item{background:var(--surface-2);border:2px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:120px}
+.item .emo{font-size:46px;line-height:1}
+.item .iname{font-weight:700}
+.tag{font-family:var(--display);font-weight:700;font-size:22px;background:var(--gold);color:#2B2208;border-radius:8px;padding:2px 12px;font-variant-numeric:tabular-nums;position:relative}
+.wallet{background:var(--surface-2);border:2px solid var(--gold);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.wallet-h{font-family:var(--display);font-weight:600;display:flex;justify-content:space-between;gap:10px}
+.wallet-h b{font-variant-numeric:tabular-nums;color:var(--accent)}
+.steps{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stepdot{font-family:var(--display);font-weight:600;font-size:15px;border-radius:999px;padding:2px 12px;background:var(--surface-2);border:2px solid var(--line);color:var(--muted)}
+.stepdot.now{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stepdot.past{border-color:var(--ok);color:var(--ok)}
+.stepzone{display:flex;flex-direction:column;gap:14px;border-top:2px solid var(--line);padding-top:16px}
+.yn{display:flex;gap:14px;flex-wrap:wrap}
+.yn .choice{font-family:var(--display);font-size:28px;font-weight:600;min-width:150px}
+
+/* Balken */
+.cmp{display:flex;flex-direction:column;gap:10px}
+.cmp-row{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center}
+.cmp-row span{font-weight:700;font-size:16px}
+.cmp-track{height:34px;position:relative}
+.cmp-bar{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-family:var(--display);font-weight:700;font-size:17px;color:#2B2208;font-variant-numeric:tabular-nums;min-width:56px}
+.cmp-bar.money{background:var(--gold)}
+.cmp-bar.price{background:var(--coin-silver)}
+.cmp-bar.over{background:linear-gradient(90deg,var(--coin-silver) var(--cut),var(--bad) var(--cut));color:#2B2208}
+
+/* Rechen-Hilfe */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.rule{background:var(--surface);border-radius:12px;padding:12px;border:2px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.rule .sym{font-family:var(--display);font-weight:700;font-size:30px;color:var(--accent);line-height:1}
+.rule p{font-size:16px}
+
+/* Overlay */
+.overlay{position:fixed;inset:0;background:rgba(10,25,22,.55);display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 24px) 16px 24px;overflow-y:auto;z-index:20}
+.sheet{background:var(--surface);border-radius:20px;padding:24px;max-width:560px;width:100%;display:flex;flex-direction:column;gap:16px}
+.big-star{font-size:80px;line-height:1;text-align:center;color:var(--gold)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700}
+.field input[type=text],.field select{font:inherit;font-size:18px;min-height:48px;border-radius:10px;border:2px solid var(--line);background:var(--surface-2);color:var(--ink);padding:0 12px}
+.check{display:flex;gap:10px;align-items:center;font-weight:700}
+.check input{width:24px;height:24px;accent-color:var(--accent)}
+.info{font-size:16px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+.info b{color:var(--ink)}
+.calc{max-width:400px}
+.calc-screen{background:var(--surface-2);border:3px solid var(--line);border-radius:14px;padding:10px 16px;text-align:right;font-family:var(--display);font-variant-numeric:tabular-nums}
+.calc-hist{color:var(--muted);font-size:18px;min-height:26px}
+.calc-val{font-size:44px;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
+.calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.calc-keys button{min-height:64px;border-radius:14px;background:var(--surface-2);border:2px solid var(--line);font-family:var(--display);font-weight:600;font-size:28px}
+.calc-keys .k-op{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
+.calc-keys .k-eq{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);grid-column:span 2}
+.calc-keys .k-fn{color:var(--bad)}
+.calc-keys button:active{transform:translateY(1px)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="overlay" class="overlay" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const $=(s,el=document)=>el.querySelector(s);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const eur=n=>n+' €';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Speicher ---------- */
+function load(k,d){try{const v=localStorage.getItem(k);return v?Object.assign(d,JSON.parse(v)):d}catch(e){return d}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const settings=load('geldladen_settings',{name:'Jakob',N:10,autoSpeak:false,showSum:false,lockOrder:true,calc:true});
+let progress=load('geldladen_progress',{});
+const save=()=>{store('geldladen_settings',settings);store('geldladen_progress',progress)};
+
+/* ---------- Daten ---------- */
+const ZR={
+  20:{label:'bis 20',denoms:[1,2,5,10,20],preview:[10,5,2,1]},
+  100:{label:'bis 100',denoms:[1,2,5,10,20,50,100],preview:[50,20,10,2]},
+  1000:{label:'bis 1000',denoms:[5,10,20,50,100,200,500],preview:[500,200,100,50]}
+};
+const STAGES=[
+ {id:'kennen',name:'Geld kennenlernen',eis:'E',eisLong:'Handeln',info:'Münzen und Scheine finden und vergleichen.'},
+ {id:'legen',name:'Geld legen',eis:'E',eisLong:'Handeln',info:'Einen Betrag mit Münzen und Scheinen legen.',teacher:'Tipp: Den Betrag vorher mit echtem Spielgeld auf den Tisch legen lassen.'},
+ {id:'zaehlen',name:'Geld zählen',eis:'I',eisLong:'Bilder',info:'Geld auf dem Bild zählen.'},
+ {id:'bild',name:'Rechnen mit Bildern',eis:'I',eisLong:'Bilder',info:'Plus und Minus mit Geldbildern.'},
+ {id:'rechnen',name:'Rechnen mit Zahlen',eis:'S',eisLong:'Zahlen',info:'Plus und Minus nur mit Zahlen. Die Hilfe zeigt das Bild.'},
+ {id:'reicht',name:'Einkaufen: Reicht das Geld?',eis:'Sach',eisLong:'Sachaufgabe',info:'Preise zusammenrechnen und mit dem Geld vergleichen.'},
+ {id:'rest',name:'Einkaufen: Was bleibt übrig?',eis:'Sach',eisLong:'Sachaufgabe',info:'Bezahlen und Restgeld ausrechnen.'}
+];
+const ITEMS={
+ 20:[['🍎','Apfel'],['🥖','Brot'],['🥛','Milch'],['🍌','Bananen'],['✏️','Stift'],['📒','Heft'],['🍦','Eis'],['⚽','Ball'],['🧃','Saft'],['🧸','Teddy'],['🖍️','Malstifte'],['🧁','Muffin'],['🚗','Spielauto'],['📕','Buch'],['🧀','Käse'],['🥚','Eier']],
+ 100:[['👕','T-Shirt'],['👟','Turnschuhe'],['🎒','Rucksack'],['🧢','Mütze'],['🎲','Spiel'],['📚','Bücher'],['👖','Hose'],['🧥','Jacke'],['🎧','Kopfhörer'],['🏀','Basketball'],['🧩','Puzzle'],['🪁','Drachen'],['🧤','Handschuhe'],['🎨','Malkasten']],
+ 1000:[['🚲','Fahrrad'],['📱','Handy'],['💻','Laptop'],['📺','Fernseher'],['🛴','Roller'],['🎸','Gitarre'],['🛋️','Sofa'],['🛏️','Bett'],['🎮','Spielkonsole'],['🪑','Schreibtisch'],['🧊','Kühlschrank'],['⛺','Zelt']]
+};
+const SHOP={
+ 20:[{budgets:[10],step:1,min:1},{budgets:[12,13,15,16],step:1,min:1}],
+ 100:[{budgets:[50],step:5,min:5},{budgets:[40,50,60,70,80],step:1,min:3}],
+ 1000:[{budgets:[500],step:50,min:50},{budgets:[400,500,600,700,800],step:10,min:30}]
+};
+const REST={
+ 20:[{budgets:[5,10],step:1,min:1,n:1},{budgets:[10,15,20],step:1,min:1,n:2}],
+ 100:[{budgets:[20,50,100],step:5,min:5,n:1},{budgets:[50,100],step:1,min:3,n:2}],
+ 1000:[{budgets:[500,1000],step:50,min:50,n:1},{budgets:[500,1000],step:10,min:30,n:2}]
+};
+
+/* ---------- Geldbilder ---------- */
+const NOTE={5:[74,40],10:[78,42],20:[82,44],50:[86,46],100:[90,46],200:[94,47],500:[98,48]};
+function moneyEl(v,sc=1,cls=''){
+  if(v<5){const sz=Math.round((v===1?44:48)*sc);
+    return `<span class="m coin c${v} ${cls}" style="--sz:${sz}px" role="img" aria-label="${v} Euro Münze"><b>${v}</b><i>€</i></span>`}
+  const [w,h]=NOTE[v];
+  return `<span class="m note n${v} ${cls}" style="--w:${Math.round(w*sc)}px;--h:${Math.round(h*sc)}px" role="img" aria-label="${v} Euro Schein"><span class="cv">${v}</span><b>${v}</b><small>Euro</small></span>`;
+}
+const moneyRow=(list,sc=1)=>`<div class="money-row">${list.map(v=>moneyEl(v,sc)).join('')}</div>`;
+function moneyRowSums(list,sc=1){let s=0;
+  return `<div class="money-row">${list.map(v=>{s+=v;return `<span class="mwrap">${moneyEl(v,sc)}<em>${eur(s)}</em></span>`}).join('')}</div>`}
+function decomp(v,denoms,split){
+  const ds=denoms.slice().sort((a,b)=>b-a);const out=[];let r=v;
+  for(const d of ds){while(r>=d){out.push(d);r-=d}}
+  if(split){for(let k=0;k<2;k++){
+    const small=ds[ds.length-1];const cand=out.map((x,i)=>i).filter(i=>out[i]>small);
+    if(!cand.length)break;const i=pick(cand);const parts=decomp(out[i],ds.filter(d=>d<out[i]),false);
+    if(out.length-1+parts.length>10)break;out.splice(i,1,...parts)}}
+  return out.sort((a,b)=>b-a);
+}
+
+/* ---------- Zahlen ---------- */
+function amount(zr,lvl){
+  if(zr==20)return lvl?rnd(11,20):rnd(2,10);
+  if(zr==100)return lvl?rnd(11,99):10*rnd(1,10);
+  return lvl?10*rnd(11,99):100*rnd(1,10);
+}
+function randStep(lo,hi,step){lo=Math.ceil(lo/step)*step;hi=Math.floor(hi/step)*step;if(hi<lo)hi=lo;return lo+step*rnd(0,Math.round((hi-lo)/step))}
+function split(T,n,step,min){
+  if(n===1)return[T];const U=Math.round(T/step),m=Math.ceil(min/step);
+  for(let t=0;t<300;t++){const cuts=new Set();while(cuts.size<n-1)cuts.add(rnd(1,U-1));
+    const c=[0,...[...cuts].sort((a,b)=>a-b),U];const parts=[];for(let i=1;i<c.length;i++)parts.push(c[i]-c[i-1]);
+    if(parts.every(p=>p>=m))return parts.map(p=>p*step)}
+  const base=Math.floor(U/n);const parts=Array(n).fill(base);parts[0]+=U-base*n;return parts.map(p=>p*step);
+}
+function genArith(zr,lvl){
+  const op=Math.random()<.5?'+':'-';let a,b;
+  if(zr==20){
+    if(!lvl){if(op=='+'){a=rnd(1,8);b=rnd(1,10-a)}else{a=rnd(3,10);b=rnd(1,a-1)}}
+    else if(op=='+'){if(Math.random()<.35){a=rnd(11,18);b=rnd(1,20-a)}else{a=rnd(3,9);b=rnd(11-a,9)}}
+    else{if(Math.random()<.35){a=rnd(13,20);b=rnd(1,a-11)}else{a=rnd(11,18);b=rnd(Math.max(2,a-9),9)}}
+  }else{
+    const u=zr==100?1:10;
+    if(!lvl){if(op=='+'){a=rnd(1,8);b=rnd(1,10-a)}else{a=rnd(2,10);b=rnd(1,a-1)}a*=10*u;b*=10*u}
+    else if(op=='+'){a=rnd(12,88);const room=100-a;
+      b=(Math.random()<.5||room<10)?rnd(2,Math.min(9,room)):10*rnd(1,Math.floor(room/10));a*=u;b*=u}
+    else{a=rnd(21,99);b=Math.random()<.5?rnd(2,9):10*rnd(1,Math.floor((a-1)/10));a*=u;b*=u}
+  }
+  return{a,b,op,res:op=='+'?a+b:a-b};
+}
+
+/* ---------- Aufgaben erzeugen ---------- */
+const GEN={
+  kennen(zr,lvl){const ds=ZR[zr].denoms;
+    if(!lvl)return{type:'kennen',mode:'find',target:pick(ds),options:shuffle(ds)};
+    let a=pick(ds),b;do{b=pick(ds)}while(b===a);
+    if(Math.random()<.4&&zr!=1000){a=pick([1,2]);b=pick(ds.filter(d=>d>=5&&d<=20))}
+    return{type:'kennen',mode:'more',options:shuffle([a,b])}},
+  legen(zr,lvl){return{type:'legen',target:amount(zr,lvl)}},
+  zaehlen(zr,lvl){const v=amount(zr,lvl);let items=decomp(v,ZR[zr].denoms,lvl||Math.random()<.5);
+    const t={type:'zaehlen',amount:v,items,sorted:!lvl};
+    if(lvl)t.items=shuffle(items);
+    else{const wrong=new Set();const vals=[...new Set(items)];
+      for(const d of shuffle(vals)){if(v+d<=zr)wrong.add(v+d);if(v-d>0)wrong.add(v-d);if(wrong.size>=4)break}
+      if(wrong.size<2){wrong.add(v+1);wrong.add(v+2)}
+      t.choices=shuffle([v,...shuffle([...wrong].filter(x=>x!==v)).slice(0,2)])}
+    return t},
+  bild(zr,lvl){const r=genArith(zr,lvl);const ds=ZR[zr].denoms;
+    if(r.op=='+')return{type:'bild',...r,setA:decomp(r.a,ds,false),setB:decomp(r.b,ds,false)};
+    return{type:'bild',...r,setRest:decomp(r.res,ds,false),setGone:decomp(r.b,ds,false)}},
+  rechnen(zr,lvl){return{type:'rechnen',...genArith(zr,lvl)}},
+  reicht(zr,lvl){const c=SHOP[zr][lvl];const B=pick(c.budgets);const n=lvl?pick([2,2,3]):pick([1,2,2]);
+    const minT=n*c.min;const fit=Math.random()<.5;let T;
+    if(fit)T=randStep(Math.max(minT,B*.5),B,c.step);
+    else T=randStep(Math.max(minT,B+c.step),Math.min(zr,B*1.5),c.step);
+    const parts=split(T,n,c.step,c.min);
+    const items=shuffle(ITEMS[zr]).slice(0,n).map((it,i)=>({e:it[0],n:it[1],p:parts[i]}));
+    return{type:'reicht',B,T,items,fit:T<=B}},
+  rest(zr,lvl){const c=REST[zr][lvl];const B=pick(c.budgets);const n=c.n;
+    const T=randStep(Math.max(n*c.min,B*.3),B-c.step,c.step);const parts=split(T,n,c.step,c.min);
+    const items=shuffle(ITEMS[zr]).slice(0,n).map((it,i)=>({e:it[0],n:it[1],p:parts[i]}));
+    return{type:'rest',B,T,items}}
+};
+const taskKey=t=>JSON.stringify(t);
+
+/* ---------- Vorlesen ---------- */
+function speakable(s){return String(s).replace(/<[^>]+>/g,' ').replace(/€/g,' Euro ').replace(/−/g,' minus ').replace(/\+/g,' plus ').replace(/=/g,' gleich ').replace(/\s+/g,' ')}
+function speak(s){try{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(speakable(s));u.lang='de-DE';u.rate=.85;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('de'));if(v)u.voice=v;
+  speechSynthesis.speak(u)}catch(e){}}
+const SPEAK_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+
+/* ---------- Ansichten ---------- */
+const app=$('#app'),overlay=$('#overlay');
+const pkey=(zr,si)=>zr+'_'+STAGES[si].id;
+const getP=(zr,si)=>progress[pkey(zr,si)]||(progress[pkey(zr,si)]={ok:0,err:0,done:false});
+const unlocked=(zr,si)=>!settings.lockOrder||si===0||getP(zr,si-1).done;
+const name=()=>esc(settings.name||'');
+
+function topBar(back){
+  return `<div class="top">${back||`<div class="brand">${moneyEl(2,.7)}Geldladen</div>`}<div class="spacer"></div>
+  <button class="icon-btn" id="btn-settings" aria-label="Einstellungen für die Lehrkraft">Lehrkraft</button></div>`;
+}
+function bindTop(){const b=$('#btn-settings');if(b)b.onclick=openSettings}
+
+function showHome(){
+  sess=null;
+  const cards=[20,100,1000].map(zr=>{
+    const done=STAGES.filter((s,i)=>getP(zr,i).done).length;
+    return `<button class="zr-card" data-zr="${zr}">
+      <div class="zr-num"><span>Zahlenraum</span>${zr}</div>
+      <div class="zr-money">${moneyRow(ZR[zr].preview,.85)}</div>
+      <div class="bar" aria-hidden="true"><i style="width:${done/STAGES.length*100}%"></i></div>
+      <div class="muted">${done} von ${STAGES.length} Stufen geschafft</div></button>`}).join('');
+  app.innerHTML=`${topBar()}
+  <div class="hello"><h1>Hallo${settings.name?' '+name():''}!</h1><p class="muted">Womit möchtest du heute rechnen?</p></div>
+  <div class="zr-grid">${cards}</div>
+  <div class="card eis-strip" aria-label="Aufbau jeder Stufenfolge">
+    <span class="muted">So geht es in jedem Zahlenraum weiter:</span>
+    <span class="chip E">Handeln</span><span class="arrow">→</span><span class="chip I">Bilder</span><span class="arrow">→</span><span class="chip S">Zahlen</span><span class="arrow">→</span><span class="chip Sach">Einkaufen</span>
+  </div>`;
+  bindTop();
+  app.querySelectorAll('.zr-card').forEach(b=>b.onclick=()=>showStages(+b.dataset.zr));
+}
+
+function showStages(zr){
+  sess=null;
+  const firstOpen=STAGES.findIndex((s,i)=>unlocked(zr,i)&&!getP(zr,i).done);
+  const rows=STAGES.map((s,i)=>{const p=getP(zr,i);const open=unlocked(zr,i);
+    const pct=Math.min(1,p.ok/settings.N)*100;
+    return `<button class="stage ${p.done?'done':''} ${i===firstOpen?'current':''}" data-si="${i}" ${open?'':'disabled'}>
+      <div class="snum">${p.done?'★':i+1}</div>
+      <div class="sbody"><h3>${s.name}</h3>
+        <div class="row"><span class="chip ${s.eis}">${s.eisLong}</span><span class="muted">${s.info}</span></div>
+        <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+        ${s.teacher?`<div class="teacher-note">${s.teacher}</div>`:''}
+      </div>
+      <div class="scount">${open?`${Math.min(p.ok,settings.N)} / ${settings.N}`:'gesperrt'}</div></button>`}).join('');
+  app.innerHTML=`${topBar(`<button class="icon-btn" id="btn-back">← Start</button>`)}
+   <div class="hello"><h1>Zahlenraum bis ${zr}</h1><p class="muted">Jede Stufe ist geschafft, wenn ${settings.N} Aufgaben beim ersten Versuch richtig sind.</p></div>
+   <div class="stage-list">${rows}</div>`;
+  bindTop();$('#btn-back').onclick=showHome;
+  app.querySelectorAll('.stage').forEach(b=>b.onclick=()=>{if(!b.disabled)startStage(zr,+b.dataset.si)});
+}
+
+/* ---------- Übungs-Sitzung ---------- */
+let sess=null;
+function startStage(zr,si){sess={zr,si,queue:[],last:null};
+  app.innerHTML=`${topBar(`<button class="icon-btn" id="btn-back">← Stufen</button>`)}
+  <div class="ex-head"><div class="ex-title"><h2 id="ex-name"></h2><small id="ex-sub"></small></div></div>
+  <div class="piggy"><div class="slots" id="slots"></div><span class="piggy-label" id="piggy-label"></span></div>
+  <div class="card">
+    <div id="repeat"></div>
+    <div class="prompt"><h2 id="prompt"></h2><button class="speak" id="btn-speak" aria-label="Vorlesen">${SPEAK_ICON}</button></div>
+    <div class="work" id="work"></div>
+  </div>
+  <div id="hint" class="hint" hidden></div>
+  <div id="feedback" class="feedback" hidden></div>
+  <div class="controls"><button class="btn" id="btn-calc" ${settings.calc?'':'hidden'}>Rechner</button><div class="spacer"></div><button class="btn" id="btn-tip">Tipp</button><button class="btn primary" id="btn-check">Prüfen</button><button class="btn gold" id="btn-next" hidden>Weiter →</button></div>`;
+  bindTop();
+  $('#btn-back').onclick=()=>showStages(zr);
+  $('#btn-speak').onclick=()=>speak(sess.speakText||$('#prompt').textContent);
+  $('#btn-tip').onclick=()=>{if(sess.onTip)sess.onTip()};
+  $('#btn-calc').onclick=openCalc;
+  $('#btn-check').onclick=()=>{if(sess.onCheck&&!sess.locked)sess.onCheck()};
+  nextTask();
+}
+const lvl=()=>{const p=getP(sess.zr,sess.si);return p.ok>=Math.ceil(settings.N/2)?1:0};
+function renderHead(){
+  const s=STAGES[sess.si],p=getP(sess.zr,sess.si),N=settings.N;
+  $('#ex-name').textContent=s.name;
+  $('#ex-sub').textContent=`Zahlenraum bis ${sess.zr} · ${s.eisLong} · ${lvl()?'Teil 2: etwas schwerer':'Teil 1: leichter'}`;
+  const filled=Math.min(p.ok,N);
+  $('#slots').innerHTML=Array.from({length:N},(_,i)=>`<span class="slot ${i<filled?'full':''}"></span>`).join('');
+  $('#piggy-label').textContent=p.ok>N?`${N} / ${N} · +${p.ok-N} extra`:`${filled} / ${N} richtig`;
+}
+function nextTask(){
+  sess.queue.forEach(q=>q.due--);
+  const qi=sess.queue.findIndex(q=>q.due<=0);let t,rep=false;
+  if(qi>=0){t=sess.queue.splice(qi,1)[0].task;rep=true}
+  else{const id=STAGES[sess.si].id;for(let k=0;k<6;k++){t=GEN[id](sess.zr,lvl());if(taskKey(t)!==sess.last)break}}
+  sess.task=t;sess.last=taskKey(t);sess.firstTry=true;sess.tries=0;sess.extra='';
+  renderHead();
+  $('#repeat').innerHTML=rep?'<span class="repeat-tag">Diese Aufgabe kennst du schon. Probier es noch einmal!</span>':'';
+  resetStep();
+  RENDER[t.type](t);
+}
+function resetStep(){
+  sess.locked=false;sess.onCheck=null;sess.onTip=null;sess.numpad=null;sess.tries=0;
+  $('#feedback').hidden=true;$('#hint').hidden=true;
+  $('#btn-next').hidden=true;$('#btn-check').hidden=false;$('#btn-tip').hidden=false;
+}
+function setPrompt(html,sp){$('#prompt').innerHTML=html;sess.speakText=sp||html;if(settings.autoSpeak)speak(sess.speakText)}
+function setFeedback(kind,msg){const f=$('#feedback');f.className='feedback '+kind;f.innerHTML=msg;f.hidden=false;if(settings.autoSpeak)speak(msg)}
+function setHint(html){const h=$('#hint');h.innerHTML=html;h.hidden=false}
+function showNext(fn){$('#btn-check').hidden=true;$('#btn-tip').hidden=true;const b=$('#btn-next');b.hidden=false;b.onclick=()=>{b.onclick=null;fn()};b.focus({preventScroll:true})}
+const PRAISE=['Super, {n}!','Richtig!','Toll gemacht!','Prima, {n}!','Genau so!','Klasse!'];
+const praise=()=>pick(PRAISE).replace(', {n}',settings.name?', '+name():'');
+
+function answer(ok,wrongMsg,solution,onOk,onSolution){
+  if(sess.locked)return;
+  if(ok){sess.tries=0;if(onOk){onOk()}else finishTask();return}
+  sess.firstTry=false;sess.tries++;getP(sess.zr,sess.si).err++;save();
+  if(sess.tries<2){setFeedback('bad',wrongMsg+' Versuch es noch einmal.');if(sess.onTip)sess.onTip(true)}
+  else{sess.locked=true;if(onSolution)onSolution();
+    setFeedback('bad',wrongMsg+` Richtig ist: <b>${solution}</b>.`);
+    showNext(()=>{if(onOk){resetStepKeep();onOk()}else finishTask(true)})}
+}
+function resetStepKeep(){sess.locked=false;sess.tries=0;$('#feedback').hidden=true;$('#btn-next').hidden=true;$('#btn-check').hidden=false;$('#btn-tip').hidden=false}
+function finishTask(silent){
+  const p=getP(sess.zr,sess.si);
+  if(sess.firstTry){p.ok++}else{sess.queue.push({task:sess.task,due:3})}
+  save();sess.locked=true;
+  const after=()=>{const pp=getP(sess.zr,sess.si);
+    if(pp.ok>=settings.N&&!pp.done){pp.done=true;save();showDone()}else nextTask()};
+  if(silent){after();return}
+  renderHead();
+  if(sess.firstTry){const sl=$('#slots').children[Math.min(p.ok,settings.N)-1];if(sl)sl.classList.add('pop')}
+  setFeedback('ok',praise()+(sess.extra?' '+sess.extra:'')+(sess.firstTry?'':' Diese Aufgabe üben wir gleich noch einmal.'));
+  showNext(after);
+}
+function showDone(){
+  const zr=sess.zr,si=sess.si;const hasNext=si<STAGES.length-1;
+  overlay.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="done-h">
+    <div class="big-star" aria-hidden="true">★</div>
+    <h2 id="done-h" style="text-align:center">Stufe geschafft${settings.name?', '+name():''}!</h2>
+    <p style="text-align:center">Du hast ${settings.N} Aufgaben beim ersten Versuch richtig gelöst: <b>${STAGES[si].name}</b>.</p>
+    ${!hasNext&&zr<1000?`<p style="text-align:center" class="muted">Alle Stufen im Zahlenraum bis ${zr} sind geschafft. Als Nächstes: Zahlenraum bis ${zr==20?100:1000}.</p>`:''}
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="d-more">Noch mehr üben</button>
+      ${hasNext?`<button class="btn primary" id="d-next">Nächste Stufe →</button>`:''}
+      <button class="btn" id="d-map">Zur Übersicht</button></div></div>`;
+  overlay.hidden=false;
+  if(settings.autoSpeak)speak('Stufe geschafft! '+(settings.name||''));
+  $('#d-more').onclick=()=>{overlay.hidden=true;nextTask()};
+  if(hasNext)$('#d-next').onclick=()=>{overlay.hidden=true;startStage(zr,si+1)};
+  $('#d-map').onclick=()=>{overlay.hidden=true;showStages(zr)};
+}
+
+/* ---------- Zahlenfeld ---------- */
+function numpad(container,onSubmit,suffix='€'){
+  let val='';
+  container.insertAdjacentHTML('beforeend',`<div class="numpad-wrap"><div class="np-display" id="np-d" aria-live="polite"><span class="ph">?</span>&nbsp;${suffix}</div>
+   <div class="numpad">${[1,2,3,4,5,6,7,8,9,0].map(d=>`<button data-d="${d}">${d}</button>`).join('')}<button class="del" data-d="del" aria-label="Löschen">⌫</button></div></div>`);
+  const disp=$('#np-d',container);
+  const draw=()=>{disp.innerHTML=(val?esc(val):'<span class="ph">?</span>')+'&nbsp;'+suffix;if(sess.onNumChange)sess.onNumChange(val)};
+  const press=d=>{if(sess.locked)return;if(d==='del')val=val.slice(0,-1);else if(val.length<4)val=(val==='0'?'':val)+d;draw()};
+  container.querySelectorAll('.numpad button').forEach(b=>b.onclick=()=>press(b.dataset.d));
+  sess.numpad={press,clear:()=>{val='';draw()},submit:()=>{if(val==='')return setFeedback('bad','Tippe zuerst eine Zahl.');onSubmit(+val)}};
+  sess.onCheck=()=>sess.numpad.submit();
+}
+document.addEventListener('keydown',e=>{
+  if(!sess||!sess.numpad||!overlay.hidden||e.target.tagName==='INPUT')return;
+  if(/^[0-9]$/.test(e.key)){sess.numpad.press(e.key);e.preventDefault()}
+  else if(e.key==='Backspace'){sess.numpad.press('del');e.preventDefault()}
+  else if(e.key==='Enter'&&!sess.locked){sess.numpad.submit();e.preventDefault()}
+});
+const work=()=>$('#work');
+function opMistake(t,v){
+  if(t.op=='+'&&v===t.a-t.b)return'Schau genau auf das Rechenzeichen: Es heißt plus.';
+  if(t.op=='-'&&v===t.a+t.b)return'Schau genau auf das Rechenzeichen: Es heißt minus.';
+  if(Math.abs(v-t.res)<=2&&t.res<=20)return'Fast! Zähle noch einmal genau.';
+  return'Das stimmt noch nicht.';
+}
+const sign=op=>op=='+'?'+':'−';
+
+/* ---------- Darstellung der Stufen ---------- */
+const RENDER={
+ kennen(t){
+  if(t.mode==='find')setPrompt(`Tippe auf <b>${eur(t.target)}</b>.`);
+  else setPrompt('Was ist mehr wert? Tippe darauf.');
+  work().innerHTML=`<div class="choice-grid">${t.options.map(v=>`<button class="choice" data-v="${v}">${moneyEl(v,t.mode==='more'?1.6:1.3)}</button>`).join('')}</div>`;
+  $('#btn-check').hidden=true;
+  const correct=t.mode==='find'?t.target:Math.max(...t.options);
+  sess.onTip=()=>setHint(t.mode==='find'
+    ?`<div class="hint-title">Tipp</div><p>Schau auf die Zahl auf dem Geld. Gesucht ist die Zahl <b>${t.target}</b>.</p>`
+    :`<div class="hint-title">Tipp</div><p>Die Zahl zeigt, wie viel das Geld wert ist. Die größere Zahl ist mehr wert. Eine große Münze ist nicht immer mehr wert!</p>`);
+  work().querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+    if(sess.locked)return;const v=+b.dataset.v;
+    if(v!==correct)b.classList.add('wrong');
+    const other=t.options.find(x=>x!==v);
+    answer(v===correct,t.mode==='find'?`Das sind ${eur(v)}.`:`${eur(v)} ist weniger wert als ${eur(other)}.`,eur(correct),null,
+      ()=>work().querySelector(`[data-v="${correct}"]`).classList.add('sol'));
+    if(v===correct)b.classList.add('sol');
+  });
+ },
+ legen(t){
+  setPrompt(`Lege <b>${eur(t.target)}</b> auf den Tisch.`);
+  const ds=ZR[sess.zr].denoms.slice().sort((a,b)=>b-a);
+  let placed=[];let showSum=settings.showSum;
+  work().innerHTML=`<div class="tablezone"><div class="zone-label"><span>Dein Tisch</span><span class="zone-sum" id="zsum"></span></div><div class="placed" id="placed"></div></div>
+   <div class="tray-label">Kasse: Tippe auf das Geld, das du nehmen möchtest.</div>
+   <div class="tray">${ds.map(v=>`<button data-v="${v}" aria-label="${v} Euro nehmen">${moneyEl(v,1.2)}</button>`).join('')}</div>
+   <div class="row"><button class="btn" id="clear">Alles zurücklegen</button></div>`;
+  const draw=()=>{placed.sort((a,b)=>b-a);const sum=placed.reduce((a,b)=>a+b,0);
+    $('#placed').innerHTML=placed.length?placed.map((v,i)=>`<button data-i="${i}" aria-label="${v} Euro zurücklegen">${moneyEl(v,1)}</button>`).join(''):'<span class="muted">Noch leer. Tippe unten auf das Geld.</span>';
+    $('#zsum').textContent=showSum?'Auf dem Tisch: '+eur(sum):'';
+    $('#placed').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(sess.locked)return;placed.splice(+b.dataset.i,1);draw()})};
+  draw();
+  work().querySelectorAll('.tray button').forEach(b=>b.onclick=()=>{if(sess.locked||placed.length>=25)return;placed.push(+b.dataset.v);draw()});
+  $('#clear').onclick=()=>{if(sess.locked)return;placed=[];draw()};
+  sess.onTip=()=>{showSum=true;draw();setHint(`<div class="hint-title">Tipp</div><p>Nimm zuerst den größten Schein, der passt. Dann lege kleineres Geld dazu, bis es genau ${eur(t.target)} sind.</p><p>Oben siehst du jetzt, wie viel Geld auf dem Tisch liegt.</p>`)};
+  sess.onCheck=()=>{const sum=placed.reduce((a,b)=>a+b,0);
+    if(!sum)return setFeedback('bad','Lege zuerst Geld auf den Tisch.');
+    const sol=decomp(t.target,ZR[sess.zr].denoms,false);
+    answer(sum===t.target,`Auf dem Tisch liegen ${eur(sum)}. Das ist ${sum<t.target?'zu wenig':'zu viel'}.`,sol.map(eur).join(' + '),null,()=>{placed=sol.slice();showSum=true;draw()})};
+ },
+ zaehlen(t){
+  setPrompt('Wie viel Geld ist das?');
+  work().innerHTML=`<div id="pic">${moneyRow(t.items,1.1)}</div><div id="ans"></div>`;
+  sess.onTip=()=>{$('#pic').innerHTML=moneyRowSums(t.items.slice().sort((a,b)=>b-a),1.1);
+    setHint(`<div class="hint-title">Tipp</div><p>Lege das Geld in Gedanken der Größe nach: zuerst die Scheine, dann die Münzen. Unter jedem Geld steht jetzt, wie viel es bis dahin zusammen sind.</p>`)};
+  if(t.choices){$('#btn-check').hidden=true;
+    $('#ans').innerHTML=`<div class="choice-grid">${t.choices.map(v=>`<button class="choice txt" data-v="${v}">${eur(v)}</button>`).join('')}</div>`;
+    $('#ans').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{if(sess.locked)return;const v=+b.dataset.v;
+      b.classList.add(v===t.amount?'sol':'wrong');
+      answer(v===t.amount,'Das stimmt noch nicht.',eur(t.amount),null,()=>$('#ans').querySelector(`[data-v="${t.amount}"]`).classList.add('sol'))})}
+  else numpad($('#ans'),v=>answer(v===t.amount,'Das stimmt noch nicht.',eur(t.amount)));
+ },
+ bild(t){
+  if(t.op=='+'){
+    setPrompt('Wie viel Geld ist das zusammen?');
+    work().innerHTML=`<div class="pic-sum" id="pic"><div class="pic-group">${moneyRow(t.setA)}</div><span class="bigop">+</span><div class="pic-group">${moneyRow(t.setB)}</div></div>
+      <div class="eq-small">${eur(t.a)} + ${eur(t.b)} = ?</div><div id="ans"></div>`;
+    sess.onTip=()=>{$('#pic').innerHTML=`<div class="pic-group">${moneyRowSums([...t.setA,...t.setB].sort((a,b)=>b-a))}</div>`;
+      setHint(`<div class="hint-title">Tipp</div><p>Leg alles Geld zusammen. Zähle mit dem größten Geld zuerst. Unter jedem Geld steht, wie viel es bis dahin sind.</p>`)};
+  }else{
+    setPrompt(`Du hast ${eur(t.a)}. Du gibst ${eur(t.b)} aus. Wie viel Geld bleibt übrig?`);
+    const all=[...t.setRest.map(v=>[v,0]),...t.setGone.map(v=>[v,1])].sort((a,b)=>b[0]-a[0]||a[1]-b[1]);
+    work().innerHTML=`<div class="pic-group" id="pic"><div class="money-row">${all.map(([v,g])=>moneyEl(v,1,g?'gone':'')).join('')}</div></div>
+      <p class="muted">Das durchgestrichene Geld gibst du aus.</p>
+      <div class="eq-small">${eur(t.a)} − ${eur(t.b)} = ?</div><div id="ans"></div>`;
+    sess.onTip=()=>{$('#pic').innerHTML=`<div class="money-row">${moneyRowSums(t.setRest)}</div><div class="money-row" style="margin-top:8px">${t.setGone.map(v=>moneyEl(v,1,'gone')).join('')}</div>`;
+      setHint(`<div class="hint-title">Tipp</div><p>Zähle nur das Geld, das <b>nicht</b> durchgestrichen ist. Das bleibt dir übrig.</p>`)};
+  }
+  numpad($('#ans'),v=>answer(v===t.res,opMistake(t,v),eur(t.res)));
+ },
+ rechnen(t){
+  setPrompt('Rechne.',`${eur(t.a)} ${sign(t.op)} ${eur(t.b)} = ?`);
+  work().innerHTML=`<div class="equation"><span>${eur(t.a)}</span><span class="op">${sign(t.op)}</span><span>${eur(t.b)}</span><span class="op">=</span><span class="slotbox empty" id="slot">?</span></div><div id="ans"></div>`;
+  sess.onNumChange=v=>{const s=$('#slot');if(!s)return;s.textContent=v?eur(v):'?';s.classList.toggle('empty',!v)};
+  sess.onTip=()=>{const ds=ZR[sess.zr].denoms;let pic;
+    if(t.op=='+')pic=`<div class="pic-sum"><div class="pic-group">${moneyRow(decomp(t.a,ds))}</div><span class="bigop">+</span><div class="pic-group">${moneyRow(decomp(t.b,ds))}</div></div>`;
+    else{const all=[...decomp(t.res,ds).map(v=>[v,0]),...decomp(t.b,ds).map(v=>[v,1])].sort((a,b)=>b[0]-a[0]||a[1]-b[1]);
+      pic=`<div class="pic-group"><div class="money-row">${all.map(([v,g])=>moneyEl(v,1,g?'gone':'')).join('')}</div></div>`}
+    setHint(`<div class="hint-title">Tipp: So sieht die Aufgabe mit Geld aus</div>${pic}<p>${t.op=='+'?'Zähle alles Geld zusammen.':'Zähle das Geld, das nicht durchgestrichen ist.'}</p>`)};
+  numpad($('#ans'),v=>answer(v===t.res,opMistake(t,v),`${eur(t.a)} ${sign(t.op)} ${eur(t.b)} = ${eur(t.res)}`));
+ },
+ reicht(t){shopTask(t,'reicht')},
+ rest(t){shopTask(t,'rest')}
+};
+
+/* ---------- Einkaufen (Sachaufgaben) ---------- */
+const RULES=`<div class="hint-title">Welche Rechnung passt?</div><div class="rules">
+  <div class="rule"><span class="sym">+</span><b>plus</b><p>zusammen · alles · dazu · mehrere Sachen kaufen</p></div>
+  <div class="rule"><span class="sym">−</span><b>minus</b><p>bezahlen · übrig · zurück · Rest · weg</p></div>
+  <div class="rule"><span class="sym">≤</span><b>vergleichen</b><p>Reicht das Geld? Ist der Preis kleiner als dein Geld oder gleich? Dann reicht es.</p></div></div>`;
+function barsHTML(B,T){const max=Math.max(B,T);const wb=B/max*100,wt=T/max*100;const cut=T>B?(B/T*100).toFixed(1)+'%':'100%';
+  return `<div class="cmp"><div class="cmp-row"><span>Dein Geld</span><div class="cmp-track"><div class="cmp-bar money" style="width:${wb}%">${eur(B)}</div></div></div>
+   <div class="cmp-row"><span>Preis</span><div class="cmp-track"><div class="cmp-bar ${T>B?'over':'price'}" style="width:${wt}%;--cut:${cut}">${eur(T)}</div></div></div></div>
+   <p>${T>B?'Der rote Teil zeigt: Hier fehlt Geld.':'Der Preis ist nicht länger als dein Geld.'}</p>`}
+function shopTask(t,kind){
+  const n=t.items.length;const ds=ZR[sess.zr].denoms;
+  const plusExpr=t.items.map(i=>eur(i.p)).join(' + ');
+  const minusExpr=t.items.map(i=>eur(i.p)).join(' − ');
+  const names=t.items.map(i=>i.n);const nameList=names.length>1?names.slice(0,-1).join(', ')+' und '+names[names.length-1]:names[0];
+  setPrompt(kind==='reicht'
+    ?`Du hast ${eur(t.B)}. Du möchtest ${nameList} kaufen.`
+    :`Du kaufst ${nameList}. Du bezahlst mit ${eur(t.B)}.`);
+  work().innerHTML=`<div class="shop"><div class="shelf">${t.items.map(i=>`<div class="item"><span class="emo" aria-hidden="true">${i.e}</span><span class="iname">${esc(i.n)}</span><span class="tag">${eur(i.p)}</span></div>`).join('')}</div>
+    <div class="wallet"><div class="wallet-h"><span>Dein Geldbeutel</span><b>${eur(t.B)}</b></div>${moneyRow(decomp(t.B,ds),.8)}</div></div>
+    <div class="steps" id="steps"></div><div class="stepzone" id="sz"></div>`;
+  const steps=[];
+  if(n>1){
+    steps.push({label:'Rechnung wählen',run:()=>stepChoice('Was kosten alle Sachen zusammen? Welche Rechnung passt?',
+      [{t:plusExpr,s:'zusammenzählen',ok:true},{t:minusExpr,s:'wegnehmen',ok:false}],
+      'Du kaufst alle Sachen zusammen. Dann zählst du die Preise zusammen: plus.',plusExpr)});
+    steps.push({label:'Ausrechnen',run:()=>stepNum(`${plusExpr} = ?`,t.T,
+      ()=>setHint(`<div class="hint-title">Tipp</div><p>Rechne die Preise nacheinander zusammen. Fang mit dem größten Preis an.</p>`))});
+  }
+  if(kind==='reicht'){
+    steps.push({label:'Vergleichen',run:()=>stepYesNo(`${n>1?'Alles kostet':(esc(t.items[0].n)+' kostet')} ${eur(t.T)}. Du hast ${eur(t.B)}. Reicht das Geld?`,t.fit)});
+  }else{
+    const ok=`${eur(t.B)} − ${eur(t.T)}`;const opts=[{t:ok,s:'wegnehmen',ok:true},{t:`${eur(t.B)} + ${eur(t.T)}`,s:'zusammenzählen',ok:false}];
+    if(lvl())opts.push({t:`${eur(t.T)} + ${eur(t.B)}`,s:'zusammenzählen',ok:false});
+    steps.push({label:'Rechnung wählen',run:()=>stepChoice(`Du bezahlst ${eur(t.T)} von deinen ${eur(t.B)}. Wie viel Geld bleibt übrig? Welche Rechnung passt?`,
+      opts,'Beim Bezahlen wird dein Geld weniger. Du rechnest minus: dein Geld minus Preis.',ok)});
+    steps.push({label:'Ausrechnen',run:()=>stepNum(`${ok} = ?`,t.B-t.T,
+      ()=>setHint(`<div class="hint-title">Tipp</div>${barsHTML(t.B,t.T)}<p>Du kannst auch ergänzen: Zähle von ${eur(t.T)} weiter bis ${eur(t.B)}. Wie viel ist das?</p>`))});
+  }
+  let si=0;
+  const drawSteps=()=>{$('#steps').innerHTML=steps.length>1?steps.map((s,i)=>`<span class="stepdot ${i===si?'now':i<si?'past':''}">${i+1}. ${s.label}</span>`).join(''):''};
+  const go=()=>{drawSteps();resetStepKeep();$('#hint').hidden=true;sess.numpad=null;sess.onNumChange=null;sess.onCheck=null;steps[si].run()};
+  const advance=()=>{si++;if(si<steps.length){setFeedback('ok',pick(['Richtig!','Genau!','Gut!']));setTimeout(()=>{if(sess&&sess.task===t){go();$('#feedback').hidden=true}},700)}else{
+    if(kind==='reicht')sess.extra=t.fit?(t.B===t.T?'Das Geld reicht genau. Es bleibt nichts übrig.':`Das Geld reicht. Es bleiben ${eur(t.B-t.T)} übrig.`):`Das Geld reicht nicht. Es fehlen ${eur(t.T-t.B)}.`;
+    else sess.extra=`Du bekommst ${eur(t.B-t.T)} zurück.`;
+    drawSteps();finishTask()}};
+  sess.stepNext=advance;
+  go();
+
+  function stepChoice(q,opts,wrongMsg,solution){
+    const sz=$('#sz');const order=shuffle(opts);
+    sz.innerHTML=`<p class="eq-small" style="font-size:20px">${q}</p><div class="choice-grid">${order.map((o,i)=>`<button class="choice op" data-i="${i}">${o.t}<small>${o.s}</small></button>`).join('')}</div>`;
+    $('#btn-check').hidden=true;
+    sess.onTip=()=>setHint(RULES);
+    sz.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{if(sess.locked)return;const o=order[+b.dataset.i];
+      b.classList.add(o.ok?'sol':'wrong');
+      answer(o.ok,wrongMsg,solution,advance,()=>sz.querySelectorAll('.choice').forEach((x,i)=>{if(order[i].ok)x.classList.add('sol')}))});
+    if(settings.autoSpeak)speak(q);
+  }
+  function stepNum(eq,correct,tip){
+    const sz=$('#sz');
+    sz.innerHTML=`<div class="equation" style="font-size:clamp(26px,6vw,38px)"><span>${eq.replace(' = ?','')}</span><span class="op">=</span><span class="slotbox empty" id="slot">?</span></div><div id="ans"></div>`;
+    sess.onNumChange=v=>{const s=$('#slot');if(!s)return;s.textContent=v?eur(v):'?';s.classList.toggle('empty',!v)};
+    sess.onTip=tip;
+    numpad($('#ans'),v=>answer(v===correct,'Das stimmt noch nicht.',eq.replace('?',eur(correct)),advance));
+    if(settings.autoSpeak)speak(eq);
+  }
+  function stepYesNo(q,yes){
+    const sz=$('#sz');
+    sz.innerHTML=`<p class="eq-small" style="font-size:20px">${q}</p><div class="yn"><button class="choice" data-y="1">Ja</button><button class="choice" data-y="0">Nein</button></div>`;
+    $('#btn-check').hidden=true;
+    sess.onTip=()=>setHint(`<div class="hint-title">Tipp: Vergleiche</div>${barsHTML(t.B,t.T)}`);
+    sz.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{if(sess.locked)return;const y=b.dataset.y==='1';
+      b.classList.add(y===yes?'sol':'wrong');
+      answer(y===yes,'Vergleiche den Preis mit deinem Geld.',yes?'Ja, das Geld reicht':'Nein, das Geld reicht nicht',null,
+        ()=>{sz.querySelector(`[data-y="${yes?1:0}"]`).classList.add('sol');setHint(`<div class="hint-title">So siehst du es</div>${barsHTML(t.B,t.T)}`)})});
+    if(settings.autoSpeak)speak(q);
+  }
+}
+
+/* ---------- Taschenrechner ---------- */
+function openCalc(){
+  let expr='',shown='';
+  overlay.innerHTML=`<div class="sheet calc" role="dialog" aria-modal="true" aria-labelledby="calc-h">
+    <div class="row"><h2 id="calc-h">Taschenrechner</h2><div class="spacer"></div><button class="icon-btn" id="calc-close">Schließen</button></div>
+    <div class="calc-screen"><div class="calc-hist" id="calc-hist">&nbsp;</div><div class="calc-val" id="calc-val">0</div></div>
+    <div class="calc-keys">${['7','8','9','C','4','5','6','⌫','1','2','3','+','0','=','−'].map(k=>`<button data-k="${k}" class="${/[+−]/.test(k)?'k-op':k==='='?'k-eq':/[C⌫]/.test(k)?'k-fn':''}">${k}</button>`).join('')}</div>
+    <p class="muted">Tippe die Aufgabe ein, zum Beispiel 8 + 5, und dann auf =.</p></div>`;
+  overlay.hidden=false;
+  const draw=()=>{$('#calc-val').textContent=(shown||expr||'0').replace(/-/g,'−')};
+  const calc=s=>{const toks=s.match(/\d+|[+-]/g)||[];let r=0,op='+';for(const t of toks){if(t==='+'||t==='-')op=t;else r=op==='+'?r+(+t):r-(+t)}return r};
+  const press=k=>{
+    if(k==='C'){expr='';shown='';$('#calc-hist').innerHTML='&nbsp;';}
+    else if(k==='⌫'){shown='';expr=expr.slice(0,-1)}
+    else if(k==='='){if(!/\d$/.test(expr))return;const r=calc(expr);$('#calc-hist').textContent=expr.replace(/-/g,' − ').replace(/\+/g,' + ')+' =';shown=String(r);expr=String(r)}
+    else if(k==='+'||k==='−'){const o=k==='+'?'+':'-';shown='';if(!expr)expr='0';expr=/[+-]$/.test(expr)?expr.slice(0,-1)+o:expr+o}
+    else{if(shown){expr='';shown='';$('#calc-hist').innerHTML='&nbsp;'}const last=(expr.match(/\d+$/)||[''])[0];if(last.length<5)expr=(last==='0'?expr.slice(0,-1):expr)+k}
+    draw();
+  };
+  overlay.querySelectorAll('.calc-keys button').forEach(b=>b.onclick=()=>press(b.dataset.k));
+  const onKey=e=>{const m={'+':'+','-':'−','Enter':'=','=':'=','Backspace':'⌫','Escape':'close','c':'C','C':'C'};
+    const k=/^[0-9]$/.test(e.key)?e.key:m[e.key];if(!k)return;e.preventDefault();e.stopPropagation();
+    if(k==='close')close();else press(k)};
+  const close=()=>{document.removeEventListener('keydown',onKey,true);overlay.hidden=true};
+  document.addEventListener('keydown',onKey,true);
+  $('#calc-close').onclick=close;
+}
+
+/* ---------- Einstellungen ---------- */
+function openSettings(){
+  overlay.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="set-h">
+    <h2 id="set-h">Für die Lehrkraft</h2>
+    <div class="field"><label for="set-name">Name des Kindes</label><input type="text" id="set-name" value="${name()}" maxlength="20"></div>
+    <div class="field"><label for="set-n">Richtige Aufgaben pro Stufe (beim ersten Versuch)</label>
+      <select id="set-n">${[5,8,10,12,15,20].map(n=>`<option value="${n}" ${n==settings.N?'selected':''}>${n}</option>`).join('')}</select></div>
+    <label class="check"><input type="checkbox" id="set-speak" ${settings.autoSpeak?'checked':''}> Aufgaben automatisch vorlesen</label>
+    <label class="check"><input type="checkbox" id="set-sum" ${settings.showSum?'checked':''}> Beim Geld legen die Summe immer anzeigen</label>
+    <label class="check"><input type="checkbox" id="set-calc" ${settings.calc?'checked':''}> Taschenrechner als Hilfe anbieten</label>
+    <label class="check"><input type="checkbox" id="set-lock" ${settings.lockOrder?'checked':''}> Stufen nacheinander freischalten</label>
+    <div class="info">
+      <p><b>Aufbau nach dem EIS-Prinzip.</b> In jedem Zahlenraum geht es vom Handeln (Geld finden, Geld legen) über Bilder (Geld zählen, Rechnen mit Geldbildern) zu den Zahlen. Danach folgen Sachaufgaben zum Einkaufen mit Hilfen zur Wahl der Rechenart.</p>
+      <p><b>Wiederholung.</b> Jede Stufe hat zwei Teile: Die erste Hälfte der Aufgaben ist leichter, erst danach wird es schwerer (z.&nbsp;B. Zehnerübergang). Eine Aufgabe zählt nur, wenn sie beim ersten Versuch stimmt. Fehlerhafte Aufgaben kommen nach drei anderen Aufgaben noch einmal.</p>
+      <p><b>Fehler bis jetzt:</b> ${[20,100,1000].map(zr=>`ZR ${zr}: ${STAGES.reduce((s,x,i)=>s+getP(zr,i).err,0)}`).join(' · ')}</p>
+      <p>Der Fortschritt wird nur auf diesem Gerät im Browser gespeichert.</p>
+    </div>
+    <div class="row"><button class="btn" id="set-reset">Fortschritt löschen</button><div class="spacer"></div><button class="btn primary" id="set-close">Fertig</button></div></div>`;
+  overlay.hidden=false;
+  let armed=false;
+  $('#set-reset').onclick=()=>{const b=$('#set-reset');
+    if(!armed){armed=true;b.textContent='Wirklich alles löschen? Nochmal tippen';b.style.borderColor='var(--bad)';return}
+    progress={};save();b.textContent='Gelöscht';b.disabled=true};
+  $('#set-close').onclick=()=>{
+    settings.name=$('#set-name').value.trim();settings.N=+$('#set-n').value;
+    settings.autoSpeak=$('#set-speak').checked;settings.showSum=$('#set-sum').checked;settings.lockOrder=$('#set-lock').checked;settings.calc=$('#set-calc').checked;
+    save();overlay.hidden=true;
+    if(sess)startStage(sess.zr,sess.si);else showHome();
+  };
+}
+try{if('speechSynthesis' in window)speechSynthesis.getVoices()}catch(e){}
+showHome();
+})();
+</script>
+
+</body>
+</html>
