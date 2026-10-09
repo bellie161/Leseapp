@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Lernapp zum Igel für Klasse 1 mit Vorlesefunktion">
+<title>Igel Pieks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}
+/* Layout: eine Bildschirm-App, große Bildkacheln wie Karten auf dem Waldboden, Kopfleiste mit Haus + Vorlese-Ohr */
+:root{
+  --meadow:#e6eed6; --meadow2:#d3e2bd; --card:#fffdf6; --ink:#28362b; --ink2:#5d6b5c;
+  --bark:#7a4f2f; --spine:#5b3a22; --tan:#e3b98a; --sun:#f0a12b; --sunsoft:#fde7bf;
+  --ok:#3b9450; --oksoft:#d9f0dc; --no:#cf5236; --nosoft:#fadcd3; --night:#1f2b4d;
+  --font:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--meadow);color:var(--ink);font-family:var(--font);font-size:20px;line-height:1.35;padding-inline:16px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+.app{max-width:1100px;margin:0 auto;padding-block:12px 40px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--meadow);padding-block:8px;z-index:5}
+header h1{flex:1;margin:0;font-size:clamp(26px,4vw,38px);display:flex;align-items:center;gap:10px;min-width:0}
+.round{width:60px;height:60px;border-radius:50%;background:var(--card);display:grid;place-items:center;box-shadow:0 3px 0 var(--meadow2);flex:none}
+.round svg{width:32px;height:32px}
+.round.big{width:78px;height:78px;background:var(--sun);box-shadow:0 4px 0 #c47e17}
+.round.big svg{width:42px;height:42px}
+.spk{width:44px;height:44px;border-radius:50%;background:var(--sunsoft);display:inline-grid;place-items:center;flex:none;vertical-align:middle}
+.spk svg{width:24px;height:24px}
+.spk:active{transform:scale(.92)}
+.word{display:inline-flex;align-items:center;gap:8px;font-weight:700}
+.hint{color:var(--ink2);font-size:17px;margin:0}
+[hidden]{display:none!important}
+
+/* Startseite */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:center}
+.hero .igel{width:100%}
+.bubble{background:var(--card);border-radius:28px;padding:18px 22px;font-size:24px;position:relative;box-shadow:0 4px 0 var(--meadow2);display:flex;gap:12px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.tile{background:var(--card);border-radius:26px;padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 5px 0 var(--meadow2);position:relative;text-align:center}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 var(--meadow2)}
+.tile .pic{font-size:62px;line-height:1;height:78px;display:grid;place-items:center}
+.tile .pic svg{height:78px;width:auto}
+.tile .lab{font-size:22px;font-weight:700;display:flex;align-items:center;gap:6px}
+.tile .done{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:var(--ok);display:grid;place-items:center}
+.tile .done svg{width:18px;height:18px}
+.tile.test{background:var(--sunsoft)}
+
+/* Igel-Grafik */
+.igel{display:block;max-width:100%;overflow:visible}
+.igel [data-part]{cursor:pointer}
+.igel .hi :not(.hit){stroke:var(--sun);stroke-width:6px;paint-order:stroke}
+.igel .hit{fill:transparent}
+.igel .lbl rect{fill:var(--card);stroke:var(--sun);stroke-width:3}
+.igel .lbl text{font-family:var(--font);font-weight:700;font-size:22px;fill:var(--ink)}
+.igel .lbl line{stroke:var(--ink);stroke-width:2.5;stroke-dasharray:4 4}
+.mampf{animation:mampf .5s 2}
+.nein{animation:nein .45s 2}
+@keyframes mampf{50%{transform:scale(1.06) translateY(-6px)}}
+@keyframes nein{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+
+/* Körper */
+.split{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:var(--card);border-radius:26px;padding:16px;box-shadow:0 5px 0 var(--meadow2);display:flex;flex-direction:column;gap:12px;min-width:0}
+.modes{display:flex;gap:10px;flex-wrap:wrap}
+.mode{padding:10px 16px;border-radius:999px;background:var(--card);box-shadow:0 3px 0 var(--meadow2);font-weight:700;display:flex;align-items:center;gap:8px}
+.mode[aria-pressed="true"]{background:var(--sun);color:#2a1a05;box-shadow:0 3px 0 #c47e17}
+.cards{display:flex;flex-wrap:wrap;gap:10px}
+.wcard{background:var(--meadow);border-radius:18px;padding:8px 10px 8px 16px;display:flex;align-items:center;gap:8px;font-size:24px;font-weight:700;border:4px solid transparent}
+.wcard.sel{border-color:var(--sun);background:var(--sunsoft)}
+.wcard.ok{background:var(--oksoft);opacity:.55}
+.info{font-size:22px;display:flex;gap:10px;align-items:flex-start}
+.info big{display:block;font-size:30px;font-weight:700}
+
+/* Futter */
+.feed{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:center}
+.slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.slot{width:40px;height:40px;border-radius:50%;border:3px dashed var(--bark);display:grid;place-items:center;font-size:22px}
+.slot.full{border-style:solid;background:var(--oksoft);border-color:var(--ok)}
+.food{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+.item{background:var(--card);border-radius:22px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 var(--meadow2);position:relative}
+.item .pic{font-size:54px;line-height:1.1}
+.item .lab{font-size:17px;font-weight:700;display:flex;align-items:center;gap:4px}
+.item .lab .spk{width:34px;height:34px}.item .lab .spk svg{width:18px;height:18px}
+.item.eaten{visibility:hidden}
+.item.bad{background:var(--nosoft)}
+.item.bad::after{content:"";position:absolute;inset:10px;background:linear-gradient(45deg,transparent 46%,var(--no) 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,var(--no) 46% 54%,transparent 54%);opacity:.5;pointer-events:none}
+
+/* Szenen (Jahreszeiten, Kino) */
+.scene{border-radius:24px;position:relative;overflow:hidden;aspect-ratio:16/9;max-width:100%;container-type:inline-size}
+.bg-fruehling{background:linear-gradient(#bfe3f5,#e8f6ff 55%,#9fd27f 55%,#7fbf5f)}
+.bg-sommer{background:linear-gradient(#8fd0f2,#d8f1ff 55%,#a9cf6a 55%,#86b84c)}
+.bg-herbst{background:linear-gradient(#f6d39a,#fbe7c4 55%,#c9893f 55%,#a86d2e)}
+.bg-winter{background:linear-gradient(#c6d6e8,#eef4fa 55%,#ffffff 55%,#e2ebf3)}
+.bg-nacht{background:linear-gradient(#141d3a,#2b3d6b 55%,#2f4a33 55%,#22371f)}
+.bg-abend{background:linear-gradient(#f3a46b,#f8d3a1 55%,#6e9a4a 55%,#557c39)}
+.bg-garten{background:linear-gradient(#a6dcf5,#e4f6ff 55%,#8fc66a 55%,#6fae4d)}
+.deco{position:absolute;line-height:1;pointer-events:none}
+.seasons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.season{border-radius:22px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 5px 0 var(--meadow2);border:4px solid transparent}
+.season[aria-pressed="true"]{border-color:var(--sun)}
+.season .pic{font-size:48px;line-height:1.1}
+.season .lab{font-size:20px;font-weight:700;display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:2px 4px 2px 12px}
+.season .lab .spk{width:36px;height:36px}
+.s-fruehling{background:#d6efc4}.s-sommer{background:#fbe9a6}.s-herbst{background:#f6c88f}.s-winter{background:#e2ecf6}
+
+/* Bühne */
+.actor{position:absolute;transition:left 3s linear,bottom 1.2s ease,opacity 1s,transform 1s;line-height:1}
+.actor > svg{width:100%;height:auto}
+.actor.flip > svg{transform:scaleX(-1)}
+.actor.walk > svg{animation:bob .35s infinite alternate}
+@keyframes bob{to{translate:0 -4%}}
+.actor .full svg,.actor .ball svg{width:100%;height:auto}
+.actor .ball{position:absolute;inset:0;opacity:0;transition:opacity .4s,transform .8s}
+.actor .full{transition:opacity .4s}
+.actor.rolled .ball{opacity:1;transform:rotate(-200deg)}
+.actor.rolled .full{opacity:0}
+.say-bub{position:absolute;background:#fff;color:#28362b;border-radius:14px;padding:.3em .6em;font-weight:700;font-size:3.4cqw;white-space:nowrap;animation:pop .3s}
+@keyframes pop{from{transform:scale(.3)}}
+.fall{position:absolute;top:-10%;animation:fall linear infinite;pointer-events:none}
+@keyframes fall{to{transform:translateY(120cqw) rotate(360deg)}}
+.zzz{position:absolute;font-weight:700;color:#3b4f7a;font-size:5cqw;animation:zzz 2s infinite}
+@keyframes zzz{from{opacity:0;transform:translate(0,0)}50%{opacity:1}to{opacity:0;transform:translate(4cqw,-8cqw)}}
+.caption{font-size:24px;min-height:2.6em;background:var(--card);border-radius:18px;padding:10px 16px;display:flex;align-items:center}
+.films{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.film{background:var(--card);border-radius:22px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 var(--meadow2);border:4px solid transparent;position:relative}
+.film[aria-pressed="true"]{border-color:var(--sun)}
+.film .pic{font-size:46px}
+.film .lab{font-weight:700;font-size:18px;text-align:center}
+.film .play{position:absolute;top:8px;left:8px;width:30px;height:30px;border-radius:50%;background:var(--sun);display:grid;place-items:center}
+.film .play svg{width:14px;height:14px}
+
+/* Info-Karten */
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.icard{background:var(--card);border-radius:24px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 5px 0 var(--meadow2);border:4px solid transparent;text-align:center}
+.icard .pic{font-size:64px;line-height:1.1}
+.icard .lab{font-size:22px;font-weight:700;display:flex;align-items:center;gap:6px}
+.icard p{margin:0;font-size:17px;color:var(--ink2)}
+.icard.on{border-color:var(--sun)}
+.icard.danger{background:#fff2ee}
+.icard.help{background:#effaef}
+.sect{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:700;margin:6px 0 0}
+.sect .dot{width:18px;height:18px;border-radius:50%}
+.shield{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:center}
+.bigbtn{background:var(--sun);color:#2a1a05;border-radius:999px;padding:14px 24px;font-size:24px;font-weight:700;box-shadow:0 4px 0 #c47e17;display:inline-flex;align-items:center;gap:10px}
+.bigbtn svg{width:30px;height:30px}
+
+/* Test */
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dots i{width:18px;height:18px;border-radius:50%;background:var(--card);border:2px solid var(--meadow2)}
+.dots i.ok{background:var(--ok);border-color:var(--ok)}.dots i.no{background:var(--no);border-color:var(--no)}.dots i.now{border-color:var(--sun);border-width:4px}
+.qbar{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:24px;padding:12px 16px;font-size:26px;font-weight:700;box-shadow:0 5px 0 var(--meadow2)}
+.qbar span{flex:1;min-width:0}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.choice{background:var(--card);border-radius:26px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 5px 0 var(--meadow2);border:5px solid transparent;position:relative}
+.choice .pic{font-size:78px;line-height:1.1;height:96px;display:grid;place-items:center}
+.choice .pic svg{height:96px;width:auto}
+.choice .lab{font-size:18px;font-weight:700;display:flex;align-items:center;gap:4px}
+.choice .lab .spk{width:36px;height:36px}
+.choice.right{border-color:var(--ok);background:var(--oksoft)}
+.choice.wrong{border-color:var(--no);background:var(--nosoft)}
+.yn{display:flex;gap:30px;justify-content:center}
+.yn button{width:130px;height:130px;border-radius:50%;font-size:68px;display:grid;place-items:center;box-shadow:0 6px 0 rgba(0,0,0,.15);border:6px solid transparent}
+.yn .yes{background:var(--oksoft)}.yn .no{background:var(--nosoft)}
+.yn button.right{border-color:var(--ok)}.yn button.wrong{border-color:var(--no)}
+.ynpic{font-size:90px;text-align:center;line-height:1.1}
+.feedback{display:flex;align-items:center;gap:14px;justify-content:center;font-size:26px;font-weight:700;flex-wrap:wrap}
+.mark{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;flex:none}
+.mark svg{width:40px;height:40px}
+.mark.ok{background:var(--ok)}.mark.no{background:var(--no)}
+.stars{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:44px}
+.stars .off{filter:grayscale(1);opacity:.3}
+.center{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+
+@media (max-width:760px){
+  .hero,.split,.feed,.shield{grid-template-columns:minmax(0,1fr)}
+  .seasons{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="round" id="homeBtn" aria-label="Zur Startseite" hidden></button>
+    <h1 id="title"></h1>
+    <button class="round big" id="earBtn" aria-label="Noch einmal vorlesen"></button>
+  </header>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ---------- Icons ---------- */
+const ICON={
+ spk:'<svg viewBox="0 0 24 24" fill="none" stroke="#7a4f2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#7a4f2f"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+ ear:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#2a1a05"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="#7a4f2f" stroke-width="2.4" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10" fill="#fde7bf"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+ cross:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ play:'<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="#2a1a05"/></svg>',
+ next:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+ again:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>',
+ stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#2a1a05"/></svg>',
+ ball:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="2.6"><circle cx="12" cy="12" r="8"/><path d="M12 4v-2M12 22v-2M4 12H2M22 12h-2M6 6 4.5 4.5M18 18l1.5 1.5M6 18l-1.5 1.5M18 6l1.5-1.5"/></svg>'
+};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const spk=t=>`<button class="spk" data-say="${esc(t)}" aria-label="Vorlesen: ${esc(t)}">${ICON.spk}</button>`;
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- Sprache & Töne ---------- */
+let voice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));voice=vs.find(v=>/Anna|Helena|Petra|Marlene|Google Deutsch/i.test(v.name))||vs[0]||null}catch(e){}}
+try{speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}catch(e){}
+function say(t){return new Promise(res=>{try{
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=.88;u.pitch=1.05;
+  let done=false;const fin=()=>{if(!done){done=true;res()}};u.onend=fin;u.onerror=fin;setTimeout(fin,1200+t.length*95);
+  speechSynthesis.speak(u)}catch(e){res()}})}
+let actx=null;
+function tone(kind){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
+  const notes=kind==='ok'?[660,880,1175]:kind==='win'?[523,659,784,1046]:[220,180];
+  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=kind==='no'?'triangle':'sine';o.frequency.value=f;
+   g.gain.setValueAtTime(0,now+i*.11);g.gain.linearRampToValueAtTime(.18,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.001,now+i*.11+.3);
+   o.connect(g);g.connect(actx.destination);o.start(now+i*.11);o.stop(now+i*.11+.32)})}catch(e){}}
+document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b){e.stopPropagation();e.preventDefault();say(b.dataset.say)}},true);
+
+/* ---------- Igel-Grafik ---------- */
+function spikePts(cx,cy,rx,ry,a0,a1,n,len){const p=[];for(let i=0;i<=n;i++){const a=(a0+(a1-a0)*i/n)*Math.PI/180,k=i%2?1+len:1;p.push((cx+rx*k*Math.cos(a)).toFixed(1)+','+(cy-ry*k*Math.sin(a)).toFixed(1))}return p.join(' ')}
+const LBL={stacheln:{w:'Stacheln',x:300,y:24,lx:290,ly:62},ohr:{w:'Ohr',x:175,y:58,lx:140,ly:102},auge:{w:'Auge',x:20,y:100,lx:95,ly:145},
+ nase:{w:'Nase',x:-5,y:228,lx:20,ly:178},beine:{w:'Beine',x:220,y:290,lx:200,ly:258},bauch:{w:'Bauch',x:400,y:248,lx:330,ly:222}};
+function label(k){const L=LBL[k],w=L.w.length*13+28;return `<g class="lbl" data-for="${k}" hidden><line x1="${L.lx}" y1="${L.ly}" x2="${L.x}" y2="${L.y}"/><rect x="${L.x-w/2}" y="${L.y-18}" width="${w}" height="36" rx="18"/><text x="${L.x}" y="${L.y+7}" text-anchor="middle">${L.w}</text></g>`}
+function igel(o={}){const sp=o.spine||'#5b3a22',sp2=o.spine2||'#8a5a34',cls=o.cls||'';
+ const legs=[140,185,290,335].map(x=>`<rect x="${x}" y="212" width="26" height="44" rx="11" fill="#8b5e3c"/><path d="M${x+3} 256l-2 6M${x+13} 257v6M${x+23} 256l2 6" stroke="#3a2516" stroke-width="3" stroke-linecap="round"/>`).join('');
+ return `<svg class="igel ${cls}" viewBox="-50 0 500 312" role="img" aria-label="Igel">
+ <g data-part="beine">${legs}<rect class="hit" x="125" y="205" width="250" height="65"/></g>
+ <g data-part="stacheln"><ellipse cx="230" cy="160" rx="150" ry="90" fill="${sp}"/><polygon points="${spikePts(230,160,150,90,172,-18,45,.24)}" fill="${sp}"/><polygon points="${spikePts(232,168,132,76,165,-10,39,.2)}" fill="${sp2}"/></g>
+ <g data-part="bauch"><path d="M110 188C170 252 300 258 378 186C310 226 170 226 110 188Z" fill="#ecc9a0"/><path class="hit" d="M110 188C170 262 300 268 378 186C300 214 170 214 110 188Z"/></g>
+ <path d="M140 104C98 114 56 144 22 166C52 192 112 212 154 206C174 170 170 126 140 104Z" fill="#e3b98a"/>
+ <path d="M48 182Q62 190 78 184" stroke="#3a2516" stroke-width="3" fill="none" stroke-linecap="round"/>
+ <g data-part="ohr"><circle cx="140" cy="113" r="14" fill="#d49a66"/><circle cx="140" cy="114" r="6.5" fill="#b0703f"/><circle class="hit" cx="140" cy="113" r="26"/></g>
+ <g data-part="auge"><circle cx="98" cy="148" r="8.5" fill="#1d1410"/><circle cx="101" cy="145" r="2.6" fill="#fff"/><circle class="hit" cx="98" cy="148" r="24"/></g>
+ <g data-part="nase"><circle cx="22" cy="166" r="12" fill="#1d1410"/><circle cx="18" cy="161" r="3" fill="#6b5a50"/><circle class="hit" cx="22" cy="166" r="28"/></g>
+ ${o.labels?Object.keys(LBL).map(label).join(''):''}
+ </svg>`}
+function igelBall(o={}){const sp=o.spine||'#5b3a22',sp2=o.spine2||'#8a5a34';
+ return `<svg class="igel" viewBox="-50 0 500 312" role="img" aria-label="Eingerollter Igel"><circle cx="200" cy="180" r="95" fill="${sp}"/><polygon points="${spikePts(200,180,95,95,0,360,71,.26)}" fill="${sp}"/><polygon points="${spikePts(204,186,80,80,10,370,59,.22)}" fill="${sp2}"/><circle cx="138" cy="240" r="9" fill="#1d1410"/></svg>`}
+
+/* ---------- Inhalte ---------- */
+const PARTS={
+ stacheln:['die Stacheln','Ein Igel hat ungefähr siebentausend Stacheln. Die Stacheln schützen ihn vor Feinden.'],
+ nase:['die Nase','Der Igel kann sehr gut riechen. Mit der Nase findet er sein Futter.'],
+ auge:['das Auge','Die Augen sind klein. Der Igel kann nicht so gut sehen.'],
+ ohr:['das Ohr','Der Igel kann sehr gut hören. Er hört sogar Käfer im Laub krabbeln.'],
+ beine:['die Beine','Der Igel hat vier kurze Beine. An den Pfoten hat er Krallen zum Graben.'],
+ bauch:['der Bauch','Am Bauch hat der Igel keine Stacheln. Dort hat er weiches Fell.']};
+const FOOD=[
+ {e:'🪲',w:'Käfer',g:1,t:'Käfer! Lecker! Käfer frisst der Igel sehr gerne.'},
+ {e:'🪱',w:'Regenwurm',g:1,t:'Regenwurm! Lecker! Der Igel frisst Regenwürmer.'},
+ {e:'🐌',w:'Schnecke',g:1,t:'Schnecke! Lecker! Auch Schnecken frisst der Igel.'},
+ {e:'🐛',w:'Raupe',g:1,t:'Raupe! Lecker! Raupen mag der Igel.'},
+ {e:'🥫',w:'Katzenfutter',g:1,t:'Katzenfutter mit Fleisch. Das darf ein Igel fressen, wenn er Hilfe braucht.'},
+ {e:'💧',w:'Wasser',g:1,t:'Wasser! Der Igel trinkt gerne Wasser.'},
+ {e:'🥛',w:'Milch',g:0,t:'Milch? Nein! Von Milch bekommt der Igel Bauchweh und wird krank.'},
+ {e:'🍎',w:'Apfel',g:0,t:'Apfel? Nein! Obst ist kein Igelfutter.'},
+ {e:'🍞',w:'Brot',g:0,t:'Brot? Nein! Brot macht den Igel krank.'},
+ {e:'🍫',w:'Schokolade',g:0,t:'Schokolade? Nein! Süßes ist nichts für den Igel.'}];
+const SEASONS={
+ fruehling:{w:'Frühling',e:'🌷',t:'Im Frühling wacht der Igel aus dem Winterschlaf auf. Er ist dünn und hat großen Hunger. Er sucht Futter.'},
+ sommer:{w:'Sommer',e:'☀️',t:'Im Sommer bekommt die Igel-Mama Babys. Die Igel-Babys haben am Anfang weiche, weiße Stacheln.'},
+ herbst:{w:'Herbst',e:'🍂',t:'Im Herbst frisst der Igel ganz viel. Er wird dick und rund. Er baut sich ein Nest aus Laub.'},
+ winter:{w:'Winter',e:'❄️',t:'Im Winter hält der Igel Winterschlaf. Er schläft in seinem Laub-Nest. Er frisst nichts und atmet ganz langsam.'}};
+const ENEMIES=[
+ {e:'🦊',w:'Fuchs',t:'Der Fuchs möchte manchmal einen Igel fressen. Aber die Stacheln pieksen.'},
+ {e:'🦡',w:'Dachs',t:'Der Dachs hat starke Krallen. Er ist ein gefährlicher Feind des Igels.'},
+ {e:'🦉',w:'Uhu',t:'Der Uhu ist eine große Eule. Er jagt in der Nacht. Manchmal fängt er einen Igel.'}];
+const DANGERS=[
+ {e:'🚗',w:'Auto',t:'Viele Igel werden auf der Straße überfahren. Bei Gefahr rollt sich der Igel ein und bleibt liegen. Das hilft gegen Autos nicht.'},
+ {e:'🤖',w:'Mähroboter',t:'Mähroboter und Rasenmäher verletzen Igel. Der Igel läuft nicht weg. Er rollt sich ein. Mähroboter sollen nachts nicht fahren.'},
+ {e:'🧪',w:'Gift',t:'Schneckengift im Garten ist gefährlich. Der Igel frisst vergiftete Schnecken und wird krank.'},
+ {e:'🕳️',w:'Löcher',t:'Der Igel fällt in Löcher, Schächte oder Teiche. Dann kommt er nicht mehr heraus.'},
+ {e:'🥤',w:'Müll',t:'Im Müll kann der Igel stecken bleiben. Zum Beispiel in einem Becher oder in einem Netz.'},
+ {e:'🔥',w:'Feuer',t:'Manchmal schläft ein Igel in einem Laubhaufen. Wird der Haufen angezündet, ist das sehr gefährlich.'}];
+const HELP=[
+ {e:'🍂',w:'Laubhaufen',t:'Lass im Garten einen Laubhaufen liegen. Dort kann der Igel schlafen.'},
+ {e:'💧',w:'Wasser',t:'Stell eine flache Schale mit Wasser hin. Aber keine Milch!'},
+ {e:'🌼',w:'Wilder Garten',t:'Hecken, Büsche und Blumen sind gut. Dort leben Käfer und Würmer für den Igel.'},
+ {e:'🚪',w:'Igel-Tor',t:'Ein kleines Loch im Zaun ist ein Igel-Tor. So kommt der Igel in den nächsten Garten.'},
+ {e:'🗣️',w:'Bescheid sagen',t:'Siehst du am Tag einen Igel, der krank aussieht oder torkelt? Sag einem Erwachsenen Bescheid.'}];
+
+/* ---------- Navigation ---------- */
+const main=document.getElementById('main'),titleEl=document.getElementById('title'),homeBtn=document.getElementById('homeBtn'),earBtn=document.getElementById('earBtn');
+homeBtn.innerHTML=ICON.home;earBtn.innerHTML=ICON.ear;
+let intro='',cleanup=null;
+let visited={};try{visited=JSON.parse(localStorage.getItem('igel-visited')||'{}')}catch(e){}
+function mark(k){visited[k]=1;try{localStorage.setItem('igel-visited',JSON.stringify(visited))}catch(e){}}
+earBtn.onclick=()=>say(intro);homeBtn.onclick=()=>go('home');
+const SCREENS={home,koerper,futter,jahreszeiten,feinde,mensch,kino,test};
+function go(k,silent){if(cleanup){cleanup();cleanup=null}try{speechSynthesis.cancel()}catch(e){}
+ homeBtn.hidden=k==='home';main.innerHTML='';window.scrollTo(0,0);SCREENS[k]();if(k!=='home')mark(k);if(!silent&&intro)say(intro)}
+function setTitle(w,pic){titleEl.innerHTML=`${pic?`<span aria-hidden="true">${pic}</span>`:''}<span class="word">${w}</span>`}
+
+/* ---------- Start ---------- */
+const MENU=[['koerper','Körper',null],['futter','Futter','🪲'],['jahreszeiten','Jahreszeiten','🍂'],['feinde','Feinde','🦊'],['mensch','Menschen','🚗'],['kino','Kino','🎬'],['test','Test','⭐']];
+function home(){setTitle('Igel Pieks');intro='Hallo! Ich bin Pieks, der Igel. Tippe auf ein Bild. Dann lernst du mich kennen. Zum Schluss gibt es einen Test.';
+ main.innerHTML=`<div class="app" style="padding:0">
+ <div class="hero"><div id="heroIgel">${igel()}</div>
+  <div class="bubble">${spk(intro)}<span>Hallo! Ich bin <b>Pieks</b>, der Igel.</span></div></div>
+ <div class="tiles">${MENU.map(([k,w,e])=>`<button class="tile ${k==='test'?'test':''}" data-go="${k}">
+  ${visited[k]?`<span class="done">${ICON.check}</span>`:''}<span class="pic">${e||igel()}</span><span class="lab">${w} ${spk(w)}</span></button>`).join('')}</div>
+ <p class="hint">Alle Wörter und Aufgaben werden vorgelesen. Der große gelbe Knopf oben liest die Aufgabe noch einmal vor.</p></div>`;
+ main.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+ document.getElementById('heroIgel').onclick=e=>{const p=e.target.closest('[data-part]');const s=document.querySelector('#heroIgel svg');s.classList.remove('mampf');void s.offsetWidth;s.classList.add('mampf');say(p&&p.dataset.part==='nase'?'Hihi, das kitzelt an der Nase!':'Hallo! Ich bin Pieks.')}}
+
+/* ---------- Körper ---------- */
+function koerper(){setTitle('Körper');intro='Das ist der Körper vom Igel. Tippe auf den Igel. Dann hörst du, wie das Körperteil heißt.';
+ main.innerHTML=`<div class="modes"><button class="mode" id="m1" aria-pressed="true">Entdecken ${spk('Entdecken')}</button><button class="mode" id="m2" aria-pressed="false">Zuordnen ${spk('Zuordnen')}</button></div>
+ <div class="split" style="margin-top:14px"><div class="panel" id="bodyBox">${igel({labels:1})}</div><div class="panel" id="side"></div></div>`;
+ const box=document.getElementById('bodyBox'),svg=box.querySelector('svg'),side=document.getElementById('side');
+ let mode='explore',sel=null,done=new Set();
+ const hl=k=>{svg.querySelectorAll('[data-part]').forEach(g=>g.classList.toggle('hi',g.dataset.part===k))};
+ const showLbl=(k,only)=>svg.querySelectorAll('.lbl').forEach(l=>{if(l.dataset.for===k)l.removeAttribute('hidden');else if(only)l.setAttribute('hidden','')});
+ function sideExplore(k){side.innerHTML=k?`<div class="info">${spk(PARTS[k][0]+'. '+PARTS[k][1])}<div><big>${PARTS[k][0]}</big>${PARTS[k][1]}</div></div>`:`<div class="info">${spk('Tippe auf den Igel.')}<div><big>Tippe auf den Igel.</big>Stacheln, Nase, Auge, Ohr, Beine oder Bauch.</div></div>`}
+ function sideMatch(){side.innerHTML=`<div class="info">${spk('Tippe zuerst auf ein Wort. Dann tippe auf den Igel.')}<div>Tippe zuerst auf ein <b>Wort</b>. Dann tippe auf den <b>Igel</b>.</div></div>
+  <div class="cards">${shuffle(Object.keys(PARTS)).map(k=>`<div class="wcard ${done.has(k)?'ok':''}" data-k="${k}" role="button" tabindex="0">${LBL[k].w} ${spk(LBL[k].w)}</div>`).join('')}</div>`;
+  side.querySelectorAll('.wcard').forEach(c=>c.onclick=()=>{if(done.has(c.dataset.k))return;sel=c.dataset.k;side.querySelectorAll('.wcard').forEach(x=>x.classList.toggle('sel',x===c));say(LBL[sel].w+'. Wo '+(['stacheln','beine'].includes(sel)?'sind ':'ist ')+PARTS[sel][0]+'?')})}
+ function setMode(m){mode=m;sel=null;document.getElementById('m1').setAttribute('aria-pressed',m==='explore');document.getElementById('m2').setAttribute('aria-pressed',m==='match');hl(null);
+  svg.querySelectorAll('.lbl').forEach(l=>{if(m==='match'&&done.has(l.dataset.for))l.removeAttribute('hidden');else l.setAttribute('hidden','')});
+  if(m==='explore'){sideExplore(null);intro='Tippe auf den Igel. Dann hörst du, wie das Körperteil heißt.'}else{done.size===6&&(done=new Set(),svg.querySelectorAll('.lbl').forEach(l=>l.setAttribute('hidden','')));sideMatch();intro='Tippe zuerst auf ein Wort. Dann tippe auf die richtige Stelle am Igel.'}}
+ document.getElementById('m1').onclick=()=>{setMode('explore');say(intro)};document.getElementById('m2').onclick=()=>{setMode('match');say(intro)};
+ svg.onclick=e=>{const p=e.target.closest('[data-part]');if(!p)return;const k=p.dataset.part;
+  if(mode==='explore'){hl(k);showLbl(k,true);sideExplore(k);say(PARTS[k][0]+'. '+PARTS[k][1]);return}
+  if(!sel){say('Tippe zuerst auf ein Wort.');return}
+  if(k===sel){done.add(k);showLbl(k);hl(k);tone('ok');const c=side.querySelector(`[data-k="${k}"]`);c.classList.remove('sel');c.classList.add('ok');sel=null;
+   if(done.size===6){setTimeout(()=>tone('win'),300);say('Super! Du hast alle Körperteile richtig zugeordnet!')}else say('Richtig! '+LBL[k].w+'.')}
+  else{tone('no');svg.classList.remove('nein');void svg.offsetWidth;svg.classList.add('nein');say('Das ist '+PARTS[k][0]+'. Versuch es noch einmal.')}};
+ setMode('explore')}
+
+/* ---------- Futter ---------- */
+function futter(){setTitle('Futter','🪲');intro='Was frisst der Igel? Tippe auf das Futter. Finde alles, was der Igel mag.';
+ let found=0;
+ main.innerHTML=`<div class="feed"><div class="panel"><div id="feedIgel">${igel()}</div><div class="slots">${FOOD.filter(f=>f.g).map(()=>'<span class="slot"></span>').join('')}</div>
+  <div class="info">${spk('Der Igel frisst vor allem Insekten, Würmer und Schnecken. Er sucht sein Futter in der Nacht.')}<div>Der Igel frisst <b>Insekten</b>, <b>Würmer</b> und <b>Schnecken</b>. Er sucht sein Futter in der <b>Nacht</b>.</div></div></div>
+  <div class="food">${shuffle(FOOD).map(f=>`<button class="item" data-w="${f.w}"><span class="pic">${f.e}</span><span class="lab">${f.w} ${spk(f.w)}</span></button>`).join('')}</div></div>`;
+ const ig=()=>document.querySelector('#feedIgel svg'),slots=[...main.querySelectorAll('.slot')];
+ main.querySelectorAll('.item').forEach(b=>b.onclick=()=>{const f=FOOD.find(x=>x.w===b.dataset.w);const s=ig();s.classList.remove('mampf','nein');void s.offsetWidth;
+  if(f.g){if(b.classList.contains('eaten'))return;b.classList.add('eaten');slots[found].textContent=f.e;slots[found].classList.add('full');found++;s.classList.add('mampf');tone('ok');
+   if(found===slots.length){say(f.t+' Super! Du hast alles gefunden, was der Igel mag.');setTimeout(()=>tone('win'),400)}else say(f.t)}
+  else{b.classList.add('bad');s.classList.add('nein');tone('no');say(f.t)}})}
+
+/* ---------- Jahreszeiten ---------- */
+function seasonScene(k){const fall=n=>Array.from({length:n},(_,i)=>`<span class="fall" style="left:${(i*97)%100}%;font-size:${3+(i%3)}cqw;animation-duration:${5+(i%4)}s;animation-delay:-${i*0.7}s">${k==='winter'?'❄️':'🍂'}</span>`).join('');
+ const I=(html,x,b,w,extra='')=>`<div class="actor" style="left:${x}%;bottom:${b}%;width:${w}%;${extra}">${html}</div>`;
+ if(k==='fruehling')return `<div class="scene bg-fruehling"><span class="deco" style="left:5%;bottom:8%;font-size:7cqw">🌷🌱</span><span class="deco" style="right:6%;top:8%;font-size:8cqw">🌤️</span>${I(igel(),30,4,38,'transform:scaleY(.9)')}<span class="deco" style="left:68%;bottom:10%;font-size:5cqw">🪱</span></div>`;
+ if(k==='sommer')return `<div class="scene bg-sommer"><span class="deco" style="right:6%;top:6%;font-size:9cqw">☀️</span>${I(igel(),8,6,40)}${I(igel({spine:'#d9cfc0',spine2:'#efe8dc'}),50,4,18)}${I(igel({spine:'#d9cfc0',spine2:'#efe8dc'}),66,6,16)}${I(igel({spine:'#d9cfc0',spine2:'#efe8dc'}),80,3,15)}</div>`;
+ if(k==='herbst')return `<div class="scene bg-herbst">${fall(10)}${I(igel(),18,4,46,'transform:scale(1.08)')}<span class="deco" style="right:6%;bottom:6%;font-size:10cqw">🍂🍂</span></div>`;
+ return `<div class="scene bg-winter">${fall(14)}<span class="deco" style="left:20%;bottom:2%;font-size:22cqw;letter-spacing:-6cqw">🍂🍂🍂</span>${I(igelBall(),30,10,30)}<span class="zzz" style="left:58%;top:30%">Z z z</span></div>`}
+function jahreszeiten(){setTitle('Jahreszeiten','🍂');intro='So lebt der Igel im Jahr. Tippe auf eine Jahreszeit.';
+ main.innerHTML=`<div class="seasons">${Object.entries(SEASONS).map(([k,s])=>`<button class="season s-${k}" data-k="${k}" aria-pressed="false"><span class="pic">${s.e}</span><span class="lab">${s.w} ${spk(s.w)}</span></button>`).join('')}</div>
+ <div class="panel" style="margin-top:14px"><div id="sScene"></div><div class="info" id="sText"></div></div>`;
+ const show=k=>{main.querySelectorAll('.season').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));document.getElementById('sScene').innerHTML=seasonScene(k);
+  document.getElementById('sText').innerHTML=`${spk(SEASONS[k].w+'. '+SEASONS[k].t)}<div><big>${SEASONS[k].w}</big>${SEASONS[k].t}</div>`};
+ main.querySelectorAll('.season').forEach(b=>b.onclick=()=>{show(b.dataset.k);say(SEASONS[b.dataset.k].w+'. '+SEASONS[b.dataset.k].t)});show('herbst')}
+
+/* ---------- Feinde ---------- */
+function infoCards(list,cls){return `<div class="grid3">${list.map((c,i)=>`<button class="icard ${cls||''}" data-i="${i}"><span class="pic">${c.e}</span><span class="lab">${c.w} ${spk(c.w)}</span><p>${c.t}</p></button>`).join('')}</div>`}
+function bindCards(root,list){root.querySelectorAll('.icard').forEach(b=>b.onclick=()=>{main.querySelectorAll('.icard').forEach(x=>x.classList.toggle('on',x===b));const c=list[b.dataset.i];say(c.w+'. '+c.t)})}
+function feinde(){setTitle('Feinde','🦊');intro='Diese Tiere sind Feinde des Igels. Tippe auf ein Tier. Unten siehst du, wie sich der Igel schützt.';
+ main.innerHTML=`<div id="en">${infoCards(ENEMIES)}</div>
+ <div class="sect" style="margin-top:20px"><span class="dot" style="background:var(--sun)"></span>So schützt sich der Igel ${spk('So schützt sich der Igel')}</div>
+ <div class="panel shield"><div class="actor" id="sh" style="position:relative;width:100%"><div class="full">${igel()}</div><div class="ball">${igelBall()}</div></div>
+  <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start"><div class="info">${spk('Bei Gefahr rollt sich der Igel zu einer Kugel zusammen. Dann sieht man nur noch Stacheln.')}<div>Bei Gefahr rollt sich der Igel zu einer <b>Kugel</b> zusammen.</div></div>
+  <button class="bigbtn" id="roll">${ICON.ball}<span>Einrollen</span></button></div></div>`;
+ bindCards(document.getElementById('en'),ENEMIES);
+ const sh=document.getElementById('sh'),roll=document.getElementById('roll');
+ roll.onclick=()=>{const r=sh.classList.toggle('rolled');roll.querySelector('span').textContent=r?'Ausrollen':'Einrollen';tone(r?'ok':'win');say(r?'Gefahr! Der Igel rollt sich ein. Jetzt sieht man nur noch Stacheln.':'Die Gefahr ist vorbei. Der Igel rollt sich wieder aus.')}}
+
+/* ---------- Menschen ---------- */
+function mensch(){setTitle('Menschen','🚗');intro='Auch Menschen sind manchmal eine Gefahr für den Igel. Tippe auf ein Bild. Unten siehst du, wie du dem Igel helfen kannst.';
+ main.innerHTML=`<div class="sect"><span class="dot" style="background:var(--no)"></span>Gefahr ${spk('Gefahr. Das ist gefährlich für den Igel.')}</div><div id="dg">${infoCards(DANGERS,'danger')}</div>
+ <div class="sect" style="margin-top:20px"><span class="dot" style="background:var(--ok)"></span>So hilfst du ${spk('So hilfst du dem Igel.')}</div><div id="hp">${infoCards(HELP,'help')}</div>`;
+ bindCards(document.getElementById('dg'),DANGERS);bindCards(document.getElementById('hp'),HELP)}
+
+/* ---------- Kino ---------- */
+let filmRun=0;
+const FILMS=[
+ {k:'futter',e:'🌙',w:'Nachts auf Futtersuche',run:async S=>{S.bg('nacht');S.deco('🌙',82,62,9);S.deco('✨',60,75,4);
+   const ig=S.igel(-30,12,30);await S.say('Es ist Nacht. Der Igel Pieks wacht auf.');
+   ig.classList.add('flip','walk');S.move(ig,18,3000);await S.wait(3100);ig.classList.remove('walk');
+   await S.say('Er schnuppert mit seiner Nase. Er hört etwas im Laub.');
+   const k=S.deco('🪲',60,10,7);await S.say('Da! Ein Käfer!');ig.classList.add('walk');S.move(ig,36,1800);await S.wait(1900);ig.classList.remove('walk');k.remove();S.pop(ig,'Mampf!');
+   await S.say('Mmmh, lecker. Der Igel frisst den Käfer.');const w=S.deco('🪱',78,10,7);ig.classList.add('walk');S.move(ig,55,2200);await S.wait(2300);ig.classList.remove('walk');w.remove();S.pop(ig,'Mampf!');
+   await S.say('Der Igel frisst Käfer, Würmer und Schnecken. Er sucht die ganze Nacht nach Futter.')}},
+ {k:'gefahr',e:'🦊',w:'Gefahr! Der Fuchs kommt',run:async S=>{S.bg('abend');S.deco('🌳',2,20,18);
+   const ig=S.igel(20,12,30,true);await S.say('Pieks ist unterwegs.');const f=S.deco('🦊',110,10,16);f.style.transition='left 2.5s linear';
+   await S.wait(50);f.style.left='70%';await S.say('Oh nein! Ein Fuchs!');ig.classList.add('rolled');S.pop(ig,'!');
+   await S.say('Der Igel rollt sich ganz schnell zu einer Stachel-Kugel.');f.style.transition='left .6s ease';f.style.left='52%';await S.wait(650);S.pop(f,'Aua!');f.style.left='60%';
+   await S.say('Der Fuchs piekst sich an den Stacheln.');f.style.transition='left 2s linear';f.style.left='115%';await S.say('Er läuft weg.');
+   ig.classList.remove('rolled');await S.wait(600);await S.say('Jetzt ist der Igel wieder sicher. Er rollt sich aus.')}},
+ {k:'winter',e:'❄️',w:'Vom Herbst zum Frühling',run:async S=>{S.bg('herbst');S.rain('🍂',10);
+   const ig=S.igel(15,10,30);await S.say('Es ist Herbst. Pieks frisst ganz viel.');ig.style.transform='scale(1.15)';await S.say('Er wird dick und rund. Das braucht er für den Winter.');
+   const pile=S.deco('🍂🍂🍂',52,4,30);pile.style.letterSpacing='-7cqw';pile.style.zIndex=3;await S.say('Er baut sich ein Nest aus Laub.');
+   ig.classList.add('flip','walk');S.move(ig,52,2500);await S.wait(2600);ig.classList.remove('walk');ig.style.opacity=.15;
+   S.bg('winter');S.rain('❄️',14);const z=S.zzz(70,45);await S.say('Jetzt ist Winter. Der Igel hält Winterschlaf. Psst!');await S.say('Er schläft viele Wochen. Er frisst nichts.');
+   z.remove();S.rain(null);S.bg('fruehling');S.deco('🌷',8,8,8);S.deco('🌷',85,8,8);await S.wait(600);ig.style.opacity=1;ig.style.transform='scale(.92)';
+   await S.say('Es ist Frühling. Pieks wacht auf. Er ist dünn und hat großen Hunger.')}},
+ {k:'hilfe',e:'🧒',w:'Wir helfen dem Igel',run:async S=>{S.bg('garten');S.deco('🏡',2,30,16);
+   const ch=S.deco('🧒',20,8,14);await S.say('Lena hat einen Garten. Sie möchte dem Igel helfen.');
+   S.deco('🍂🍂',40,4,18);await S.say('Sie lässt einen Laubhaufen liegen. Dort kann der Igel schlafen.');
+   S.deco('💧',62,6,8);await S.say('Sie stellt eine flache Schale mit Wasser hin. Keine Milch!');
+   S.deco('🌼',85,8,7);await S.say('Im Garten wachsen Blumen und Büsche. Dort leben viele Käfer.');
+   const ig=S.igel(110,8,26);ig.style.transition='left 3s linear';await S.wait(50);ig.classList.add('walk');ig.style.left='66%';await S.wait(3100);ig.classList.remove('walk');S.pop(ig,'Schlürf!');
+   await S.say('Da kommt Pieks. Er trinkt Wasser. Danke, Lena!');S.pop(ch,'❤️')}}];
+function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über den Igel. Tippe auf einen Film.';
+ main.innerHTML=`<div class="films">${FILMS.map((f,i)=>`<button class="film" data-i="${i}" aria-pressed="false"><span class="play">${ICON.play}</span><span class="pic">${f.e}</span><span class="lab">${f.w}</span>${spk(f.w)}</button>`).join('')}</div>
+ <div class="panel" style="margin-top:14px"><div class="scene bg-nacht" id="stage"></div><div class="caption" id="cap">Tippe oben auf einen Film.</div>
+ <div class="center"><button class="bigbtn" id="again" hidden>${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="stopB" hidden>${ICON.stop}<span>Stopp</span></button></div></div>`;
+ const stage=document.getElementById('stage'),cap=document.getElementById('cap'),again=document.getElementById('again'),stopB=document.getElementById('stopB');let cur=null;
+ async function play(i){const id=++filmRun;cur=i;try{speechSynthesis.cancel()}catch(e){}stage.innerHTML='';stage.className='scene';again.hidden=true;stopB.hidden=false;
+  main.querySelectorAll('.film').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.i===i));
+  const chk=()=>{if(id!==filmRun)throw 'stop'};let rain=[];
+  const add=(html,x,b,w,cls='')=>{const d=document.createElement('div');d.className='actor '+cls;d.style.cssText=`left:${x}%;bottom:${b}%;width:${w}%;font-size:${w*.85}cqw`;d.innerHTML=html;stage.appendChild(d);return d};
+  const S={bg:k=>{stage.className='scene bg-'+k},
+   deco:(e,x,b,w)=>add(`<span>${e}</span>`,x,b,w),
+   igel:(x,b,w,ball)=>ball?add(`<div class="full">${igel()}</div><div class="ball">${igelBall()}</div>`,x,b,w):add(igel(),x,b,w),
+   move:(el,x,ms)=>{el.style.transition=`left ${ms}ms linear,opacity 1s,transform 1s`;el.style.left=x+'%'},
+   wait:async ms=>{await new Promise(r=>setTimeout(r,ms));chk()},
+   say:async t=>{chk();cap.textContent=t;await say(t);chk();await new Promise(r=>setTimeout(r,350));chk()},
+   pop:(el,t)=>{const b=document.createElement('div');b.className='say-bub';b.textContent=t;b.style.left=el.style.left;b.style.bottom=(parseFloat(el.style.bottom)+parseFloat(el.style.width)*.9)+'%';stage.appendChild(b);setTimeout(()=>b.remove(),1600)},
+   rain:(e,n)=>{rain.forEach(r=>r.remove());rain=[];if(!e)return;for(let j=0;j<n;j++){const s=document.createElement('span');s.className='fall';s.textContent=e;s.style.cssText=`left:${(j*97)%100}%;font-size:${3+j%3}cqw;animation-duration:${5+j%4}s;animation-delay:-${j*.7}s`;stage.appendChild(s);rain.push(s)}},
+   zzz:(x,t)=>{const z=document.createElement('span');z.className='zzz';z.textContent='Z z z';z.style.left=x+'%';z.style.top=t+'%';stage.appendChild(z);return z}};
+  try{await FILMS[i].run(S);tone('win');cap.textContent='Ende. '+cap.textContent;stopB.hidden=true;again.hidden=false;mark('kino')}catch(e){}}
+ main.querySelectorAll('.film').forEach(b=>b.onclick=()=>play(+b.dataset.i));
+ again.onclick=()=>play(cur);stopB.onclick=()=>{filmRun++;try{speechSynthesis.cancel()}catch(e){}stopB.hidden=true;again.hidden=false;cap.textContent='Gestoppt.'};
+ stage.innerHTML=seasonScene('fruehling').replace(/^<div class="scene bg-fruehling">|<\/div>$/g,'');stage.className='scene bg-fruehling';
+ cleanup=()=>{filmRun++}}
+
+/* ---------- Test ---------- */
+const BALLPIC=()=>igelBall();
+const Q=[
+ {type:'part',q:'Tippe auf die Stacheln.',a:'stacheln',x:'Die Stacheln schützen den Igel.'},
+ {type:'pick',q:'Was frisst der Igel?',c:[['🪲','Käfer',1],['🍞','Brot'],['🍫','Schokolade']],x:'Der Igel frisst Käfer.'},
+ {type:'part',q:'Tippe auf die Nase.',a:'nase',x:'Mit der Nase riecht der Igel sein Futter.'},
+ {type:'yesno',q:'Igel trinken gerne Milch. Stimmt das?',pic:'🥛',a:0,x:'Milch macht den Igel krank. Er trinkt Wasser.'},
+ {type:'pick',q:'Was macht der Igel bei Gefahr?',c:[['BALL','Er rollt sich ein',1],['🌳','Er klettert auf einen Baum'],['🏊','Er schwimmt weg']],x:'Der Igel rollt sich zu einer Stachel-Kugel.'},
+ {type:'season',q:'Wann hält der Igel Winterschlaf?',a:'winter',x:'Im Winter hält der Igel Winterschlaf.'},
+ {type:'pick',q:'Wer ist ein Feind des Igels?',c:[['🦊','Fuchs',1],['🐰','Hase'],['🐞','Marienkäfer']],x:'Der Fuchs ist ein Feind des Igels.'},
+ {type:'yesno',q:'Der Igel schläft am Tag. In der Nacht ist er wach. Stimmt das?',pic:'🌙',a:1,x:'Der Igel sucht in der Nacht sein Futter.'},
+ {type:'season',q:'Wann frisst der Igel ganz viel und wird dick?',a:'herbst',x:'Im Herbst frisst der Igel viel für den Winter.'},
+ {type:'part',q:'Tippe auf die Beine.',a:'beine',x:'Mit den Beinen und Krallen kann der Igel graben.'},
+ {type:'pick',q:'Was ist gefährlich für den Igel?',c:[['🤖','Mähroboter',1],['🍂','Laubhaufen'],['💧','Wasser']],x:'Mähroboter können Igel verletzen.'},
+ {type:'pick',q:'Wie kannst du dem Igel helfen?',c:[['🍂','Laubhaufen liegen lassen',1],['🥛','Milch hinstellen'],['🔥','Laub anzünden']],x:'Im Laubhaufen kann der Igel schlafen.'},
+ {type:'yesno',q:'Igel-Babys haben am Anfang weiche, weiße Stacheln. Stimmt das?',pic:'🍼',a:1,x:'Die Stacheln werden erst später hart.'}];
+function test(){setTitle('Test','⭐');let n=0,res=[];
+ function dots(){return `<div class="dots">${Q.map((_,i)=>`<i class="${res[i]===1?'ok':res[i]===0?'no':i===n?'now':''}"></i>`).join('')}</div>`}
+ function show(){if(n>=Q.length)return end();const q=Q[n];intro=q.q;let body='';
+  if(q.type==='part')body=`<div class="panel" id="tBody">${igel()}</div>`;
+  if(q.type==='pick')body=`<div class="choices">${shuffle(q.c).map(c=>`<button class="choice" data-ok="${c[2]?1:0}"><span class="pic">${c[0]==='BALL'?BALLPIC():c[0]}</span><span class="lab">${spk(c[1])}</span></button>`).join('')}</div>`;
+  if(q.type==='season')body=`<div class="seasons">${shuffle(Object.keys(SEASONS)).map(k=>`<button class="season choice s-${k}" data-ok="${k===q.a?1:0}"><span class="pic">${SEASONS[k].e}</span><span class="lab">${SEASONS[k].w} ${spk(SEASONS[k].w)}</span></button>`).join('')}</div>`;
+  if(q.type==='yesno')body=`<div class="ynpic">${q.pic}</div><div class="yn"><button class="yes choice" data-ok="${q.a?1:0}" aria-label="Stimmt">👍</button><button class="no choice" data-ok="${q.a?0:1}" aria-label="Stimmt nicht">👎</button></div>`;
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">${dots()}<div class="qbar">${spk(q.q)}<span>${q.q}</span></div>${body}<div id="fb"></div></div>`;
+  let answered=false;
+  const finish=(ok,rightEl)=>{if(answered)return;answered=true;res[n]=ok?1:0;tone(ok?'ok':'no');
+   document.getElementById('fb').innerHTML=`<div class="feedback"><span class="mark ${ok?'ok':'no'}">${ok?ICON.check:ICON.cross}</span><span>${ok?'Richtig!':'Leider falsch.'}</span>${spk(q.x)}<button class="bigbtn" id="nx">${ICON.next}<span>Weiter</span></button></div>`;
+   say((ok?'Richtig! ':'Leider falsch. ')+q.x);document.getElementById('nx').onclick=()=>{n++;show();if(n<Q.length)say(Q[n].q)}};
+  if(q.type==='part'){const svg=main.querySelector('#tBody svg');svg.onclick=e=>{const p=e.target.closest('[data-part]');if(!p||answered)return;const ok=p.dataset.part===q.a;
+    svg.querySelectorAll('[data-part]').forEach(g=>g.classList.toggle('hi',g.dataset.part===q.a));finish(ok)}}
+  else main.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{if(answered)return;const ok=b.dataset.ok==='1';b.classList.add(ok?'right':'wrong');
+    if(!ok)main.querySelector('.choice[data-ok="1"]').classList.add('right');finish(ok)})}
+ function end(){const s=res.filter(x=>x===1).length;intro=`Du hast ${s} von ${Q.length} Sternen. ${s>=10?'Super! Du bist ein Igel-Profi!':s>=7?'Gut gemacht!':'Schau dir die Stationen noch einmal an und versuche es wieder.'}`;
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;align-items:center"><div style="width:min(420px,100%)">${igel()}</div>
+   <div class="stars">${Q.map((_,i)=>`<span class="${res[i]===1?'':'off'}">⭐</span>`).join('')}</div>
+   <div class="qbar" style="width:100%">${spk(intro)}<span>${s} von ${Q.length} Sternen</span></div>
+   <div class="center"><button class="bigbtn" id="re">${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="hm">${ICON.home.replace('#7a4f2f','#2a1a05')}<span>Start</span></button></div></div>`;
+  tone('win');say(intro);document.getElementById('re').onclick=()=>{n=0;res=[];show();say(Q[0].q)};document.getElementById('hm').onclick=()=>go('home')}
+ show()}
+
+go('home',true);
+</script>
+</body>
+</html>
