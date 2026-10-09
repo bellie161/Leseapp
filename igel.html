@@ -148,6 +148,10 @@ header h1{flex:1;margin:0;font-size:clamp(26px,4vw,38px);display:flex;align-item
 .bigbtn{background:var(--sun);color:#2a1a05;border-radius:999px;padding:14px 24px;font-size:24px;font-weight:700;box-shadow:0 4px 0 #c47e17;display:inline-flex;align-items:center;gap:10px}
 .bigbtn svg{width:30px;height:30px}
 
+/* Weiter-Leiste */
+.stepnav{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(230,238,214,0),var(--meadow) 35%);z-index:4;margin-top:8px}
+.stepnav .back{background:var(--card);box-shadow:0 4px 0 var(--meadow2)}
+.shieldp.on{box-shadow:0 0 0 5px var(--sun)}
 /* Test */
 .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .dots i{width:18px;height:18px;border-radius:50%;background:var(--card);border:2px solid var(--meadow2)}
@@ -202,6 +206,7 @@ const ICON={
  check:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
  cross:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
  play:'<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="#2a1a05"/></svg>',
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
  next:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
  again:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>',
  stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#2a1a05"/></svg>',
@@ -300,6 +305,17 @@ earBtn.onclick=()=>say(intro);homeBtn.onclick=()=>go('home');
 const SCREENS={home,koerper,futter,jahreszeiten,feinde,mensch,kino,test};
 function go(k,silent){if(cleanup){cleanup();cleanup=null}try{speechSynthesis.cancel()}catch(e){}
  homeBtn.hidden=k==='home';main.innerHTML='';window.scrollTo(0,0);SCREENS[k]();if(k!=='home')mark(k);if(!silent&&intro)say(intro)}
+const ORDER=['koerper','futter','jahreszeiten','feinde','mensch','kino','test'];
+function stepNav(count,show,key){let i=-1;const nx=ORDER[ORDER.indexOf(key)+1],m=MENU.find(x=>x[0]===nx);
+ const bar=document.createElement('div');bar.className='stepnav';main.appendChild(bar);
+ function render(){const last=i>=count-1;
+  bar.innerHTML=(i>0?`<button class="bigbtn back" data-a="p" aria-label="Zurück">${ICON.back}<span>Zurück</span></button>`:'<span></span>')+
+   `<button class="bigbtn" data-a="n" aria-label="Weiter">${last&&m?`<span aria-hidden="true">${m[2]||'🦔'}</span><span>${m[1]}</span>`:'<span>Weiter</span>'}${ICON.next}</button>`}
+ bar.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;
+  if(b.dataset.a==='p'){if(i>0){i--;show(i);render()}}
+  else if(i<count-1){i++;show(i);render()}else if(nx)go(nx)};
+ render();return {set(j){i=j;render()}}}
+function selCard(b){main.querySelectorAll('.icard,.shieldp').forEach(x=>x.classList.toggle('on',x===b));try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}}
 function setTitle(w,pic){titleEl.innerHTML=`${pic?`<span aria-hidden="true">${pic}</span>`:''}<span class="word">${w}</span>`}
 
 /* ---------- Start ---------- */
@@ -331,12 +347,14 @@ function koerper(){setTitle('Körper');intro='Das ist der Körper vom Igel. Tipp
   if(m==='explore'){sideExplore(null);intro='Tippe auf den Igel. Dann hörst du, wie das Körperteil heißt.'}else{done.size===6&&(done=new Set(),svg.querySelectorAll('.lbl').forEach(l=>l.setAttribute('hidden','')));sideMatch();intro='Tippe zuerst auf ein Wort. Dann tippe auf die richtige Stelle am Igel.'}}
  document.getElementById('m1').onclick=()=>{setMode('explore');say(intro)};document.getElementById('m2').onclick=()=>{setMode('match');say(intro)};
  svg.onclick=e=>{const p=e.target.closest('[data-part]');if(!p)return;const k=p.dataset.part;
-  if(mode==='explore'){hl(k);showLbl(k,true);sideExplore(k);say(PARTS[k][0]+'. '+PARTS[k][1]);return}
+  if(mode==='explore'){hl(k);showLbl(k,true);sideExplore(k);say(PARTS[k][0]+'. '+PARTS[k][1]);nav.set(KEYS.indexOf(k));return}
   if(!sel){say('Tippe zuerst auf ein Wort.');return}
   if(k===sel){done.add(k);showLbl(k);hl(k);tone('ok');const c=side.querySelector(`[data-k="${k}"]`);c.classList.remove('sel');c.classList.add('ok');sel=null;
    if(done.size===6){setTimeout(()=>tone('win'),300);say('Super! Du hast alle Körperteile richtig zugeordnet!')}else say('Richtig! '+LBL[k].w+'.')}
   else{tone('no');svg.classList.remove('nein');void svg.offsetWidth;svg.classList.add('nein');say('Das ist '+PARTS[k][0]+'. Versuch es noch einmal.')}};
- setMode('explore')}
+ setMode('explore');
+ var KEYS=['stacheln','nase','auge','ohr','beine','bauch'];
+ var nav=stepNav(KEYS.length,i=>{if(mode!=='explore')setMode('explore');const k=KEYS[i];hl(k);showLbl(k,true);sideExplore(k);say(PARTS[k][0]+'. '+PARTS[k][1])},'koerper')}
 
 /* ---------- Futter ---------- */
 function futter(){setTitle('Futter','🪲');intro='Was frisst der Igel? Tippe auf das Futter. Finde alles, was der Igel mag.';
@@ -348,7 +366,8 @@ function futter(){setTitle('Futter','🪲');intro='Was frisst der Igel? Tippe au
  main.querySelectorAll('.item').forEach(b=>b.onclick=()=>{const f=FOOD.find(x=>x.w===b.dataset.w);const s=ig();s.classList.remove('mampf','nein');void s.offsetWidth;
   if(f.g){if(b.classList.contains('eaten'))return;b.classList.add('eaten');slots[found].textContent=f.e;slots[found].classList.add('full');found++;s.classList.add('mampf');tone('ok');
    if(found===slots.length){say(f.t+' Super! Du hast alles gefunden, was der Igel mag.');setTimeout(()=>tone('win'),400)}else say(f.t)}
-  else{b.classList.add('bad');s.classList.add('nein');tone('no');say(f.t)}})}
+  else{b.classList.add('bad');s.classList.add('nein');tone('no');say(f.t)}});
+ stepNav(0,null,'futter')}
 
 /* ---------- Jahreszeiten ---------- */
 function seasonScene(k){const fall=n=>Array.from({length:n},(_,i)=>`<span class="fall" style="left:${(i*97)%100}%;font-size:${3+(i%3)}cqw;animation-duration:${5+(i%4)}s;animation-delay:-${i*0.7}s">${k==='winter'?'❄️':'🍂'}</span>`).join('');
@@ -362,26 +381,33 @@ function jahreszeiten(){setTitle('Jahreszeiten','🍂');intro='So lebt der Igel 
  <div class="panel" style="margin-top:14px"><div id="sScene"></div><div class="info" id="sText"></div></div>`;
  const show=k=>{main.querySelectorAll('.season').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));document.getElementById('sScene').innerHTML=seasonScene(k);
   document.getElementById('sText').innerHTML=`${spk(SEASONS[k].w+'. '+SEASONS[k].t)}<div><big>${SEASONS[k].w}</big>${SEASONS[k].t}</div>`};
- main.querySelectorAll('.season').forEach(b=>b.onclick=()=>{show(b.dataset.k);say(SEASONS[b.dataset.k].w+'. '+SEASONS[b.dataset.k].t)});show('herbst')}
+ const SK=Object.keys(SEASONS);const sayS=k=>say(SEASONS[k].w+'. '+SEASONS[k].t);
+ const nav=stepNav(SK.length,i=>{show(SK[i]);sayS(SK[i])},'jahreszeiten');
+ main.querySelectorAll('.season').forEach(b=>b.onclick=()=>{show(b.dataset.k);sayS(b.dataset.k);nav.set(SK.indexOf(b.dataset.k))});show('fruehling');nav.set(0)}
 
 /* ---------- Feinde ---------- */
 function infoCards(list,cls){return `<div class="grid3">${list.map((c,i)=>`<button class="icard ${cls||''}" data-i="${i}"><span class="pic">${c.e}</span><span class="lab">${c.w} ${spk(c.w)}</span><p>${c.t}</p></button>`).join('')}</div>`}
-function bindCards(root,list){root.querySelectorAll('.icard').forEach(b=>b.onclick=()=>{main.querySelectorAll('.icard').forEach(x=>x.classList.toggle('on',x===b));const c=list[b.dataset.i];say(c.w+'. '+c.t)})}
+function bindCards(root,list,cb){root.querySelectorAll('.icard').forEach(b=>b.onclick=()=>{selCard(b);const c=list[b.dataset.i];say(c.w+'. '+c.t);cb&&cb(+b.dataset.i)})}
 function feinde(){setTitle('Feinde','🦊');intro='Diese Tiere sind Feinde des Igels. Tippe auf ein Tier. Unten siehst du, wie sich der Igel schützt.';
  main.innerHTML=`<div id="en">${infoCards(ENEMIES)}</div>
  <div class="sect" style="margin-top:20px"><span class="dot" style="background:var(--sun)"></span>So schützt sich der Igel ${spk('So schützt sich der Igel')}</div>
- <div class="panel shield"><div class="actor" id="sh" style="position:relative;width:100%"><div class="full">${igel()}</div><div class="ball">${igelBall()}</div></div>
+ <div class="panel shield shieldp"><div class="actor" id="sh" style="position:relative;width:100%"><div class="full">${igel()}</div><div class="ball">${igelBall()}</div></div>
   <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start"><div class="info">${spk('Bei Gefahr rollt sich der Igel zu einer Kugel zusammen. Dann sieht man nur noch Stacheln.')}<div>Bei Gefahr rollt sich der Igel zu einer <b>Kugel</b> zusammen.</div></div>
   <button class="bigbtn" id="roll">${ICON.ball}<span>Einrollen</span></button></div></div>`;
- bindCards(document.getElementById('en'),ENEMIES);
+ const SHT='So schützt sich der Igel. Bei Gefahr rollt sich der Igel zu einer Kugel zusammen. Dann sieht man nur noch Stacheln. Tippe auf Einrollen.';
+ const enCards=[...document.querySelectorAll('#en .icard')],shp=document.querySelector('.shieldp');
+ const nav=stepNav(ENEMIES.length+1,i=>{if(i<ENEMIES.length){selCard(enCards[i]);say(ENEMIES[i].w+'. '+ENEMIES[i].t)}else{selCard(shp);say(SHT)}},'feinde');
+ bindCards(document.getElementById('en'),ENEMIES,i=>nav.set(i));
  const sh=document.getElementById('sh'),roll=document.getElementById('roll');
- roll.onclick=()=>{const r=sh.classList.toggle('rolled');roll.querySelector('span').textContent=r?'Ausrollen':'Einrollen';tone(r?'ok':'win');say(r?'Gefahr! Der Igel rollt sich ein. Jetzt sieht man nur noch Stacheln.':'Die Gefahr ist vorbei. Der Igel rollt sich wieder aus.')}}
+ roll.onclick=()=>{const r=sh.classList.toggle('rolled');roll.querySelector('span').textContent=r?'Ausrollen':'Einrollen';tone(r?'ok':'win');say(r?'Gefahr! Der Igel rollt sich ein. Jetzt sieht man nur noch Stacheln.':'Die Gefahr ist vorbei. Der Igel rollt sich wieder aus.');selCard(shp);nav.set(ENEMIES.length)}}
 
 /* ---------- Menschen ---------- */
 function mensch(){setTitle('Menschen','🚗');intro='Auch Menschen sind manchmal eine Gefahr für den Igel. Tippe auf ein Bild. Unten siehst du, wie du dem Igel helfen kannst.';
  main.innerHTML=`<div class="sect"><span class="dot" style="background:var(--no)"></span>Gefahr ${spk('Gefahr. Das ist gefährlich für den Igel.')}</div><div id="dg">${infoCards(DANGERS,'danger')}</div>
  <div class="sect" style="margin-top:20px"><span class="dot" style="background:var(--ok)"></span>So hilfst du ${spk('So hilfst du dem Igel.')}</div><div id="hp">${infoCards(HELP,'help')}</div>`;
- bindCards(document.getElementById('dg'),DANGERS);bindCards(document.getElementById('hp'),HELP)}
+ const ALL=[...DANGERS,...HELP],cards=[...main.querySelectorAll('.icard')];
+ const nav=stepNav(ALL.length,i=>{selCard(cards[i]);say((i===DANGERS.length?'So hilfst du dem Igel. ':'')+ALL[i].w+'. '+ALL[i].t)},'mensch');
+ bindCards(document.getElementById('dg'),DANGERS,i=>nav.set(i));bindCards(document.getElementById('hp'),HELP,i=>nav.set(DANGERS.length+i))}
 
 /* ---------- Kino ---------- */
 let filmRun=0;
@@ -432,7 +458,8 @@ function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über d
    rain:(e,n)=>{rain.forEach(r=>r.remove());rain=[];if(!e)return;for(let j=0;j<n;j++){const s=document.createElement('span');s.className='fall';s.textContent=e;s.style.cssText=`left:${(j*97)%100}%;font-size:${3+j%3}cqw;animation-duration:${5+j%4}s;animation-delay:-${j*.7}s`;stage.appendChild(s);rain.push(s)}},
    zzz:(x,t)=>{const z=document.createElement('span');z.className='zzz';z.textContent='Z z z';z.style.left=x+'%';z.style.top=t+'%';stage.appendChild(z);return z}};
   try{await FILMS[i].run(S);tone('win');cap.textContent='Ende. '+cap.textContent;stopB.hidden=true;again.hidden=false;mark('kino')}catch(e){}}
- main.querySelectorAll('.film').forEach(b=>b.onclick=()=>play(+b.dataset.i));
+ const nav=stepNav(FILMS.length,i=>play(i),'kino');
+ main.querySelectorAll('.film').forEach(b=>b.onclick=()=>{play(+b.dataset.i);nav.set(+b.dataset.i)});
  again.onclick=()=>play(cur);stopB.onclick=()=>{filmRun++;try{speechSynthesis.cancel()}catch(e){}stopB.hidden=true;again.hidden=false;cap.textContent='Gestoppt.'};
  stage.innerHTML=seasonScene('fruehling').replace(/^<div class="scene bg-fruehling">|<\/div>$/g,'');stage.className='scene bg-fruehling';
  cleanup=()=>{filmRun++}}
