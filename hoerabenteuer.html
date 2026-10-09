@@ -142,6 +142,19 @@ button:disabled{opacity:.4;cursor:default}
 .chip{display:inline-block;font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--line);color:var(--muted);margin-top:4px}
 .chip.ok{background:var(--good-soft);color:var(--good)}
 
+/* Code-Sperre */
+.pinpanel{align-items:center;text-align:center;max-width:380px}
+.pindots{display:flex;gap:14px;justify-content:center;min-height:24px}
+.pindots i{width:20px;height:20px;border-radius:50%;border:3px solid var(--accent)}
+.pindots i.on{background:var(--accent)}
+.pindots.shake{animation:shake .4s}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;justify-content:center}
+.keypad button{height:72px;border-radius:50%;background:var(--bg);font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+.keypad button:active{background:var(--accent-soft)}
+.pinmsg{min-height:1.4em;font-weight:700;color:var(--muted)}
+.pinmsg.err{color:var(--retry)}
+.panel input[type=text]{font:inherit;font-size:1rem;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+
 @media (max-width:520px){
   body{font-size:18px} h1{font-size:1.8rem} .qtext{font-size:1.3rem} .ans{font-size:1.15rem}
   .speed button{min-width:76px}
@@ -283,11 +296,32 @@ button:disabled{opacity:.4;cursor:default}
   </section>
 </div>
 
+<!-- CODE-SPERRE -->
+<div class="overlay" id="pinBox" hidden>
+  <div class="panel pinpanel" role="dialog" aria-label="Code eingeben">
+    <h2 id="pinTitle">Code eingeben</h2>
+    <p class="hint" id="pinHint"></p>
+    <div class="pindots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <p class="pinmsg" id="pinMsg" aria-live="polite"></p>
+    <div class="keypad" id="keypad"></div>
+    <div class="row" style="justify-content:center">
+      <button class="ghost" id="pinCancel">Abbrechen</button>
+      <button class="ghost" id="pinForgot">Code vergessen?</button>
+    </div>
+    <div id="pinReset" hidden style="display:flex;flex-direction:column;gap:10px;width:100%">
+      <p class="hint">Schreibe <b>Code vergessen</b> in das Feld. Danach kannst du einen neuen Code festlegen. Deine Aufnahmen bleiben erhalten.</p>
+      <input type="text" id="pinResetInput" autocomplete="off" autocapitalize="off">
+      <button class="btn small" id="pinResetBtn">Neuen Code festlegen</button>
+    </div>
+  </div>
+</div>
+
 <!-- EINSTELLUNGEN -->
 <div class="overlay" id="settings" hidden>
   <div class="panel" role="dialog" aria-label="Einstellungen">
     <h2>Einstellungen</h2>
-    <button class="btn primary" id="btnOpenRec">🎙️ Geschichten selbst einsprechen</button>
+    <button class="btn primary" id="btnOpenRec">🔒 Geschichten selbst einsprechen</button>
+    <button class="ghost" id="btnChangePin" style="align-self:flex-start">Code ändern</button>
     <div>
       <p style="font-weight:700;margin-bottom:6px">Stimme</p>
       <select id="voiceSel"></select>
@@ -896,7 +930,58 @@ $("btnTestVoice").onclick = () => sayLines(["Hallo! So klinge ich. Hör gut zu!"
 [["optGaps","gaps"],["optAutoRead","autoRead"],["optRelisten","relisten"],["optSounds","sounds"],["optSpoken","spokenFeedback"]]
   .forEach(([id, k]) => $(id).onchange = e => { store[k] = e.target.checked; save(); });
 $("btnReset").onclick = () => { store.best = {}; save(); buildGrid(); $("resetHint").hidden = false; };
-$("btnOpenRec").onclick = openRecList;
+/* ---------- Code-Sperre ---------- */
+const pin = { mode:"enter", entry:"", first:"", onOk:null };
+function pinRender(){
+  [...$("pinDots").children].forEach((d, i) => d.className = i < pin.entry.length ? "on" : "");
+}
+function pinOpen(mode, onOk){
+  Object.assign(pin, {mode, entry:"", first:"", onOk});
+  $("pinTitle").textContent = mode === "enter" ? "Code eingeben" : "Neuen Code festlegen";
+  $("pinHint").textContent = mode === "enter" ? "Dieser Bereich ist für Lehrkräfte." : "Wähle 4 Ziffern, die Jakob nicht kennt. Du brauchst den Code, um Aufnahmen zu machen oder zu ändern.";
+  $("pinMsg").textContent = ""; $("pinMsg").className = "pinmsg";
+  $("pinForgot").hidden = mode !== "enter";
+  $("pinReset").hidden = true; $("pinResetInput").value = "";
+  $("settings").hidden = true; $("pinBox").hidden = false; pinRender();
+}
+function pinMsg(t, err){ $("pinMsg").textContent = t; $("pinMsg").className = "pinmsg" + (err ? " err" : ""); }
+function pinWrong(t){
+  pinMsg(t, true); pin.entry = "";
+  $("pinDots").classList.remove("shake"); void $("pinDots").offsetWidth; $("pinDots").classList.add("shake");
+  setTimeout(pinRender, 350);
+}
+function pinDone(){
+  if (pin.mode === "enter"){
+    if (pin.entry === store.pin){ $("pinBox").hidden = true; pin.onOk && pin.onOk(); }
+    else pinWrong("Falscher Code. Versuch es nochmal.");
+    return;
+  }
+  if (!pin.first){ pin.first = pin.entry; pin.entry = ""; pinRender(); $("pinTitle").textContent = "Code wiederholen"; pinMsg("Gib denselben Code noch einmal ein."); return; }
+  if (pin.entry !== pin.first){ pin.first = ""; $("pinTitle").textContent = "Neuen Code festlegen"; pinWrong("Die Codes waren verschieden. Bitte neu beginnen."); return; }
+  store.pin = pin.entry; save();
+  $("pinBox").hidden = true; pin.onOk && pin.onOk();
+}
+function pinKey(k){
+  if (k === "⌫"){ pin.entry = pin.entry.slice(0, -1); pinRender(); return; }
+  if (pin.entry.length >= 4) return;
+  pin.entry += k; pinRender();
+  if (pin.entry.length === 4) setTimeout(pinDone, 150);
+}
+["1","2","3","4","5","6","7","8","9","","0","⌫"].forEach(k => {
+  const b = document.createElement("button");
+  if (!k){ b.disabled = true; b.style.visibility = "hidden"; }
+  b.textContent = k; b.setAttribute("aria-label", k === "⌫" ? "Löschen" : k);
+  b.onclick = () => pinKey(k); $("keypad").appendChild(b);
+});
+$("pinCancel").onclick = () => { $("pinBox").hidden = true; };
+$("pinForgot").onclick = () => { $("pinReset").hidden = false; $("pinResetInput").focus(); };
+$("pinResetBtn").onclick = () => {
+  if ($("pinResetInput").value.trim().toLowerCase() === "code vergessen") pinOpen("set", pin.onOk);
+  else pinMsg("Bitte genau „Code vergessen“ schreiben.", true);
+};
+function lockedRecList(){ pinOpen(store.pin ? "enter" : "set", openRecList); }
+$("btnOpenRec").onclick = lockedRecList;
+$("btnChangePin").onclick = () => store.pin ? pinOpen("enter", () => pinOpen("set", openSettings)) : pinOpen("set", openSettings);
 
 /* ---------- Verknüpfungen ---------- */
 document.querySelectorAll("[data-home]").forEach(b => b.onclick = home);
