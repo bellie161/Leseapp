@@ -391,7 +391,7 @@ const FILMS=[
    ig.classList.add('flip','walk');S.move(ig,18,3000);await S.wait(3100);ig.classList.remove('walk');
    await S.say('Er schnuppert mit seiner Nase. Er hört etwas im Laub.');
    const k=S.deco('🪲',60,10,7);await S.say('Da! Ein Käfer!');ig.classList.add('walk');S.move(ig,36,1800);await S.wait(1900);ig.classList.remove('walk');k.remove();S.pop(ig,'Mampf!');
-   await S.say('Mmmh, lecker. Der Igel frisst den Käfer.');const w=S.deco('🪱',78,10,7);ig.classList.add('walk');S.move(ig,55,2200);await S.wait(2300);ig.classList.remove('walk');w.remove();S.pop(ig,'Mampf!');
+   await S.say('Mmmh, lecker. Der Igel frisst den Käfer.','Mjam, mjam, lecker! Der Igel frisst den Käfer.');const w=S.deco('🪱',78,10,7);ig.classList.add('walk');S.move(ig,55,2200);await S.wait(2300);ig.classList.remove('walk');w.remove();S.pop(ig,'Mampf!');
    await S.say('Der Igel frisst Käfer, Würmer und Schnecken. Er sucht die ganze Nacht nach Futter.')}},
  {k:'gefahr',e:'🦊',w:'Gefahr! Der Fuchs kommt',run:async S=>{S.bg('abend');S.deco('🌳',2,20,18);
    const ig=S.igel(20,12,30,true);await S.say('Pieks ist unterwegs.');const f=S.deco('🦊',110,10,16);f.style.transition='left 2.5s linear';
@@ -403,7 +403,7 @@ const FILMS=[
    const ig=S.igel(15,10,30);await S.say('Es ist Herbst. Pieks frisst ganz viel.');ig.style.transform='scale(1.15)';await S.say('Er wird dick und rund. Das braucht er für den Winter.');
    const pile=S.deco('🍂🍂🍂',52,4,30);pile.style.letterSpacing='-7cqw';pile.style.zIndex=3;await S.say('Er baut sich ein Nest aus Laub.');
    ig.classList.add('flip','walk');S.move(ig,52,2500);await S.wait(2600);ig.classList.remove('walk');ig.style.opacity=.15;
-   S.bg('winter');S.rain('❄️',14);const z=S.zzz(70,45);await S.say('Jetzt ist Winter. Der Igel hält Winterschlaf. Psst!');await S.say('Er schläft viele Wochen. Er frisst nichts.');
+   S.bg('winter');S.rain('❄️',14);const z=S.zzz(70,45);await S.say('Jetzt ist Winter. Der Igel hält Winterschlaf. Psst!','Jetzt ist Winter. Der Igel hält Winterschlaf. Ganz leise!');await S.say('Er schläft viele Wochen. Er frisst nichts.');
    z.remove();S.rain(null);S.bg('fruehling');S.deco('🌷',8,8,8);S.deco('🌷',85,8,8);await S.wait(600);ig.style.opacity=1;ig.style.transform='scale(.92)';
    await S.say('Es ist Frühling. Pieks wacht auf. Er ist dünn und hat großen Hunger.')}},
  {k:'hilfe',e:'🧒',w:'Wir helfen dem Igel',run:async S=>{S.bg('garten');S.deco('🏡',2,30,16);
@@ -427,7 +427,7 @@ function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über d
    igel:(x,b,w,ball)=>ball?add(`<div class="full">${igel()}</div><div class="ball">${igelBall()}</div>`,x,b,w):add(igel(),x,b,w),
    move:(el,x,ms)=>{el.style.transition=`left ${ms}ms linear,opacity 1s,transform 1s`;el.style.left=x+'%'},
    wait:async ms=>{await new Promise(r=>setTimeout(r,ms));chk()},
-   say:async t=>{chk();cap.textContent=t;await say(t);chk();await new Promise(r=>setTimeout(r,350));chk()},
+   say:async(t,sp)=>{chk();cap.textContent=t;await say(sp||t);chk();await new Promise(r=>setTimeout(r,350));chk()},
    pop:(el,t)=>{const b=document.createElement('div');b.className='say-bub';b.textContent=t;b.style.left=el.style.left;b.style.bottom=(parseFloat(el.style.bottom)+parseFloat(el.style.width)*.9)+'%';stage.appendChild(b);setTimeout(()=>b.remove(),1600)},
    rain:(e,n)=>{rain.forEach(r=>r.remove());rain=[];if(!e)return;for(let j=0;j<n;j++){const s=document.createElement('span');s.className='fall';s.textContent=e;s.style.cssText=`left:${(j*97)%100}%;font-size:${3+j%3}cqw;animation-duration:${5+j%4}s;animation-delay:-${j*.7}s`;stage.appendChild(s);rain.push(s)}},
    zzz:(x,t)=>{const z=document.createElement('span');z.className='zzz';z.textContent='Z z z';z.style.left=x+'%';z.style.top=t+'%';stage.appendChild(z);return z}};
