@@ -216,7 +216,7 @@ let voice=null;
 function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));voice=vs.find(v=>/Anna|Helena|Petra|Marlene|Google Deutsch/i.test(v.name))||vs[0]||null}catch(e){}}
 try{speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}catch(e){}
 function say(t){return new Promise(res=>{try{
-  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=.88;u.pitch=1.05;
+  speechSynthesis.cancel();t=t.replace(/Laubhaufen/g,'Laub-Haufen').replace(/Laubnest|Laub-Nest/g,'Laub-Nest');const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=.88;u.pitch=1.05;
   let done=false;const fin=()=>{if(!done){done=true;res()}};u.onend=fin;u.onerror=fin;setTimeout(fin,1200+t.length*95);
   speechSynthesis.speak(u)}catch(e){res()}})}
 let actx=null;
