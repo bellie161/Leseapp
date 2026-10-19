@@ -18,6 +18,7 @@
   color-scheme:light;
 }
 html,body{height:100%}
+html{touch-action:manipulation}
 body{background:var(--meadow);color:var(--ink);font-family:var(--font);font-size:20px;line-height:1.35;padding-inline:16px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
 button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
@@ -150,6 +151,7 @@ header h1{flex:1;margin:0;font-size:clamp(26px,4vw,38px);display:flex;align-item
 
 /* Weiter-Leiste */
 .stepnav{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(230,238,214,0),var(--meadow) 35%);z-index:4;margin-top:8px}
+.stepnav{pointer-events:none}.stepnav>*{pointer-events:auto}
 .stepnav .back{background:var(--card);box-shadow:0 4px 0 var(--meadow2)}
 .shieldp.on{box-shadow:0 0 0 5px var(--sun)}
 /* Test */
@@ -220,12 +222,29 @@ const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math
 let voice=null;
 function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));voice=vs.find(v=>/Anna|Helena|Petra|Marlene|Google Deutsch/i.test(v.name))||vs[0]||null}catch(e){}}
 try{speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}catch(e){}
-function say(t){return new Promise(res=>{try{
-  speechSynthesis.cancel();t=t.replace(/Laubhaufen/g,'Laub-Haufen').replace(/Laubnest|Laub-Nest/g,'Laub-Nest');const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=.88;u.pitch=1.05;
-  let done=false;const fin=()=>{if(!done){done=true;res()}};u.onend=fin;u.onerror=fin;setTimeout(fin,1200+t.length*95);
-  speechSynthesis.speak(u)}catch(e){res()}})}
+let curU=null,sayTimer=null,saySeq=0;
+const SS=()=>window.speechSynthesis;
+function say(t){return new Promise(res=>{
+  const my=++saySeq;let done=false;const fin=()=>{if(!done){done=true;res()}};
+  try{
+    const ss=SS();if(!ss){fin();return}
+    t=t.replace(/Laubhaufen/g,'Laub-Haufen');
+    const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=.88;u.pitch=1.05;
+    u.onend=fin;u.onerror=fin;curU=u;
+    setTimeout(fin,1500+t.length*95);
+    clearTimeout(sayTimer);
+    const busy=ss.speaking||ss.pending;
+    if(busy)ss.cancel();
+    if(ss.paused)ss.resume();
+    const go=()=>{if(my!==saySeq){fin();return}try{ss.speak(u)}catch(e){fin()}};
+    if(busy)sayTimer=setTimeout(go,150);else go();
+  }catch(e){fin()}})}
+function hush(){saySeq++;clearTimeout(sayTimer);try{SS().cancel()}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hush()});
+window.addEventListener('pageshow',()=>{try{SS().cancel();SS().resume()}catch(e){}});
 let actx=null;
-function tone(kind){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const now=actx.currentTime;
+let actxT=null;
+function tone(kind){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state!=='running')actx.resume();clearTimeout(actxT);actxT=setTimeout(()=>{try{actx.suspend()}catch(e){}},900);const now=actx.currentTime;
   const notes=kind==='ok'?[660,880,1175]:kind==='win'?[523,659,784,1046]:[220,180];
   notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=kind==='no'?'triangle':'sine';o.frequency.value=f;
    g.gain.setValueAtTime(0,now+i*.11);g.gain.linearRampToValueAtTime(.18,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.001,now+i*.11+.3);
@@ -303,7 +322,7 @@ let visited={};try{visited=JSON.parse(localStorage.getItem('igel-visited')||'{}'
 function mark(k){visited[k]=1;try{localStorage.setItem('igel-visited',JSON.stringify(visited))}catch(e){}}
 earBtn.onclick=()=>say(intro);homeBtn.onclick=()=>go('home');
 const SCREENS={home,koerper,futter,jahreszeiten,feinde,mensch,kino,test};
-function go(k,silent){if(cleanup){cleanup();cleanup=null}try{speechSynthesis.cancel()}catch(e){}
+function go(k,silent){if(cleanup){cleanup();cleanup=null}hush();
  homeBtn.hidden=k==='home';main.innerHTML='';window.scrollTo(0,0);SCREENS[k]();if(k!=='home')mark(k);if(!silent&&intro)say(intro)}
 const ORDER=['koerper','futter','jahreszeiten','feinde','mensch','kino','test'];
 function stepNav(count,show,key){let i=-1;const nx=ORDER[ORDER.indexOf(key)+1],m=MENU.find(x=>x[0]===nx);
@@ -444,7 +463,7 @@ function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über d
  <div class="panel" style="margin-top:14px"><div class="scene bg-nacht" id="stage"></div><div class="caption" id="cap">Tippe oben auf einen Film.</div>
  <div class="center"><button class="bigbtn" id="again" hidden>${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="stopB" hidden>${ICON.stop}<span>Stopp</span></button></div></div>`;
  const stage=document.getElementById('stage'),cap=document.getElementById('cap'),again=document.getElementById('again'),stopB=document.getElementById('stopB');let cur=null;
- async function play(i){const id=++filmRun;cur=i;try{speechSynthesis.cancel()}catch(e){}stage.innerHTML='';stage.className='scene';again.hidden=true;stopB.hidden=false;
+ async function play(i){const id=++filmRun;cur=i;hush();stage.innerHTML='';stage.className='scene';again.hidden=true;stopB.hidden=false;
   main.querySelectorAll('.film').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.i===i));
   const chk=()=>{if(id!==filmRun)throw 'stop'};let rain=[];
   const add=(html,x,b,w,cls='')=>{const d=document.createElement('div');d.className='actor '+cls;d.style.cssText=`left:${x}%;bottom:${b}%;width:${w}%;font-size:${w*.85}cqw`;d.innerHTML=html;stage.appendChild(d);return d};
@@ -460,7 +479,7 @@ function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über d
   try{await FILMS[i].run(S);tone('win');cap.textContent='Ende. '+cap.textContent;stopB.hidden=true;again.hidden=false;mark('kino')}catch(e){}}
  const nav=stepNav(FILMS.length,i=>play(i),'kino');
  main.querySelectorAll('.film').forEach(b=>b.onclick=()=>{play(+b.dataset.i);nav.set(+b.dataset.i)});
- again.onclick=()=>play(cur);stopB.onclick=()=>{filmRun++;try{speechSynthesis.cancel()}catch(e){}stopB.hidden=true;again.hidden=false;cap.textContent='Gestoppt.'};
+ again.onclick=()=>play(cur);stopB.onclick=()=>{filmRun++;hush();stopB.hidden=true;again.hidden=false;cap.textContent='Gestoppt.'};
  stage.innerHTML=seasonScene('fruehling').replace(/^<div class="scene bg-fruehling">|<\/div>$/g,'');stage.className='scene bg-fruehling';
  cleanup=()=>{filmRun++}}
 
