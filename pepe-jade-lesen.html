@@ -286,8 +286,10 @@ const clean=t=>t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{200D}\u{FE0F}]
 function say(t,cb){
   if(!("speechSynthesis" in window)){if(cb)cb();return;}
   speechSynthesis.cancel();
-  // Aussprache: „Jade“ englisch (dʒeɪd) – deutsche Stimme liest die Lautschrift „Dschejd“
-  const spoken=clean(t).replace(/\bJade\b/g,"Dschejd");
+  // Aussprache englisch: Jade (dʒeɪd), Labradoodle (ˈlæbrəduːdl), Border Collie (ˈbɔːdə ˈkɒli) – deutsche Stimme liest eine Lautschrift
+  const spoken=clean(t).replace(/\bJade\b/g,"Dschejd")
+    .replace(/\bLabradoodles\b/g,"Läbradudels").replace(/\bLabradoodle\b/g,"Läbradudel")
+    .replace(/\bBorder Collies\b/gi,"Boorder Kollis").replace(/\bBorder ?Collie\b/gi,"Boorder Kolli");
   const u=new SpeechSynthesisUtterance(spoken);u.lang="de-DE";if(voice)u.voice=voice;u.rate=0.9;
   if(cb)u.onend=cb;speechSynthesis.speak(u);
 }
