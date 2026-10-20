@@ -280,30 +280,21 @@ const FEEL=[
 
 /* ---------- Sprache ---------- */
 let voice=null;
-let enVoice=null;
-function pickVoice(){const all=speechSynthesis.getVoices();const v=all.filter(x=>x.lang&&x.lang.toLowerCase().startsWith("de"));voice=v.find(x=>/Anna|Petra|Helena|Marlene|Google/i.test(x.name))||v[0]||null;
-  const e=all.filter(x=>x.lang&&/^en[-_]gb/i.test(x.lang)).concat(all.filter(x=>x.lang&&/^en/i.test(x.lang)));
-  enVoice=e.find(x=>/Daniel|Kate|Serena|Arthur|Martha|Samantha|Google UK/i.test(x.name))||e[0]||null;}
+function pickVoice(){const v=speechSynthesis.getVoices().filter(x=>x.lang&&x.lang.toLowerCase().startsWith("de"));voice=v.find(x=>/Anna|Petra|Helena|Marlene|Google/i.test(x.name))||v[0]||null;}
 if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
 const clean=t=>t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{200D}\u{FE0F}]/gu,"").replace(/\s+/g," ").trim();
-// Aussprache: Die Rassenamen spricht eine echte englische Stimme (auf dem iPad vorhanden).
-// Gibt es keine englische Stimme, liest die deutsche Stimme eine Lautschrift.
-// „Jade“ liest die deutsche Stimme als „Dschejd“.
-const EN_RE=/(Labradoodles?|Border ?Collies?)/i;
-const EN_FALLBACK=w=>w.replace(/Labradoodles/i,"Läbradudels").replace(/Labradoodle/i,"Läbradudel").replace(/Border ?Collies/i,"Boorder Kollis").replace(/Border ?Collie/i,"Boorder Kolli");
+// Aussprache (von Frau Klößner-Wollscheid am iPad ausgewählt): alles mit der deutschen Stimme,
+// englische Namen als Lautschrift: Jade → „Dschejd“, Labradoodle → „Labraduudel“, Border Collie → „Bordercolli“.
+function speakable(t){
+  return clean(t).replace(/\bJade\b/g,"Dschejd")
+    .replace(/\bLabradoodles\b/gi,"Labraduudels").replace(/\bLabradoodle\b/gi,"Labraduudel")
+    .replace(/\bBorder ?Collies\b/gi,"Bordercollis").replace(/\bBorder ?Collie\b/gi,"Bordercolli");
+}
 function say(t,cb){
   if(!("speechSynthesis" in window)){if(cb)cb();return;}
   speechSynthesis.cancel();
-  const parts=clean(t).replace(/\bJade\b/g,"Dschejd").split(EN_RE).filter(x=>x&&x.trim());
-  if(!parts.length){if(cb)cb();return;}
-  parts.forEach((x,k)=>{
-    const isEn=EN_RE.test(x)&&x.trim().length<16;
-    let u;
-    if(isEn&&enVoice){u=new SpeechSynthesisUtterance(x.replace(/BorderCollie/i,"Border Collie"));u.lang=enVoice.lang;u.voice=enVoice;u.rate=0.85;}
-    else{u=new SpeechSynthesisUtterance(isEn?EN_FALLBACK(x):x);u.lang="de-DE";if(voice)u.voice=voice;u.rate=0.9;}
-    if(k===parts.length-1&&cb)u.onend=cb;
-    speechSynthesis.speak(u);
-  });
+  const u=new SpeechSynthesisUtterance(speakable(t));u.lang="de-DE";if(voice)u.voice=voice;u.rate=0.9;
+  if(cb)u.onend=cb;speechSynthesis.speak(u);
 }
 function talk(t,cb){if(autoSpeak)say(t,cb);else if(cb)cb();}
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
