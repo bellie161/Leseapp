@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notenglockenspiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&family=Noto+Music&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+/* Layout: Notenheft-Karte oben, echtes Glockenspiel unten (tief links, hoch rechts) */
+:root{
+  --bg:#e9eef6; --surface:#ffffff; --ink:#1c2333; --muted:#5d6880; --line:#2a3245;
+  --accent:#2c4aa8; --frame:#3a2f2a; --frame2:#5a473d; --ok:#1f9a55; --bad:#d23b3b;
+  --display:"Baloo 2","Andika",system-ui,sans-serif;
+  --body:"Andika","Trebuchet MS",system-ui,sans-serif;
+  --music:"Noto Music","Bravura","Segoe UI Symbol",serif;
+  /* Boomwhacker-Farben */
+  --wagon:#eef2f9; --v4:#3b6fd8; --v2:#8a5cd6; --v1:#e0730f; --v05:#13a39a;
+  --C:#e3262b; --D:#f5821f; --E:#ffd800; --F:#8dc63f; --G:#00a160; --A:#6b4c9e; --H:#e2007d;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121621; --surface:#1d2333; --ink:#eef1f8; --muted:#a3adc4; --line:#d7dcea;
+  --accent:#8fa8ff; --frame:#2a211d; --frame2:#46372f; --ok:#4cd38a; --bad:#ff6b6b; --wagon:#283048; --v4:#7ea3ff; --v2:#b994ff; --v1:#ffa24d; --v05:#3fd6c9; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121621; --surface:#1d2333; --ink:#eef1f8; --muted:#a3adc4; --line:#d7dcea;
+  --accent:#8fa8ff; --frame:#2a211d; --frame2:#46372f; --ok:#4cd38a; --bad:#ff6b6b; --wagon:#283048; --v4:#7ea3ff; --v2:#b994ff; --v1:#ffa24d; --v05:#3fd6c9; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.app{max-width:900px;margin:0 auto;padding-block:14px 24px;display:flex;flex-direction:column;gap:16px;min-height:100%;box-sizing:border-box}
+h1,h2{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+h1{font-size:clamp(30px,6vw,46px);font-weight:800}
+h2{font-size:24px;font-weight:700}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.muted{color:var(--muted)}
+
+/* Start */
+.hero{display:flex;flex-direction:column;gap:6px}
+.hero p{margin:0;max-width:60ch}
+.levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.lv{background:var(--surface);border:2px solid transparent;border-radius:16px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.lv:active{transform:translateY(2px)}
+.lv .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lv .nr{font-family:var(--display);font-weight:800;font-size:20px}
+.lv .stars{font-size:18px;letter-spacing:2px;color:#f2b705}
+.lv .stars .off{color:var(--muted);opacity:.35}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{min-width:30px;padding:2px 7px;border-radius:999px;font-weight:700;font-size:16px;text-align:center;box-sizing:border-box}
+.chip.new{outline:2px solid var(--ink);outline-offset:1px}
+.lv.free{background:transparent;border:2px dashed var(--muted);box-shadow:none}
+.opts{display:flex;flex-wrap:wrap;gap:10px 20px;background:var(--surface);border-radius:16px;padding:12px 16px}
+.opts label{display:flex;align-items:center;gap:8px;font-size:17px}
+.opts input{width:22px;height:22px;accent-color:var(--accent)}
+.src{font-size:14px}
+
+/* Spiel */
+.bar-top{display:flex;align-items:center;gap:12px}
+.back{background:var(--surface);border:0;border-radius:12px;padding:8px 14px;font-weight:700}
+.bar-top .title{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog{display:flex;gap:5px}
+.prog i{width:11px;height:11px;border-radius:50%;background:var(--muted);opacity:.3}
+.prog i.ok{background:var(--ok);opacity:1}
+.prog i.half{background:#f2b705;opacity:1}
+.prog i.now{opacity:1;background:var(--accent);transform:scale(1.25)}
+.card{background:var(--surface);border-radius:22px;padding:10px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 0 rgba(0,0,0,.08);position:relative}
+.staff{width:100%;max-width:460px;height:auto;display:block}
+.staff .ln{stroke:var(--line);stroke-width:1.6}
+.staff .ink{fill:var(--ink);stroke:var(--ink)}
+.staff .clef{fill:var(--ink);font-family:var(--music)}
+.msg{min-height:30px;font-size:20px;font-weight:700;text-align:center}
+.msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+.ask{font-size:17px;color:var(--muted);text-align:center}
+.notepop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* Glockenspiel */
+.gs{background:linear-gradient(180deg,var(--frame2),var(--frame));border-radius:20px;padding:22px 12px 14px;position:relative;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.gs::before,.gs::after{content:"";position:absolute;left:14px;right:14px;height:6px;border-radius:3px;background:rgba(255,255,255,.12)}
+.gs::before{top:34%} .gs::after{top:72%}
+.bars{display:flex;align-items:center;justify-content:center;gap:clamp(4px,1.2vw,10px);height:clamp(190px,34vh,290px);position:relative;z-index:1}
+.kb{flex:1;max-width:72px;border:0;border-radius:10px;position:relative;display:flex;align-items:flex-end;justify-content:center;padding:0 0 30px;
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 4px 0 rgba(255,255,255,.35),0 3px 0 rgba(0,0,0,.35);transition:transform .08s}
+.kb::before,.kb::after{content:"";position:absolute;left:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:#d9d9d9;box-shadow:inset 0 -2px 0 #888}
+.kb::before{top:10px} .kb::after{bottom:10px}
+.kb .nm{font-family:var(--display);font-weight:800;font-size:clamp(16px,3.6vw,24px);line-height:1}
+.kb.hidename .nm{visibility:hidden}
+.kb:active,.kb.hit{transform:translateY(3px) scale(.98)}
+.kb.wrong{animation:shake .35s}
+.kb.hint{animation:glow 1s ease-in-out infinite}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes glow{50%{box-shadow:0 0 0 5px #fff,0 0 22px 8px rgba(255,255,255,.8)}}
+
+/* Overlays */
+.ov{position:fixed;inset:0;background:rgba(10,14,24,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.box{background:var(--surface);border-radius:24px;padding:22px;max-width:420px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.big{font-family:var(--display);font-weight:800;font-size:60px;line-height:1}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:14px;padding:12px 22px;font-weight:700;font-size:19px}
+:root[data-theme="dark"] .btn{color:#10162a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#10162a}}
+.btn.sec{background:transparent;color:var(--ink);border:2px solid var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.bigstars{font-size:46px;letter-spacing:6px;color:#f2b705}
+.bigstars .off{color:var(--muted);opacity:.3}
+
+/* Notenlängen */
+.lamps{display:flex;gap:10px;justify-content:center;margin:6px 0}
+.lamp{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font:800 18px var(--display);background:var(--wagon);color:var(--muted);transition:transform .08s}
+.lamp.on{background:var(--accent);color:var(--surface);transform:scale(1.15)}
+.lamps.pre .lamp.on{background:var(--muted)}
+.vlist{display:flex;flex-direction:column;gap:10px}
+.vrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px;border-radius:14px;background:var(--wagon)}
+.vt{min-width:0;display:flex;flex-direction:column;gap:5px;font-size:16px}
+.vn{font-family:var(--display);font-weight:800;font-size:21px}
+.vb{font-weight:700;font-size:15px}
+.lbar{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:260px}
+.seg{height:16px;border-radius:5px;position:relative;overflow:hidden}
+.seg.empty{background:transparent;border:2px dashed var(--muted);opacity:.5;box-sizing:border-box}
+.seg i{position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--wagon)}
+.play{background:var(--accent);color:var(--surface);border:0;border-radius:14px;padding:10px 12px;font-size:22px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.play span{font-size:13px;font-weight:700}
+.rq{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;min-height:150px;justify-content:center}
+.train{width:100%;max-width:520px;height:auto}
+.answers{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:10px}
+@media (max-width:520px){.answers.four{grid-template-columns:repeat(2,1fr)}}
+.ab{background:var(--surface);border:3px solid transparent;border-radius:18px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 0 rgba(0,0,0,.08);font-size:16px;font-weight:700}
+.ab.num b{font-family:var(--display);font-size:46px;line-height:1}
+.ab.right{border-color:var(--ok)}
+.ab.wrong{border-color:var(--bad);animation:shake .35s}
+.ab:disabled{opacity:.45}
+@media (max-width:480px){.vrow{grid-template-columns:auto 1fr}.vrow .play{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:8px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ---------- Daten ----------
+const NOTES = {
+  "c1":{name:"c’",  step:-2, f:261.63, col:"C", dark:false},
+  "d1":{name:"d’",  step:-1, f:293.66, col:"D", dark:true},
+  "e1":{name:"e’",  step:0,  f:329.63, col:"E", dark:true},
+  "f1":{name:"f’",  step:1,  f:349.23, col:"F", dark:true},
+  "g1":{name:"g’",  step:2,  f:392.00, col:"G", dark:false},
+  "a1":{name:"a’",  step:3,  f:440.00, col:"A", dark:false},
+  "h1":{name:"h’",  step:4,  f:493.88, col:"H", dark:false},
+  "c2":{name:"c’’", step:5,  f:523.25, col:"C", dark:false},
+  "d2":{name:"d’’", step:6,  f:587.33, col:"D", dark:true},
+};
+const BAR_ORDER = ["c1","d1","e1","f1","g1","a1","h1","c2","d2"];
+// Reihenfolge nach „Jede Menge Flötentöne! 1“ (Sopranblockflöte, B. Ertl)
+const NEW_PER_LEVEL = [["a1","c2"],["d2"],["g1"],["h1"],["e1"],["d1"],["c1"],["f1"]];
+const LEVELS = NEW_PER_LEVEL.map((nw,i)=>({nr:i+1, nw, pool:NEW_PER_LEVEL.slice(0,i+1).flat()}));
+const ROUND = 10;
+
+// ---------- Speicher ----------
+const store = {
+  get(k,d){try{const v=localStorage.getItem("ngs_"+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("ngs_"+k,JSON.stringify(v))}catch(e){}}
+};
+let opts = store.get("opts",{colorHeads:true, names:true});
+let stars = store.get("stars",{});
+
+// ---------- Klang (Web Audio) ----------
+let ac=null;
+function audio(){ if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)()} if(ac.state==="suspended")ac.resume(); return ac}
+function ding(freq){
+  const c=audio(), t=c.currentTime, f=freq*2; // Glockenspiel klingt höher als notiert
+  const out=c.createGain(); out.gain.value=.5; out.connect(c.destination);
+  [[1,1,1.6],[2.76,.35,.5],[5.4,.15,.25],[8.9,.06,.12]].forEach(([m,a,d])=>{
+    const o=c.createOscillator(), g=c.createGain();
+    o.type="sine"; o.frequency.value=f*m;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(a,t+.004);
+    g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t+d+.05);
+  });
+}
+function fanfare(){ [523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>ding(f/2),i*130)) }
+
+// ---------- Notensystem ----------
+const GAP=16, BOTTOM=130, NX=200;
+// Violinschlüssel unabhängig von der Schrift passend in das System einpassen
+function fitClefs(){
+  document.querySelectorAll("text.clef").forEach(t=>{
+    try{
+      t.removeAttribute("transform");
+      const b=t.getBBox(); if(!b.height) return;
+      const top=BOTTOM-4*GAP-GAP*1.25, bot=BOTTOM+GAP*1.6, x0=14;
+      const sc=(bot-top)/b.height;
+      t.setAttribute("transform",`translate(${x0-b.x*sc} ${top-b.y*sc}) scale(${sc})`);
+    }catch(e){}
+  });
+}
+new MutationObserver(()=>fitClefs()).observe(document.body,{childList:true,subtree:true});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitClefs);
+function staffSVG(key, opt={}){
+  const lines=[0,1,2,3,4].map(i=>`<line class="ln" x1="10" x2="310" y1="${BOTTOM-i*GAP}" y2="${BOTTOM-i*GAP}"/>`).join("");
+  let note="";
+  if(key){
+    const n=NOTES[key], y=BOTTOM-n.step*GAP/2;
+    const fill = opt.color ? `var(--${n.col})` : "var(--ink)";
+    let ledger = n.step<=-2 ? `<line class="ln" x1="${NX-18}" x2="${NX+18}" y1="${BOTTOM+GAP}" y2="${BOTTOM+GAP}" style="stroke-width:2"/>` : "";
+    const up = n.step<4;
+    const sx = up? NX+8.6 : NX-8.6;
+    const stem = `<line x1="${sx}" x2="${sx}" y1="${y + (up?-2:2)}" y2="${y+(up?-56:56)}" style="stroke:var(--ink);stroke-width:2.2"/>`;
+    const head = `<ellipse cx="${NX}" cy="${y}" rx="10" ry="7" transform="rotate(-22 ${NX} ${y})" style="fill:${fill};stroke:var(--ink);stroke-width:${opt.color?2:1}"/>`;
+    note = `<g class="${opt.pop?"notepop":""}" style="transform-origin:${NX}px ${y}px">${ledger}${stem}${head}</g>`;
+    if(opt.label){
+      note += `<text x="${NX+34}" y="${y+7}" style="font:800 22px var(--display);fill:var(--${n.col});stroke:var(--surface);stroke-width:4;paint-order:stroke">${n.name}</text>`;
+    }
+  }
+  return `<svg class="staff" viewBox="0 0 320 196" role="img" aria-label="Notenzeile${key?" mit einer Note":""}">
+    ${lines}
+    <text class="clef" x="0" y="0" font-size="60">&#x1D11E;</text>
+    ${note}
+  </svg>`;
+}
+
+// ---------- Glockenspiel ----------
+function glockenspielHTML(){
+  return `<div class="gs"><div class="bars">${BAR_ORDER.map((k,i)=>{
+    const n=NOTES[k], h=100-i*4.6;
+    return `<button class="kb${opts.names?"":" hidename"}" data-k="${k}" aria-label="Klangstab ${n.name}"
+      style="height:${h}%;background:linear-gradient(90deg,rgba(255,255,255,.25),rgba(255,255,255,0) 40%,rgba(0,0,0,.12)),var(--${n.col});color:${n.dark?"#2a2100":"#fff"}">
+      <span class="nm">${n.name}</span></button>`}).join("")}</div></div>`;
+}
+function wireBars(handler){
+  document.querySelectorAll(".kb").forEach(b=>{
+    b.addEventListener("pointerdown",e=>{e.preventDefault();
+      b.classList.remove("hit"); void b.offsetWidth; b.classList.add("hit");
+      setTimeout(()=>b.classList.remove("hit"),120);
+      handler(b.dataset.k,b);
+    });
+  });
+}
+const bar = k=>document.querySelector(`.kb[data-k="${k}"]`);
+
+// ---------- Startseite ----------
+const app=document.getElementById("app");
+function chips(pool,nw){return pool.map(k=>{const n=NOTES[k];
+  return `<span class="chip${nw.includes(k)?" new":""}" style="background:var(--${n.col});color:${n.dark?"#2a2100":"#fff"}">${n.name}</span>`}).join("")}
+function starStr(s){return [1,2,3].map(i=>i<=s?"★":`<span class="off">★</span>`).join("")}
+
+function home(){
+  app.innerHTML=`
+  <div class="hero">
+    <h1>Notenglockenspiel</h1>
+    <p>Schau dir die Note an und spiele den passenden Klangstab. Jede Lektion bringt einen neuen Ton dazu. Bei den Notenlängen lernst du, wie lange ein Ton klingt.</p>
+  </div>
+  <h2>Tonhöhen</h2>
+  <div class="levels">
+    ${LEVELS.map(l=>`<button class="lv" data-l="${l.nr}">
+      <div class="top"><span class="nr">Lektion ${l.nr}</span><span class="stars">${starStr(stars[l.nr]||0)}</span></div>
+      <div class="muted" style="font-size:15px">Neu: ${l.nw.map(k=>NOTES[k].name).join(" und ")}</div>
+      <div class="chips">${chips(l.pool,l.nw)}</div>
+    </button>`).join("")}
+    <button class="lv free" data-free="1">
+      <div class="top"><span class="nr">Freies Spiel</span></div>
+      <div class="muted" style="font-size:15px">Tippe einen Klangstab und sieh, wo die Note wohnt.</div>
+    </button>
+  </div>
+  ${rhythmHomeHTML()}
+  <div class="opts">
+    <label><input type="checkbox" id="optColor" ${opts.colorHeads?"checked":""}> Notenköpfe in Boomwhacker-Farben</label>
+    <label><input type="checkbox" id="optNames" ${opts.names?"checked":""}> Tonnamen auf den Klangstäben</label>
+  </div>
+  <p class="src muted">Tonreihenfolge wie in „Jede Menge Flötentöne! 1“ (Barbara Ertl, Sopranblockflöte): a’ und c’’, d’’, g’, h’, e’, d’, c’, f’.</p>`;
+  app.querySelectorAll(".lv[data-l]").forEach(b=>b.onclick=()=>{audio();startLevel(+b.dataset.l)});
+  app.querySelector("[data-free]").onclick=()=>{audio();freePlay()};
+  wireRhythmHome();
+  app.querySelector("#optColor").onchange=e=>{opts.colorHeads=e.target.checked;store.set("opts",opts)};
+  app.querySelector("#optNames").onchange=e=>{opts.names=e.target.checked;store.set("opts",opts)};
+}
+
+// ---------- Freies Spiel ----------
+function freePlay(){
+  app.innerHTML=`
+  <div class="bar-top"><button class="back" id="back">‹ Zurück</button><div class="title">Freies Spiel</div></div>
+  <div class="card"><div id="st">${staffSVG(null)}</div><div class="ask">Tippe auf einen Klangstab.</div></div>
+  ${glockenspielHTML()}`;
+  document.getElementById("back").onclick=home;
+  wireBars(k=>{ding(NOTES[k].f);document.getElementById("st").innerHTML=staffSVG(k,{color:true,label:true,pop:true})});
+}
+
+// ---------- Lektion ----------
+let S=null;
+function startLevel(nr){
+  const L=LEVELS[nr-1];
+  S={L, i:0, tries:0, results:[], cur:null, prev:null, intro:[...L.nw], locked:false};
+  app.innerHTML=`
+  <div class="bar-top"><button class="back" id="back">‹ Zurück</button>
+    <div class="title">Lektion ${nr}</div><div class="prog" id="prog"></div></div>
+  <div class="card"><div id="st"></div><div class="msg" id="msg"></div><div class="ask" id="ask"></div></div>
+  ${glockenspielHTML()}`;
+  document.getElementById("back").onclick=home;
+  wireBars(onBar);
+  nextIntro();
+}
+function nextIntro(){
+  if(!S.intro.length){ S.mode="quiz"; nextQ(); return; }
+  S.mode="intro"; S.cur=S.intro.shift(); S.tries=0;
+  const n=NOTES[S.cur];
+  const ov=document.createElement("div"); ov.className="ov";
+  ov.innerHTML=`<div class="box"><div class="muted" style="font-weight:700">Neuer Ton</div>
+    <div class="big" style="color:var(--${n.col})">${n.name}</div>
+    ${staffSVG(S.cur,{color:true})}
+    <p style="margin:0">${describe(S.cur)}</p>
+    <button class="btn" id="go">Los geht’s</button></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("#go").onclick=()=>{ov.remove(); ding(n.f);
+    renderStaff(true); setMsg("",""); ask(`Das ist ${n.name}. Spiele den Ton auf dem Glockenspiel!`);
+    bar(S.cur).classList.add("hint");};
+  renderProg();
+}
+function describe(k){
+  const s=NOTES[k].step;
+  if(s===-2) return "Das c’ sitzt unter dem System und hat einen eigenen kleinen Strich (Hilfslinie).";
+  if(s===-1) return "Das d’ hängt unter der untersten Linie.";
+  if(s%2===0) return `Das ${NOTES[k].name} sitzt auf der ${["1.","2.","3.","4.","5."][s/2]} Linie (von unten gezählt).`;
+  return `Das ${NOTES[k].name} wohnt im ${["1.","2.","3.","4."][(s-1)/2]} Zwischenraum (von unten gezählt).`;
+}
+function pick(){
+  const pool=S.L.pool, w=pool.map(k=>(S.L.nr>1&&S.L.nw.includes(k))?2.2:1);
+  for(let t=0;t<20;t++){
+    let r=Math.random()*w.reduce((a,b)=>a+b,0), k=pool[0];
+    for(let j=0;j<pool.length;j++){r-=w[j];if(r<=0){k=pool[j];break}}
+    if(k!==S.prev||pool.length===1) return k;
+  }
+  return pool[0];
+}
+function nextQ(){
+  if(S.i>=ROUND){ finish(); return; }
+  S.prev=S.cur; S.cur=pick(); S.tries=0; S.locked=false;
+  document.querySelectorAll(".kb").forEach(b=>b.classList.remove("hint"));
+  renderStaff(true); setMsg("",""); ask("Welcher Ton ist das? Spiele ihn!"); renderProg();
+}
+function renderStaff(pop){ document.getElementById("st").innerHTML=staffSVG(S.cur,{color:opts.colorHeads,pop}) }
+function setMsg(t,c){const m=document.getElementById("msg");m.textContent=t;m.className="msg "+c}
+function ask(t){document.getElementById("ask").textContent=t}
+function renderProg(){
+  const p=document.getElementById("prog"); if(!p) return;
+  p.innerHTML=Array.from({length:ROUND},(_,i)=>{
+    const r=S.results[i]; const c=r===2?"ok":r===1?"half":(i===S.i&&S.mode==="quiz")?"now":"";
+    return `<i class="${c}"></i>`}).join("");
+}
+function onBar(k,b){
+  ding(NOTES[k].f);
+  if(!S||S.locked) return;
+  if(S.mode==="intro"){
+    if(k===S.cur){ b.classList.remove("hint"); setMsg("Super! Genau das ist "+NOTES[k].name+".","ok"); S.locked=true;
+      setTimeout(()=>{S.locked=false;nextIntro()},1100); }
+    else { b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"),400);
+      setMsg("Das war "+NOTES[k].name+". Such den leuchtenden Stab!","bad"); }
+    return;
+  }
+  if(k===S.cur){
+    S.locked=true; S.results[S.i]=S.tries===0?2:1;
+    setMsg(S.tries===0?["Richtig!","Prima!","Klasse!","Genau!"][Math.floor(Math.random()*4)]:"Jetzt stimmt’s!","ok");
+    document.getElementById("st").innerHTML=staffSVG(S.cur,{color:true,label:true});
+    b.classList.remove("hint"); S.i++; renderProg();
+    setTimeout(nextQ,1200);
+  } else {
+    S.tries++; b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"),400);
+    if(S.tries>=2){ setMsg("Das war "+NOTES[k].name+". Schau, welcher Stab leuchtet!","bad"); bar(S.cur).classList.add("hint"); }
+    else setMsg("Das war "+NOTES[k].name+". Versuch es nochmal!","bad");
+  }
+}
+function finish(){
+  const first=S.results.filter(r=>r===2).length;
+  const st= first>=9?3: first>=6?2:1;
+  const nr=S.L.nr; if(st>(stars[nr]||0)){stars[nr]=st;store.set("stars",stars)}
+  fanfare();
+  const ov=document.createElement("div"); ov.className="ov";
+  const hasNext = nr<LEVELS.length;
+  ov.innerHTML=`<div class="box"><h2>Lektion ${nr} geschafft!</h2>
+    <div class="bigstars">${starStr(st)}</div>
+    <p style="margin:0">${first} von ${ROUND} Tönen gleich beim ersten Mal richtig.</p>
+    <div class="row"><button class="btn sec" id="again">Nochmal</button>
+    ${hasNext?`<button class="btn" id="next">Lektion ${nr+1}</button>`:`<button class="btn" id="home">Zur Übersicht</button>`}</div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("#again").onclick=()=>{ov.remove();startLevel(nr)};
+  if(hasNext) ov.querySelector("#next").onclick=()=>{ov.remove();startLevel(nr+1)};
+  else ov.querySelector("#home").onclick=()=>{ov.remove();home()};
+}
+// ================= NOTENLÄNGEN =================
+const VALS = {
+  w:{name:"Ganze Note", beats:4, beatTxt:"4 Schläge", tier:"Schnecke", how:"kriecht ganz langsam", syl:"Ta – a – a – a", col:"var(--v4)"},
+  h:{name:"Halbe Note", beats:2, beatTxt:"2 Schläge", tier:"Elefant", how:"stampft schwer", syl:"Ta – a", col:"var(--v2)"},
+  q:{name:"Viertelnote", beats:1, beatTxt:"1 Schlag", tier:"Hund", how:"geht flott", syl:"Ta", col:"var(--v1)"},
+  e:{name:"Zwei Achtelnoten", beats:1, beatTxt:"½ + ½ Schlag", tier:"Maus", how:"trippelt schnell", syl:"Ti – ti", col:"var(--v05)"},
+};
+const BEAT = 0.72; // Sekunden pro Schlag
+let rStars = store.get("rstars",{});
+
+// --- Klang: Flötenton und Klick ---
+function flute(freq,t,dur){
+  const c=audio(), o=c.createOscillator(), o2=c.createOscillator(), g=c.createGain(), lfo=c.createOscillator(), lg=c.createGain();
+  o.type="sine"; o2.type="triangle"; o.frequency.value=freq*2; o2.frequency.value=freq*2;
+  lfo.frequency.value=5; lg.gain.value=dur>.6?4:0; lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+  const g2=c.createGain(); g2.gain.value=.25; o2.connect(g2); g2.connect(g); o.connect(g); g.connect(c.destination);
+  const end=t+dur-.06;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.32,t+.03); g.gain.setValueAtTime(.32,end); g.gain.linearRampToValueAtTime(0,end+.05);
+  [o,o2,lfo].forEach(x=>{x.start(t);x.stop(end+.08)});
+}
+function click(t,accent){
+  const c=audio(), o=c.createOscillator(), g=c.createGain();
+  o.type="square"; o.frequency.value=accent?1800:1200;
+  g.gain.setValueAtTime(accent?.12:.07,t); g.gain.exponentialRampToValueAtTime(.0001,t+.04);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.05);
+}
+// Spielt eine Folge von Notenwerten. countIn = Vorzählen (4 Klicks). Leuchtet die Schlag-Lampen.
+let rTimers=[];
+function stopRhythm(){rTimers.forEach(clearTimeout);rTimers=[];document.querySelectorAll(".lamp.on").forEach(l=>l.classList.remove("on"))}
+function playRhythm(seq,{countIn=false,freq=440,onEnd}={}){
+  stopRhythm();
+  const c=audio(), t0=c.currentTime+.12, pre=countIn?4:0;
+  const total=seq.reduce((a,k)=>a+VALS[k].beats,0);
+  for(let b=0;b<pre+total;b++){
+    click(t0+b*BEAT,b%4===0);
+    rTimers.push(setTimeout(()=>{
+      document.querySelectorAll(".lamp").forEach((l,i)=>l.classList.toggle("on",i===b%4));
+      document.querySelectorAll(".lamps").forEach(l=>l.classList.toggle("pre",b<pre));
+    },(t0-c.currentTime+b*BEAT)*1000));
+  }
+  let t=t0+pre*BEAT;
+  seq.forEach(k=>{
+    if(k==="e"){flute(freq,t,BEAT/2);flute(freq,t+BEAT/2,BEAT/2)}
+    else flute(freq,t,VALS[k].beats*BEAT);
+    t+=VALS[k].beats*BEAT;
+  });
+  rTimers.push(setTimeout(()=>{stopRhythm();onEnd&&onEnd()},(t-c.currentTime+.1)*1000));
+}
+const lampsHTML=()=>`<div class="lamps" aria-hidden="true">${[1,2,3,4].map(i=>`<span class="lamp">${i}</span>`).join("")}</div>`;
+
+// --- Notenzeichen (einzeln, Hals nach oben) ---
+function glyph(k,x,y,col){
+  const ink="var(--ink)", c=col||ink;
+  const head=(cx,fill)=>`<ellipse cx="${cx}" cy="${y}" rx="9.5" ry="6.8" transform="rotate(-22 ${cx} ${y})" style="fill:${fill?c:"none"};stroke:${fill?ink:c};stroke-width:${fill?1.2:3}"/>`;
+  const stem=cx=>`<line x1="${cx+8.4}" x2="${cx+8.4}" y1="${y-2}" y2="${y-54}" style="stroke:${ink};stroke-width:2.2"/>`;
+  if(k==="w") return `<ellipse cx="${x}" cy="${y}" rx="12" ry="7.5" style="fill:none;stroke:${c};stroke-width:4"/>`;
+  if(k==="h") return head(x,false)+stem(x);
+  if(k==="q") return head(x,true)+stem(x);
+  if(k==="e") return head(x-13,true)+stem(x-13)+head(x+13,true)+stem(x+13)+
+    `<line x1="${x-13+8.4}" x2="${x+13+8.4}" y1="${y-52}" y2="${y-52}" style="stroke:${ink};stroke-width:7"/>`;
+}
+function glyphSVG(k,w=90,h=90,col){return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${VALS[k].name}">${glyph(k,w/2-4,h-20,col)}</svg>`}
+function lengthBar(k){
+  const v=VALS[k];
+  let cells="";
+  if(k==="e") cells=`<span class="seg" style="grid-column:span 1;background:${v.col}"><i></i></span>`;
+  else cells=`<span class="seg" style="grid-column:span ${v.beats};background:${v.col}"></span>`;
+  return `<div class="lbar">${cells}${Array.from({length:4-v.beats},()=>`<span class="seg empty"></span>`).join("")}</div>`;
+}
+
+// --- Startbereich Notenlängen ---
+const RHYTHM_EX=[
+  {id:"r1", name:"Kennenlernen", txt:"Schnecke, Elefant, Hund und Maus: Wie lang klingt jede Note?", fn:()=>rLearn()},
+  {id:"r2", name:"Wie viele Schläge?", txt:"Schau die Note an und zähle die Schläge.", fn:()=>rQuiz("count")},
+  {id:"r3", name:"Hör genau!", txt:"Hör den Flötenton und finde die passende Note.", fn:()=>rQuiz("hear")},
+  {id:"r4", name:"Takt-Zug", txt:"In jeden Zug passen 4 Schläge. Welche Note fehlt?", fn:()=>rQuiz("train")},
+];
+function rhythmHomeHTML(){
+  return `<h2 style="margin-top:8px">Notenlängen</h2>
+  <div class="levels">${RHYTHM_EX.map(x=>`<button class="lv" data-r="${x.id}">
+    <div class="top"><span class="nr">${x.name}</span>${x.id==="r1"?"":`<span class="stars">${starStr(rStars[x.id]||0)}</span>`}</div>
+    <div class="muted" style="font-size:15px">${x.txt}</div></button>`).join("")}</div>`;
+}
+function wireRhythmHome(){
+  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{audio();RHYTHM_EX.find(x=>x.id===b.dataset.r).fn()});
+}
+function rHeader(title,prog){
+  return `<div class="bar-top"><button class="back" id="back">‹ Zurück</button><div class="title">${title}</div>${prog?'<div class="prog" id="prog"></div>':""}</div>`;
+}
+
+// --- Kennenlernen ---
+function rLearn(){
+  app.innerHTML=rHeader("Notenlängen kennenlernen")+`
+  <div class="card" style="align-items:stretch">
+    <p style="margin:0 4px 4px">Wir zählen immer gleichmäßig: <b>1 – 2 – 3 – 4</b>. Jede Zahl ist ein <b>Schlag</b>. Tippe auf <b>Anhören</b> und klatsche mit!</p>
+    ${lampsHTML()}
+    <div class="vlist">${["w","h","q","e"].map(k=>{const v=VALS[k];return `
+      <div class="vrow">
+        <div class="vg">${glyphSVG(k,90,86,v.col)}</div>
+        <div class="vt">
+          <div class="vn">${v.name}</div>
+          <div class="muted">Wie ein${(k==="w"||k==="e")?"e":""} <b style="color:var(--ink)">${v.tier}</b>: ${v.how}. Sprich: <b style="color:var(--ink)">${v.syl}</b></div>
+          ${lengthBar(k)}
+          <div class="vb">${v.beatTxt}</div>
+        </div>
+        <button class="play" data-p="${k}" aria-label="${v.name} anhören">▶<span>Anhören</span></button>
+      </div>`}).join("")}</div>
+  </div>`;
+  document.getElementById("back").onclick=()=>{stopRhythm();home()};
+  app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const k=b.dataset.p;
+    playRhythm(k==="w"?["w"]:k==="h"?["h","h"]:k==="q"?["q","q","q","q"]:["e","e","e","e"],{countIn:true})});
+}
+
+// --- Quiz (drei Arten) ---
+let R=null;
+function rQuiz(mode){
+  const title={count:"Wie viele Schläge?",hear:"Hör genau!",train:"Takt-Zug"}[mode];
+  R={mode,i:0,results:[],tries:0,locked:false,prev:null};
+  app.innerHTML=rHeader(title,true)+`
+  <div class="card"><div id="rq" class="rq"></div><div class="msg" id="msg"></div><div class="ask" id="ask"></div></div>
+  <div class="answers" id="ans"></div>`;
+  document.getElementById("back").onclick=()=>{stopRhythm();home()};
+  rNext();
+}
+function rProg(){const p=document.getElementById("prog");p.innerHTML=Array.from({length:ROUND},(_,i)=>{
+  const r=R.results[i];return `<i class="${r===2?"ok":r===1?"half":i===R.i?"now":""}"></i>`}).join("")}
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function makeTrain(){
+  // zufälliger 4er-Takt, eine Lücke mit 1 oder 2 Schlägen
+  for(;;){
+    const seq=[]; let left=4;
+    while(left>0){const c=["h","q","e","q","h"].filter(k=>VALS[k].beats<=left);const k=rand(c);seq.push(k);left-=VALS[k].beats}
+    const idx=seq.map((k,i)=>i).filter(i=>seq.length>1);
+    if(!idx.length) continue;
+    const gap=rand(idx); return {seq,gap};
+  }
+}
+function rNext(){
+  if(R.i>=ROUND){rFinish();return}
+  R.tries=0;R.locked=false;
+  const q=document.getElementById("rq"), ans=document.getElementById("ans");
+  setMsg("","");
+  if(R.mode==="count"){
+    let k; do{k=rand(["w","h","q","q","h","w"])}while(k===R.prev); R.prev=k; R.answer=String(VALS[k].beats); R.play=[k];
+    q.innerHTML=`<div class="bigglyph">${glyphSVG(k,140,130)}</div>`;
+    ask("Wie viele Schläge dauert diese Note?");
+    ans.innerHTML=["1","2","3","4"].map(n=>`<button class="ab num" data-a="${n}"><b>${n}</b><span>${n==="1"?"Schlag":"Schläge"}</span></button>`).join("");
+  }
+  if(R.mode==="hear"){
+    let k; do{k=rand(["w","h","q","e"])}while(k===R.prev); R.prev=k; R.answer=k;
+    R.play=k==="w"?["w"]:k==="h"?["h"]:k==="q"?["q"]:["e"];
+    q.innerHTML=`${lampsHTML()}<button class="btn" id="hearBtn">▶ Anhören</button>`;
+    ask("Zuerst wird bis 4 vorgezählt, dann kommt der Flötenton.");
+    ans.innerHTML=["w","h","q","e"].map(x=>`<button class="ab" data-a="${x}">${glyphSVG(x,90,86)}<span>${VALS[x].name}</span></button>`).join("");
+    const hb=document.getElementById("hearBtn"); hb.onclick=()=>playRhythm(R.play,{countIn:true});
+    setTimeout(()=>playRhythm(R.play,{countIn:true}),300);
+  }
+  if(R.mode==="train"){
+    const {seq,gap}=makeTrain(); R.seq=seq; R.gap=gap;
+    const need=VALS[seq[gap]].beats; R.answer=String(need); R.play=seq;
+    q.innerHTML=trainSVG(seq,gap);
+    ask("Im Zug ist Platz für genau 4 Schläge. Welche Note passt in die Lücke?");
+    const oneBeat=Math.random()<.5?"q":"e";
+    ans.innerHTML=["w","h",oneBeat].sort(()=>Math.random()-.5).map(x=>`<button class="ab" data-a="${VALS[x].beats}" data-k="${x}">${glyphSVG(x,90,86)}<span>${VALS[x].name}</span></button>`).join("");
+  }
+  const nAns=ans.querySelectorAll(".ab").length; ans.style.setProperty("--n",nAns); ans.classList.toggle("four",nAns===4);
+  ans.querySelectorAll(".ab").forEach(b=>b.onclick=()=>rAnswer(b));
+  rProg();
+}
+function trainSVG(seq,gap,filled){
+  const W=340,H=150, x0=58, cw=(W-x0-16)/4, y=104;
+  let x=x0, out="";
+  // Wagen = Schläge
+  for(let b=0;b<4;b++) out+=`<rect x="${x0+b*cw+3}" y="40" width="${cw-6}" height="84" rx="10" style="fill:var(--wagon);stroke:var(--muted);stroke-width:1.5"/>
+    <circle cx="${x0+b*cw+cw*.3}" cy="128" r="7" style="fill:var(--ink)"/><circle cx="${x0+b*cw+cw*.7}" cy="128" r="7" style="fill:var(--ink)"/>
+    <text x="${x0+b*cw+cw/2}" y="34" text-anchor="middle" style="font:700 14px var(--body);fill:var(--muted)">${b+1}</text>`;
+  // Lok
+  out+=`<rect x="6" y="62" width="44" height="62" rx="8" style="fill:var(--accent)"/><rect x="14" y="46" width="14" height="18" rx="3" style="fill:var(--accent)"/>
+    <circle cx="18" cy="128" r="8" style="fill:var(--ink)"/><circle cx="40" cy="128" r="8" style="fill:var(--ink)"/>
+    <text x="28" y="102" text-anchor="middle" style="font:800 20px var(--display);fill:var(--surface)">4/4</text>`;
+  seq.forEach((k,i)=>{
+    const span=VALS[k].beats*cw;
+    if(i===gap && !filled){
+      out+=`<rect x="${x+8}" y="48" width="${span-16}" height="68" rx="8" style="fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:7 6"/>
+        <text x="${x+span/2}" y="94" text-anchor="middle" style="font:800 34px var(--display);fill:var(--accent)">?</text>`;
+    } else {
+      out+=`<g class="${i===gap?"notepop":""}" style="transform-origin:${x+span/2}px ${y}px">${glyph(k,x+(k==="w"?span/2:Math.min(span/2,cw/2))-4,y,i===gap?"var(--accent)":null)}</g>`;
+    }
+    x+=span;
+  });
+  return `<svg class="train" viewBox="0 0 ${W} ${H+6}" role="img" aria-label="Takt-Zug mit 4 Schlägen">${out}</svg>`;
+}
+function rAnswer(b){
+  if(R.locked) return;
+  const ok=b.dataset.a===R.answer;
+  if(ok){
+    R.locked=true; R.results[R.i]=R.tries===0?2:1; b.classList.add("right");
+    setMsg(R.tries===0?rand(["Richtig!","Prima!","Klasse!","Genau!"]):"Jetzt stimmt’s!","ok");
+    if(R.mode==="train"){document.getElementById("rq").innerHTML=trainSVG(R.seq,R.gap,true)}
+    R.i++; rProg();
+    const go=()=>setTimeout(rNext,700);
+    if(R.mode==="hear") setTimeout(rNext,1100);
+    else playRhythm(R.play,{onEnd:go});
+  } else {
+    R.tries++; b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"),400); b.disabled=true;
+    let hint="Versuch es nochmal!";
+    if(R.mode==="count") hint="Zähl mit: Tippe die Note an und hör zu.";
+    if(R.mode==="train") hint=`Zähl die Schläge: Wie viele Wagen sind noch frei?`;
+    if(R.mode==="hear") hint="Hör nochmal hin und zähle mit!";
+    setMsg(hint,"bad");
+    if(R.mode==="count"){ const g=document.querySelector(".bigglyph"); g.innerHTML=lampsHTML()+g.innerHTML; playRhythm(R.play,{countIn:false}); }
+    if(R.mode==="hear") playRhythm(R.play,{countIn:true});
+  }
+}
+function rFinish(){
+  const first=R.results.filter(r=>r===2).length, st=first>=9?3:first>=6?2:1;
+  const id={count:"r2",hear:"r3",train:"r4"}[R.mode]; if(st>(rStars[id]||0)){rStars[id]=st;store.set("rstars",rStars)}
+  fanfare();
+  const ov=document.createElement("div"); ov.className="ov";
+  ov.innerHTML=`<div class="box"><h2>Geschafft!</h2><div class="bigstars">${starStr(st)}</div>
+    <p style="margin:0">${first} von ${ROUND} Aufgaben gleich beim ersten Mal richtig.</p>
+    <div class="row"><button class="btn sec" id="again">Nochmal</button><button class="btn" id="home">Zur Übersicht</button></div></div>`;
+  document.body.appendChild(ov);
+  const m=R.mode;
+  ov.querySelector("#again").onclick=()=>{ov.remove();rQuiz(m)};
+  ov.querySelector("#home").onclick=()=>{ov.remove();home()};
+}
+
+home();
+</script>
+</body>
+</html>
