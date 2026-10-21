@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fehlerdetektiv Deutsch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@600;800&display=swap">
+<style>
+/* Layout: Schulheft-Seite mit rotem Rand; Übersicht als Themenkarten, Übung als ein Blatt mit Rotstift-Korrekturen */
+:root{
+  --bg:#edf2f6; --paper:#ffffff; --soft:#e2eaf1; --line:#d3dee8;
+  --ink:#1d2733; --muted:#5a6878;
+  --pen:#d23a2a; --ok:#1d8648; --warn:#b97800;
+  --rs:#2462a6; --gr:#a85a08; --tx:#b0284b;
+  --display:"Grandstander","Comic Sans MS","Trebuchet MS",sans-serif;
+  --body:"Andika","Trebuchet MS","Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11171e; --paper:#1a232e; --soft:#24313f; --line:#2d3b4b;
+  --ink:#e6ecf2; --muted:#9aa8b7;
+  --pen:#ff6e5c; --ok:#4fc883; --warn:#f2b640;
+  --rs:#73aef0; --gr:#f0a650; --tx:#f27596; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11171e; --paper:#1a232e; --soft:#24313f; --line:#2d3b4b;
+  --ink:#e6ecf2; --muted:#9aa8b7;
+  --pen:#ff6e5c; --ok:#4fc883; --warn:#f2b640;
+  --rs:#73aef0; --gr:#f0a650; --tx:#f27596; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--rs);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header.top svg{flex:none}
+h1{font-size:2rem;font-weight:800;line-height:1.1}
+h1 span{color:var(--pen)}
+.sub{color:var(--muted);margin:2px 0 0}
+.klasse{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.klasse b{font-weight:700;color:var(--muted);font-size:.9rem;text-transform:uppercase;letter-spacing:.06em;margin-right:4px}
+.pill{border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 16px;font-weight:700}
+.pill[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+section.area{display:flex;flex-direction:column;gap:12px}
+.area h2{font-size:1.35rem;display:flex;align-items:center;gap:10px}
+.area h2 i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.tcard{text-align:left;background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:14px 14px 12px;
+  display:flex;flex-direction:column;gap:6px;min-width:0;border-top:6px solid var(--c)}
+.tcard:hover{border-color:var(--c)}
+.tcard .nm{font-weight:700;font-size:1.05rem;line-height:1.25}
+.tcard .ex{font-size:1.05rem}
+.tcard .ex s{color:var(--pen);text-decoration-thickness:2px}
+.tcard .ex em{font-style:normal;color:var(--ok);font-weight:700}
+.tcard .meta{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--muted);margin-top:auto}
+.kl{border:1.5px solid var(--muted);border-radius:6px;padding:0 6px;font-weight:700}
+.stars{color:var(--warn);letter-spacing:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 12px;font-size:.88rem;font-weight:700;
+  background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+
+/* Übung */
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.back{border:0;background:none;font-weight:700;color:var(--muted);padding:6px 0}
+.dots{display:flex;gap:6px;margin-left:auto}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dots i.done{background:var(--ok)}.dots i.now{background:var(--ink)}
+.sheet{background:var(--paper);border-radius:16px;border:2px solid var(--line);padding:22px 22px 22px 44px;position:relative;
+  display:flex;flex-direction:column;gap:14px}
+.sheet::before{content:"";position:absolute;left:26px;top:0;bottom:0;width:2px;background:color-mix(in srgb,var(--pen) 45%,transparent)}
+.task{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.task p{margin:0;font-weight:700;font-size:1.05rem}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.ttl{font-size:1.3rem}
+.satz{font-size:clamp(1.35rem,4.6vw,1.8rem);line-height:2.3;margin:0;word-wrap:break-word}
+.w{border:0;background:none;padding:0 .1em;margin:0 -.02em;border-radius:8px;line-height:1.4;font-size:inherit;font-family:inherit}
+.w:hover{background:var(--soft)}
+.w.sel{box-shadow:0 0 0 3px var(--pen);background:color-mix(in srgb,var(--pen) 10%,transparent)}
+.w.hint{text-decoration:underline dashed var(--warn) 3px;text-underline-offset:6px}
+.w.nope{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+@media (prefers-reduced-motion:reduce){.w.nope{animation:none;background:var(--soft)}}
+.fix{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom;line-height:1.05;padding:0 .08em}
+.fix s{font-size:.5em;color:var(--pen);text-decoration-thickness:2px}
+.fix b{color:var(--ok)}
+.fix.shown b{color:var(--warn)}
+.fb{min-height:1.5em;margin:0;font-weight:700;color:var(--muted)}
+.fb.good{color:var(--ok)}.fb.bad{color:var(--pen)}
+.korr{border:2px dashed var(--pen);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.korr label{font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.korr input{flex:1 1 180px;min-width:0;font:inherit;font-size:1.5rem;padding:8px 12px;border-radius:10px;border:2px solid var(--line);
+  background:var(--bg);color:var(--ink)}
+.btn{border:0;border-radius:12px;padding:10px 18px;font-weight:700;background:var(--ink);color:var(--paper)}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn.go{background:var(--ok);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+.found{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.found li{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.found .wd{font-size:1.15rem}
+.found .wd s{color:var(--pen)}
+.found .wd b{color:var(--ok)}
+.merke{background:color-mix(in srgb,var(--warn) 13%,var(--paper));border-radius:12px;padding:12px 14px;margin:0}
+.merke strong{font-family:var(--display);display:block;margin-bottom:2px}
+.tools{display:flex;gap:10px;flex-wrap:wrap}
+.tools .btn:last-child{margin-left:auto}
+.end{text-align:center;align-items:center;padding:34px 22px}
+.end .big{font-size:3rem;color:var(--warn);letter-spacing:6px}
+.end p{margin:0;max-width:40ch}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const AREAS={rs:{name:"Rechtschreibung",c:"var(--rs)"},gr:{name:"Grammatik",c:"var(--gr)"},tx:{name:"Fehlertexte",c:"var(--tx)"}};
+const TOPICS=[
+{id:"dk",area:"rs",kl:[3,4],name:"Doppelkonsonanten",ex:["Sone","Sonne"],
+ rule:"Nach einem kurzen Selbstlaut (a, e, i, o, u) hört man oft nur einen Mitlaut. Geschrieben wird er dann doppelt: Son-ne, Bal-le. Sprich das Wort in Silben!",
+ items:["Die [Sone|Sonne] scheint heute sehr hell.","Mein Bruder spielt gern mit dem [Bal|Ball].","Wir [komen|kommen] morgen zu dir.","Die [Muter|Mutter] backt einen Kuchen.","Im [Somer|Sommer] gehen wir oft [schwimen|schwimmen].","Der [Löfel|Löffel] liegt neben dem [Teler|Teller].","Lisa hat eine neue [Brile|Brille].","Die Katze [rent|rennt] in den Garten.","Am Abend ist es draußen ganz [stil|still].","Mein Opa hat einen großen [Hamer|Hammer].","Paul [schwimt|schwimmt] schneller als Tim.","Nach dem Regen ist die Wiese ganz [nas|nass]."]},
+{id:"cktz",area:"rs",kl:[3,4],name:"ck und tz",ex:["Kaze","Katze"],
+ rule:"Nach einem kurzen Selbstlaut schreibt man ck statt kk und tz statt zz: Bä-cker, Kat-ze. Nach l, n, r, au, ei steht kein ck und kein tz: Onkel, Herz.",
+ items:["Die [Kaze|Katze] schläft auf dem Sofa.","Der [Bäker|Bäcker] backt frische Brötchen.","Ich [size|sitze] auf meinem Platz.","Der Weg ist nach dem Regen ganz [drekig|dreckig].","Mein [Rucksak|Rucksack] ist schwer.","Die [Hize|Hitze] im Sommer macht müde.","Wir [baken|backen] heute Plätzchen.","Auf dem Dach sitzt ein kleiner [Spaz|Spatz].","Opa trinkt seinen Tee mit [Zuker|Zucker].","Ich [puze|putze] mir die Zähne.","Mama [strikt|strickt] einen Schal.","Der [Bliz|Blitz] leuchtet hell am Himmel."]},
+{id:"ie",area:"rs",kl:[3,4],name:"Langes ie oder kurzes i",ex:["spilen","spielen"],
+ rule:"Wird das i lang gesprochen, schreibt man meistens ie: Bie-ne, spie-len. Wird das i kurz gesprochen, schreibt man nur i: Fisch, Kind.",
+ items:["Wir [spilen|spielen] im Garten.","Die [Bine|Biene] fliegt zur Blume.","Ich habe einen [Brif|Brief] geschrieben.","Der [Fiesch|Fisch] schwimmt im Teich.","Das Kind [list|liest] ein Buch.","Die [Kieste|Kiste] ist voll mit Spielsachen.","Auf der [Wise|Wiese] steht eine [Zige|Ziege].","Der Ball liegt [hienter|hinter] dem Baum.","Im [Wienter|Winter] ist es kalt.","Wir [fligen|fliegen] in den Ferien nach Spanien.","Ich [schibe|schiebe] mein Fahrrad nach Hause.","Mein [Fienger|Finger] tut weh."]},
+{id:"h",area:"rs",kl:[3,4],name:"Wörter mit Dehnungs-h",ex:["Ur","Uhr"],
+ rule:"Manche Wörter haben nach einem langen Selbstlaut ein h, das man nicht hört: fahren, Uhr, Lehrer. Oft steht es vor l, m, n oder r. Diese Wörter musst du dir merken.",
+ items:["Wir [faren|fahren] mit dem Bus.","Ich [wone|wohne] in einem großen Haus.","Der [Lerer|Lehrer] erklärt die Aufgabe.","Die [Ur|Uhr] hängt an der Wand.","Mein Bruder ist zehn [Jare|Jahre] alt.","Ich [zäle|zähle] bis hundert.","Das [Hun|Huhn] legt jeden Tag ein Ei.","Die Katze ist ganz [zam|zahm].","Ich [neme|nehme] mir einen Apfel.","Ich putze meine [Zäne|Zähne] gründlich.","Ein [Stul|Stuhl] ist kaputt.","Wir fahren mit der [Ban|Bahn] in die Stadt."]},
+{id:"auslaut",area:"rs",kl:[3,4],name:"b oder p, d oder t, g oder k am Ende",ex:["Hunt","Hund"],
+ rule:"Am Wortende klingen b, d, g oft wie p, t, k. Verlängere das Wort, dann hörst du es: Hund – Hun-de, Berg – Ber-ge, Korb – Kör-be.",
+ items:["Der [Hunt|Hund] bellt laut.","Wir wandern auf einen hohen [Berk|Berg].","Das [Kalp|Kalb] steht im Stall.","Im [Walt|Wald] wohnen viele Tiere.","Der Ball ist [runt|rund].","Am [Abent|Abend] lese ich gern.","Mein Opa hat einen langen [Bard|Bart].","Ich habe ein [Bilt|Bild] gemalt.","Der [Korp|Korb] ist voll mit Äpfeln.","Meine Schwester ist sehr [kluk|klug].","Wir spielen im [Sant|Sand].","Der [Zwerk|Zwerg] wohnt im Wald."]},
+{id:"ae",area:"rs",kl:[3,4],name:"ä oder e, äu oder eu",ex:["Beume","Bäume"],
+ rule:"Gibt es ein verwandtes Wort mit a oder au? Dann schreibt man ä oder äu: Baum – Bäume, Hand – Hände. Sonst schreibt man e oder eu: neu, Freund.",
+ items:["Im Wald stehen viele [Beume|Bäume].","Die [Heuser|Häuser] in unserer Straße sind alt.","Mein Vater [fehrt|fährt] mit dem Auto.","Die [Hende|Hände] sind schmutzig.","Im Herbst werden die [Bletter|Blätter] bunt.","Ich habe zwei [Meuse|Mäuse] gesehen.","Mein Freund [leuft|läuft] sehr schnell.","Im Garten wachsen [Epfel|Äpfel].","Der Bauer hat drei [Kelber|Kälber].","Heute ist es [kelter|kälter] als gestern.","Ich habe ein [näues|neues] Fahrrad."]},
+{id:"ss",area:"rs",kl:[4],name:"ß oder ss",ex:["Strasse","Straße"],
+ rule:"Nach einem langen Selbstlaut oder nach ei, au, eu schreibt man ß: Straße, heiß, draußen. Nach einem kurzen Selbstlaut schreibt man ss: Tasse, Fluss.",
+ items:["Die [Strasse|Straße] ist sehr lang.","Ich [weis|weiß] die Antwort.","Das Wasser ist [heis|heiß].","Mein Bruder ist schon sehr [gross|groß].","Ich trinke aus einer [Taße|Tasse].","Wir [eßen|essen] zusammen zu Abend.","Der [Fuss|Fuß] tut mir weh.","Am [Flus|Fluss] sitzen Angler.","Ich [grüsse|grüße] meine Nachbarin.","Die Tür ist [geschloßen|geschlossen].","Die Kinder spielen [draussen|draußen].","Das [Schloß|Schloss] ist sehr alt."]},
+{id:"v",area:"rs",kl:[3,4],name:"Wörter mit V und v",ex:["Fogel","Vogel"],
+ rule:"Diese Wörter schreibt man mit V oder v: Vater, Vogel, viel, vier, voll und alle Wörter mit ver- und vor-. Sie musst du dir merken.",
+ items:["Mein [Fater|Vater] arbeitet im Garten.","Ein [Fogel|Vogel] singt auf dem Baum.","Ich habe meine Mütze [fergessen|vergessen].","Wir haben [fiel|viel] Spaß.","[Forgestern|Vorgestern] war ich krank.","Ich habe [fier|vier] Stifte.","Die Katze ist [ferschwunden|verschwunden].","Ich [ferstehe|verstehe] die Aufgabe.","Mein Glas ist [foll|voll].","Wir [vahren|fahren] mit dem Rad zur Schule."]},
+{id:"nomen",area:"rs",kl:[3,4],name:"Nomen schreibt man groß",ex:["hund","Hund"],
+ rule:"Nomen schreibt man groß. Du erkennst sie am Begleiter: der Hund, die Freude, das Nest. Verben und Adjektive schreibt man klein: spielen, rot.",
+ items:["Der [hund|Hund] spielt mit dem [ball|Ball].","Meine [oma|Oma] wohnt in einem kleinen [dorf|Dorf].","Im [garten|Garten] blühen bunte [blumen|Blumen].","Ich esse gern [nudeln|Nudeln] mit Soße.","Die [schule|Schule] beginnt um acht Uhr.","Unsere [lehrerin|Lehrerin] liest eine Geschichte vor.","Der Vogel baut ein [nest|Nest] im Baum.","Tim hat große [angst|Angst] vor Spinnen.","Am [morgen|Morgen] trinke ich Kakao.","Die Kinder [Spielen|spielen] im Hof.","Der Apfel ist [Rot|rot] und saftig.","Meine [freude|Freude] ist groß."]},
+{id:"satz",area:"rs",kl:[3,4],name:"Satzanfänge groß",ex:["wir","Wir"],
+ rule:"Am Satzanfang schreibt man immer groß. Auch wenn jemand spricht, beginnt das Gesagte groß: Tom ruft: „Komm her!“",
+ items:["Heute ist Montag. [wir|Wir] haben Sport.","[mein|Mein] Hund heißt Bello. [er|Er] ist braun.","Es ist kalt. [ich|Ich] ziehe eine Jacke an.","[die|Die] Sonne scheint. [alle|Alle] Kinder gehen raus.","Lena ruft: „[komm|Komm] schnell!“","Wir gehen in den Zoo. [dort|Dort] sehen wir Elefanten.","[am|Am] Wochenende besuchen wir Oma.","Der Kuchen ist fertig. [er|Er] riecht lecker.","Tom fragt: „[hast|Hast] du Zeit?“","Es klingelt. [die|Die] Pause ist vorbei."]},
+{id:"dass",area:"rs",kl:[4],name:"das oder dass",ex:["das","dass"],
+ rule:"Kannst du das Wort durch dieses, jenes oder welches ersetzen? Dann schreibt man das. Wenn nicht, schreibt man dass. Vor dass steht meistens ein Komma.",
+ items:["Ich hoffe, [das|dass] du kommst.","[Dass|Das] Buch ist spannend.","Mama sagt, [das|dass] wir leise sein sollen.","Ich weiß, [das|dass] Hunde gern spielen.","Das Haus, [dass|das] dort steht, ist alt.","Schön, [das|dass] du da bist!","Ich glaube, [das|dass] es morgen regnet.","Siehst du [dass|das] Pferd?","Er freut sich, [das|dass] Ferien sind.","Das Fahrrad, [dass|das] ich bekommen habe, ist rot."]},
+{id:"praet",area:"gr",kl:[3,4],name:"Verben im Präteritum",ex:["gehte","ging"],
+ rule:"Das Präteritum erzählt, was früher passiert ist. Viele Verben ändern sich dabei stark: gehen – ging, singen – sang, essen – aß. Andere bekommen -te: spielen – spielte.",
+ items:["Gestern [gehte|ging] ich in den Park.","Letzte Woche [schwimmte|schwamm] Lisa im See.","Der Hund [laufte|lief] über die Wiese.","Wir [singten|sangen] ein Lied.","Opa [schreibte|schrieb] mir einen Brief.","Gestern [esste|aß] ich Pizza.","Die Kinder [spielen|spielten] gestern im Schnee.","Tim [trinkte|trank] einen Saft.","Am Morgen [kommte|kam] der Bus zu spät.","Ich [sehte|sah] einen Regenbogen.","Die Sonne [scheinte|schien] den ganzen Tag.","Gestern [fahrte|fuhr] ich zu Oma und [bringte|brachte] ihr Blumen mit."]},
+{id:"perf",area:"gr",kl:[3,4],name:"Verben im Perfekt",ex:["gegesst","gegessen"],
+ rule:"Das Perfekt hat zwei Teile: haben oder sein und das Partizip. Ich habe gegessen. Ich bin gelaufen. Bewegt man sich von einem Ort zum anderen, nimmt man meistens sein.",
+ items:["Ich habe Pizza [gegesst|gegessen].","Wir sind nach Hause [gegeht|gegangen].","Lena hat ein Bild [gemalen|gemalt].","Der Hund [hat|ist] über den Zaun gesprungen.","Ich [bin|habe] einen Kuchen gebacken.","Tim hat das Buch [gelest|gelesen].","Wir haben ein Lied [gesingt|gesungen].","Mama ist mit dem Auto [gefahrt|gefahren].","Ich habe meinen Freund [getrefft|getroffen].","Wir [haben|sind] mit dem Zug gefahren.","Opa hat mir eine Geschichte [erzählen|erzählt].","Ich habe Wasser [getrinkt|getrunken]."]},
+{id:"personal",area:"gr",kl:[3,4],name:"Verb passt zur Person",ex:["spielt","spielen"],
+ rule:"Das Verb muss zur Person passen: ich spiele, du spielst, er/sie/es spielt, wir spielen, ihr spielt, sie spielen.",
+ items:["Die Kinder [spielt|spielen] im Hof.","Ich [gehst|gehe] in die Schule.","Du [lese|liest] sehr schön vor.","Wir [macht|machen] unsere Hausaufgaben.","Mein Bruder [fahren|fährt] Fahrrad.","Ihr [kommen|kommt] zu spät.","Die Katze [schlafen|schläft] in der Sonne.","Lena und Tim [baut|bauen] eine Burg.","Er [hast|hat] einen Hund.","Ich [bist|bin] heute müde."]},
+{id:"plural",area:"gr",kl:[3,4],name:"Einzahl und Mehrzahl",ex:["Bruder","Brüder"],
+ rule:"Viele Nomen ändern sich in der Mehrzahl: der Apfel – die Äpfel, das Buch – die Bücher, das Kind – die Kinder. Manche bleiben gleich: der Kuchen – die Kuchen.",
+ items:["Im Stall stehen drei [Pferden|Pferde].","Ich habe zwei [Bruder|Brüder].","Auf dem Tisch liegen viele [Buche|Bücher].","Im Teich schwimmen fünf [Fischs|Fische].","Wir sehen viele [Vogels|Vögel].","Die [Kinds|Kinder] lachen laut.","Ich kaufe drei [Apfel|Äpfel].","Mama hat zwei [Kuchens|Kuchen] gebacken.","Im Keller wohnen viele [Maus|Mäuse].","Ich habe vier [Stifts|Stifte]."]},
+{id:"adj",area:"gr",kl:[4],name:"Adjektive steigern",ex:["großer","größer"],
+ rule:"Adjektive kann man steigern: groß – größer – am größten. Manche sind besonders: gut – besser – am besten, gern – lieber – am liebsten.",
+ items:["Mein Hund ist [großer|größer] als deiner.","Der Elefant ist am [schwerer|schwersten].","Lena rechnet [guter|besser] als ich.","Heute ist es [kalter|kälter] als gestern.","Mein Opa ist der [alteste|älteste] Mann im Dorf.","Pizza esse ich am [gernsten|liebsten].","Der Gepard ist am [schnellster|schnellsten].","Mein Turm ist [hocher|höher] als deiner.","Das ist das [guteste|beste] Eis der Welt.","Im Sommer sind die Tage [langer|länger]."]},
+{id:"faelle",area:"gr",kl:[4],name:"Der richtige Begleiter (Fälle)",ex:["mit der Hund","mit dem Hund"],
+ rule:"Der Begleiter ändert sich im Satz. Frage: Wem? – dem Hund, der Katze. Wen oder was? – den Hund, die Katze. Nach mit, bei und von fragt man wem: mit dem Hund.",
+ items:["Ich spiele mit [der|dem] Hund.","Wir gehen in [den|die] Schule.","Ich gebe [die|der] Katze Futter.","Das ist das Fahrrad [der|des] Lehrers.","Lisa hilft [den|dem] Opa.","Wir fahren mit [die|den] Kindern in den Zoo.","Ich sehe [der|den] Mond.","Mit [den|dem] Fahrrad fahre ich zur Schule.","Er wohnt bei [seine|seiner] Tante.","Ich habe [ein|einen] Apfel gegessen."]}
+];
+const TEXTS=[
+{title:"Der Ausflug",kl:3,text:"Am [montag|Montag|nomen] ist unsere Klasse in den [Walt|Wald|auslaut] gegangen. Wir haben viele [Tire|Tiere|ie] gesehen. Ein Eichhörnchen [kleterte|kletterte|dk] schnell auf einen Baum. Danach haben wir am Bach Brote [gegesst|gegessen|perf]. Es war ein toller [tag|Tag|nomen]."},
+{title:"Im Schnee",kl:3,text:"Gestern lag im Garten viel Schnee. [mein|Mein|satz] Bruder und ich [baute|bauten|personal] einen [Schneeman|Schneemann|dk]. Er bekam eine [Möre|Möhre|h] als Nase. Danach [trinkten|tranken|praet] wir heißen Kakao. Unsere Hände waren ganz [kald|kalt|auslaut]."},
+{title:"Meine Katze Mimi",kl:3,text:"Ich habe eine [Kaze|Katze|cktz]. [sie|Sie|satz] heißt Mimi. Mimi [schlafen|schläft|personal] gern auf meinem [Bet|Bett|dk]. Am liebsten frisst sie [Fiesch|Fisch|ie]. Wenn ich nach Hause komme, [leuft|läuft|ae] sie zur Tür."},
+{title:"Der Zirkus",kl:4,text:"Letzte Woche [kommte|kam|praet] ein Zirkus in unsere Stadt. Ich hoffte, [das|dass|dass] ich hingehen durfte. Im Zelt war es sehr [heis|heiß|ss]. Die Löwen waren [großer|größer|adj] als ich dachte. Am Ende [klatschen|klatschten|praet] alle laut. Es war ein toller [abend|Abend|nomen]."},
+{title:"Beim Bäcker",kl:4,text:"Am Samstag [habe|bin|perf] ich zum Bäcker gegangen. Der [Bäker|Bäcker|cktz] hatte frische Brötchen. Ich kaufte drei [Brötchens|Brötchen|plural] und ein Stück Kuchen. Die Verkäuferin sagte, [das|dass|dass] der Kuchen noch warm ist. Auf der [Strasse|Straße|ss] roch es lecker. Zu Hause gab ich [die|der|faelle] Oma ein Stück ab."},
+{title:"Das Fußballspiel",kl:4,text:"Gestern [spielen|spielten|praet] wir gegen die Nachbarklasse. [es|Es|satz] regnete stark. Unser Torwart hielt [fiele|viele|v] Bälle. Ich habe ein Tor [geschießt|geschossen|perf]. Am Ende waren wir alle [nas|nass|dk], aber sehr [glüklich|glücklich|cktz]."}
+];
+const TOPIC=Object.fromEntries(TOPICS.map(t=>[t.id,t]));
+const LETTERS="A-Za-zÄÖÜäöüß";
+
+function parse(str,defTopic){
+  const re=/\[([^\]|]+)\|([^\]|]+)(?:\|([^\]]+))?\]/g, out=[]; let last=0,m;
+  const plain=s=>{(s.match(new RegExp(`[${LETTERS}]+|[^${LETTERS}]+`,"g"))||[]).forEach(p=>{
+    out.push({type:new RegExp(`^[${LETTERS}]`).test(p)?"word":"punct",text:p});});};
+  while((m=re.exec(str))){plain(str.slice(last,m.index));out.push({type:"err",wrong:m[1],right:m[2],topic:m[3]||defTopic,state:"open",tries:0});last=re.lastIndex;}
+  plain(str.slice(last)); return out;
+}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let store={kl:"beide",stars:{}};
+try{const s=JSON.parse(localStorage.getItem("fehlerdetektiv")||"null");if(s)store=Object.assign(store,s);}catch(e){}
+const save=()=>{try{localStorage.setItem("fehlerdetektiv",JSON.stringify(store));}catch(e){}};
+const klOk=kl=>store.kl==="beide"||kl.includes(+store.kl);
+const starStr=n=>n?"★".repeat(n)+"☆".repeat(3-n):"";
+
+const app=document.getElementById("app");
+const LOGO=`<svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true"><circle cx="24" cy="24" r="16" fill="var(--paper)" stroke="var(--ink)" stroke-width="5"/><path d="M36 36 L52 52" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/><path d="M15 25 l6 6 l11-13" fill="none" stroke="var(--pen)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function home(){
+  let h=`<header class="top">${LOGO}<div><h1>Fehler<span>detektiv</span></h1><p class="sub">Finde die Fehler und verbessere sie wie ein Profi.</p></div></header>
+  <div class="klasse" role="group" aria-label="Klasse wählen"><b>Klasse</b>${["3","4","beide"].map(k=>`<button class="pill" data-kl="${k}" aria-pressed="${store.kl===k}">${k==="beide"?"3 und 4":k}</button>`).join("")}</div>`;
+  for(const a of ["rs","gr"]){
+    const list=TOPICS.filter(t=>t.area===a&&klOk(t.kl)); if(!list.length)continue;
+    h+=`<section class="area"><h2><i style="background:${AREAS[a].c}"></i>${AREAS[a].name}</h2><div class="grid">${list.map(t=>card(t.id,t.name,`<s>${esc(t.ex[0])}</s> <em>${esc(t.ex[1])}</em>`,t.kl.join("/"),AREAS[a].c)).join("")}</div></section>`;
+  }
+  const tx=TEXTS.filter(t=>klOk([t.kl]));
+  h+=`<section class="area"><h2><i style="background:var(--tx)"></i>Gemischt üben</h2><div class="grid">
+    ${card("texte","Fehlertexte",`${tx.length} kurze Geschichten mit vielen Fehlerarten`,store.kl==="beide"?"3/4":store.kl,"var(--tx)")}
+    ${card("mix","Alles gemischt",`Sätze aus allen Themen durcheinander`,store.kl==="beide"?"3/4":store.kl,"var(--tx)")}</div></section>`;
+  app.innerHTML=h;
+  app.querySelectorAll("[data-kl]").forEach(b=>b.onclick=()=>{store.kl=b.dataset.kl;save();home();});
+  app.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>start(b.dataset.topic));
+  window.scrollTo(0,0);
+}
+function card(id,name,ex,kl,c){
+  const key=id==="texte"||id==="mix"?id+store.kl:id;
+  return `<button class="tcard" data-topic="${id}" style="--c:${c}"><span class="nm">${name}</span><span class="ex">${ex}</span><span class="meta"><span class="kl">Kl. ${kl}</span><span class="stars" aria-label="Bestes Ergebnis">${starStr(store.stars[key]||0)}</span></span></button>`;
+}
+
+let R=null;
+function start(id){
+  let items=[];
+  if(id==="texte"){items=shuffle(TEXTS.filter(t=>klOk([t.kl]))).slice(0,2).map(t=>({title:t.title,tokens:parse(t.text)}));}
+  else if(id==="mix"){const pool=[];TOPICS.filter(t=>klOk(t.kl)).forEach(t=>t.items.forEach(s=>pool.push([s,t.id])));
+    items=shuffle(pool).slice(0,8).map(([s,t])=>({tokens:parse(s,t)}));}
+  else items=shuffle(TOPIC[id].items).slice(0,6).map(s=>({tokens:parse(s,id)}));
+  R={id,key:(id==="texte"||id==="mix")?id+store.kl:id,items,i:0,pen:0,fixed:0,sel:null,showRule:false};
+  item();
+}
+function topicChip(id){const t=TOPIC[id];return `<span class="chip" style="--c:${AREAS[t.area].c}">${t.name}</span>`}
+
+function item(){
+  const it=R.items[R.i], errs=it.tokens.filter(t=>t.type==="err"), done=errs.filter(e=>e.state!=="open").length;
+  const single=R.id!=="texte"&&R.id!=="mix";
+  const headChip=single?topicChip(R.id):`<span class="chip" style="--c:var(--tx)">${R.id==="texte"?"Fehlertext":"Gemischt"}</span>`;
+  const sel=R.sel!=null?it.tokens[R.sel]:null;
+  const ruleTopic=sel?sel.topic:(single?R.id:null);
+  let s="";
+  it.tokens.forEach((t,k)=>{
+    if(t.type==="punct")s+=esc(t.text);
+    else if(t.type==="word")s+=`<button class="w" data-k="${k}">${esc(t.text)}</button>`;
+    else if(t.state==="open")s+=`<button class="w${R.sel===k?" sel":""}${it.hint?" hint":""}" data-k="${k}">${esc(t.wrong)}</button>`;
+    else s+=`<span class="fix${t.state==="shown"?" shown":""}"><s>${esc(t.wrong)}</s><b>${esc(t.right)}</b></span>`;
+  });
+  const foundList=errs.filter(e=>e.state!=="open").map(e=>`<li><span class="wd"><s>${esc(e.wrong)}</s> → <b>${esc(e.right)}</b></span>${topicChip(e.topic)}</li>`).join("");
+  const allDone=done===errs.length;
+  app.innerHTML=`<div class="bar"><button class="back" id="back">← Übersicht</button>${headChip}<div class="dots">${R.items.map((_,k)=>`<i class="${k<R.i?"done":k===R.i?"now":""}"></i>`).join("")}</div></div>
+  <div class="sheet">
+    <div class="task"><p>${it.title?`<span class="ttl">${esc(it.title)}</span><br>`:""}${allDone?"Alle Fehler verbessert!":`Finde ${errs.length} ${errs.length===1?"Fehler":"Fehler"} und tippe ${errs.length===1?"ihn":"sie"} an.`}</p><span class="count">${done} von ${errs.length}</span></div>
+    <p class="satz">${s}</p>
+    <p class="fb" id="fb" aria-live="polite"></p>
+    ${sel?`<div class="korr"><label for="inp">Gefunden! Schreibe das Wort richtig:</label>
+      <div class="row"><input id="inp" value="${esc(sel.wrong)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button class="btn" id="chk">Prüfen</button></div></div>`:""}
+    ${R.showRule&&ruleTopic?`<p class="merke"><strong>Merke: ${TOPIC[ruleTopic].name}</strong>${esc(TOPIC[ruleTopic].rule)}</p>`:""}
+    ${foundList?`<ul class="found">${foundList}</ul>`:""}
+  </div>
+  <div class="tools">
+    ${ruleTopic?`<button class="btn ghost" id="rule">${R.showRule?"Merke-Tipp ausblenden":"Merke-Tipp"}</button>`:""}
+    ${!allDone?`<button class="btn ghost" id="hint" ${it.hint?"disabled":""}>Wo sind die Fehler?</button>`:""}
+    <button class="btn go" id="next" ${allDone?"":"disabled"}>${R.i<R.items.length-1?"Weiter":"Fertig"}</button>
+  </div>`;
+  document.getElementById("back").onclick=home;
+  app.querySelectorAll(".w").forEach(b=>b.onclick=()=>tap(+b.dataset.k,b));
+  const rb=document.getElementById("rule"); if(rb)rb.onclick=()=>{R.showRule=!R.showRule;item();};
+  const hb=document.getElementById("hint"); if(hb)hb.onclick=()=>{it.hint=true;R.pen+=1;item();msg("Die gestrichelten Wörter sind falsch.","");};
+  document.getElementById("next").onclick=()=>{R.sel=null;R.showRule=false;R.i++;R.i<R.items.length?item():end();};
+  const inp=document.getElementById("inp");
+  if(inp){inp.focus();const c=document.getElementById("chk");c.onclick=check;inp.onkeydown=e=>{if(e.key==="Enter")check();};}
+}
+function msg(t,cls){const f=document.getElementById("fb");if(f){f.textContent=t;f.className="fb "+cls;}}
+function tap(k,b){
+  const t=R.items[R.i].tokens[k];
+  if(t.type==="word"){R.pen+=1;b.classList.remove("nope");void b.offsetWidth;b.classList.add("nope");msg(`„${t.text}“ ist richtig geschrieben. Such weiter!`,"bad");return;}
+  R.sel=k;item();msg("Gut gesehen! Dieses Wort ist falsch.","good");
+}
+function check(){
+  const it=R.items[R.i],t=it.tokens[R.sel],v=document.getElementById("inp").value.trim();
+  if(v===t.right){t.state="ok";R.fixed++;R.sel=null;item();msg(`Richtig: „${t.right}“`,"good");return;}
+  t.tries++;R.pen+=1;
+  if(t.tries>=2){t.state="shown";R.fixed++;R.sel=null;item();msg(`Richtig wäre: „${t.right}“. Schau es dir gut an.`,"bad");return;}
+  const hintCase=v.toLowerCase()===t.right.toLowerCase()?" Achte auf groß und klein.":"";
+  msg(v===t.wrong?"Du hast noch nichts verändert. Was muss anders sein?":"Noch nicht ganz. Schau genau hin!"+hintCase,"bad");
+  R.showRule=true; const keep=v; item(); const inp=document.getElementById("inp"); inp.value=keep;
+  msg(v===t.wrong?"Du hast noch nichts verändert. Lies den Merke-Tipp.":"Noch nicht ganz. Lies den Merke-Tipp."+hintCase,"bad");
+}
+function end(){
+  const total=R.items.reduce((n,it)=>n+it.tokens.filter(t=>t.type==="err").length,0);
+  const st=R.pen<=1?3:R.pen<=4?2:1;
+  if((store.stars[R.key]||0)<st){store.stars[R.key]=st;save();}
+  const words=["Weiter üben lohnt sich!","Gute Detektivarbeit!","Super, du bist ein Profi!"];
+  app.innerHTML=`<div class="bar"><button class="back" id="back">← Übersicht</button></div>
+  <div class="sheet end"><div class="big" aria-label="${st} von 3 Sternen">${starStr(st)}</div><h2>${words[st-1]}</h2>
+  <p>Du hast ${total} Fehler verbessert${R.pen?` und dich ${R.pen}-mal geirrt oder Hilfe geholt`:" und dich kein einziges Mal geirrt"}.</p>
+  <div class="tools"><button class="btn ghost" id="again">Nochmal</button><button class="btn go" id="other">Anderes Thema</button></div></div>`;
+  document.getElementById("back").onclick=home;document.getElementById("other").onclick=home;
+  document.getElementById("again").onclick=()=>start(R.id);
+}
+home();
+</script>
+
+</body>
+</html>
