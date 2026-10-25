@@ -26,6 +26,13 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
   .flip{cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
   .flip .front b{font-size:1.05rem}
+  .lexgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));align-items:start}
+  .lexcard{flex-direction:row;align-items:center;gap:12px;justify-content:flex-start}
+  .lexpic{flex:0 0 44%;background:var(--brown-l);border-radius:12px;padding:4px}
+  .lexcard.open .lexpic{background:#fff}
+  .lexpic svg{width:100%;height:auto;display:block}
+  .lextext{flex:1;display:flex;flex-direction:column;gap:6px}
+  @media (max-width:420px){.lexgrid{grid-template-columns:1fr}.lexcard{flex-direction:column;align-items:stretch}.lexpic{flex-basis:auto}}
   .flip .back{display:none;color:var(--ink)}
   .flip.open .back{display:block}
   .flip.open{background:var(--brown-l)}
@@ -262,11 +269,14 @@ function start(){
 
 function lex(){
   app.innerHTML=`<h2>Signal-Lexikon</h2><p class="lead">Tippe auf eine Karte, um zu sehen, was das Signal bedeutet.</p>
-  <div class="grid">${LEX.map((x,i)=>`
-    <div class="card flip" data-i="${i}">
-      <div class="front"><span class="tag ${KLABEL[x.k][1]}">${KLABEL[x.k][0]}</span><br><b>${x.s}</b></div>
-      <div class="back"><p style="margin:8px 0 4px">${x.m}</p><p style="margin:0"><b>Richtig reagieren:</b> ${x.r}</p></div>
-      <div class="hint">antippen</div>
+  <div class="grid lexgrid">${LEX.map((x,i)=>`
+    <div class="card flip lexcard" data-i="${i}">
+      <div class="lexpic">${dogSVG(x.d)}</div>
+      <div class="lextext">
+        <div class="front"><span class="tag ${KLABEL[x.k][1]}">${KLABEL[x.k][0]}</span><br><b>${x.s}</b></div>
+        <div class="back"><p style="margin:8px 0 4px">${x.m}</p><p style="margin:0"><b>Richtig reagieren:</b> ${x.r}</p></div>
+        <div class="hint">antippen</div>
+      </div>
     </div>`).join("")}</div>`;
   app.querySelectorAll(".flip").forEach(c=>c.onclick=()=>c.classList.toggle("open"));
 }
