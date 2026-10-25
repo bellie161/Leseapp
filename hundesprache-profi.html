@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hundesprache Profi – Prüfungsvariante Klasse 5–7</title>
+<style>
+  :root{
+    --bg:#fbf7f2; --card:#ffffff; --ink:#2b2118; --muted:#6f6254;
+    --brown:#8a5a2b; --brown-l:#f3e7d8; --line:#e4d6c5;
+    --ok:#2f7d4a; --ok-l:#e3f3e8; --bad:#b3412e; --bad-l:#f9e4df; --warn:#9a6a00;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+  header{background:var(--brown);color:#fff;padding:14px 16px 12px}
+  header h1{margin:0;font-size:1.45rem;letter-spacing:.2px}
+  .badge{display:inline-block;margin-top:6px;background:#fff;color:var(--brown);font-weight:700;font-size:.8rem;padding:3px 10px;border-radius:999px}
+  .sub{font-size:.85rem;opacity:.9;margin-top:6px}
+  nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--brown-l);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  nav button{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 14px;border-radius:12px;font-size:.95rem;font-weight:600}
+  nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+  main{max-width:820px;margin:0 auto;padding:16px}
+  h2{font-size:1.25rem;margin:4px 0 6px;color:var(--brown)}
+  p.lead{color:var(--muted);margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .flip{cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+  .flip .front b{font-size:1.05rem}
+  .flip .back{display:none;color:var(--ink)}
+  .flip.open .back{display:block}
+  .flip.open{background:var(--brown-l)}
+  .hint{font-size:.8rem;color:var(--muted)}
+  .tag{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px}
+  .t-calm{background:#e7f1fb;color:#2a5a8a}.t-stress{background:#f9eeda;color:#8a5a00}.t-danger{background:var(--bad-l);color:var(--bad)}.t-play{background:var(--ok-l);color:var(--ok)}
+  .dice{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+  .die{width:64px;height:64px;border-radius:14px;border:2px solid var(--brown);background:#fff;position:relative;padding:0}
+  .die.on{background:var(--brown)}
+  .die.on i{background:#fff}
+  .die i{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--brown);transform:translate(-50%,-50%)}
+  .dog{display:flex;justify-content:center;background:var(--brown-l);border-radius:12px;margin:10px 0}
+  .dog svg{width:100%;max-width:320px;height:auto}
+  .step{margin-top:14px}
+  .step h3{font-size:1rem;margin:0 0 8px}
+  .opts{display:flex;flex-direction:column;gap:8px}
+  .opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;font-size:1rem;color:var(--ink)}
+  .opt.sel{border-color:var(--brown);background:var(--brown-l)}
+  .opt.right{border-color:var(--ok);background:var(--ok-l)}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-l)}
+  .opt.missed{border-color:var(--ok);border-style:dashed}
+  .btn{border:0;background:var(--brown);color:#fff;font-weight:700;font-size:1rem;padding:12px 18px;border-radius:12px;margin-top:12px}
+  .btn.ghost{background:#fff;color:var(--brown);border:2px solid var(--brown)}
+  .btn:disabled{opacity:.45}
+  .fb{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:.95rem}
+  .fb.ok{background:var(--ok-l);color:#1d4f2f}.fb.no{background:var(--bad-l);color:#6e2619}
+  .score{font-weight:700;color:var(--brown)}
+  .rf{display:flex;gap:8px;margin-top:8px}
+  .rf .opt{flex:1;text-align:center}
+  .summary li{margin-bottom:6px}
+  footer{max-width:820px;margin:0 auto;padding:8px 16px 28px;color:var(--muted);font-size:.8rem}
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+  .bar i{display:block;height:100%;background:var(--brown);width:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Hundesprache Profi</h1>
+  <span class="badge">Prüfungsvariante · Klasse 5–7</span>
+  <div class="sub">Lerne Pepes Körpersprache lesen – vom Beschwichtigungssignal bis zum richtigen Kommando.</div>
+</header>
+<nav id="nav">
+  <button data-v="start" class="on">Start</button>
+  <button data-v="lex">Signal-Lexikon</button>
+  <button data-v="fall">Fälle 1–6</button>
+  <button data-v="quiz">Signal-Quiz</button>
+  <button data-v="cmd">Kommando-Check</button>
+</nav>
+<main id="app"></main>
+<footer>Für ältere Schülerinnen und Schüler (Klasse 5–7). In der Grundschule bitte die Apps „Schulhund“ oder „Schulhund Schulanfänger“ verwenden.</footer>
+
+<script>
+/* ---------- Hund als einfache Zeichnung ---------- */
+function dogSVG(state){
+  // state: relaxed | play | stress | lying | stiff | sniff | turn
+  const fur="#c9975f", dark="#9c6a3a", nose="#3b2a1e";
+  let body, head, tail, ears, legs, extra="";
+  const eye=(cx,cy,white)=>white
+    ? `<ellipse cx="${cx}" cy="${cy}" rx="5.5" ry="4.5" fill="#fff" stroke="${nose}" stroke-width="1"/><circle cx="${cx+2.5}" cy="${cy}" r="2.4" fill="${nose}"/>`
+    : `<circle cx="${cx}" cy="${cy}" r="3.2" fill="${nose}"/>`;
+  const curls=(x,y,w,h)=>{let s="";for(let i=0;i<7;i++){s+=`<circle cx="${x+ (i%4)*w/4 + 8}" cy="${y+ Math.floor(i/4)*h/2 + 8}" r="6" fill="${dark}" opacity=".18"/>`;}return s;};
+  if(state==="lying"){
+    body=`<ellipse cx="160" cy="132" rx="78" ry="26" fill="${fur}"/>`+curls(105,115,110,28);
+    legs=`<rect x="70" y="140" width="46" height="12" rx="6" fill="${fur}"/><rect x="200" y="142" width="40" height="11" rx="6" fill="${fur}"/>`;
+    head=`<ellipse cx="78" cy="122" rx="30" ry="24" fill="${fur}"/><ellipse cx="54" cy="130" rx="13" ry="9" fill="${fur}"/><circle cx="43" cy="129" r="5" fill="${nose}"/>`+
+         `<path d="M66 118 q6 3 12 0" stroke="${nose}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+    ears=`<ellipse cx="96" cy="128" rx="11" ry="20" fill="${dark}"/>`;
+    tail=`<path d="M236 134 q28 6 40 0" stroke="${fur}" stroke-width="12" fill="none" stroke-linecap="round"/>`;
+    return wrap(body+legs+tail+head+ears);
+  }
+  let by=100, hx=78, hy=70, earAng=0, tailPath="M232 92 q30 -30 26 -52", tailDash="", headTilt=0, eyeWhite=false;
+  let legY=118, frontLegY=118, frontLegH=48;
+  if(state==="play"){ by=104; hx=70; hy=112; frontLegY=128; frontLegH=26; tailPath="M232 86 q34 -36 28 -60";
+    extra=`<path d="M262 20 l8 -6 M268 32 l10 -2" stroke="${dark}" stroke-width="3" stroke-linecap="round"/>`+
+          `<rect x="20" y="130" width="34" height="9" rx="4" fill="#d1495b" transform="rotate(-12 37 134)"/>`; }
+  if(state==="stress"){ hy=82; earAng=35; tailPath="M232 104 q10 26 -14 40"; eyeWhite=true; }
+  if(state==="stiff"){ hy=64; earAng=40; tailPath="M232 92 q20 -6 32 -8"; eyeWhite=true;
+    extra=`<path d="M120 54 l6 -10 M140 52 l4 -11 M160 52 l2 -11" stroke="${dark}" stroke-width="3" stroke-linecap="round"/>`; }
+  if(state==="sniff"){ hy=128; hx=74; tailPath="M232 92 q22 -14 26 -34"; }
+  if(state==="turn"){ headTilt=-28; earAng=12; tailPath="M232 96 q22 -2 30 10";
+    extra=`<path d="M48 82 q-6 8 2 12" stroke="#d1495b" stroke-width="5" fill="none" stroke-linecap="round"/>`; }
+  body=`<ellipse cx="160" cy="${by}" rx="76" ry="32" fill="${fur}"/>`+curls(100,by-26,120,40);
+  legs=`<rect x="98" y="${frontLegY}" width="16" height="${frontLegH}" rx="7" fill="${fur}"/><rect x="122" y="${frontLegY}" width="16" height="${frontLegH}" rx="7" fill="${fur}"/>`+
+       `<rect x="186" y="${legY}" width="16" height="48" rx="7" fill="${fur}"/><rect x="210" y="${legY}" width="16" height="48" rx="7" fill="${fur}"/>`;
+  tail=`<path d="${tailPath}" stroke="${fur}" stroke-width="13" fill="none" stroke-linecap="round"/>`;
+  const neck=`<path d="M${hx+10} ${hy+10} L112 ${by-14} L120 ${by+10} L${hx+14} ${hy+26} Z" fill="${fur}"/>`;
+  head=`<g transform="rotate(${headTilt} ${hx} ${hy})"><circle cx="${hx}" cy="${hy}" r="30" fill="${fur}"/>`+
+       `<circle cx="${hx-6}" cy="${hy-22}" r="10" fill="${dark}" opacity=".25"/><circle cx="${hx+10}" cy="${hy-24}" r="9" fill="${dark}" opacity=".25"/>`+
+       `<ellipse cx="${hx-28}" cy="${hy+8}" rx="18" ry="12" fill="${fur}"/><circle cx="${hx-43}" cy="${hy+6}" r="6" fill="${nose}"/>`+
+       eye(hx-10,hy-4,eyeWhite)+
+       `<ellipse cx="${hx+14}" cy="${hy+6}" rx="11" ry="${earAng>20?14:22}" fill="${dark}" transform="rotate(${earAng} ${hx+14} ${hy-10})"/></g>`;
+  return wrap(tail+legs+body+neck+head+extra);
+  function wrap(inner){return `<svg viewBox="0 0 300 175" role="img" aria-label="Zeichnung von Pepe"><ellipse cx="160" cy="168" rx="120" ry="6" fill="#000" opacity=".06"/>${inner}</svg>`;}
+}
+
+/* ---------- Daten ---------- */
+const LEX=[
+  {s:"Kopf wegdrehen",k:"stress",m:"Beschwichtigungssignal: „Mir ist das zu nah oder zu viel.“",r:"Langsamer werden, Abstand geben.",d:"turn"},
+  {s:"Über die Nase lecken",k:"stress",m:"Unsicherheit, der Hund möchte die Situation beruhigen.",r:"Ruhig bleiben, nicht weiter bedrängen.",d:"turn"},
+  {s:"Gähnen, obwohl er nicht müde ist",k:"stress",m:"Stress abbauen, Anspannung lösen.",r:"Pause machen, die Situation entspannen.",d:"relaxed"},
+  {s:"Blinzeln, Blick abwenden",k:"stress",m:"Höfliches Signal: „Ich will keinen Streit.“",r:"Den Hund nicht anstarren.",d:"turn"},
+  {s:"Eine Vorderpfote anheben",k:"stress",m:"Unsicherheit oder abwartende Spannung.",r:"Abwarten, nichts erzwingen.",d:"relaxed"},
+  {s:"Plötzlich am Boden schnüffeln",k:"stress",m:"Ablenkung, um Spannung zu lösen.",r:"Dem Hund Zeit lassen.",d:"sniff"},
+  {s:"Sich schütteln, obwohl er trocken ist",k:"stress",m:"Stress „abschütteln“ nach einer aufregenden Situation.",r:"Kurz Ruhe gönnen.",d:"relaxed"},
+  {s:"Erstarren, steifer Körper",k:"danger",m:"Warnsignal: höchste Anspannung.",r:"Sofort stoppen, Abstand, Lehrkraft holen.",d:"stiff"},
+  {s:"Das Weiße der Augen ist sichtbar",k:"danger",m:"Angst oder starker Stress („Walauge“).",r:"Loslassen, Abstand, Lehrkraft holen.",d:"stiff"},
+  {s:"Ohren angelegt, Rute eingeklemmt",k:"danger",m:"Angst.",r:"Ruhig zurückziehen, Hund nicht anfassen.",d:"stress"},
+  {s:"Spielverbeugung (Vorderkörper unten, Po oben)",k:"play",m:"Spielaufforderung: „Spielst du mit mir?“",r:"Nur mit Erlaubnis der Lehrkraft spielen.",d:"play"},
+  {s:"Weicher Körper, Rute locker",k:"calm",m:"Entspannt und zufrieden.",r:"Ruhe genießen lassen.",d:"relaxed"}
+];
+const KLABEL={stress:["Beschwichtigung / Stress","t-stress"],danger:["Warnsignal","t-danger"],play:["Spiel","t-play"],calm:["Entspannt","t-calm"]};
+
+const CASES=[
+ {t:"Der Sprint",d:"turn",text:"Ein Schüler rennt laut rufend auf Pepe zu, um ihn zu begrüßen. Pepe dreht den Kopf zur Seite und leckt sich kurz über die Nase.",
+  sig:{opts:["Kopf wegdrehen","Über die Nase lecken","Spielverbeugung","Rute eingeklemmt","Schwanzwedeln"],ok:[0,1]},
+  mean:{opts:["„Das ist mir zu wild, bitte ruhiger.“","„Super, ich freue mich riesig!“","„Ich habe Hunger.“"],ok:0},
+  react:{opts:["Stehen bleiben, leise werden und Pepe von selbst kommen lassen.","Schneller hinlaufen, damit Pepe merkt, dass man sich freut.","Pepe festhalten, damit er sich beruhigt."],ok:0},
+  why:"Kopf wegdrehen und Nase lecken sind Beschwichtigungssignale. Pepe zeigt höflich, dass ihm die Begrüßung zu heftig ist."},
+ {t:"Auf der Decke",d:"lying",text:"Pepe liegt auf seiner Decke im Rückzugsort. Drei Schüler stellen sich direkt vor ihn. Pepe gähnt, blinzelt und legt den Kopf auf die Pfoten.",
+  sig:{opts:["Gähnen","Blinzeln","Kopf ablegen","Spielverbeugung","Ohren nach vorn gespitzt"],ok:[0,1,2]},
+  mean:{opts:["„Ich möchte Ruhe.“","„Kommt her und streichelt mich!“","„Ich will spielen.“"],ok:0},
+  react:{opts:["Weggehen – die Decke ist Tabuzone.","Leise neben ihm sitzen und ihn streicheln.","Pepe ein Kommando geben, damit er aufsteht."],ok:0},
+  why:"Auf seinem Ruheplatz arbeitet Pepe nicht. Gähnen und Blinzeln zeigen, dass ihm die Nähe gerade zu viel ist."},
+ {t:"Die Verbeugung",d:"play",text:"Pepe streckt die Vorderbeine nach vorn, der Po bleibt oben. Seine Rute wedelt locker, im Maul hält er sein Zergel und schaut eine Schülerin an.",
+  sig:{opts:["Spielverbeugung","Lockere Rute","Spielzeug im Maul","Erstarren","Walauge"],ok:[0,1,2]},
+  mean:{opts:["„Spielst du mit mir?“","„Ich habe Angst.“","„Lass mich in Ruhe.“"],ok:0},
+  react:{opts:["Erst die Lehrkraft fragen, ob gespielt werden darf.","Sofort am Zergel ziehen und wild toben.","Weglaufen, damit Pepe hinterherrennt."],ok:0},
+  why:"Die Spielverbeugung ist eine klare Einladung. Im Unterricht entscheidet aber die Lehrkraft, ob und wie gespielt wird."},
+ {t:"Das Pausenbrot",d:"sniff",text:"In der Pause hält ein Schüler sein Pausenbrot tief neben dem Stuhl. Pepe schnüffelt und schaut abwechselnd zum Brot und zum Schüler.",
+  sig:{opts:["Schnüffeln","Blick zwischen Brot und Kind","Ohren angelegt","Gähnen","Pfote heben"],ok:[0,1]},
+  mean:{opts:["„Das riecht lecker, bekomme ich etwas?“","„Ich habe Angst vor dir.“","„Ich bin müde.“"],ok:0},
+  react:{opts:["Brot hochnehmen, nicht füttern und der Lehrkraft Bescheid geben.","Ein kleines Stück abgeben, er schaut ja so lieb.","Das Brot schnell wegziehen und laut „Nein!“ rufen."],ok:0},
+  why:"Pepe zeigt Interesse am Futter. Schulhunde bekommen nur von der Lehrkraft etwas, sonst lernt er zu betteln."},
+ {t:"Die Umarmung",d:"stiff",text:"Eine Schülerin beugt sich von oben über Pepe und umarmt ihn fest. Pepe wird ganz steif, legt die Ohren an, und man sieht das Weiße in seinen Augen.",
+  sig:{opts:["Steifer Körper","Ohren angelegt","Weißes in den Augen","Lockere Rute","Spielverbeugung"],ok:[0,1,2]},
+  mean:{opts:["„Ich habe Angst, lass mich los!“","„Ich kuschle gern.“","„Ich will spielen.“"],ok:0},
+  react:{opts:["Sofort loslassen, Abstand nehmen und die Lehrkraft holen.","Fester drücken, damit er sich sicher fühlt.","Ihm ins Ohr flüstern, dass alles gut ist."],ok:0},
+  why:"Erstarren und Walauge sind Warnsignale. Umarmungen von oben empfinden viele Hunde als bedrohlich – Hunde nie umarmen."},
+ {t:"Das Kommando",d:"turn",text:"Ein Schüler sagt „Sitz!“ – erst normal, dann immer lauter, insgesamt dreimal. Pepe setzt sich nicht. Er schaut weg und kratzt sich am Hals.",
+  sig:{opts:["Wegschauen","Kratzen","Spielverbeugung","Schwanzwedeln","Gähnen"],ok:[0,1]},
+  mean:{opts:["„Ich bin verunsichert, das ist mir zu viel.“","„Ich habe keine Lust, du bist mir egal.“","„Ich habe das Kommando vergessen.“"],ok:0},
+  react:{opts:["Das Kommando einmal ruhig sagen, das Handzeichen zeigen und warten – die Lehrkraft hilft.","Noch lauter rufen, bis er sich setzt.","Pepe hinunterdrücken."],ok:0},
+  why:"Lautes Wiederholen erzeugt Druck. Pepe zeigt mit Wegschauen und Kratzen Stress – ein klares, einmaliges Signal hilft ihm."}
+];
+
+const CMD=[
+ ["Ich sage das Kommando einmal – ruhig und deutlich.",true],
+ ["Wenn Pepe nicht reagiert, rufe ich einfach lauter.",false],
+ ["Ich zeige dazu das vereinbarte Handzeichen (bei „Sitz“: gestreckter Zeigefinger).",true],
+ ["Ich beuge mich über Pepe, damit er mich besser hört.",false],
+ ["Die Lehrkraft entscheidet, ob Pepe gerade arbeiten mag.",true],
+ ["Auf seinem Ruheplatz darf ich Pepe Kommandos geben.",false],
+ ["Wenn Pepe es geschafft hat, lobe ich ihn.",true],
+ ["Wenn Pepe gähnt oder wegschaut, macht er eine Pause.",true]
+];
+
+/* ---------- Ansichten ---------- */
+const app=document.getElementById("app");
+const state={fall:0, fallStep:{}, quiz:null, cmd:{}};
+
+function show(v){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  ({start,lex,fall,quiz,cmd})[v]();
+  window.scrollTo(0,0);
+}
+document.getElementById("nav").addEventListener("click",e=>{if(e.target.dataset.v)show(e.target.dataset.v);});
+
+function start(){
+  app.innerHTML=`
+  <div class="card">
+    <h2>So arbeitet ihr</h2>
+    <p>Hunde sprechen mit dem ganzen Körper. Viele Signale sind leise: Ein kurzes Nasenlecken oder ein Gähnen kann bedeuten, dass dem Hund etwas zu viel wird. Diese Signale nennt man <b>Beschwichtigungssignale</b>.</p>
+    <ol>
+      <li><b>Signal-Lexikon:</b> Lernt die wichtigsten Signale kennen.</li>
+      <li><b>Fälle 1–6:</b> Löst den Fall mit eurer Nummer. Ihr stellt ihn gleich der Klasse vor.</li>
+      <li><b>Signal-Quiz:</b> Testet euer Wissen.</li>
+      <li><b>Kommando-Check:</b> So gebt ihr Pepe ein Kommando richtig.</li>
+    </ol>
+    <button class="btn" onclick="show('fall')">Zu den Fällen</button>
+    <button class="btn ghost" onclick="show('lex')">Erst das Lexikon</button>
+  </div>
+  <div class="dog">${dogSVG("relaxed")}</div>`;
+}
+
+function lex(){
+  app.innerHTML=`<h2>Signal-Lexikon</h2><p class="lead">Tippe auf eine Karte, um zu sehen, was das Signal bedeutet.</p>
+  <div class="grid">${LEX.map((x,i)=>`
+    <div class="card flip" data-i="${i}">
+      <div class="front"><span class="tag ${KLABEL[x.k][1]}">${KLABEL[x.k][0]}</span><br><b>${x.s}</b></div>
+      <div class="back"><p style="margin:8px 0 4px">${x.m}</p><p style="margin:0"><b>Richtig reagieren:</b> ${x.r}</p></div>
+      <div class="hint">antippen</div>
+    </div>`).join("")}</div>`;
+  app.querySelectorAll(".flip").forEach(c=>c.onclick=()=>c.classList.toggle("open"));
+}
+
+const PIPS={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],6:[[28,25],[72,25],[28,50],[72,50],[28,75],[72,75]]};
+function dieBtn(n,on){return `<button class="die ${on?"on":""}" data-n="${n}" aria-label="Fall ${n}">${PIPS[n].map(p=>`<i style="left:${p[0]}%;top:${p[1]}%"></i>`).join("")}</button>`;}
+
+function fall(){
+  const i=state.fall, c=CASES[i];
+  const st=state.fallStep[i] || (state.fallStep[i]={step:0,sig:[],mean:null,react:null,done:[false,false,false]});
+  let h=`<h2>Fälle 1–6</h2><p class="lead">Wählt die Nummer, die Pepe für euch gewürfelt hat.</p>
+  <div class="dice">${[1,2,3,4,5,6].map(n=>dieBtn(n,n-1===i)).join("")}</div>
+  <div class="card"><h2>Fall ${i+1}: ${c.t}</h2><div class="dog">${dogSVG(c.d)}</div><p>${c.text}</p>`;
+
+  // Schritt 1
+  h+=`<div class="step"><h3>1. Welche Signale zeigt Pepe? <span class="hint">(mehrere richtig)</span></h3><div class="opts">`+
+    c.sig.opts.map((o,k)=>{let cl="opt";
+      if(st.done[0]){ if(c.sig.ok.includes(k)&&st.sig.includes(k))cl+=" right"; else if(st.sig.includes(k))cl+=" wrong"; else if(c.sig.ok.includes(k))cl+=" missed"; }
+      else if(st.sig.includes(k))cl+=" sel";
+      return `<button class="${cl}" data-s="sig" data-k="${k}">${o}</button>`;}).join("")+`</div>`;
+  if(!st.done[0]) h+=`<button class="btn" data-check="0" ${st.sig.length?"":"disabled"}>Prüfen</button>`;
+  else { const ok=same(st.sig,c.sig.ok); h+=`<div class="fb ${ok?"ok":"no"}">${ok?"Genau richtig!":"Fast. Gestrichelt umrandet sind die Signale, die noch fehlen."}</div>`; }
+  h+=`</div>`;
+
+  // Schritt 2 + 3
+  [["mean","2. Was will Pepe damit sagen?",1],["react","3. Wie reagiert man richtig?",2]].forEach(([key,title,idx])=>{
+    if(!st.done[idx-1]) return;
+    h+=`<div class="step"><h3>${title}</h3><div class="opts">`+
+      c[key].opts.map((o,k)=>{let cl="opt";
+        if(st.done[idx]){ if(k===c[key].ok)cl+=" right"; else if(st[key]===k)cl+=" wrong"; }
+        else if(st[key]===k)cl+=" sel";
+        return `<button class="${cl}" data-s="${key}" data-k="${k}">${o}</button>`;}).join("")+`</div>`;
+    if(!st.done[idx]) h+=`<button class="btn" data-check="${idx}" ${st[key]!==null?"":"disabled"}>Prüfen</button>`;
+    else h+=`<div class="fb ${st[key]===c[key].ok?"ok":"no"}">${st[key]===c[key].ok?"Richtig!":"Nicht ganz – die richtige Antwort ist grün markiert."}</div>`;
+    h+=`</div>`;
+  });
+
+  if(st.done[2]){
+    h+=`<div class="card" style="background:var(--brown-l);margin-top:14px"><b>Eure Lösung zum Vorstellen</b>
+      <ul class="summary">
+        <li><b>Signale:</b> ${c.sig.ok.map(k=>c.sig.opts[k]).join(", ")}</li>
+        <li><b>Bedeutung:</b> ${c.mean.opts[c.mean.ok]}</li>
+        <li><b>Reaktion:</b> ${c.react.opts[c.react.ok]}</li>
+      </ul><p style="margin:0"><b>Begründung:</b> ${c.why}</p></div>
+      <button class="btn ghost" data-reset="1">Fall neu starten</button>`;
+  }
+  h+=`</div>`;
+  app.innerHTML=h;
+
+  app.querySelectorAll(".die").forEach(b=>b.onclick=()=>{state.fall=+b.dataset.n-1;fall();});
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const key=b.dataset.s,k=+b.dataset.k, idx={sig:0,mean:1,react:2}[key];
+    if(st.done[idx])return;
+    if(key==="sig"){ st.sig=st.sig.includes(k)?st.sig.filter(x=>x!==k):[...st.sig,k]; } else st[key]=k;
+    fall();
+  });
+  app.querySelectorAll("[data-check]").forEach(b=>b.onclick=()=>{st.done[+b.dataset.check]=true;fall();});
+  const r=app.querySelector("[data-reset]"); if(r) r.onclick=()=>{delete state.fallStep[i];fall();};
+}
+function same(a,b){return a.length===b.length&&a.every(x=>b.includes(x));}
+
+function quiz(){
+  if(!state.quiz){
+    const order=LEX.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,10);
+    state.quiz={order,pos:0,pts:0,ans:null};
+  }
+  const q=state.quiz;
+  if(q.pos>=q.order.length){
+    app.innerHTML=`<h2>Signal-Quiz</h2><div class="card"><p class="score">${q.pts} von ${q.order.length} Punkten</p>
+      <p>${q.pts>=8?"Stark! Ihr seid echte Hundesprache-Profis.":q.pts>=5?"Gut gemacht – schaut euch im Lexikon die schwierigen Signale noch einmal an.":"Übt noch einmal mit dem Signal-Lexikon."}</p>
+      <button class="btn" id="again">Noch einmal</button></div>`;
+    document.getElementById("again").onclick=()=>{state.quiz=null;quiz();};
+    return;
+  }
+  const x=LEX[q.order[q.pos]];
+  const cats=["stress","danger","play","calm"];
+  app.innerHTML=`<h2>Signal-Quiz</h2><p class="lead">Frage ${q.pos+1} von ${q.order.length} · <span class="score">${q.pts} ${q.pts===1?"Punkt":"Punkte"}</span></p>
+   <div class="bar"><i style="width:${q.pos/q.order.length*100}%"></i></div>
+   <div class="card"><div class="dog">${dogSVG(x.d)}</div><p><b>Pepe zeigt:</b> ${x.s}</p><p>Zu welcher Gruppe gehört das Signal?</p>
+   <div class="opts">${cats.map(k=>{let cl="opt"; if(q.ans!==null){ if(k===x.k)cl+=" right"; else if(k===q.ans)cl+=" wrong"; }
+     return `<button class="${cl}" data-k="${k}">${KLABEL[k][0]}</button>`;}).join("")}</div>
+   ${q.ans!==null?`<div class="fb ${q.ans===x.k?"ok":"no"}">${x.m} <b>Richtig reagieren:</b> ${x.r}</div><button class="btn" id="next">Weiter</button>`:""}</div>`;
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ if(q.ans!==null)return; q.ans=b.dataset.k; if(q.ans===x.k)q.pts++; quiz(); });
+  const n=document.getElementById("next"); if(n) n.onclick=()=>{q.pos++;q.ans=null;quiz();};
+}
+
+function cmd(){
+  const a=state.cmd, answered=Object.keys(a).length, pts=CMD.filter((c,i)=>a[i]===c[1]).length;
+  app.innerHTML=`<h2>Kommando-Check</h2><p class="lead">Richtig oder falsch? So gebt ihr Pepe gleich ein Kommando.</p>
+  ${CMD.map((c,i)=>{const done=i in a;
+    const cl=v=>"opt"+(done?(v===c[1]?" right":(a[i]===v?" wrong":"")):"");
+    return `<div class="card"><b>${c[0]}</b><div class="rf"><button class="${cl(true)}" data-i="${i}" data-v="1">Richtig</button><button class="${cl(false)}" data-i="${i}" data-v="0">Falsch</button></div></div>`;}).join("")}
+  ${answered===CMD.length?`<div class="card" style="background:var(--brown-l)"><p class="score">${pts} von ${CMD.length} richtig</p><p style="margin:0">Merksatz: <b>Einmal sagen, Handzeichen zeigen, warten, loben.</b></p></div><button class="btn ghost" id="cr">Neu starten</button>`:""}`;
+  app.querySelectorAll(".rf .opt").forEach(b=>b.onclick=()=>{const i=+b.dataset.i; if(i in a)return; a[i]=b.dataset.v==="1"; cmd();});
+  const r=document.getElementById("cr"); if(r) r.onclick=()=>{state.cmd={};cmd();};
+}
+
+start();
+</script>
+</body>
+</html>
