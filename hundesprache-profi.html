@@ -38,7 +38,7 @@
   .die.on i{background:#fff}
   .die i{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--brown);transform:translate(-50%,-50%)}
   .dog{display:flex;justify-content:center;background:var(--brown-l);border-radius:12px;margin:10px 0}
-  .dog svg{width:100%;max-width:320px;height:auto}
+  .dog svg{width:100%;max-width:380px;height:auto}
   .step{margin-top:14px}
   .step h3{font-size:1rem;margin:0 0 8px}
   .opts{display:flex;flex-direction:column;gap:8px}
@@ -78,73 +78,123 @@
 <footer>Für ältere Schülerinnen und Schüler (Klasse 5–7). In der Grundschule bitte die Apps „Schulhund“ oder „Schulhund Schulanfänger“ verwenden.</footer>
 
 <script>
-/* ---------- Hund als einfache Zeichnung ---------- */
-function dogSVG(state){
-  // state: relaxed | play | stress | lying | stiff | sniff | turn
-  const fur="#c9975f", dark="#9c6a3a", nose="#3b2a1e";
-  let body, head, tail, ears, legs, extra="";
-  const eye=(cx,cy,white)=>white
-    ? `<ellipse cx="${cx}" cy="${cy}" rx="5.5" ry="4.5" fill="#fff" stroke="${nose}" stroke-width="1"/><circle cx="${cx+2.5}" cy="${cy}" r="2.4" fill="${nose}"/>`
-    : `<circle cx="${cx}" cy="${cy}" r="3.2" fill="${nose}"/>`;
-  const curls=(x,y,w,h)=>{let s="";for(let i=0;i<7;i++){s+=`<circle cx="${x+ (i%4)*w/4 + 8}" cy="${y+ Math.floor(i/4)*h/2 + 8}" r="6" fill="${dark}" opacity=".18"/>`;}return s;};
-  if(state==="lying"){
-    body=`<ellipse cx="160" cy="132" rx="78" ry="26" fill="${fur}"/>`+curls(105,115,110,28);
-    legs=`<rect x="70" y="140" width="46" height="12" rx="6" fill="${fur}"/><rect x="200" y="142" width="40" height="11" rx="6" fill="${fur}"/>`;
-    head=`<ellipse cx="78" cy="122" rx="30" ry="24" fill="${fur}"/><ellipse cx="54" cy="130" rx="13" ry="9" fill="${fur}"/><circle cx="43" cy="129" r="5" fill="${nose}"/>`+
-         `<path d="M66 118 q6 3 12 0" stroke="${nose}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
-    ears=`<ellipse cx="96" cy="128" rx="11" ry="20" fill="${dark}"/>`;
-    tail=`<path d="M236 134 q28 6 40 0" stroke="${fur}" stroke-width="12" fill="none" stroke-linecap="round"/>`;
-    return wrap(body+legs+tail+head+ears);
-  }
-  let by=100, hx=78, hy=70, earAng=0, tailPath="M232 92 q30 -30 26 -52", tailDash="", headTilt=0, eyeWhite=false;
-  let legY=118, frontLegY=118, frontLegH=48;
-  if(state==="play"){ by=104; hx=70; hy=112; frontLegY=128; frontLegH=26; tailPath="M232 86 q34 -36 28 -60";
-    extra=`<path d="M262 20 l8 -6 M268 32 l10 -2" stroke="${dark}" stroke-width="3" stroke-linecap="round"/>`+
-          `<rect x="20" y="130" width="34" height="9" rx="4" fill="#d1495b" transform="rotate(-12 37 134)"/>`; }
-  if(state==="stress"){ hy=82; earAng=35; tailPath="M232 104 q10 26 -14 40"; eyeWhite=true; }
-  if(state==="stiff"){ hy=64; earAng=40; tailPath="M232 92 q20 -6 32 -8"; eyeWhite=true;
-    extra=`<path d="M120 54 l6 -10 M140 52 l4 -11 M160 52 l2 -11" stroke="${dark}" stroke-width="3" stroke-linecap="round"/>`; }
-  if(state==="sniff"){ hy=128; hx=74; tailPath="M232 92 q22 -14 26 -34"; }
-  if(state==="turn"){ headTilt=-28; earAng=12; tailPath="M232 96 q22 -2 30 10";
-    extra=`<path d="M48 82 q-6 8 2 12" stroke="#d1495b" stroke-width="5" fill="none" stroke-linecap="round"/>`; }
-  body=`<ellipse cx="160" cy="${by}" rx="76" ry="32" fill="${fur}"/>`+curls(100,by-26,120,40);
-  legs=`<rect x="98" y="${frontLegY}" width="16" height="${frontLegH}" rx="7" fill="${fur}"/><rect x="122" y="${frontLegY}" width="16" height="${frontLegH}" rx="7" fill="${fur}"/>`+
-       `<rect x="186" y="${legY}" width="16" height="48" rx="7" fill="${fur}"/><rect x="210" y="${legY}" width="16" height="48" rx="7" fill="${fur}"/>`;
-  tail=`<path d="${tailPath}" stroke="${fur}" stroke-width="13" fill="none" stroke-linecap="round"/>`;
-  const neck=`<path d="M${hx+10} ${hy+10} L112 ${by-14} L120 ${by+10} L${hx+14} ${hy+26} Z" fill="${fur}"/>`;
-  head=`<g transform="rotate(${headTilt} ${hx} ${hy})"><circle cx="${hx}" cy="${hy}" r="30" fill="${fur}"/>`+
-       `<circle cx="${hx-6}" cy="${hy-22}" r="10" fill="${dark}" opacity=".25"/><circle cx="${hx+10}" cy="${hy-24}" r="9" fill="${dark}" opacity=".25"/>`+
-       `<ellipse cx="${hx-28}" cy="${hy+8}" rx="18" ry="12" fill="${fur}"/><circle cx="${hx-43}" cy="${hy+6}" r="6" fill="${nose}"/>`+
-       eye(hx-10,hy-4,eyeWhite)+
-       `<ellipse cx="${hx+14}" cy="${hy+6}" rx="11" ry="${earAng>20?14:22}" fill="${dark}" transform="rotate(${earAng} ${hx+14} ${hy-10})"/></g>`;
-  return wrap(tail+legs+body+neck+head+extra);
-  function wrap(inner){return `<svg viewBox="0 0 300 175" role="img" aria-label="Zeichnung von Pepe"><ellipse cx="160" cy="168" rx="120" ry="6" fill="#000" opacity=".06"/>${inner}</svg>`;}
+/* ---------- Pepe als Zeichnung (Stil wie in der App „Schulhund“) ---------- */
+const PEPE={fur:"#dcae74",dark:"#c08d55",light:"#f3dcb5",line:"#6b4a2e",nose:"#4a2e1f",collar:"#d64545"};
+const POSES={
+  relaxed:{legs:"stand",dy:0,tilt:0,hx:0,hy:0,hr:0,ear:0,tail:"loose",mouth:"smile",eyes:"open"},
+  play:   {legs:"bow",dy:0,tilt:18,hx:0,hy:0,hr:-22,ear:-6,tail:"wag",mouth:"open",eyes:"open",toy:true},
+  fear:   {legs:"crouch",dy:20,tilt:0,hx:-12,hy:28,hr:18,ear:55,tail:"tucked",mouth:"closed",eyes:"wide"},
+  stiff:  {legs:"stand",dy:0,tilt:0,hx:0,hy:-4,hr:-4,ear:45,tail:"stiff",mouth:"closed",eyes:"wide",extra:"freeze"},
+  sniff:  {legs:"stand",dy:0,tilt:4,hx:-8,hy:112,hr:52,ear:8,tail:"loose",mouth:"closed",eyes:"open",extra:"sniff"},
+  turn:   {legs:"stand",dy:0,tilt:0,hx:-8,hy:-8,hr:-34,ear:18,tail:"down",mouth:"closed",eyes:"side"},
+  lick:   {legs:"stand",dy:0,tilt:0,hx:0,hy:4,hr:6,ear:22,tail:"down",mouth:"closed",eyes:"open",lick:true},
+  yawn:   {legs:"stand",dy:4,tilt:0,hx:0,hy:6,hr:-10,ear:28,tail:"down",mouth:"yawn",eyes:"closed"},
+  blink:  {legs:"stand",dy:0,tilt:0,hx:0,hy:2,hr:-8,ear:16,tail:"loose",mouth:"closed",eyes:"blink"},
+  paw:    {legs:"paw",dy:0,tilt:0,hx:0,hy:4,hr:4,ear:18,tail:"down",mouth:"closed",eyes:"open"},
+  shake:  {legs:"stand",dy:0,tilt:0,hx:0,hy:-2,hr:-4,ear:-12,tail:"loose",mouth:"closed",eyes:"closed",extra:"shake"},
+  rest:   {legs:"lie",dy:55,tilt:0,hx:22,hy:48,hr:8,ear:6,tail:"flat",mouth:"yawn",eyes:"closed"}
+};
+const TAILS={
+  loose:"M100 152 Q66 150 58 196", wag:"M100 150 Q62 118 80 70",
+  down:"M100 152 Q78 190 86 232", tucked:"M100 160 Q98 215 128 250",
+  stiff:"M100 146 Q86 110 92 64", flat:"M100 168 Q66 205 26 210"
+};
+let uid=0;
+function dogSVG(pk){
+  const d=PEPE, p=POSES[pk]||POSES.relaxed, u="curl"+(uid++), L=d.line;
+  const pass=(sh,fill,stroke)=>`<g fill="${fill}"${stroke?` stroke="${L}" stroke-width="6"`:""}>${sh}</g>`;
+  const tri=sh=>pass(sh,d.fur,true)+pass(sh,d.fur)+pass(sh,`url(#${u})`);
+  const bodySh='<ellipse cx="190" cy="165" rx="95" ry="50"/><circle cx="112" cy="150" r="30"/><circle cx="268" cy="172" r="28"/><ellipse cx="262" cy="138" rx="30" ry="42" transform="rotate(-25 262 138)"/>';
+  const headSh='<circle r="40"/><circle cx="-20" cy="-32" r="13"/><circle cx="0" cy="-41" r="14"/><circle cx="20" cy="-33" r="13"/>';
+
+  // Schwanz
+  const tp=TAILS[p.tail], sw=p.tail==="stiff"?12:18;
+  let tail=`<path d="${tp}" stroke="${L}" stroke-width="${sw+6}" fill="none" stroke-linecap="round"/><path d="${tp}" stroke="${d.fur}" stroke-width="${sw}" fill="none" stroke-linecap="round"/>`;
+  if(p.tail==="wag") tail=`<g>${tail}<animateTransform attributeName="transform" type="rotate" values="-14 100 150;16 100 150;-14 100 150" dur="0.5s" repeatCount="indefinite"/></g>`;
+
+  // Beine
+  const Lg=(x,top,bot,c)=>`<rect x="${x-13}" y="${top}" width="26" height="${bot-top}" rx="13" fill="${c}" stroke="${L}" stroke-width="2.5"/><ellipse cx="${x+5}" cy="${bot-3}" rx="17" ry="9" fill="${c}" stroke="${L}" stroke-width="2.5"/>`;
+  // gebeugtes Bein als Linienzug: Schulter -> Ellenbogen -> Pfote
+  const limb=(pts,c,paw)=>{const dd="M"+pts.map(q=>q.join(" ")).join(" L");const e=pts[pts.length-1];
+    return `<path d="${dd}" stroke="${L}" stroke-width="31" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${dd}" stroke="${c}" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`+
+      `<ellipse cx="${e[0]+paw[0]}" cy="${e[1]+paw[1]}" rx="17" ry="10" fill="${c}" stroke="${L}" stroke-width="2.5"/>`;};
+  const Fa=(x,y,w,c)=>`<rect x="${x}" y="${y}" width="${w}" height="22" rx="11" fill="${c}" stroke="${L}" stroke-width="2.5"/>`;
+  let legsBack="",legsFront="";
+  if(p.legs==="stand"||p.legs==="crouch"){const t=p.legs==="stand"?175:195;
+    legsBack=Lg(118,t,264,d.dark)+Lg(250,t,264,d.dark)+Lg(142,t,264,d.fur)+Lg(272,t,264,d.fur);}
+  else if(p.legs==="bow"){
+    // Hinterbeine gestreckt, Vorderbeine bis zum Ellenbogen auf dem Boden
+    legsBack=Lg(118,165,264,d.dark)+Lg(142,165,264,d.fur)+limb([[236,214],[226,250],[318,250]],d.dark,[8,2]);
+    legsFront=limb([[256,222],[248,254],[344,254]],d.fur,[8,2])+
+      `<path d="M212 268 h150" stroke="${L}" stroke-width="2" opacity=".25"/>`;}
+  else if(p.legs==="paw"){
+    legsBack=Lg(118,175,264,d.dark)+Lg(250,175,264,d.dark)+Lg(142,175,264,d.fur);
+    legsFront=limb([[272,186],[282,222],[306,236]],d.fur,[6,0]);}
+  else if(p.legs==="lie"){legsFront=`<ellipse cx="138" cy="234" rx="38" ry="30" fill="${d.fur}" stroke="${L}" stroke-width="3"/><ellipse cx="138" cy="234" rx="38" ry="30" fill="url(#${u})"/><ellipse cx="172" cy="260" rx="18" ry="9" fill="${d.fur}" stroke="${L}" stroke-width="2.5"/>`+Fa(238,238,105,d.dark)+Fa(252,244,105,d.fur);}
+
+  // Augen
+  const E={
+    open:`<circle cx="14" cy="-8" r="9" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="16" cy="-7" r="5.5" fill="#2a1d17"/><circle cx="18" cy="-9" r="1.8" fill="#fff"/>`,
+    side:`<circle cx="14" cy="-8" r="9" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="9" cy="-6" r="5" fill="#2a1d17"/>`,
+    blink:`<circle cx="14" cy="-8" r="9" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="15" cy="-5" r="5" fill="#2a1d17"/><path d="M4 -7 A10 10 0 0 1 24 -7 Z" fill="${d.fur}" stroke="${L}" stroke-width="2"/>`,
+    closed:`<path d="M5 -8 Q14 -1 23 -8" stroke="#2a1d17" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    wide:`<circle cx="14" cy="-8" r="11" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="9" cy="-7" r="4" fill="#2a1d17"/><path d="M2 -24 Q12 -27 24 -21" stroke="${L}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+  }[p.eyes];
+  const M={
+    closed:`<path d="M24 28 Q38 33 52 27" stroke="${L}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    smile:`<path d="M22 25 Q40 38 58 24" stroke="${L}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    open:`<path d="M22 24 Q40 54 60 22 Z" fill="#7a2a2a" stroke="${L}" stroke-width="2"/><ellipse cx="42" cy="44" rx="8" ry="11" fill="#f08a9a" stroke="#c45a6a" stroke-width="1.5"/>`,
+    yawn:`<ellipse cx="40" cy="34" rx="15" ry="20" fill="#5a1c1c" stroke="${L}" stroke-width="2"/><ellipse cx="40" cy="45" rx="9" ry="7" fill="#f08a9a"/>`
+  }[p.mouth];
+  const tongue=p.lick?`<path d="M48 24 Q72 22 70 2 Q68 -6 62 -2 Q64 14 46 20 Z" fill="#f08a9a" stroke="#c45a6a" stroke-width="2"/>`:"";
+  const toy=p.toy?`<g transform="rotate(8 46 30)"><rect x="14" y="24" width="56" height="13" rx="6.5" fill="#3a7bd5" stroke="${L}" stroke-width="2"/><path d="M28 24 v13 M42 24 v13 M56 24 v13" stroke="#fff" stroke-width="3"/></g>`:"";
+
+  const head=`<g transform="translate(${305+p.hx} ${95+p.hy}) rotate(${p.hr})">
+    <rect x="-44" y="8" width="15" height="50" rx="7" fill="${d.collar}" stroke="${L}" stroke-width="2" transform="rotate(-28 -36 33)"/>
+    <circle cx="-24" cy="61" r="6" fill="#f2c94c" stroke="${L}" stroke-width="1.5"/>
+    ${tri(headSh)}
+    <ellipse cx="36" cy="14" rx="28" ry="19" fill="${d.light}" stroke="${L}" stroke-width="2.5"/>
+    ${M}${toy}
+    <ellipse cx="60" cy="5" rx="10" ry="7.5" fill="${d.nose}"/><ellipse cx="57" cy="2" rx="3" ry="2" fill="#fff" opacity=".5"/>
+    ${tongue}${E}
+    <g transform="rotate(${p.ear} -14 -20)"><ellipse cx="-22" cy="14" rx="16" ry="32" transform="rotate(12 -22 14)" fill="${d.dark}" stroke="${L}" stroke-width="2.5"/><ellipse cx="-22" cy="14" rx="16" ry="32" transform="rotate(12 -22 14)" fill="url(#${u})"/></g>
+  </g>`;
+  const tf=`translate(0 ${p.dy}) rotate(${p.tilt} 140 175)`;
+  let extras="";
+  if(p.extra==="freeze") extras=`<g stroke="${L}" stroke-width="3" stroke-linecap="round" opacity=".7"><path d="M150 100 l-6 -14 M180 96 l0 -15 M210 100 l6 -14"/></g>`;
+  if(p.extra==="sniff") extras=`<g fill="none" stroke="${L}" stroke-width="2.5" stroke-linecap="round" opacity=".55"><path d="M388 236 q8 -6 0 -12 q-8 -6 0 -12"/><path d="M372 230 q7 -5 0 -10 q-7 -5 0 -10"/></g>`;
+  if(p.extra==="shake") extras=`<g fill="none" stroke="${L}" stroke-width="3" stroke-linecap="round" opacity=".6"><path d="M60 110 q-12 20 0 40"/><path d="M44 100 q-16 30 0 60"/><path d="M380 70 q12 20 0 40"/><path d="M394 60 q16 30 0 60"/></g>`;
+  let inner=`<ellipse cx="205" cy="268" rx="155" ry="9" fill="#000" opacity=".08"/>
+    <g transform="${tf}">${tail}</g>${legsBack}
+    <g transform="${tf}">${tri(bodySh)}${head}</g>${legsFront}${extras}`;
+  if(p.extra==="shake") inner=`<g>${inner}<animateTransform attributeName="transform" type="rotate" values="-2 205 170;2 205 170;-2 205 170" dur="0.25s" repeatCount="indefinite"/></g>`;
+  return `<svg viewBox="0 0 400 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zeichnung von Pepe"><defs><pattern id="${u}" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="3" fill="none" stroke="${d.dark}" stroke-width="1.6" opacity=".55"/><circle cx="11" cy="10" r="3" fill="none" stroke="${d.dark}" stroke-width="1.6" opacity=".55"/></pattern></defs>${inner}</svg>`;
 }
 
 /* ---------- Daten ---------- */
 const LEX=[
   {s:"Kopf wegdrehen",k:"stress",m:"Beschwichtigungssignal: „Mir ist das zu nah oder zu viel.“",r:"Langsamer werden, Abstand geben.",d:"turn"},
-  {s:"Über die Nase lecken",k:"stress",m:"Unsicherheit, der Hund möchte die Situation beruhigen.",r:"Ruhig bleiben, nicht weiter bedrängen.",d:"turn"},
-  {s:"Gähnen, obwohl er nicht müde ist",k:"stress",m:"Stress abbauen, Anspannung lösen.",r:"Pause machen, die Situation entspannen.",d:"relaxed"},
-  {s:"Blinzeln, Blick abwenden",k:"stress",m:"Höfliches Signal: „Ich will keinen Streit.“",r:"Den Hund nicht anstarren.",d:"turn"},
-  {s:"Eine Vorderpfote anheben",k:"stress",m:"Unsicherheit oder abwartende Spannung.",r:"Abwarten, nichts erzwingen.",d:"relaxed"},
+  {s:"Über die Nase lecken",k:"stress",m:"Unsicherheit, der Hund möchte die Situation beruhigen.",r:"Ruhig bleiben, nicht weiter bedrängen.",d:"lick"},
+  {s:"Gähnen, obwohl er nicht müde ist",k:"stress",m:"Stress abbauen, Anspannung lösen.",r:"Pause machen, die Situation entspannen.",d:"yawn"},
+  {s:"Blinzeln, Blick abwenden",k:"stress",m:"Höfliches Signal: „Ich will keinen Streit.“",r:"Den Hund nicht anstarren.",d:"blink"},
+  {s:"Eine Vorderpfote anheben",k:"stress",m:"Unsicherheit oder abwartende Spannung.",r:"Abwarten, nichts erzwingen.",d:"paw"},
   {s:"Plötzlich am Boden schnüffeln",k:"stress",m:"Ablenkung, um Spannung zu lösen.",r:"Dem Hund Zeit lassen.",d:"sniff"},
-  {s:"Sich schütteln, obwohl er trocken ist",k:"stress",m:"Stress „abschütteln“ nach einer aufregenden Situation.",r:"Kurz Ruhe gönnen.",d:"relaxed"},
+  {s:"Sich schütteln, obwohl er trocken ist",k:"stress",m:"Stress „abschütteln“ nach einer aufregenden Situation.",r:"Kurz Ruhe gönnen.",d:"shake"},
   {s:"Erstarren, steifer Körper",k:"danger",m:"Warnsignal: höchste Anspannung.",r:"Sofort stoppen, Abstand, Lehrkraft holen.",d:"stiff"},
   {s:"Das Weiße der Augen ist sichtbar",k:"danger",m:"Angst oder starker Stress („Walauge“).",r:"Loslassen, Abstand, Lehrkraft holen.",d:"stiff"},
-  {s:"Ohren angelegt, Rute eingeklemmt",k:"danger",m:"Angst.",r:"Ruhig zurückziehen, Hund nicht anfassen.",d:"stress"},
+  {s:"Ohren angelegt, Rute eingeklemmt",k:"danger",m:"Angst.",r:"Ruhig zurückziehen, Hund nicht anfassen.",d:"fear"},
   {s:"Spielverbeugung (Vorderkörper unten, Po oben)",k:"play",m:"Spielaufforderung: „Spielst du mit mir?“",r:"Nur mit Erlaubnis der Lehrkraft spielen.",d:"play"},
   {s:"Weicher Körper, Rute locker",k:"calm",m:"Entspannt und zufrieden.",r:"Ruhe genießen lassen.",d:"relaxed"}
 ];
 const KLABEL={stress:["Beschwichtigung / Stress","t-stress"],danger:["Warnsignal","t-danger"],play:["Spiel","t-play"],calm:["Entspannt","t-calm"]};
 
 const CASES=[
- {t:"Der Sprint",d:"turn",text:"Ein Schüler rennt laut rufend auf Pepe zu, um ihn zu begrüßen. Pepe dreht den Kopf zur Seite und leckt sich kurz über die Nase.",
+ {t:"Der Sprint",d:"lick",text:"Ein Schüler rennt laut rufend auf Pepe zu, um ihn zu begrüßen. Pepe dreht den Kopf zur Seite und leckt sich kurz über die Nase.",
   sig:{opts:["Kopf wegdrehen","Über die Nase lecken","Spielverbeugung","Rute eingeklemmt","Schwanzwedeln"],ok:[0,1]},
   mean:{opts:["„Das ist mir zu wild, bitte ruhiger.“","„Super, ich freue mich riesig!“","„Ich habe Hunger.“"],ok:0},
   react:{opts:["Stehen bleiben, leise werden und Pepe von selbst kommen lassen.","Schneller hinlaufen, damit Pepe merkt, dass man sich freut.","Pepe festhalten, damit er sich beruhigt."],ok:0},
   why:"Kopf wegdrehen und Nase lecken sind Beschwichtigungssignale. Pepe zeigt höflich, dass ihm die Begrüßung zu heftig ist."},
- {t:"Auf der Decke",d:"lying",text:"Pepe liegt auf seiner Decke im Rückzugsort. Drei Schüler stellen sich direkt vor ihn. Pepe gähnt, blinzelt und legt den Kopf auf die Pfoten.",
+ {t:"Auf der Decke",d:"rest",text:"Pepe liegt auf seiner Decke im Rückzugsort. Drei Schüler stellen sich direkt vor ihn. Pepe gähnt, blinzelt und legt den Kopf auf die Pfoten.",
   sig:{opts:["Gähnen","Blinzeln","Kopf ablegen","Spielverbeugung","Ohren nach vorn gespitzt"],ok:[0,1,2]},
   mean:{opts:["„Ich möchte Ruhe.“","„Kommt her und streichelt mich!“","„Ich will spielen.“"],ok:0},
   react:{opts:["Weggehen – die Decke ist Tabuzone.","Leise neben ihm sitzen und ihn streicheln.","Pepe ein Kommando geben, damit er aufsteht."],ok:0},
