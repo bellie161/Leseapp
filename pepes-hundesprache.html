@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pepes Hundesprache</title>
+<style>
+  :root{
+    --bg:#fbf7f2; --card:#ffffff; --ink:#2b2118; --muted:#6f6254;
+    --brown:#8a5a2b; --brown-l:#f3e7d8; --line:#e4d6c5;
+    --ok:#2f7d4a; --ok-l:#e3f3e8; --bad:#b3412e; --bad-l:#f9e4df;
+    --g:#2f7d4a; --g-l:#e3f3e8; --y:#8a5a00; --y-l:#fbefd6; --r:#b3412e; --r-l:#f9e4df;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+  header{background:var(--brown);color:#fff;padding:14px 16px 12px}
+  header h1{margin:0;font-size:1.6rem}
+  .sub{font-size:1rem;opacity:.92;margin-top:4px}
+  nav{display:flex;gap:8px;overflow-x:auto;padding:10px 12px;background:var(--brown-l);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  nav button{flex:0 0 auto;border:2px solid var(--line);background:#fff;color:var(--ink);padding:12px 16px;border-radius:14px;font-size:1.05rem;font-weight:700}
+  nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+  main{max-width:860px;margin:0 auto;padding:16px 16px 40px}
+  h2{font-size:1.4rem;margin:4px 0 8px;color:var(--brown)}
+  h3{font-size:1.15rem;margin:0}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+  .say{display:flex;align-items:flex-start;gap:10px}
+  .say > .t{flex:1;margin:0}
+  .say{align-items:center;margin:6px 0}
+  .spk{flex:0 0 auto;width:48px;height:48px;border-radius:50%;border:2px solid var(--brown);background:#fff;font-size:1.35rem;line-height:1;padding:0;cursor:pointer}
+  .spk.on{background:var(--brown);}
+  .lead{color:var(--muted);margin:0}
+  .dog{display:flex;justify-content:center;background:var(--brown-l);border-radius:14px;margin:10px 0}
+  .dog svg{width:100%;max-width:400px;height:auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;align-items:start}
+  @media (max-width:440px){.grid{grid-template-columns:1fr}}
+  .lex .dog{margin:0 0 10px}
+  .lex .back{display:none;margin-top:10px}
+  .lex.open .back{display:block}
+  .tapme{margin-top:10px;width:100%;border:2px dashed var(--brown);background:#fff;color:var(--brown);font-weight:700;font-size:1rem;padding:10px;border-radius:12px}
+  .mood{display:inline-block;font-weight:800;font-size:.9rem;padding:4px 12px;border-radius:999px;margin-bottom:8px}
+  .m-g{background:var(--g-l);color:var(--g)}.m-y{background:var(--y-l);color:var(--y)}.m-r{background:var(--r-l);color:var(--r)}
+  .dice{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+  .die{width:68px;height:68px;border-radius:14px;border:3px solid var(--brown);background:#fff;position:relative;padding:0}
+  .die.on{background:var(--brown)} .die.on i{background:#fff}
+  .die i{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--brown);transform:translate(-50%,-50%)}
+  .step{margin-top:16px}
+  .opts{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+  .row{display:flex;gap:8px;align-items:center}
+  .opt{flex:1;text-align:left;border:3px solid var(--line);background:#fff;border-radius:14px;padding:14px 16px;font-size:1.1rem;color:var(--ink);min-height:58px}
+  .opt.right{border-color:var(--ok);background:var(--ok-l)}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-l)}
+  .opt.m-g{border-color:var(--g)}.opt.m-y{border-color:#c99a2e}.opt.m-r{border-color:var(--r)}
+  .fb{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:1.05rem}
+  .fb.ok{background:var(--ok-l);color:#1d4f2f}.fb.no{background:var(--bad-l);color:#6e2619}
+  .btn{border:0;background:var(--brown);color:#fff;font-weight:700;font-size:1.1rem;padding:14px 20px;border-radius:14px;margin-top:12px;margin-right:8px}
+  .btn.ghost{background:#fff;color:var(--brown);border:2px solid var(--brown)}
+  .score{font-weight:800;color:var(--brown)}
+  .bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+  .bar i{display:block;height:100%;background:var(--brown)}
+  .rf{display:flex;gap:10px;margin-top:10px}
+  .rf .opt{text-align:center;font-weight:700}
+  .star{font-size:2.4rem;text-align:center;margin:6px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pepes Hundesprache</h1>
+  <div class="sub">Lerne, was Pepe dir mit seinem Körper sagt.</div>
+</header>
+<nav id="nav">
+  <button data-v="start" class="on">Start</button>
+  <button data-v="lex">Pepes Zeichen</button>
+  <button data-v="fall">Geschichten</button>
+  <button data-v="quiz">Quiz</button>
+  <button data-v="cmd">Kommandos</button>
+</nav>
+<main id="app"></main>
+
+<script>
+/* ---------- Pepe als Zeichnung (Stil wie in der App „Schulhund“) ---------- */
+const PEPE={fur:"#dcae74",dark:"#c08d55",light:"#f3dcb5",line:"#6b4a2e",nose:"#4a2e1f",collar:"#d64545"};
+const POSES={
+  relaxed:{legs:"stand",dy:0,tilt:0,hx:0,hy:0,hr:0,ear:0,tail:"loose",mouth:"smile",eyes:"open"},
+  play:   {legs:"bow",dy:0,tilt:18,hx:0,hy:0,hr:-22,ear:-6,tail:"wag",mouth:"open",eyes:"open",toy:true},
+  fear:   {legs:"crouch",dy:20,tilt:0,hx:-12,hy:28,hr:18,ear:55,tail:"tucked",mouth:"closed",eyes:"wide"},
+  stiff:  {legs:"stand",dy:0,tilt:0,hx:0,hy:-4,hr:-4,ear:45,tail:"stiff",mouth:"closed",eyes:"wide",extra:"freeze"},
+  sniff:  {legs:"stand",dy:0,tilt:4,hx:-8,hy:112,hr:52,ear:8,tail:"loose",mouth:"closed",eyes:"open",extra:"sniff"},
+  turn:   {legs:"stand",dy:0,tilt:0,hx:-8,hy:-8,hr:-34,ear:18,tail:"down",mouth:"closed",eyes:"side"},
+  lick:   {legs:"stand",dy:0,tilt:0,hx:0,hy:4,hr:6,ear:22,tail:"down",mouth:"closed",eyes:"open",lick:true},
+  yawn:   {legs:"stand",dy:4,tilt:0,hx:0,hy:6,hr:-10,ear:28,tail:"down",mouth:"yawn",eyes:"closed"},
+  blink:  {legs:"stand",dy:0,tilt:0,hx:0,hy:2,hr:-8,ear:16,tail:"loose",mouth:"closed",eyes:"blink"},
+  paw:    {legs:"paw",dy:0,tilt:0,hx:0,hy:4,hr:4,ear:18,tail:"down",mouth:"closed",eyes:"open"},
+  shake:  {legs:"stand",dy:0,tilt:0,hx:0,hy:-2,hr:-4,ear:-12,tail:"loose",mouth:"closed",eyes:"closed",extra:"shake"},
+  rest:   {legs:"lie",dy:55,tilt:0,hx:22,hy:48,hr:8,ear:6,tail:"flat",mouth:"yawn",eyes:"closed"}
+};
+const TAILS={
+  loose:"M100 152 Q66 150 58 196", wag:"M100 150 Q62 118 80 70",
+  down:"M100 152 Q78 190 86 232", tucked:"M100 160 Q98 215 128 250",
+  stiff:"M100 146 Q86 110 92 64", flat:"M100 168 Q66 205 26 210"
+};
+let uid=0;
+function dogSVG(pk){
+  const d=PEPE, p=POSES[pk]||POSES.relaxed, u="curl"+(uid++), L=d.line;
+  const pass=(sh,fill,stroke)=>`<g fill="${fill}"${stroke?` stroke="${L}" stroke-width="6"`:""}>${sh}</g>`;
+  const tri=sh=>pass(sh,d.fur,true)+pass(sh,d.fur)+pass(sh,`url(#${u})`);
+  const bodySh='<ellipse cx="190" cy="165" rx="95" ry="50"/><circle cx="112" cy="150" r="30"/><circle cx="268" cy="172" r="28"/><ellipse cx="262" cy="138" rx="30" ry="42" transform="rotate(-25 262 138)"/>';
+  const headSh='<circle r="40"/><circle cx="-20" cy="-32" r="13"/><circle cx="0" cy="-41" r="14"/><circle cx="20" cy="-33" r="13"/>';
+
+  // Schwanz
+  const tp=TAILS[p.tail], sw=p.tail==="stiff"?12:18;
+  let tail=`<path d="${tp}" stroke="${L}" stroke-width="${sw+6}" fill="none" stroke-linecap="round"/><path d="${tp}" stroke="${d.fur}" stroke-width="${sw}" fill="none" stroke-linecap="round"/>`;
+  if(p.tail==="wag") tail=`<g>${tail}<animateTransform attributeName="transform" type="rotate" values="-14 100 150;16 100 150;-14 100 150" dur="0.5s" repeatCount="indefinite"/></g>`;
+
+  // Beine
+  const Lg=(x,top,bot,c)=>`<rect x="${x-13}" y="${top}" width="26" height="${bot-top}" rx="13" fill="${c}" stroke="${L}" stroke-width="2.5"/><ellipse cx="${x+5}" cy="${bot-3}" rx="17" ry="9" fill="${c}" stroke="${L}" stroke-width="2.5"/>`;
+  // gebeugtes Bein als Linienzug: Schulter -> Ellenbogen -> Pfote
+  const limb=(pts,c,paw)=>{const dd="M"+pts.map(q=>q.join(" ")).join(" L");const e=pts[pts.length-1];
+    return `<path d="${dd}" stroke="${L}" stroke-width="31" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${dd}" stroke="${c}" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`+
+      `<ellipse cx="${e[0]+paw[0]}" cy="${e[1]+paw[1]}" rx="17" ry="10" fill="${c}" stroke="${L}" stroke-width="2.5"/>`;};
+  const Fa=(x,y,w,c)=>`<rect x="${x}" y="${y}" width="${w}" height="22" rx="11" fill="${c}" stroke="${L}" stroke-width="2.5"/>`;
+  let legsBack="",legsFront="";
+  if(p.legs==="stand"||p.legs==="crouch"){const t=p.legs==="stand"?175:195;
+    legsBack=Lg(118,t,264,d.dark)+Lg(250,t,264,d.dark)+Lg(142,t,264,d.fur)+Lg(272,t,264,d.fur);}
+  else if(p.legs==="bow"){
+    // Hinterbeine gestreckt, Vorderbeine bis zum Ellenbogen auf dem Boden
+    legsBack=Lg(118,165,264,d.dark)+Lg(142,165,264,d.fur)+limb([[236,214],[226,250],[318,250]],d.dark,[8,2]);
+    legsFront=limb([[256,222],[248,254],[344,254]],d.fur,[8,2])+
+      `<path d="M212 268 h150" stroke="${L}" stroke-width="2" opacity=".25"/>`;}
+  else if(p.legs==="paw"){
+    legsBack=Lg(118,175,264,d.dark)+Lg(250,175,264,d.dark)+Lg(142,175,264,d.fur);
+    legsFront=limb([[272,186],[282,222],[306,236]],d.fur,[6,0]);}
+  else if(p.legs==="lie"){legsFront=`<ellipse cx="138" cy="234" rx="38" ry="30" fill="${d.fur}" stroke="${L}" stroke-width="3"/><ellipse cx="138" cy="234" rx="38" ry="30" fill="url(#${u})"/><ellipse cx="172" cy="260" rx="18" ry="9" fill="${d.fur}" stroke="${L}" stroke-width="2.5"/>`+Fa(238,238,105,d.dark)+Fa(252,244,105,d.fur);}
+
+  // Augen
+  const E={
+    open:`<circle cx="14" cy="-8" r="9" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="16" cy="-7" r="5.5" fill="#2a1d17"/><circle cx="18" cy="-9" r="1.8" fill="#fff"/>`,
+    side:`<circle cx="14" cy="-8" r="9" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="9" cy="-6" r="5" fill="#2a1d17"/>`,
+    blink:`<circle cx="14" cy="-8" r="9" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="15" cy="-5" r="5" fill="#2a1d17"/><path d="M4 -7 A10 10 0 0 1 24 -7 Z" fill="${d.fur}" stroke="${L}" stroke-width="2"/>`,
+    closed:`<path d="M5 -8 Q14 -1 23 -8" stroke="#2a1d17" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    wide:`<circle cx="14" cy="-8" r="11" fill="#fff" stroke="${L}" stroke-width="2"/><circle cx="9" cy="-7" r="4" fill="#2a1d17"/><path d="M2 -24 Q12 -27 24 -21" stroke="${L}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+  }[p.eyes];
+  const M={
+    closed:`<path d="M24 28 Q38 33 52 27" stroke="${L}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    smile:`<path d="M22 25 Q40 38 58 24" stroke="${L}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    open:`<path d="M22 24 Q40 54 60 22 Z" fill="#7a2a2a" stroke="${L}" stroke-width="2"/><ellipse cx="42" cy="44" rx="8" ry="11" fill="#f08a9a" stroke="#c45a6a" stroke-width="1.5"/>`,
+    yawn:`<ellipse cx="40" cy="34" rx="15" ry="20" fill="#5a1c1c" stroke="${L}" stroke-width="2"/><ellipse cx="40" cy="45" rx="9" ry="7" fill="#f08a9a"/>`
+  }[p.mouth];
+  const tongue=p.lick?`<path d="M48 24 Q72 22 70 2 Q68 -6 62 -2 Q64 14 46 20 Z" fill="#f08a9a" stroke="#c45a6a" stroke-width="2"/>`:"";
+  const toy=p.toy?`<g transform="rotate(8 46 30)"><rect x="14" y="24" width="56" height="13" rx="6.5" fill="#3a7bd5" stroke="${L}" stroke-width="2"/><path d="M28 24 v13 M42 24 v13 M56 24 v13" stroke="#fff" stroke-width="3"/></g>`:"";
+
+  const head=`<g transform="translate(${305+p.hx} ${95+p.hy}) rotate(${p.hr})">
+    <rect x="-44" y="8" width="15" height="50" rx="7" fill="${d.collar}" stroke="${L}" stroke-width="2" transform="rotate(-28 -36 33)"/>
+    <circle cx="-24" cy="61" r="6" fill="#f2c94c" stroke="${L}" stroke-width="1.5"/>
+    ${tri(headSh)}
+    <ellipse cx="36" cy="14" rx="28" ry="19" fill="${d.light}" stroke="${L}" stroke-width="2.5"/>
+    ${M}${toy}
+    <ellipse cx="60" cy="5" rx="10" ry="7.5" fill="${d.nose}"/><ellipse cx="57" cy="2" rx="3" ry="2" fill="#fff" opacity=".5"/>
+    ${tongue}${E}
+    <g transform="rotate(${p.ear} -14 -20)"><ellipse cx="-22" cy="14" rx="16" ry="32" transform="rotate(12 -22 14)" fill="${d.dark}" stroke="${L}" stroke-width="2.5"/><ellipse cx="-22" cy="14" rx="16" ry="32" transform="rotate(12 -22 14)" fill="url(#${u})"/></g>
+  </g>`;
+  const tf=`translate(0 ${p.dy}) rotate(${p.tilt} 140 175)`;
+  let extras="";
+  if(p.extra==="freeze") extras=`<g stroke="${L}" stroke-width="3" stroke-linecap="round" opacity=".7"><path d="M150 100 l-6 -14 M180 96 l0 -15 M210 100 l6 -14"/></g>`;
+  if(p.extra==="sniff") extras=`<g fill="none" stroke="${L}" stroke-width="2.5" stroke-linecap="round" opacity=".55"><path d="M388 236 q8 -6 0 -12 q-8 -6 0 -12"/><path d="M372 230 q7 -5 0 -10 q-7 -5 0 -10"/></g>`;
+  if(p.extra==="shake") extras=`<g fill="none" stroke="${L}" stroke-width="3" stroke-linecap="round" opacity=".6"><path d="M60 110 q-12 20 0 40"/><path d="M44 100 q-16 30 0 60"/><path d="M380 70 q12 20 0 40"/><path d="M394 60 q16 30 0 60"/></g>`;
+  let inner=`<ellipse cx="205" cy="268" rx="155" ry="9" fill="#000" opacity=".08"/>
+    <g transform="${tf}">${tail}</g>${legsBack}
+    <g transform="${tf}">${tri(bodySh)}${head}</g>${legsFront}${extras}`;
+  if(p.extra==="shake") inner=`<g>${inner}<animateTransform attributeName="transform" type="rotate" values="-2 205 170;2 205 170;-2 205 170" dur="0.25s" repeatCount="indefinite"/></g>`;
+  return `<svg viewBox="0 0 400 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zeichnung von Pepe"><defs><pattern id="${u}" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="3" fill="none" stroke="${d.dark}" stroke-width="1.6" opacity=".55"/><circle cx="11" cy="10" r="3" fill="none" stroke="${d.dark}" stroke-width="1.6" opacity=".55"/></pattern></defs>${inner}</svg>`;
+}
+
+/* ---------- Vorlesen ---------- */
+let voice=null;
+function pickVoice(){const v=speechSynthesis.getVoices().filter(x=>x.lang&&x.lang.toLowerCase().startsWith("de"));voice=v.find(x=>/Anna|Petra|Helena|Marlene|Google/i.test(x.name))||v[0]||null;}
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+let speakingBtn=null;
+function say(t,btn){
+  if(!("speechSynthesis" in window))return;
+  speechSynthesis.cancel();
+  if(speakingBtn)speakingBtn.classList.remove("on");
+  const u=new SpeechSynthesisUtterance(t.replace(/[„“"]/g,"").replace(/\s+/g," ").trim());
+  u.lang="de-DE"; if(voice)u.voice=voice; u.rate=0.85;
+  if(btn){btn.classList.add("on");speakingBtn=btn;u.onend=u.onerror=()=>btn.classList.remove("on");}
+  speechSynthesis.speak(u);
+}
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+const strip=s=>String(s).replace(/<[^>]+>/g,"");
+const spk=t=>`<button class="spk" data-say="${esc(strip(t))}" aria-label="Vorlesen">🔊</button>`;
+const sayRow=(html,tag="div",speakText)=>`<div class="say"><${tag} class="t">${html}</${tag}>${spk(speakText||html)}</div>`;
+
+/* ---------- Daten ---------- */
+// Drei Gefühle: gut (grün), zu viel (gelb), Angst/Stopp (rot)
+const MOOD={
+  g:{n:"Mir geht es gut",c:"m-g"},
+  y:{n:"Mir ist das zu viel",c:"m-y"},
+  r:{n:"Ich habe Angst – Stopp!",c:"m-r"}
+};
+const LEX=[
+  {s:"Pepe ist ganz locker. Sein Schwanz hängt locker.",m:"g",say:"Mir geht es gut. Ich bin zufrieden.",r:"Lass Pepe in Ruhe liegen oder frag die Lehrerin, ob du ihn streicheln darfst.",d:"relaxed"},
+  {s:"Pepe macht eine Verbeugung. Vorne ist er unten, der Po ist oben.",m:"g",say:"Spielst du mit mir?",r:"Frag zuerst die Lehrerin, ob ihr spielen dürft.",d:"play"},
+  {s:"Pepe gähnt, obwohl er nicht müde ist.",m:"y",say:"Mir ist das gerade zu viel.",r:"Sei leise und mach eine Pause.",d:"yawn"},
+  {s:"Pepe leckt sich über die Nase.",m:"y",say:"Ich bin unsicher. Bitte ruhiger.",r:"Bleib ruhig stehen und geh nicht näher.",d:"lick"},
+  {s:"Pepe dreht den Kopf weg.",m:"y",say:"Du bist mir zu nah.",r:"Geh einen Schritt zurück.",d:"turn"},
+  {s:"Pepe schnüffelt plötzlich am Boden.",m:"y",say:"Ich brauche eine kleine Pause.",r:"Lass ihm Zeit.",d:"sniff"},
+  {s:"Pepe legt die Ohren an und klemmt den Schwanz ein.",m:"r",say:"Ich habe Angst!",r:"Geh weg und hol die Lehrerin.",d:"fear"},
+  {s:"Pepe wird ganz steif. Man sieht das Weiße in seinen Augen.",m:"r",say:"Stopp! Lass mich los!",r:"Sofort loslassen, weggehen und die Lehrerin holen.",d:"stiff"}
+];
+
+const CASES=[
+ {t:"Das wilde Hallo",d:"lick",text:"Ein Kind rennt laut rufend auf Pepe zu. Pepe dreht den Kopf weg und leckt sich über die Nase.",
+  mood:"y",
+  react:{opts:["Ich bleibe stehen und bin leise. Pepe darf zu mir kommen.","Ich renne noch schneller zu Pepe.","Ich halte Pepe ganz fest."],ok:0},
+  why:"Pepe zeigt: Das ist mir zu wild. Wenn du ruhig bist, fühlt er sich wohl."},
+ {t:"Pepe auf der Decke",d:"rest",text:"Pepe liegt auf seiner Decke. Drei Kinder stellen sich vor ihn. Pepe gähnt und legt den Kopf ab.",
+  mood:"y",
+  react:{opts:["Ich gehe weg. Auf der Decke hat Pepe Ruhe.","Ich setze mich zu ihm und streichle ihn.","Ich rufe ihn, damit er aufsteht."],ok:0},
+  why:"Die Decke ist Pepes Ruheplatz. Dort darf ihn niemand stören."},
+ {t:"Die Verbeugung",d:"play",text:"Pepe macht eine Verbeugung. Sein Schwanz wedelt. Er hat sein Spielzeug im Maul.",
+  mood:"g",
+  react:{opts:["Ich frage die Lehrerin, ob ich spielen darf.","Ich ziehe sofort am Spielzeug.","Ich renne weg, damit Pepe mich jagt."],ok:0},
+  why:"Pepe möchte spielen. Aber die Lehrerin entscheidet, wann gespielt wird."},
+ {t:"Das Pausenbrot",d:"sniff",text:"Ein Kind hält sein Pausenbrot tief nach unten. Pepe schnüffelt und schaut das Brot an.",
+  mood:"g",
+  react:{opts:["Ich nehme mein Brot hoch und gebe Pepe nichts.","Ich gebe Pepe ein kleines Stück.","Ich schreie laut „Nein!“."],ok:0},
+  why:"Pepe findet das Brot lecker. Aber nur die Lehrerin gibt Pepe Futter."},
+ {t:"Die Umarmung",d:"stiff",text:"Ein Kind umarmt Pepe ganz fest. Pepe wird steif. Seine Ohren sind angelegt.",
+  mood:"r",
+  react:{opts:["Ich lasse sofort los, gehe weg und hole die Lehrerin.","Ich drücke Pepe noch fester.","Ich flüstere ihm etwas ins Ohr."],ok:0},
+  why:"Pepe hat Angst. Hunde mögen keine Umarmungen. Darum: nie einen Hund umarmen."},
+ {t:"Sitz! Sitz! SITZ!",d:"turn",text:"Ein Kind ruft dreimal „Sitz!“, immer lauter. Pepe setzt sich nicht. Er schaut weg.",
+  mood:"y",
+  react:{opts:["Ich sage „Sitz“ nur einmal, ruhig, und zeige das Handzeichen.","Ich rufe noch lauter.","Ich drücke Pepe nach unten."],ok:0},
+  why:"Lautes Rufen macht Pepe unsicher. Einmal ruhig sagen hilft ihm."}
+];
+
+const CMD=[
+ ["Ich sage das Kommando nur einmal. Ruhig und deutlich.",true],
+ ["Wenn Pepe nicht hört, rufe ich lauter.",false],
+ ["Ich zeige das Handzeichen. Bei „Sitz“ ist das der Zeigefinger.",true],
+ ["Ich beuge mich über Pepe.",false],
+ ["Die Lehrerin sagt, ob Pepe gerade arbeiten mag.",true],
+ ["Auf seiner Decke darf ich Pepe Kommandos geben.",false],
+ ["Wenn Pepe es geschafft hat, lobe ich ihn.",true],
+ ["Wenn Pepe gähnt oder wegschaut, macht er Pause.",true]
+];
+
+/* ---------- Ansichten ---------- */
+const app=document.getElementById("app");
+const state={fall:0, fallStep:{}, quiz:null, cmd:{}, open:{}};
+app.addEventListener("click",e=>{const b=e.target.closest(".spk");if(!b)return;e.stopPropagation();e.preventDefault();say(b.dataset.say,b);},true);
+
+function show(v){
+  if("speechSynthesis" in window)speechSynthesis.cancel();
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  ({start,lex,fall,quiz,cmd})[v]();
+  window.scrollTo(0,0);
+}
+document.getElementById("nav").addEventListener("click",e=>{if(e.target.dataset.v)show(e.target.dataset.v);});
+
+function start(){
+  app.innerHTML=`
+  <div class="card">
+    ${sayRow("Hallo! Ich bin Pepe.","h2")}
+    ${sayRow("Ich kann nicht sprechen wie du. Aber ich zeige dir mit meinem Körper, wie es mir geht. Tippe auf 🔊, dann wird alles vorgelesen.","p","Ich kann nicht sprechen wie du. Aber ich zeige dir mit meinem Körper, wie es mir geht. Tippe auf den Lautsprecher, dann wird alles vorgelesen.")}
+    <div class="dog">${dogSVG("relaxed")}</div>
+    ${sayRow(`Es gibt drei Gefühle:<br><span class="mood m-g">${MOOD.g.n}</span><br><span class="mood m-y">${MOOD.y.n}</span><br><span class="mood m-r">${MOOD.r.n}</span>`,"div","Es gibt drei Gefühle: Mir geht es gut. Mir ist das zu viel. Ich habe Angst, Stopp!")}
+    <button class="btn" onclick="show('lex')">Pepes Zeichen ansehen</button>
+    <button class="btn ghost" onclick="show('fall')">Zu den Geschichten</button>
+  </div>`;
+}
+
+function lex(){
+  app.innerHTML=`${sayRow("Pepes Zeichen","h2")}${sayRow("Schau Pepe genau an. Tippe auf „Was sagt Pepe?“.","p")}
+  <div class="grid">${LEX.map((x,i)=>`
+    <div class="card lex ${state.open[i]?"open":""}" data-i="${i}">
+      <div class="dog">${dogSVG(x.d)}</div>
+      ${sayRow(`<b>${x.s}</b>`)}
+      <button class="tapme" data-i="${i}">${state.open[i]?"Zuklappen":"Was sagt Pepe?"}</button>
+      <div class="back">
+        <span class="mood ${MOOD[x.m].c}">${MOOD[x.m].n}</span>
+        ${sayRow(`Pepe sagt: <b>„${x.say}“</b>`,"p")}
+        ${sayRow(`<b>Das machst du:</b> ${x.r}`,"p")}
+      </div>
+    </div>`).join("")}</div>`;
+  app.querySelectorAll(".tapme").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;state.open[i]=!state.open[i];lex();
+    if(state.open[i])app.querySelector(`.lex[data-i="${i}"]`).scrollIntoView({block:"nearest"});});
+}
+
+const PIPS={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],6:[[28,25],[72,25],[28,50],[72,50],[28,75],[72,75]]};
+function dieBtn(n,on){return `<button class="die ${on?"on":""}" data-n="${n}" aria-label="Geschichte ${n}">${PIPS[n].map(p=>`<i style="left:${p[0]}%;top:${p[1]}%"></i>`).join("")}</button>`;}
+
+function fall(){
+  const i=state.fall, c=CASES[i];
+  const st=state.fallStep[i]||(state.fallStep[i]={mood:null,react:null});
+  let h=`${sayRow("Geschichten","h2")}${sayRow("Wähle eine Zahl auf dem Würfel.","p")}
+  <div class="dice">${[1,2,3,4,5,6].map(n=>dieBtn(n,n-1===i)).join("")}</div>
+  <div class="card">${sayRow(`Geschichte ${i+1}: ${c.t}`,"h2")}
+  <div class="dog">${dogSVG(c.d)}</div>${sayRow(c.text,"p")}`;
+
+  // Frage 1: Wie geht es Pepe?
+  h+=`<div class="step">${sayRow("1. Wie geht es Pepe?","h3")}<div class="opts">`+
+    ["g","y","r"].map(k=>{let cl="opt "+MOOD[k].c;
+      if(st.mood){ if(k===c.mood)cl+=" right"; else if(k===st.mood)cl+=" wrong"; }
+      return `<div class="row"><button class="${cl}" data-q="mood" data-k="${k}">${MOOD[k].n}</button>${spk(MOOD[k].n)}</div>`;}).join("")+`</div>`;
+  if(st.mood){const ok=st.mood===c.mood;h+=`<div class="fb ${ok?"ok":"no"}">${sayRow(ok?"Richtig!":"Nicht ganz. Die richtige Antwort ist grün.","div")}</div>`;}
+  h+=`</div>`;
+
+  // Frage 2: Was machst du?
+  if(st.mood){
+    h+=`<div class="step">${sayRow("2. Was machst du?","h3")}<div class="opts">`+
+      c.react.opts.map((o,k)=>{let cl="opt";
+        if(st.react!==null){ if(k===c.react.ok)cl+=" right"; else if(k===st.react)cl+=" wrong"; }
+        return `<div class="row"><button class="${cl}" data-q="react" data-k="${k}">${o}</button>${spk(o)}</div>`;}).join("")+`</div>`;
+    if(st.react!==null){const ok=st.react===c.react.ok;
+      h+=`<div class="fb ${ok?"ok":"no"}">${sayRow((ok?"Super! ":"Nicht ganz. ")+c.why)}</div>
+        <button class="btn ghost" data-reset="1">Nochmal</button>${i<5?`<button class="btn" data-next="1">Nächste Geschichte</button>`:""}`;}
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  app.innerHTML=h;
+  app.querySelectorAll(".die").forEach(b=>b.onclick=()=>{state.fall=+b.dataset.n-1;fall();});
+  app.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const q=b.dataset.q;
+    if(q==="mood"){if(st.mood)return;st.mood=b.dataset.k;}
+    else {if(st.react!==null)return;st.react=+b.dataset.k;}
+    fall();});
+  const r=app.querySelector("[data-reset]"); if(r) r.onclick=()=>{delete state.fallStep[i];fall();};
+  const n=app.querySelector("[data-next]"); if(n) n.onclick=()=>{state.fall=i+1;fall();window.scrollTo(0,0);};
+}
+
+function quiz(){
+  if(!state.quiz){state.quiz={order:LEX.map((_,i)=>i).sort(()=>Math.random()-.5),pos:0,pts:0,ans:null};}
+  const q=state.quiz, N=q.order.length;
+  if(q.pos>=N){
+    app.innerHTML=`${sayRow("Quiz","h2")}<div class="card"><div class="star">${"⭐".repeat(Math.max(1,Math.round(q.pts/N*5)))}</div>
+      ${sayRow(`Du hast ${q.pts} von ${N} richtig.`,"p")}
+      ${sayRow(q.pts>=7?"Toll! Du verstehst Pepe richtig gut.":q.pts>=4?"Gut gemacht! Schau dir Pepes Zeichen noch einmal an.":"Schau dir Pepes Zeichen noch einmal an und probier es wieder.","p")}
+      <button class="btn" id="again">Noch einmal</button></div>`;
+    document.getElementById("again").onclick=()=>{state.quiz=null;quiz();};
+    return;
+  }
+  const x=LEX[q.order[q.pos]];
+  app.innerHTML=`${sayRow("Quiz","h2")}<p class="lead">Frage ${q.pos+1} von ${N} · <span class="score">${q.pts} richtig</span></p>
+   <div class="bar"><i style="width:${q.pos/N*100}%"></i></div>
+   <div class="card"><div class="dog">${dogSVG(x.d)}</div>${sayRow(`<b>${x.s}</b>`,"p")}${sayRow("Wie geht es Pepe?","h3")}
+   <div class="opts">${["g","y","r"].map(k=>{let cl="opt "+MOOD[k].c; if(q.ans){ if(k===x.m)cl+=" right"; else if(k===q.ans)cl+=" wrong"; }
+     return `<div class="row"><button class="${cl}" data-k="${k}">${MOOD[k].n}</button>${spk(MOOD[k].n)}</div>`;}).join("")}</div>
+   ${q.ans?`<div class="fb ${q.ans===x.m?"ok":"no"}">${sayRow(`${q.ans===x.m?"Richtig!":"Nicht ganz."} Pepe sagt: „${x.say}“ Das machst du: ${x.r}`)}</div><button class="btn" id="next">Weiter</button>`:""}</div>`;
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{if(q.ans)return;q.ans=b.dataset.k;if(q.ans===x.m)q.pts++;quiz();});
+  const n=document.getElementById("next"); if(n) n.onclick=()=>{q.pos++;q.ans=null;quiz();};
+}
+
+function cmd(){
+  const a=state.cmd, answered=Object.keys(a).length, pts=CMD.filter((c,i)=>a[i]===c[1]).length;
+  app.innerHTML=`${sayRow("Kommandos","h2")}${sayRow("So gibst du Pepe ein Kommando. Ist das richtig oder falsch?","p")}
+  ${CMD.map((c,i)=>{const done=i in a;
+    const cl=v=>"opt"+(done?(v===c[1]?" right":(a[i]===v?" wrong":"")):"");
+    return `<div class="card">${sayRow(`<b>${c[0]}</b>`)}<div class="rf"><button class="${cl(true)}" data-i="${i}" data-v="1">👍 Richtig</button><button class="${cl(false)}" data-i="${i}" data-v="0">👎 Falsch</button></div></div>`;}).join("")}
+  ${answered===CMD.length?`<div class="card" style="background:var(--brown-l)">${sayRow(`Du hast ${pts} von ${CMD.length} richtig.`,"p")}${sayRow("Merke dir: Einmal sagen. Handzeichen zeigen. Warten. Loben.","p")}</div><button class="btn ghost" id="cr">Neu starten</button>`:""}`;
+  app.querySelectorAll(".rf .opt").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(i in a)return;a[i]=b.dataset.v==="1";cmd();});
+  const r=document.getElementById("cr"); if(r) r.onclick=()=>{state.cmd={};cmd();};
+}
+
+start();
+</script>
+</body>
+</html>
