@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Trickfilm">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fbf7ef">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAFn0lEQVR4nO3cIY/cRhiH8bmq5D5BQEECglJVAQGpFHA0yicIqgr6sQqion6CKvRApJKAKioLCAkoKjxQUmDJWq33P2uP550Zv+/zU0Dudu21NM+OvT6vbx4/e5mAS77pvQEYF3FAIg5IxAGJOCARByTigEQckL5VD3z++H7lKp6+eH31OaztiGtj5oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQLrh6nMozByQiAMScUAiDkjEAYk4IBEHJOKAdPPfw7+9twGDYuaARByQiAMScUAiDkjEAYk4IBEHJOKARByQiAMScUCSt32K45+f79RDj97dt9yS0cT9q2ymiaWYlUSMY1MWp6IlEiuO4ixOxUkk0AFplTIqrmd8UeKoO6JB+ggRh8VYRujDfxx2o+i+D+dxWI+f7z48x9Fm5Bz3Ee4M6Xe//3X649e3zy0W8cHtzHHxDX02zBd/U7CI18nDbRxLqoNMHwWLeOIzjuVbOT+cFx/dtIjLycNnHGeWw/zk+x+nf+o5BYv4EyKOM6cDfPr/uos44DCO/Ay/HNqrg71yEX97FodxoBbigBQijtPTVl/+/vPs0ek3Z6e2ChbxJ0QcSQ92ZpgLFnHG4ZVgmQPDix8+88O8aRFnF4l1+NvKw/0fy1/e3r1p8NJf3z7f+oeSgkXcaDdzXGxiaX8lHT9SOps5Gh1zrCxj0zNhrUUcW8d7Zx+93r7Opo3UII6ykWb+GIFtHHvGmD66M4xj/+gWr+HqDP/q0+2rT7eb1plfxN8+JdnFUet9bzF/bM2i1rKH4/YM6Zq38sr54+rTXE4byXEcGR9+eDj9MTP2y4fOlvXN5CRY9X1B8Zmx/AmxTfsIlYXXaSO5nznyI7d+GghYRorwvZVH7+4z88c86hdnkXw9vstIEeJI1/qYbD2YcF9Gcr9bmdUdywhlpDhxpHojGqSMFGS3MpvGlXuCrWQyc9S9cqf6dUBlYxytjBRt5thzHdC8bJxKosRR8fKwaVURErE6IK21L6iyHu4JVsb2GtKd59EPcT2p4ynE9qPsntE9RBnNXqUL8/McZWN8lDLav1ZLLU6CbR3pY5XR6xUbaHSGdP14H7GMvq9rp+nXITPHp7U+3XQfIU/Hp43iaPN1t+5lTNz0YR5HwafZskQGKWPiow/DM6TFJzmmBdt8tRoZ4341YdMahpo20njbU8YkjsZfWhlzJMbcqk3qx1H30nO+FNlR5TgsxpI+eqkZh90oZtY88uw98ratEegaUmxVLQ7ryf/i+sd/a46/hRnMHJDqxNHmmJEj08aYOSAdOI6j7M6Psp1LFeJoOduzZ2npwDMHrBEHJOKARByQiAMScUAiDkjEAalCHC2vBOaq45YOPHMc5fL/o2znUpSbtxzUk99+VQ99+ekX61evE8ft3ZsGf/WIs0/JNLF8jl0lB96teLWmjD3PX69aHNZv64vrH393vnULy0baqA9mjoHsGWOLPmrGYTd5ZNY88uQx8ratUXnmsOgjznHoaOrvVga/ffHI9nzusPjMMvTtrVeuZ8zZu2yrysbY6NPsuDep3bSG0frYsz1bR9ruPIfhGdJpdJvd2ceTebz7niHlnmD1jTaNFeNugpW5KSM1jqONjn14KiO5PEPaa4SclZFcxpF6jJO/MpLXOFLb0XJZRnIcR2o1Zl7LSC4PSJeMDlEdZzHxPHPMLEbRfRkpyMwxqzKFRMhiEiuOWUElcZqYBY1jdrWSgE3MoseBjBAHpChDHJCIAxJxQCIOSMQBiTggEQekm8fPXvbeBgyKmQMScUAiDkjEAYk4IBEHJOKARByQ5C0YPn98v3IVT1+8vvoc1nbEtTFzQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggcfU5JGYOSMQBiTggEQck4oBEHJCIA9L/exMqh/eHQiwAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAFn0lEQVR4nO3cIY/cRhiH8bmq5D5BQEECglJVAQGpFHA0yicIqgr6sQqion6CKvRApJKAKioLCAkoKjxQUmDJWq33P2uP550Zv+/zU0Dudu21NM+OvT6vbx4/e5mAS77pvQEYF3FAIg5IxAGJOCARByTigEQckL5VD3z++H7lKp6+eH31OaztiGtj5oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQLrh6nMozByQiAMScUAiDkjEAYk4IBEHJOKAdPPfw7+9twGDYuaARByQiAMScUAiDkjEAYk4IBEHJOKARByQiAMScUCSt32K45+f79RDj97dt9yS0cT9q2ymiaWYlUSMY1MWp6IlEiuO4ixOxUkk0AFplTIqrmd8UeKoO6JB+ggRh8VYRujDfxx2o+i+D+dxWI+f7z48x9Fm5Bz3Ee4M6Xe//3X649e3zy0W8cHtzHHxDX02zBd/U7CI18nDbRxLqoNMHwWLeOIzjuVbOT+cFx/dtIjLycNnHGeWw/zk+x+nf+o5BYv4EyKOM6cDfPr/uos44DCO/Ay/HNqrg71yEX97FodxoBbigBQijtPTVl/+/vPs0ek3Z6e2ChbxJ0QcSQ92ZpgLFnHG4ZVgmQPDix8+88O8aRFnF4l1+NvKw/0fy1/e3r1p8NJf3z7f+oeSgkXcaDdzXGxiaX8lHT9SOps5Gh1zrCxj0zNhrUUcW8d7Zx+93r7Opo3UII6ykWb+GIFtHHvGmD66M4xj/+gWr+HqDP/q0+2rT7eb1plfxN8+JdnFUet9bzF/bM2i1rKH4/YM6Zq38sr54+rTXE4byXEcGR9+eDj9MTP2y4fOlvXN5CRY9X1B8Zmx/AmxTfsIlYXXaSO5nznyI7d+GghYRorwvZVH7+4z88c86hdnkXw9vstIEeJI1/qYbD2YcF9Gcr9bmdUdywhlpDhxpHojGqSMFGS3MpvGlXuCrWQyc9S9cqf6dUBlYxytjBRt5thzHdC8bJxKosRR8fKwaVURErE6IK21L6iyHu4JVsb2GtKd59EPcT2p4ynE9qPsntE9RBnNXqUL8/McZWN8lDLav1ZLLU6CbR3pY5XR6xUbaHSGdP14H7GMvq9rp+nXITPHp7U+3XQfIU/Hp43iaPN1t+5lTNz0YR5HwafZskQGKWPiow/DM6TFJzmmBdt8tRoZ4341YdMahpo20njbU8YkjsZfWhlzJMbcqk3qx1H30nO+FNlR5TgsxpI+eqkZh90oZtY88uw98ratEegaUmxVLQ7ryf/i+sd/a46/hRnMHJDqxNHmmJEj08aYOSAdOI6j7M6Psp1LFeJoOduzZ2npwDMHrBEHJOKARByQiAMScUAiDkjEAalCHC2vBOaq45YOPHMc5fL/o2znUpSbtxzUk99+VQ99+ekX61evE8ft3ZsGf/WIs0/JNLF8jl0lB96teLWmjD3PX69aHNZv64vrH393vnULy0baqA9mjoHsGWOLPmrGYTd5ZNY88uQx8ratUXnmsOgjznHoaOrvVga/ffHI9nzusPjMMvTtrVeuZ8zZu2yrysbY6NPsuDep3bSG0frYsz1bR9ruPIfhGdJpdJvd2ceTebz7niHlnmD1jTaNFeNugpW5KSM1jqONjn14KiO5PEPaa4SclZFcxpF6jJO/MpLXOFLb0XJZRnIcR2o1Zl7LSC4PSJeMDlEdZzHxPHPMLEbRfRkpyMwxqzKFRMhiEiuOWUElcZqYBY1jdrWSgE3MoseBjBAHpChDHJCIAxJxQCIOSMQBiTggEQekm8fPXvbeBgyKmQMScUAiDkjEAYk4IBEHJOKARByQ5C0YPn98v3IVT1+8vvoc1nbEtTFzQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggcfU5JGYOSMQBiTggEQck4oBEHJCIA9L/exMqh/eHQiwAAAAASUVORK5CYII=">
+<title>Trickfilm-Werkstatt</title>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} [hidden]{display:none!important} img{max-width:100%}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap">
+<style>
+  /* Layout: eine Bühne in der Mitte, große Antipp-Flächen, Filmstreifen als wiederkehrendes Motiv */
+  :root {
+    --ink: #1f2a37;
+    --rot: #e4572e;
+    --gelb: #f3b61f;
+    --tuerkis: #1b998b;
+    --blau: #2e5eaa;
+    --grund: #fbf7ef;
+    --flaeche: #ffffff;
+    --zart: #efe9dd;
+    --leise: #5d6672;
+    --display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    --text: "Andika", "Verdana", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--grund); color: var(--ink); font-family: var(--text); font-size: 18px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+  .wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--blau); outline-offset: 3px; }
+
+  .streifen { height: 14px; background: repeating-linear-gradient(90deg, var(--ink) 0 18px, transparent 18px 28px); border-radius: 4px; opacity: .85; }
+
+  header.top { display: flex; align-items: center; gap: 12px; margin-block: 10px 14px; }
+  header.top h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 6vw, 44px); line-height: 1; margin: 0; text-wrap: balance; }
+  header.top h1 span { color: var(--rot); }
+  .zurueck { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--flaeche); border: 2px solid var(--ink); font-weight: 700; }
+
+  /* Start */
+  .intro { font-size: 20px; max-width: 34em; margin: 0 0 18px; }
+  .kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .kachel { text-align: left; background: var(--flaeche); border: 3px solid var(--ink); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 6px 0 var(--ink); transition: transform .12s, box-shadow .12s; }
+  .kachel:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  .kachel .ic { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; }
+  .kachel b { font-family: var(--display); font-size: 26px; line-height: 1.1; }
+  .kachel small { color: var(--leise); font-size: 16px; }
+  .fortschritt { margin-top: 18px; font-size: 16px; color: var(--leise); }
+
+  /* Lernen */
+  .lernkarte { background: var(--flaeche); border: 3px solid var(--ink); border-radius: 24px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+  @media (max-width: 640px) { .lernkarte { grid-template-columns: 1fr; } }
+  .lernkarte .bild { border-radius: 18px; aspect-ratio: 16/11; display: grid; place-items: center; max-width: 100%; }
+  .lernkarte .bild svg { width: 85%; height: auto; }
+  .lernkarte h2 { font-family: var(--display); font-weight: 800; font-size: 32px; margin: 0 0 6px; line-height: 1.1; display: flex; gap: 10px; align-items: center; }
+  .zahl { width: 46px; height: 46px; border-radius: 50%; color: #fff; display: inline-grid; place-items: center; font-size: 26px; flex: none; }
+  .lernkarte ol { padding-left: 24px; margin: 6px 0 12px; font-size: 20px; }
+  .lernkarte ol li { margin-bottom: 4px; }
+  .merke { background: var(--zart); border-radius: 14px; padding: 10px 14px; font-size: 17px; }
+  .merke b { color: var(--rot); }
+  .nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .punkte { display: flex; gap: 8px; flex-wrap: wrap; }
+  .punkt { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--flaeche); font-weight: 700; font-size: 15px; }
+  .punkt.an { background: var(--ink); color: #fff; }
+  .punkt.fertig { background: var(--tuerkis); border-color: var(--tuerkis); color: #fff; }
+  .knopf { padding: 12px 22px; border-radius: 999px; font-family: var(--display); font-weight: 800; font-size: 20px; background: var(--ink); color: #fff; box-shadow: 0 4px 0 #0b1118; }
+  .knopf:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b1118; }
+  .knopf.hell { background: var(--flaeche); color: var(--ink); border: 2.5px solid var(--ink); box-shadow: 0 4px 0 var(--ink); }
+  .knopf.rot { background: var(--rot); box-shadow: 0 4px 0 #a33a1b; }
+  .knopf.gruen { background: var(--tuerkis); box-shadow: 0 4px 0 #11665c; }
+  .knopf:disabled { opacity: .4; pointer-events: none; }
+  .geschafft { display: flex; align-items: center; gap: 10px; font-size: 18px; margin-top: 10px; }
+  .geschafft input { width: 28px; height: 28px; accent-color: var(--tuerkis); }
+
+  /* Ausprobieren */
+  .studio { display: grid; gap: 14px; }
+  .aufgabe { background: var(--flaeche); border: 2.5px solid var(--ink); border-radius: 18px; padding: 12px 16px; font-size: 18px; }
+  .aufgabe b { color: var(--blau); }
+  .buehne { position: relative; border: 4px solid var(--ink); border-radius: 18px; overflow: hidden; background: var(--ink); touch-action: none; max-width: 100%; }
+  canvas { display: block; width: 100%; height: auto; aspect-ratio: 16/10; }
+  .stempel { position: absolute; top: 10px; left: 10px; background: rgba(31,42,55,.85); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .blitz { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .regler { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .regler label { display: flex; align-items: center; gap: 10px; font-size: 17px; flex: 1 1 260px; min-width: 0; }
+  .regler input[type=range] { flex: 1; accent-color: var(--rot); min-width: 0; }
+  .regler output { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 7.5em; }
+  .film { display: flex; gap: 6px; overflow-x: auto; padding: 8px; background: var(--ink); border-radius: 12px; min-height: 76px; }
+  .film canvas { width: 88px; flex: none; border-radius: 4px; aspect-ratio: 16/10; border: 2px solid transparent; }
+  .film canvas.jetzt { border-color: var(--gelb); }
+  .film .leer { color: #c7cdd5; font-size: 15px; align-self: center; padding-inline: 8px; }
+  .schalter { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+  .schalter input { width: 24px; height: 24px; accent-color: var(--blau); }
+  .lob { font-family: var(--display); font-size: 22px; color: var(--tuerkis); min-height: 1.3em; }
+
+  /* Quiz */
+  .frage { background: var(--flaeche); border: 3px solid var(--ink); border-radius: 24px; padding: 20px; }
+  .frage .zaehler { font-size: 15px; color: var(--leise); text-transform: uppercase; letter-spacing: 1.2px; }
+  .frage h2 { font-family: var(--display); font-size: 28px; line-height: 1.2; margin: 4px 0 16px; text-wrap: balance; }
+  .antworten { display: grid; gap: 10px; }
+  .antwort { text-align: left; padding: 14px 16px; border: 2.5px solid var(--ink); border-radius: 16px; background: var(--grund); font-size: 19px; display: flex; gap: 12px; align-items: center; }
+  .antwort .bu { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 700; flex: none; }
+  .antwort.richtig { background: #d9f2ee; border-color: var(--tuerkis); }
+  .antwort.richtig .bu { background: var(--tuerkis); }
+  .antwort.falsch { background: #fbe1d9; border-color: var(--rot); }
+  .antwort.falsch .bu { background: var(--rot); }
+  .rueck { margin-top: 14px; font-size: 18px; min-height: 1.5em; }
+  .sterne { display: flex; gap: 6px; margin: 10px 0 0; flex-wrap: wrap; }
+  .stern { width: 34px; height: 34px; }
+  .ende { text-align: center; padding: 28px 18px; }
+  .ende h2 { font-family: var(--display); font-size: 36px; margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="streifen" aria-hidden="true"></div>
+
+  <!-- START -->
+  <section id="s-start">
+    <header class="top">
+      <h1>Trickfilm-<span>Werkstatt</span></h1>
+    </header>
+    <p class="intro">Hier lernst du, wie du mit dem iPad einen Stopmotion-Film drehst. Viele Fotos hintereinander sehen aus wie eine Bewegung!</p>
+    <div class="kacheln">
+      <button class="kachel" data-ziel="lernen">
+        <span class="ic" style="background:#fde0d6"><svg width="40" height="40" viewBox="0 0 40 40"><rect x="6" y="6" width="28" height="28" rx="5" fill="none" stroke="#e4572e" stroke-width="4"/><path d="M13 15 H27 M13 21 H27 M13 27 H21" stroke="#e4572e" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+        <b>Lernen</b><small>8 Schritte zu deinem Film</small>
+      </button>
+      <button class="kachel" data-ziel="studio">
+        <span class="ic" style="background:#fdf0c9"><svg width="40" height="40" viewBox="0 0 40 40"><rect x="3" y="11" width="26" height="20" rx="4" fill="#f3b61f"/><path d="M29 17 L37 12 V30 L29 25 Z" fill="#f3b61f"/><circle cx="16" cy="21" r="5" fill="#fff"/></svg></span>
+        <b>Ausprobieren</b><small>Dreh einen Mini-Trickfilm</small>
+      </button>
+      <button class="kachel" data-ziel="quiz">
+        <span class="ic" style="background:#d6efeb"><svg width="40" height="40" viewBox="0 0 40 40"><path d="M20 4 L24.7 14.5 L36 15.6 L27.4 23 L30 34 L20 28.2 L10 34 L12.6 23 L4 15.6 L15.3 14.5 Z" fill="#1b998b"/></svg></span>
+        <b>Quiz</b><small>Bist du ein Trickfilm-Profi?</small>
+      </button>
+    </div>
+    <p class="fortschritt" id="fortschritt"></p>
+  </section>
+
+  <!-- LERNEN -->
+  <section id="s-lernen" hidden>
+    <header class="top"><button class="zurueck" data-ziel="start">← Start</button></header>
+    <div id="lernkarte"></div>
+    <div class="nav">
+      <button class="knopf hell" id="l-zurueck">← Zurück</button>
+      <div class="punkte" id="punkte"></div>
+      <button class="knopf" id="l-weiter">Weiter →</button>
+    </div>
+  </section>
+
+  <!-- STUDIO -->
+  <section id="s-studio" hidden>
+    <header class="top"><button class="zurueck" data-ziel="start">← Start</button></header>
+    <div class="studio">
+      <div class="aufgabe" id="aufgabe"><b>Deine Aufgabe:</b> Lass die Knetfigur über die Wiese laufen. <b>Schiebe</b> sie ein kleines Stück, dann tippe auf <b>Foto</b>. Mach mindestens 8 Fotos!</div>
+      <div class="buehne" id="buehne">
+        <canvas id="cv" width="800" height="500" aria-label="Filmbühne mit Knetfigur. Ziehe die Figur mit dem Finger."></canvas>
+        <span class="stempel" id="stempel">0 Fotos</span>
+        <div class="blitz" id="blitz"></div>
+      </div>
+      <div class="regler">
+        <button class="knopf rot" id="foto">📷 Foto</button>
+        <button class="knopf gruen" id="play">▶ Abspielen</button>
+        <button class="knopf hell" id="weg">Letztes Foto löschen</button>
+        <button class="knopf hell" id="neu">Neuer Film</button>
+      </div>
+      <div class="regler">
+        <label for="tempo">Tempo <input type="range" id="tempo" min="2" max="12" value="5"><output id="tempoTxt">5 Bilder / Sek.</output></label>
+        <label class="schalter" for="zwiebel"><input type="checkbox" id="zwiebel" checked> Letztes Foto blass zeigen</label>
+      </div>
+      <div class="film" id="film"><span class="leer">Hier erscheinen deine Fotos wie auf einem Filmstreifen.</span></div>
+      <div class="lob" id="lob" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="s-quiz" hidden>
+    <header class="top"><button class="zurueck" data-ziel="start">← Start</button></header>
+    <div class="frage" id="frage"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  const speicher = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+
+  /* ---------- Navigation ---------- */
+  const seiten = ['start', 'lernen', 'studio', 'quiz'];
+  function zeige(z) {
+    seiten.forEach(s => $('#s-' + s).hidden = s !== z);
+    if (z === 'lernen') malLernen();
+    if (z === 'studio') malBuehne();
+    if (z === 'quiz') starteQuiz();
+    if (z === 'start') malFortschritt();
+    window.scrollTo(0, 0);
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-ziel]'); if (b) zeige(b.dataset.ziel); });
+
+  /* ---------- Lernen ---------- */
+  const farben = ['#e4572e', '#f3b61f', '#1b998b', '#2e5eaa'];
+  const zart = ['#fdebe5', '#fdf4dc', '#e0f3f1', '#e3eaf6'];
+  const schritte = [
+    { t: 'Filmset aufbauen', s: ['Stellt den Hintergrund auf.', 'Klebt ihn mit Klebeband fest.', 'Stellt das iPad auf das Stativ.'], m: '<b>Merke:</b> Das iPad darf sich beim Filmen nicht bewegen!',
+      svg: '<svg viewBox="0 0 160 110"><rect x="20" y="10" width="120" height="60" rx="4" fill="#9fd3e8"/><circle cx="118" cy="28" r="10" fill="#f3b61f"/><path d="M20 70 L55 40 L80 60 L105 35 L140 70 Z" fill="#1b998b"/><rect x="10" y="70" width="140" height="10" rx="3" fill="#c98a4b"/><rect x="66" y="58" width="12" height="16" rx="5" fill="#e4572e"/><circle cx="72" cy="54" r="6" fill="#e4572e"/><rect x="58" y="80" width="6" height="26" fill="#1f2a37"/><rect x="96" y="80" width="6" height="26" fill="#1f2a37"/></svg>' },
+    { t: 'App öffnen', s: ['Öffnet die App <b>Stop Motion Studio</b>.', 'Tippt auf <b>+</b> für einen neuen Film.'], m: '<b>Merke:</b> Jedes Team macht nur einen Film.',
+      svg: '<svg viewBox="0 0 160 110"><rect x="35" y="6" width="90" height="98" rx="10" fill="#1f2a37"/><rect x="42" y="14" width="76" height="82" rx="4" fill="#fff"/><rect x="58" y="34" width="44" height="44" rx="10" fill="#e4572e"/><circle cx="80" cy="56" r="11" fill="#fff"/><circle cx="80" cy="56" r="5" fill="#1f2a37"/><circle cx="118" cy="88" r="16" fill="#1b998b"/><path d="M118 80 V96 M110 88 H126" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>' },
+    { t: 'Erstes Foto', s: ['Tippt auf das <b>Kamera-Symbol</b>.', 'Stellt eure Figur an den Anfang.', 'Tippt auf den <b>roten Knopf</b>.'], m: '<b>Merke:</b> Hände raus aus dem Bild, bevor ihr fotografiert!',
+      svg: '<svg viewBox="0 0 160 110"><rect x="20" y="10" width="120" height="78" rx="8" fill="#1f2a37"/><rect x="27" y="17" width="106" height="64" rx="3" fill="#cfe8e4"/><rect x="72" y="48" width="14" height="22" rx="6" fill="#e4572e"/><circle cx="79" cy="42" r="8" fill="#e4572e"/><circle cx="80" cy="99" r="9" fill="#e4572e" stroke="#1f2a37" stroke-width="3"/></svg>' },
+    { t: 'Bewegen – Foto – Bewegen', s: ['Bewegt die Figur nur ein <b>kleines Stück</b>.', 'Macht ein Foto.', 'Wiederholt das immer wieder.'], m: '<b>Tipp:</b> Das blasse Bild zeigt das letzte Foto. So seht ihr, wie weit ihr bewegt habt.',
+      svg: '<svg viewBox="0 0 160 110"><g opacity=".25"><rect x="22" y="52" width="14" height="22" rx="6" fill="#2e5eaa"/><circle cx="29" cy="46" r="8" fill="#2e5eaa"/></g><g opacity=".5"><rect x="52" y="52" width="14" height="22" rx="6" fill="#2e5eaa"/><circle cx="59" cy="46" r="8" fill="#2e5eaa"/></g><g opacity=".75"><rect x="82" y="52" width="14" height="22" rx="6" fill="#2e5eaa"/><circle cx="89" cy="46" r="8" fill="#2e5eaa"/></g><rect x="112" y="52" width="14" height="22" rx="6" fill="#2e5eaa"/><circle cx="119" cy="46" r="8" fill="#2e5eaa"/><path d="M20 88 H140" stroke="#1f2a37" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 8"/><path d="M132 82 L140 88 L132 94" fill="none" stroke="#1f2a37" stroke-width="3" stroke-linecap="round"/></svg>' },
+    { t: 'Film anschauen', s: ['Tippt auf <b>Abspielen</b> (Dreieck).', 'Schaut genau hin: Ruckelt es? Fehlt etwas?', 'Ein schlechtes Foto könnt ihr löschen.'], m: '<b>Tipp:</b> In den Einstellungen könnt ihr den Film schneller oder langsamer machen.',
+      svg: '<svg viewBox="0 0 160 110"><rect x="20" y="10" width="120" height="78" rx="8" fill="#1f2a37"/><rect x="27" y="17" width="106" height="64" rx="3" fill="#fbd5c8"/><circle cx="80" cy="49" r="20" fill="#e4572e"/><path d="M74 39 L90 49 L74 59 Z" fill="#fff"/></svg>' },
+    { t: 'Ton aufnehmen', s: ['Tippt auf das <b>Mikrofon</b>.', 'Sprecht laut und deutlich.', 'Oder wählt eine <b>Musik</b> aus.'], m: '<b>Merke:</b> Bei der Aufnahme müssen alle anderen ganz leise sein.',
+      svg: '<svg viewBox="0 0 160 110"><rect x="66" y="12" width="28" height="52" rx="14" fill="#1f2a37"/><path d="M54 48 Q54 78 80 78 Q106 78 106 48" fill="none" stroke="#1f2a37" stroke-width="6" stroke-linecap="round"/><rect x="76" y="78" width="8" height="16" fill="#1f2a37"/><rect x="62" y="92" width="36" height="7" rx="3" fill="#1f2a37"/><path d="M118 34 Q128 48 118 62 M128 26 Q144 48 128 70" fill="none" stroke="#f3b61f" stroke-width="5" stroke-linecap="round"/><path d="M42 34 Q32 48 42 62 M32 26 Q16 48 32 70" fill="none" stroke="#f3b61f" stroke-width="5" stroke-linecap="round"/></svg>' },
+    { t: 'Film speichern', s: ['Tippt auf das <b>Teilen-Symbol</b>.', 'Wählt <b>Film</b> oder <b>Video</b>.', 'Speichert ihn in den <b>Fotos</b>.'], m: '<b>Merke:</b> Sagt eurer Lehrkraft Bescheid, wenn der Film gespeichert ist.',
+      svg: '<svg viewBox="0 0 160 110"><rect x="52" y="36" width="56" height="62" rx="8" fill="none" stroke="#1f2a37" stroke-width="6"/><rect x="66" y="30" width="28" height="14" fill="#e0f3f1"/><path d="M80 66 V10 M66 24 L80 10 L94 24" fill="none" stroke="#1b998b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    { t: 'Goldene Regeln', s: ['iPad nicht anfassen.', 'Hände raus aus dem Bild.', 'Immer nur kleine Schritte.', 'Das Licht bleibt gleich.'], m: '<b>Im Team:</b> Einer bewegt, einer fotografiert, einer passt auf. Wechselt euch ab!',
+      svg: '<svg viewBox="0 0 160 110"><path d="M80 12 L90 36 L116 38 L96 55 L102 81 L80 67 L58 81 L64 55 L44 38 L70 36 Z" fill="#f3b61f" stroke="#1f2a37" stroke-width="4" stroke-linejoin="round"/><circle cx="72" cy="48" r="3.5" fill="#1f2a37"/><circle cx="88" cy="48" r="3.5" fill="#1f2a37"/><path d="M72 58 Q80 65 88 58" fill="none" stroke="#1f2a37" stroke-width="3.5" stroke-linecap="round"/></svg>' }
+  ];
+  let schritt = 0;
+  let fertig = speicher.get('tw-fertig', []);
+  function malLernen() {
+    const s = schritte[schritt], f = farben[schritt % 4];
+    $('#lernkarte').innerHTML = `
+      <div class="lernkarte">
+        <div class="bild" style="background:${zart[schritt % 4]}">${s.svg}</div>
+        <div>
+          <h2><span class="zahl" style="background:${f}">${schritt + 1}</span>${s.t}</h2>
+          <ol>${s.s.map(x => `<li>${x}</li>`).join('')}</ol>
+          <div class="merke">${s.m}</div>
+          <label class="geschafft" for="ok"><input type="checkbox" id="ok" ${fertig.includes(schritt) ? 'checked' : ''}> Verstanden!</label>
+        </div>
+      </div>`;
+    $('#ok').addEventListener('change', e => {
+      fertig = fertig.filter(x => x !== schritt);
+      if (e.target.checked) fertig.push(schritt);
+      speicher.set('tw-fertig', fertig); malPunkte();
+    });
+    $('#l-zurueck').disabled = schritt === 0;
+    $('#l-weiter').textContent = schritt === schritte.length - 1 ? 'Zum Ausprobieren →' : 'Weiter →';
+    malPunkte();
+  }
+  function malPunkte() {
+    $('#punkte').innerHTML = schritte.map((_, i) =>
+      `<button class="punkt ${i === schritt ? 'an' : fertig.includes(i) ? 'fertig' : ''}" data-i="${i}" aria-label="Schritt ${i + 1}">${i + 1}</button>`).join('');
+  }
+  $('#punkte').addEventListener('click', e => { const b = e.target.closest('.punkt'); if (b) { schritt = +b.dataset.i; malLernen(); } });
+  $('#l-zurueck').addEventListener('click', () => { if (schritt > 0) { schritt--; malLernen(); } });
+  $('#l-weiter').addEventListener('click', () => {
+    if (schritt < schritte.length - 1) { schritt++; malLernen(); } else zeige('studio');
+  });
+
+  /* ---------- Studio ---------- */
+  const cv = $('#cv'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let fig = { x: 110, y: 330 };
+  let bilder = [];
+  let spielt = false, timer = null, zeigeBild = -1;
+  let ziehen = false, versatz = { x: 0, y: 0 };
+
+  function hintergrund(c) {
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#9fd3e8'); g.addColorStop(1, '#d9f0f7');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#f3b61f'; c.beginPath(); c.arc(680, 90, 46, 0, 7); c.fill();
+    c.fillStyle = '#fff';
+    [[150, 90], [420, 60]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 28, 0, 7); c.arc(x + 32, y - 10, 34, 0, 7); c.arc(x + 66, y, 26, 0, 7); c.fill(); });
+    c.fillStyle = '#1b998b'; c.beginPath(); c.moveTo(0, 360); c.quadraticCurveTo(200, 270, 400, 340); c.quadraticCurveTo(600, 400, 800, 310); c.lineTo(800, 500); c.lineTo(0, 500); c.fill();
+    c.fillStyle = '#16847a'; c.fillRect(0, 430, W, 70);
+    c.fillStyle = '#e4572e';
+    [[90, 452], [300, 470], [520, 448], [700, 466]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 7, 0, 7); c.fill(); });
+    c.fillStyle = '#2e5eaa'; c.fillRect(660, 250, 16, 120);
+    c.beginPath(); c.moveTo(620, 260); c.lineTo(716, 260); c.lineTo(668, 190); c.fill();
+    c.fillStyle = '#fff'; c.font = '700 18px Andika, sans-serif'; c.textAlign = 'center'; c.fillText('ZIEL', 668, 245);
+  }
+  function figur(c, p, alpha) {
+    c.save(); c.globalAlpha = alpha;
+    c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(p.x, p.y + 52, 34, 9, 0, 0, 7); c.fill();
+    c.fillStyle = '#e4572e';
+    c.beginPath(); c.ellipse(p.x, p.y + 12, 30, 40, 0, 0, 7); c.fill();
+    c.beginPath(); c.arc(p.x, p.y - 38, 24, 0, 7); c.fill();
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(p.x - 8, p.y - 42, 7, 0, 7); c.arc(p.x + 10, p.y - 42, 7, 0, 7); c.fill();
+    c.fillStyle = '#1f2a37'; c.beginPath(); c.arc(p.x - 6, p.y - 41, 3.5, 0, 7); c.arc(p.x + 12, p.y - 41, 3.5, 0, 7); c.fill();
+    c.strokeStyle = '#1f2a37'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.arc(p.x + 2, p.y - 32, 8, .2, Math.PI - .2); c.stroke();
+    c.restore();
+  }
+  function malBuehne() {
+    hintergrund(ctx);
+    if (spielt && zeigeBild >= 0) { figur(ctx, bilder[zeigeBild], 1); }
+    else {
+      if ($('#zwiebel').checked && bilder.length) figur(ctx, bilder[bilder.length - 1], .3);
+      figur(ctx, fig, 1);
+      if (!bilder.length) {
+        ctx.fillStyle = 'rgba(31,42,55,.8)'; ctx.font = '700 22px Andika, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Zieh mich mit dem Finger!', fig.x + 40, fig.y - 80);
+      }
+    }
+    $('#stempel').textContent = spielt ? `Bild ${zeigeBild + 1} von ${bilder.length}` : `${bilder.length} ${bilder.length === 1 ? 'Foto' : 'Fotos'}`;
+  }
+  function punkt(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; }
+  cv.addEventListener('pointerdown', e => {
+    if (spielt) return;
+    const p = punkt(e);
+    if (Math.abs(p.x - fig.x) < 70 && p.y > fig.y - 80 && p.y < fig.y + 70) {
+      ziehen = true; versatz = { x: p.x - fig.x, y: p.y - fig.y }; cv.setPointerCapture(e.pointerId);
+    }
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!ziehen) return;
+    const p = punkt(e);
+    fig.x = Math.max(40, Math.min(W - 40, p.x - versatz.x));
+    fig.y = Math.max(90, Math.min(H - 60, p.y - versatz.y));
+    malBuehne();
+  });
+  ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => { ziehen = false; }));
+
+  function malFilm() {
+    const f = $('#film');
+    if (!bilder.length) { f.innerHTML = '<span class="leer">Hier erscheinen deine Fotos wie auf einem Filmstreifen.</span>'; return; }
+    f.innerHTML = '';
+    bilder.forEach((b, i) => {
+      const k = document.createElement('canvas'); k.width = W; k.height = H;
+      const c = k.getContext('2d'); hintergrund(c); figur(c, b, 1);
+      if (spielt && i === zeigeBild) k.className = 'jetzt';
+      f.appendChild(k);
+    });
+    f.scrollLeft = f.scrollWidth;
+  }
+  function lobe() {
+    const n = bilder.length;
+    let t = '';
+    if (n >= 2) {
+      const a = bilder[n - 2], b = bilder[n - 1], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d < 3) t = 'Die Figur hat sich nicht bewegt. Schiebe sie ein Stück weiter.';
+      else if (d > 120) t = 'Das war ein großer Sprung! Kleinere Schritte sehen flüssiger aus.';
+    }
+    if (!t) t = n === 8 ? 'Super, 8 Fotos! Tippe auf Abspielen.' : n === 1 ? 'Das erste Foto ist im Kasten!' : n > 0 && fig.x > 610 ? 'Ziel erreicht! Schau dir deinen Film an.' : '';
+    $('#lob').textContent = t;
+  }
+  $('#foto').addEventListener('click', () => {
+    stopp();
+    bilder.push({ x: fig.x, y: fig.y });
+    const bl = $('#blitz'); bl.style.opacity = .8; setTimeout(() => bl.style.opacity = 0, 90);
+    malBuehne(); malFilm(); lobe();
+    if (bilder.length >= 8) speicher.set('tw-film', true);
+  });
+  function stopp() { if (timer) clearInterval(timer); timer = null; spielt = false; zeigeBild = -1; $('#play').textContent = '▶ Abspielen'; }
+  $('#play').addEventListener('click', () => {
+    if (spielt) { stopp(); malBuehne(); malFilm(); return; }
+    if (bilder.length < 2) { $('#lob').textContent = 'Mach zuerst mindestens 2 Fotos.'; return; }
+    spielt = true; zeigeBild = 0; $('#play').textContent = '■ Stopp';
+    const fps = +$('#tempo').value;
+    malBuehne(); malFilm();
+    timer = setInterval(() => {
+      zeigeBild = (zeigeBild + 1) % bilder.length;
+      malBuehne();
+      [...$('#film').children].forEach((k, i) => k.className = i === zeigeBild ? 'jetzt' : '');
+    }, 1000 / fps);
+  });
+  $('#weg').addEventListener('click', () => { stopp(); bilder.pop(); if (bilder.length) fig = { ...bilder[bilder.length - 1] }; malBuehne(); malFilm(); $('#lob').textContent = ''; });
+  $('#neu').addEventListener('click', () => { stopp(); bilder = []; fig = { x: 110, y: 330 }; malBuehne(); malFilm(); $('#lob').textContent = ''; });
+  function tempoText() {
+    const v = +$('#tempo').value; $('#tempoTxt').textContent = `${v} Bilder / Sek.`;
+    if (spielt) { stopp(); $('#play').click(); }
+  }
+  $('#tempo').addEventListener('input', tempoText);
+  $('#zwiebel').addEventListener('change', malBuehne);
+
+  /* ---------- Quiz ---------- */
+  const fragen = [
+    { f: 'Was ist ein Stopmotion-Film?', a: ['Ein Film aus vielen einzelnen Fotos', 'Ein Film, der plötzlich stoppt', 'Ein Film nur mit Ton'], r: 0, e: 'Genau! Viele Fotos hintereinander sehen aus wie eine Bewegung.' },
+    { f: 'Wie weit bewegst du die Figur vor jedem Foto?', a: ['Ganz weit, quer über das Bild', 'Nur ein kleines Stück', 'Gar nicht'], r: 1, e: 'Richtig! Kleine Schritte machen den Film flüssig.' },
+    { f: 'Was ist beim Fotografieren wichtig?', a: ['Die Hände sind im Bild', 'Das iPad wackelt ein bisschen', 'Keine Hände im Bild'], r: 2, e: 'Super! Sonst sieht man plötzlich eine Hand im Film.' },
+    { f: 'Warum steht das iPad auf einem Stativ?', a: ['Damit es sich nicht bewegt', 'Damit es schöner aussieht', 'Damit der Akku hält'], r: 0, e: 'Genau! Wenn das iPad wackelt, wackelt der ganze Film.' },
+    { f: 'Du hast 50 Fotos gemacht, 5 Bilder pro Sekunde. Wie lang ist der Film?', a: ['5 Sekunden', '10 Sekunden', '50 Sekunden'], r: 1, e: 'Richtig gerechnet! 50 : 5 = 10 Sekunden.' },
+    { f: 'Was zeigt dir das blasse Bild auf dem Bildschirm?', a: ['Einen Fehler', 'Das letzte Foto', 'Den Hintergrund'], r: 1, e: 'Richtig! So siehst du, wie weit du die Figur bewegt hast.' },
+    { f: 'Was macht ihr zuerst?', a: ['Ton aufnehmen', 'Film speichern', 'Storyboard und Filmset vorbereiten'], r: 2, e: 'Genau! Erst planen, dann filmen.' },
+    { f: 'Bei der Tonaufnahme müssen die anderen …', a: ['ganz leise sein', 'laut mitsingen', 'das iPad halten'], r: 0, e: 'Richtig! Sonst hört man sie im Film.' }
+  ];
+  let qi = 0, punkte = 0, beantwortet = false;
+  const sternSvg = an => `<svg class="stern" viewBox="0 0 40 40"><path d="M20 4 L24.7 14.5 L36 15.6 L27.4 23 L30 34 L20 28.2 L10 34 L12.6 23 L4 15.6 L15.3 14.5 Z" fill="${an ? '#f3b61f' : '#e4ddcf'}" stroke="#1f2a37" stroke-width="2"/></svg>`;
+  function starteQuiz() { qi = 0; punkte = 0; fragen.forEach(q => delete q._fehler); malFrage(); }
+  function malFrage() {
+    beantwortet = false;
+    if (qi >= fragen.length) {
+      const best = Math.max(punkte, speicher.get('tw-quiz', 0)); speicher.set('tw-quiz', best);
+      const text = punkte === fragen.length ? 'Du bist ein echter Trickfilm-Profi!' : punkte >= 5 ? 'Toll gemacht!' : 'Schau dir die Lernkarten noch einmal an.';
+      $('#frage').innerHTML = `<div class="ende"><h2>${punkte} von ${fragen.length} Sternen</h2><div class="sterne" style="justify-content:center">${fragen.map((_, i) => sternSvg(i < punkte)).join('')}</div><p style="font-size:20px">${text}</p><div class="regler" style="justify-content:center"><button class="knopf" id="nochmal">Nochmal</button><button class="knopf hell" data-ziel="start">Zum Start</button></div></div>`;
+      $('#nochmal').addEventListener('click', starteQuiz);
+      return;
+    }
+    const q = fragen[qi];
+    $('#frage').innerHTML = `
+      <div class="zaehler">Frage ${qi + 1} von ${fragen.length}</div>
+      <h2>${q.f}</h2>
+      <div class="antworten">${q.a.map((x, i) => `<button class="antwort" data-i="${i}"><span class="bu">${'ABC'[i]}</span>${x}</button>`).join('')}</div>
+      <div class="rueck" id="rueck" aria-live="polite"></div>
+      <div class="nav"><div class="sterne">${fragen.map((_, i) => sternSvg(i < punkte)).join('')}</div><button class="knopf" id="q-weiter" hidden>Weiter →</button></div>`;
+    $('#frage .antworten').addEventListener('click', e => {
+      const b = e.target.closest('.antwort'); if (!b || beantwortet) return;
+      const i = +b.dataset.i;
+      if (i === q.r) {
+        beantwortet = true; punkte++;
+        b.classList.add('richtig'); $('#rueck').textContent = q.e;
+        $('#frage .sterne').innerHTML = fragen.map((_, k) => sternSvg(k < punkte)).join('');
+        $('#q-weiter').hidden = false;
+      } else {
+        b.classList.add('falsch'); b.disabled = true;
+        $('#rueck').textContent = 'Noch nicht. Versuch es nochmal!';
+        q._fehler = true; // nach einem Fehler gibt es für diese Frage keinen Stern
+      }
+      if (beantwortet && q._fehler) { punkte--; $('#frage .sterne').innerHTML = fragen.map((_, k) => sternSvg(k < punkte)).join(''); $('#rueck').textContent = q.e + ' (Beim ersten Versuch gibt es einen Stern.)'; }
+    });
+    $('#q-weiter').addEventListener('click', () => { delete q._fehler; qi++; malFrage(); });
+  }
+
+  /* ---------- Start ---------- */
+  function malFortschritt() {
+    const f = speicher.get('tw-fertig', []).length, q = speicher.get('tw-quiz', 0), film = speicher.get('tw-film', false);
+    const teile = [];
+    if (f) teile.push(`${f} von 8 Lernschritten verstanden`);
+    if (film) teile.push('Mini-Trickfilm gedreht');
+    if (q) teile.push(`bestes Quiz: ${q} Sterne`);
+    $('#fortschritt').textContent = teile.length ? 'Dein Stand: ' + teile.join(' · ') : '';
+  }
+  malFortschritt();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!$('#s-studio').hidden) malBuehne(); });
+})();
+</script>
+
+</body>
+</html>
