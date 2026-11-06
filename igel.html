@@ -20,7 +20,8 @@
 html,body{height:100%}
 html{touch-action:manipulation}
 body{background:var(--meadow);color:var(--ink);font-family:var(--font);font-size:20px;line-height:1.35;padding-inline:16px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+button,[role="button"]{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+.tile,.item,.season,.film,.icard,.choice{cursor:pointer}
 button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
 .app{max-width:1100px;margin:0 auto;padding-block:12px 40px;display:flex;flex-direction:column;gap:16px}
 header{display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--meadow);padding-block:8px;z-index:5}
@@ -343,8 +344,8 @@ function home(){setTitle('Igel Pieks');intro='Hallo! Ich bin Pieks, der Igel. Ti
  main.innerHTML=`<div class="app" style="padding:0">
  <div class="hero"><div id="heroIgel">${igel()}</div>
   <div class="bubble">${spk(intro)}<span>Hallo! Ich bin <b>Pieks</b>, der Igel.</span></div></div>
- <div class="tiles">${MENU.map(([k,w,e])=>`<button class="tile ${k==='test'?'test':''}" data-go="${k}">
-  ${visited[k]?`<span class="done">${ICON.check}</span>`:''}<span class="pic">${e||igel()}</span><span class="lab">${w} ${spk(w)}</span></button>`).join('')}</div>
+ <div class="tiles">${MENU.map(([k,w,e])=>`<div role="button" tabindex="0" class="tile ${k==='test'?'test':''}" data-go="${k}">
+  ${visited[k]?`<span class="done">${ICON.check}</span>`:''}<span class="pic">${e||igel()}</span><span class="lab">${w} ${spk(w)}</span></div>`).join('')}</div>
  <p class="hint">Alle Wörter und Aufgaben werden vorgelesen. Der große gelbe Knopf oben liest die Aufgabe noch einmal vor.</p></div>`;
  main.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
  document.getElementById('heroIgel').onclick=e=>{const p=e.target.closest('[data-part]');const s=document.querySelector('#heroIgel svg');s.classList.remove('mampf');void s.offsetWidth;s.classList.add('mampf');say(p&&p.dataset.part==='nase'?'Hihi, das kitzelt an der Nase!':'Hallo! Ich bin Pieks.')}}
@@ -380,7 +381,7 @@ function futter(){setTitle('Futter','🪲');intro='Was frisst der Igel? Tippe au
  let found=0;
  main.innerHTML=`<div class="feed"><div class="panel"><div id="feedIgel">${igel()}</div><div class="slots">${FOOD.filter(f=>f.g).map(()=>'<span class="slot"></span>').join('')}</div>
   <div class="info">${spk('Der Igel frisst vor allem Insekten, Würmer und Schnecken. Er sucht sein Futter in der Nacht.')}<div>Der Igel frisst <b>Insekten</b>, <b>Würmer</b> und <b>Schnecken</b>. Er sucht sein Futter in der <b>Nacht</b>.</div></div></div>
-  <div class="food">${shuffle(FOOD).map(f=>`<button class="item" data-w="${f.w}"><span class="pic">${f.e}</span><span class="lab">${f.w} ${spk(f.w)}</span></button>`).join('')}</div></div>`;
+  <div class="food">${shuffle(FOOD).map(f=>`<div role="button" tabindex="0" class="item" data-w="${f.w}"><span class="pic">${f.e}</span><span class="lab">${f.w} ${spk(f.w)}</span></div>`).join('')}</div></div>`;
  const ig=()=>document.querySelector('#feedIgel svg'),slots=[...main.querySelectorAll('.slot')];
  main.querySelectorAll('.item').forEach(b=>b.onclick=()=>{const f=FOOD.find(x=>x.w===b.dataset.w);const s=ig();s.classList.remove('mampf','nein');void s.offsetWidth;
   if(f.g){if(b.classList.contains('eaten'))return;b.classList.add('eaten');slots[found].textContent=f.e;slots[found].classList.add('full');found++;s.classList.add('mampf');tone('ok');
@@ -396,7 +397,7 @@ function seasonScene(k){const fall=n=>Array.from({length:n},(_,i)=>`<span class=
  if(k==='herbst')return `<div class="scene bg-herbst">${fall(10)}${I(igel(),18,4,46,'transform:scale(1.08)')}<span class="deco" style="right:6%;bottom:6%;font-size:10cqw">🍂🍂</span></div>`;
  return `<div class="scene bg-winter">${fall(14)}<span class="deco" style="left:20%;bottom:2%;font-size:22cqw;letter-spacing:-6cqw">🍂🍂🍂</span>${I(igelBall(),30,10,30)}<span class="zzz" style="left:58%;top:30%">Z z z</span></div>`}
 function jahreszeiten(){setTitle('Jahreszeiten','🍂');intro='So lebt der Igel im Jahr. Tippe auf eine Jahreszeit.';
- main.innerHTML=`<div class="seasons">${Object.entries(SEASONS).map(([k,s])=>`<button class="season s-${k}" data-k="${k}" aria-pressed="false"><span class="pic">${s.e}</span><span class="lab">${s.w} ${spk(s.w)}</span></button>`).join('')}</div>
+ main.innerHTML=`<div class="seasons">${Object.entries(SEASONS).map(([k,s])=>`<div role="button" tabindex="0" class="season s-${k}" data-k="${k}" aria-pressed="false"><span class="pic">${s.e}</span><span class="lab">${s.w} ${spk(s.w)}</span></div>`).join('')}</div>
  <div class="panel" style="margin-top:14px"><div id="sScene"></div><div class="info" id="sText"></div></div>`;
  const show=k=>{main.querySelectorAll('.season').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));document.getElementById('sScene').innerHTML=seasonScene(k);
   document.getElementById('sText').innerHTML=`${spk(SEASONS[k].w+'. '+SEASONS[k].t)}<div><big>${SEASONS[k].w}</big>${SEASONS[k].t}</div>`};
@@ -405,7 +406,7 @@ function jahreszeiten(){setTitle('Jahreszeiten','🍂');intro='So lebt der Igel 
  main.querySelectorAll('.season').forEach(b=>b.onclick=()=>{show(b.dataset.k);sayS(b.dataset.k);nav.set(SK.indexOf(b.dataset.k))});show('fruehling');nav.set(0)}
 
 /* ---------- Feinde ---------- */
-function infoCards(list,cls){return `<div class="grid3">${list.map((c,i)=>`<button class="icard ${cls||''}" data-i="${i}"><span class="pic">${c.e}</span><span class="lab">${c.w} ${spk(c.w)}</span><p>${c.t}</p></button>`).join('')}</div>`}
+function infoCards(list,cls){return `<div class="grid3">${list.map((c,i)=>`<div role="button" tabindex="0" class="icard ${cls||''}" data-i="${i}"><span class="pic">${c.e}</span><span class="lab">${c.w} ${spk(c.w)}</span><p>${c.t}</p></div>`).join('')}</div>`}
 function bindCards(root,list,cb){root.querySelectorAll('.icard').forEach(b=>b.onclick=()=>{selCard(b);const c=list[b.dataset.i];say(c.w+'. '+c.t);cb&&cb(+b.dataset.i)})}
 function feinde(){setTitle('Feinde','🦊');intro='Diese Tiere sind Feinde des Igels. Tippe auf ein Tier. Unten siehst du, wie sich der Igel schützt.';
  main.innerHTML=`<div id="en">${infoCards(ENEMIES)}</div>
@@ -459,7 +460,7 @@ const FILMS=[
    const ig=S.igel(110,8,26);ig.style.transition='left 3s linear';await S.wait(50);ig.classList.add('walk');ig.style.left='66%';await S.wait(3100);ig.classList.remove('walk');S.pop(ig,'Schlürf!');
    await S.say('Da kommt Pieks. Er trinkt Wasser. Danke, Lena!');S.pop(ch,'❤️')}}];
 function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über den Igel. Tippe auf einen Film.';
- main.innerHTML=`<div class="films">${FILMS.map((f,i)=>`<button class="film" data-i="${i}" aria-pressed="false"><span class="play">${ICON.play}</span><span class="pic">${f.e}</span><span class="lab">${f.w}</span>${spk(f.w)}</button>`).join('')}</div>
+ main.innerHTML=`<div class="films">${FILMS.map((f,i)=>`<div role="button" tabindex="0" class="film" data-i="${i}" aria-pressed="false"><span class="play">${ICON.play}</span><span class="pic">${f.e}</span><span class="lab">${f.w}</span>${spk(f.w)}</div>`).join('')}</div>
  <div class="panel" style="margin-top:14px"><div class="scene bg-nacht" id="stage"></div><div class="caption" id="cap">Tippe oben auf einen Film.</div>
  <div class="center"><button class="bigbtn" id="again" hidden>${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="stopB" hidden>${ICON.stop}<span>Stopp</span></button></div></div>`;
  const stage=document.getElementById('stage'),cap=document.getElementById('cap'),again=document.getElementById('again'),stopB=document.getElementById('stopB');let cur=null;
@@ -503,8 +504,8 @@ function test(){setTitle('Test','⭐');let n=0,res=[];
  function dots(){return `<div class="dots">${Q.map((_,i)=>`<i class="${res[i]===1?'ok':res[i]===0?'no':i===n?'now':''}"></i>`).join('')}</div>`}
  function show(){if(n>=Q.length)return end();const q=Q[n];intro=q.q;let body='';
   if(q.type==='part')body=`<div class="panel" id="tBody">${igel()}</div>`;
-  if(q.type==='pick')body=`<div class="choices">${shuffle(q.c).map(c=>`<button class="choice" data-ok="${c[2]?1:0}"><span class="pic">${c[0]==='BALL'?BALLPIC():c[0]}</span><span class="lab">${spk(c[1])}</span></button>`).join('')}</div>`;
-  if(q.type==='season')body=`<div class="seasons">${shuffle(Object.keys(SEASONS)).map(k=>`<button class="season choice s-${k}" data-ok="${k===q.a?1:0}"><span class="pic">${SEASONS[k].e}</span><span class="lab">${SEASONS[k].w} ${spk(SEASONS[k].w)}</span></button>`).join('')}</div>`;
+  if(q.type==='pick')body=`<div class="choices">${shuffle(q.c).map(c=>`<div role="button" tabindex="0" class="choice" data-ok="${c[2]?1:0}"><span class="pic">${c[0]==='BALL'?BALLPIC():c[0]}</span><span class="lab">${spk(c[1])}</span></div>`).join('')}</div>`;
+  if(q.type==='season')body=`<div class="seasons">${shuffle(Object.keys(SEASONS)).map(k=>`<div role="button" tabindex="0" class="season choice s-${k}" data-ok="${k===q.a?1:0}"><span class="pic">${SEASONS[k].e}</span><span class="lab">${SEASONS[k].w} ${spk(SEASONS[k].w)}</span></div>`).join('')}</div>`;
   if(q.type==='yesno')body=`<div class="ynpic">${q.pic}</div><div class="yn"><button class="yes choice" data-ok="${q.a?1:0}" aria-label="Stimmt">👍</button><button class="no choice" data-ok="${q.a?0:1}" aria-label="Stimmt nicht">👎</button></div>`;
   main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">${dots()}<div class="qbar">${spk(q.q)}<span>${q.q}</span></div>${body}<div id="fb"></div></div>`;
   let answered=false;

@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Lernapp zum Apfel für Klasse 1 mit Vorlesefunktion">
+<title>Apfel Rudi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}
+/* Layout wie Igel Pieks: eine Bildschirm-App mit großen Bildkacheln, Kopfleiste mit Haus + Vorlese-Knopf */
+:root{
+  --meadow:#eaf1da; --meadow2:#d5e4bd; --card:#fffdf6; --ink:#2f3528; --ink2:#5f6a57;
+  --bark:#7a4f2f; --sun:#f0a12b; --sunsoft:#fde7bf; --apple:#d93a2b;
+  --ok:#3b9450; --oksoft:#d9f0dc; --no:#cf5236; --nosoft:#fadcd3;
+  --font:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+html{touch-action:manipulation}
+body{background:var(--meadow);color:var(--ink);font-family:var(--font);font-size:20px;line-height:1.35;padding-inline:16px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button,[role="button"]{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+.tile,.item,.season,.film,.icard,.choice{cursor:pointer}
+button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+.app{max-width:1100px;margin:0 auto;padding-block:12px 40px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--meadow);padding-block:8px;z-index:5}
+header h1{flex:1;margin:0;font-size:clamp(26px,4vw,38px);display:flex;align-items:center;gap:10px;min-width:0}
+.round{width:60px;height:60px;border-radius:50%;background:var(--card);display:grid;place-items:center;box-shadow:0 3px 0 var(--meadow2);flex:none}
+.round svg{width:32px;height:32px}
+.round.big{width:78px;height:78px;background:var(--sun);box-shadow:0 4px 0 #c47e17}
+.round.big svg{width:42px;height:42px}
+.spk{width:44px;height:44px;border-radius:50%;background:var(--sunsoft);display:inline-grid;place-items:center;flex:none;vertical-align:middle}
+.spk svg{width:24px;height:24px}
+.spk:active{transform:scale(.92)}
+.word{display:inline-flex;align-items:center;gap:8px;font-weight:700}
+.hint{color:var(--ink2);font-size:17px;margin:0}
+[hidden]{display:none!important}
+
+/* Startseite */
+.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:16px;align-items:center}
+.hero .apfel{width:100%;max-height:340px}
+.bubble{background:var(--card);border-radius:28px;padding:18px 22px;font-size:24px;position:relative;box-shadow:0 4px 0 var(--meadow2);display:flex;gap:12px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.tile{background:var(--card);border-radius:26px;padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 5px 0 var(--meadow2);position:relative;text-align:center}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 var(--meadow2)}
+.tile .pic{font-size:62px;line-height:1;height:78px;display:grid;place-items:center}
+.tile .pic svg{height:78px;width:auto}
+.tile .lab{font-size:22px;font-weight:700;display:flex;align-items:center;gap:6px}
+.tile .done{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:var(--ok);display:grid;place-items:center}
+.tile .done svg{width:18px;height:18px}
+.tile.test{background:var(--sunsoft)}
+
+/* Apfel-Grafik */
+.apfel{display:block;max-width:100%;overflow:visible}
+.apfel [data-part]{cursor:pointer}
+.apfel .hi :not(.hit){stroke:var(--sun);stroke-width:6px;paint-order:stroke}
+.apfel .hit{fill:transparent}
+.apfel .ring{fill:none}
+.apfel .lbl rect{fill:var(--card);stroke:var(--sun);stroke-width:3}
+.apfel .lbl text{font-family:var(--font);font-weight:700;font-size:22px;fill:var(--ink)}
+.apfel .lbl line{stroke:var(--ink);stroke-width:2.5;stroke-dasharray:4 4}
+.mampf{animation:mampf .5s 2}
+.nein{animation:nein .45s 2}
+@keyframes mampf{50%{transform:scale(1.06) translateY(-6px)}}
+@keyframes nein{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+
+/* Teile */
+.split{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:var(--card);border-radius:26px;padding:16px;box-shadow:0 5px 0 var(--meadow2);display:flex;flex-direction:column;gap:12px;min-width:0}
+.modes{display:flex;gap:10px;flex-wrap:wrap}
+.mode{padding:10px 16px;border-radius:999px;background:var(--card);box-shadow:0 3px 0 var(--meadow2);font-weight:700;display:flex;align-items:center;gap:8px}
+.mode[aria-pressed="true"]{background:var(--sun);color:#2a1a05;box-shadow:0 3px 0 #c47e17}
+.cards{display:flex;flex-wrap:wrap;gap:10px}
+.wcard{background:var(--meadow);border-radius:18px;padding:8px 10px 8px 16px;display:flex;align-items:center;gap:8px;font-size:24px;font-weight:700;border:4px solid transparent}
+.wcard.sel{border-color:var(--sun);background:var(--sunsoft)}
+.wcard.ok{background:var(--oksoft);opacity:.55}
+.info{font-size:22px;display:flex;gap:10px;align-items:flex-start}
+.info big{display:block;font-size:30px;font-weight:700}
+
+/* Küche + Wachsen */
+.feed{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:center}
+.feed .apfel{max-height:240px;margin:0 auto}
+.slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.slot{width:46px;height:46px;border-radius:50%;border:3px dashed var(--bark);display:grid;place-items:center;font-size:26px}
+.slot.full{border-style:solid;background:var(--oksoft);border-color:var(--ok)}
+.food{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.item{background:var(--card);border-radius:22px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 var(--meadow2);position:relative}
+.item .pic{font-size:54px;line-height:1.1;height:66px;display:grid;place-items:center}
+.item .pic svg{height:62px;width:auto}
+.item .pic .sm svg{height:36px}
+.item .lab{font-size:17px;font-weight:700;display:flex;align-items:center;gap:4px;text-align:center}
+.item .lab .spk{width:34px;height:34px}.item .lab .spk svg{width:18px;height:18px}
+.item.eaten{visibility:hidden}
+.item.bad{background:var(--nosoft)}
+.item.bad::after{content:"";position:absolute;inset:10px;background:linear-gradient(45deg,transparent 46%,var(--no) 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,var(--no) 46% 54%,transparent 54%);opacity:.5;pointer-events:none}
+.gslots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.gslot{aspect-ratio:1;border:3px dashed var(--bark);border-radius:20px;display:grid;place-items:center;position:relative;background:#fff}
+.gslot .num{position:absolute;top:4px;left:9px;font-weight:700;color:var(--ink2);font-size:20px}
+.gslot .in{width:72%}
+.gslot .in svg{width:100%;height:auto;display:block}
+.gslot .in .sm{display:block;width:60%;margin:0 auto}
+.gslot.full{border-style:solid;background:var(--oksoft);border-color:var(--ok);animation:pop .3s}
+.gslot.next{border-color:var(--sun);border-width:5px}
+.stk{position:relative;display:inline-block}
+.stk .bee{position:absolute;right:-8%;top:-12%;font-size:.5em;line-height:1}
+.item .stk .bee{font-size:28px}
+.gslot .stk{display:block}.gslot .stk .bee{font-size:min(6vw,42px)}
+
+/* Szenen */
+.scene{border-radius:24px;position:relative;overflow:hidden;aspect-ratio:16/9;max-width:100%;container-type:inline-size}
+.bg-fruehling{background:linear-gradient(#bfe3f5,#e8f6ff 55%,#9fd27f 55%,#7fbf5f)}
+.bg-sommer{background:linear-gradient(#8fd0f2,#d8f1ff 55%,#a9cf6a 55%,#86b84c)}
+.bg-herbst{background:linear-gradient(#f6d39a,#fbe7c4 55%,#c9893f 55%,#a86d2e)}
+.bg-winter{background:linear-gradient(#c6d6e8,#eef4fa 55%,#ffffff 55%,#e2ebf3)}
+.bg-garten{background:linear-gradient(#a6dcf5,#e4f6ff 55%,#8fc66a 55%,#6fae4d)}
+.deco{position:absolute;line-height:1;pointer-events:none}
+.seasons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.season{border-radius:22px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 5px 0 var(--meadow2);border:4px solid transparent}
+.season[aria-pressed="true"]{border-color:var(--sun)}
+.season .pic{font-size:48px;line-height:1.1}
+.season .lab{font-size:20px;font-weight:700;display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:2px 4px 2px 12px}
+.season .lab .spk{width:36px;height:36px}
+.s-fruehling{background:#d6efc4}.s-sommer{background:#fbe9a6}.s-herbst{background:#f6c88f}.s-winter{background:#e2ecf6}
+
+/* Bühne */
+.actor{position:absolute;transition:left 3s linear,bottom 1.2s ease,opacity 1s,transform 1s;line-height:1}
+.actor > svg{width:100%;height:auto;display:block}
+.say-bub{position:absolute;background:#fff;color:#2f3528;border-radius:14px;padding:.3em .6em;font-weight:700;font-size:3.4cqw;white-space:nowrap;animation:pop .3s;z-index:6}
+@keyframes pop{from{transform:scale(.3)}}
+.fall{position:absolute;top:-10%;animation:fall linear infinite;pointer-events:none}
+@keyframes fall{to{transform:translateY(120cqw) rotate(360deg)}}
+.caption{font-size:24px;min-height:2.6em;background:var(--card);border-radius:18px;padding:10px 16px;display:flex;align-items:center}
+.films{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.film{background:var(--card);border-radius:22px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 var(--meadow2);border:4px solid transparent;position:relative}
+.film[aria-pressed="true"]{border-color:var(--sun)}
+.film .pic{font-size:46px}
+.film .lab{font-weight:700;font-size:18px;text-align:center}
+.film .play{position:absolute;top:8px;left:8px;width:30px;height:30px;border-radius:50%;background:var(--sun);display:grid;place-items:center}
+.film .play svg{width:14px;height:14px}
+
+/* Info-Karten */
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.icard{background:var(--card);border-radius:24px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 5px 0 var(--meadow2);border:4px solid transparent;text-align:center}
+.icard .pic{font-size:64px;line-height:1.1}
+.icard .lab{font-size:22px;font-weight:700;display:flex;align-items:center;gap:6px}
+.icard p{margin:0;font-size:17px;color:var(--ink2)}
+.icard.on{border-color:var(--sun)}
+.icard.animal{background:#fff6ec}
+.icard.help{background:#effaef}
+.sect{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:700;margin:6px 0 0}
+.sect .dot{width:18px;height:18px;border-radius:50%}
+.bigbtn{background:var(--sun);color:#2a1a05;border-radius:999px;padding:14px 24px;font-size:24px;font-weight:700;box-shadow:0 4px 0 #c47e17;display:inline-flex;align-items:center;gap:10px}
+.bigbtn svg{width:30px;height:30px}
+
+/* Weiter-Leiste */
+.stepnav{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(234,241,218,0),var(--meadow) 35%);z-index:4;margin-top:8px}
+.stepnav{pointer-events:none}.stepnav>*{pointer-events:auto}
+.stepnav .back{background:var(--card);box-shadow:0 4px 0 var(--meadow2)}
+/* Test */
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dots i{width:18px;height:18px;border-radius:50%;background:var(--card);border:2px solid var(--meadow2)}
+.dots i.ok{background:var(--ok);border-color:var(--ok)}.dots i.no{background:var(--no);border-color:var(--no)}.dots i.now{border-color:var(--sun);border-width:4px}
+.qbar{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:24px;padding:12px 16px;font-size:26px;font-weight:700;box-shadow:0 5px 0 var(--meadow2)}
+.qbar span{flex:1;min-width:0}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.choice{background:var(--card);border-radius:26px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 5px 0 var(--meadow2);border:5px solid transparent;position:relative}
+.choice .pic{font-size:78px;line-height:1.1;height:96px;display:grid;place-items:center}
+.choice .pic svg{height:96px;width:auto}
+.choice .pic .sm svg{height:52px}
+.choice .pic .stk .bee{font-size:40px}
+.choice .lab{font-size:18px;font-weight:700;display:flex;align-items:center;gap:4px;text-align:center}
+.choice .lab .spk{width:36px;height:36px}
+.choice.right{border-color:var(--ok);background:var(--oksoft)}
+.choice.wrong{border-color:var(--no);background:var(--nosoft)}
+.yn{display:flex;gap:30px;justify-content:center}
+.yn button{width:130px;height:130px;border-radius:50%;font-size:68px;display:grid;place-items:center;box-shadow:0 6px 0 rgba(0,0,0,.15);border:6px solid transparent}
+.yn .yes{background:var(--oksoft)}.yn .no{background:var(--nosoft)}
+.yn button.right{border-color:var(--ok)}.yn button.wrong{border-color:var(--no)}
+.ynpic{font-size:90px;text-align:center;line-height:1.1}
+.feedback{display:flex;align-items:center;gap:14px;justify-content:center;font-size:26px;font-weight:700;flex-wrap:wrap}
+.mark{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;flex:none}
+.mark svg{width:40px;height:40px}
+.mark.ok{background:var(--ok)}.mark.no{background:var(--no)}
+.stars{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:44px}
+.stars .off{filter:grayscale(1);opacity:.3}
+.center{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+
+@media (max-width:760px){
+  .hero,.split,.feed{grid-template-columns:minmax(0,1fr)}
+  .seasons{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gslots{gap:6px}
+  body{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="round" id="homeBtn" aria-label="Zur Startseite" hidden></button>
+    <h1 id="title"></h1>
+    <button class="round big" id="earBtn" aria-label="Noch einmal vorlesen"></button>
+  </header>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ---------- Icons ---------- */
+const ICON={
+ spk:'<svg viewBox="0 0 24 24" fill="none" stroke="#7a4f2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#7a4f2f"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+ ear:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#2a1a05"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="#7a4f2f" stroke-width="2.4" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10" fill="#fde7bf"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+ cross:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ play:'<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="#2a1a05"/></svg>',
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
+ next:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+ again:'<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a05" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>',
+ stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#2a1a05"/></svg>'
+};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const spk=t=>`<button class="spk" data-say="${esc(t)}" aria-label="Vorlesen: ${esc(t)}">${ICON.spk}</button>`;
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- Sprache & Töne ---------- */
+let voice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));voice=vs.find(v=>/Anna|Helena|Petra|Marlene|Google Deutsch/i.test(v.name))||vs[0]||null}catch(e){}}
+try{speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}catch(e){}
+let sayTimer=null,saySeq=0;
+const SS=()=>window.speechSynthesis;
+function say(t){return new Promise(res=>{
+  const my=++saySeq;let done=false;const fin=()=>{if(!done){done=true;res()}};
+  try{
+    const ss=SS();if(!ss){fin();return}
+    t=t.replace(/Biomüll/g,'Bio-Müll').replace(/Kerngehäuse/g,'Kern-Gehäuse');
+    const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=.88;u.pitch=1.05;
+    u.onend=fin;u.onerror=fin;
+    setTimeout(fin,1500+t.length*95);
+    clearTimeout(sayTimer);
+    const busy=ss.speaking||ss.pending;
+    if(busy)ss.cancel();
+    if(ss.paused)ss.resume();
+    const go=()=>{if(my!==saySeq){fin();return}try{ss.speak(u)}catch(e){fin()}};
+    if(busy)sayTimer=setTimeout(go,150);else go();
+  }catch(e){fin()}})}
+function hush(){saySeq++;clearTimeout(sayTimer);try{SS().cancel()}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hush()});
+window.addEventListener('pageshow',()=>{try{SS().cancel();SS().resume()}catch(e){}});
+let actx=null,actxT=null;
+function tone(kind){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state!=='running')actx.resume();clearTimeout(actxT);actxT=setTimeout(()=>{try{actx.suspend()}catch(e){}},900);const now=actx.currentTime;
+  const notes=kind==='ok'?[660,880,1175]:kind==='win'?[523,659,784,1046]:[220,180];
+  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=kind==='no'?'triangle':'sine';o.frequency.value=f;
+   g.gain.setValueAtTime(0,now+i*.11);g.gain.linearRampToValueAtTime(.18,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.001,now+i*.11+.3);
+   o.connect(g);g.connect(actx.destination);o.start(now+i*.11);o.stop(now+i*.11+.32)})}catch(e){}}
+document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b){e.stopPropagation();e.preventDefault();say(b.dataset.say)}},true);
+
+/* ---------- Grafiken ---------- */
+const BODY='M200 120C150 85 60 100 55 200C50 300 130 370 200 350C270 370 350 300 345 200C340 100 250 85 200 120Z';
+const LEAF='<path d="M214 82C232 45 282 36 306 52C292 84 248 100 214 82Z" fill="#5fa83a"/><path d="M216 80C245 66 272 56 300 54" stroke="#3f7d22" stroke-width="3" fill="none"/>';
+const STEM='<path d="M200 125C200 100 205 80 216 60" stroke="#6b4423" stroke-width="10" fill="none" stroke-linecap="round"/>';
+const FACE='<ellipse cx="160" cy="215" rx="11" ry="14" fill="#2b1a12"/><ellipse cx="240" cy="215" rx="11" ry="14" fill="#2b1a12"/><circle cx="164" cy="210" r="3.5" fill="#fff"/><circle cx="244" cy="210" r="3.5" fill="#fff"/><circle cx="132" cy="252" r="15" fill="#ff8f8f" opacity=".55"/><circle cx="268" cy="252" r="15" fill="#ff8f8f" opacity=".55"/><path d="M172 255Q200 284 228 255" stroke="#2b1a12" stroke-width="6" fill="none" stroke-linecap="round"/>';
+function apfelInner(o={}){const c=o.c||'#d93a2b',d=o.d||'#a8261b';
+ return `<path d="${BODY}" fill="${c}"/>
+ <path d="M200 350C270 370 350 300 345 200C342 150 320 118 290 105C325 150 330 250 270 310C245 335 220 345 200 350Z" fill="${d}" opacity=".5"/>
+ <ellipse cx="125" cy="185" rx="20" ry="42" fill="#fff" opacity=".35" transform="rotate(20 125 185)"/>
+ ${STEM}${o.leaf===0?'':LEAF}${o.face?FACE:''}`}
+function apfel(o={}){return `<svg class="apfel ${o.cls||''}" viewBox="40 30 320 340" role="img" aria-label="Apfel">${apfelInner(o)}</svg>`}
+/* Ast mit Blüte oder hängendem Apfel: der Stiel-Anfang (216|60) sitzt immer am Ast */
+const AX=300,AY=70;
+function ast(o={}){
+ const fruit=o.what==='bluete'
+  ?`<g transform="translate(${AX-46} ${AY-88}) scale(.92)">${BLUETE_IN}</g>`
+  :`<g class="hang" style="transform-origin:216px 60px;transform:translate(${AX-216}px,${AY-60}px) scale(${o.s||.25});transition:transform 1.2s ease">${apfelInner(o)}</g>`;
+ return `<svg class="apfel" viewBox="0 0 400 320" role="img" aria-label="Ast">
+ <path d="M0 64Q150 44 392 72" stroke="#7a4f2f" stroke-width="14" fill="none" stroke-linecap="round"/>
+ <path d="M110 52C120 24 152 18 168 26C158 50 132 60 110 52Z" fill="#5fa83a"/><path d="M200 60C212 88 244 92 258 84C248 64 222 54 200 60Z" fill="#5fa83a"/>
+ ${fruit}</svg>`}
+const growTo=(el,s)=>{const g=el.querySelector('.hang');if(g)g.style.transform=`translate(${AX-216}px,${AY-60}px) scale(${s})`};
+const sm=h=>`<span class="sm">${h}</span>`;
+const LBL={stiel:{w:'Stiel',x:100,y:40,lx:205,ly:88},blatt:{w:'Blatt',x:380,y:30,lx:285,ly:62},schale:{w:'Schale',x:400,y:150,lx:335,ly:178},
+ fruchtfleisch:{w:'Fruchtfleisch',x:360,y:330,lx:285,ly:285},kerne:{w:'Kerne',x:10,y:140,lx:182,ly:214},fliege:{w:'Fliege',x:60,y:398,lx:192,ly:356}};
+function label(k){const L=LBL[k],w=L.w.length*13+28;return `<g class="lbl" data-for="${k}" hidden><line x1="${L.lx}" y1="${L.ly}" x2="${L.x}" y2="${L.y}"/><rect x="${L.x-w/2}" y="${L.y-18}" width="${w}" height="36" rx="18"/><text x="${L.x}" y="${L.y+7}" text-anchor="middle">${L.w}</text></g>`}
+function apfelHalb(o={}){
+ const seed=(x,y,r)=>`<ellipse cx="${x}" cy="${y}" rx="7" ry="13" fill="#4a2c16" transform="rotate(${r} ${x} ${y})"/>`;
+ return `<svg class="apfel ${o.cls||''}" viewBox="${o.labels?'-60 0 520 420':'40 30 320 345'}" role="img" aria-label="Halbierter Apfel">
+ <g data-part="schale"><path d="${BODY}" fill="#d93a2b"/></g>
+ <g data-part="fruchtfleisch"><path d="${BODY}" fill="#fbefc6" transform="translate(200 232) scale(.9) translate(-200 -232)"/></g>
+ <g data-part="kerne"><path d="M200 168C176 195 166 226 177 256C186 280 214 280 223 256C234 226 224 195 200 168Z" fill="#efd998" stroke="#d8b96a" stroke-width="3"/>${seed(190,214,-14)}${seed(210,214,14)}${seed(191,246,-8)}${seed(209,246,8)}<circle class="hit" cx="200" cy="228" r="42"/></g>
+ <g data-part="schale"><path class="hit ring" d="${BODY}" stroke="transparent" stroke-width="28" pointer-events="stroke"/></g>
+ <g data-part="stiel">${STEM}<circle class="hit" cx="208" cy="88" r="24"/></g>
+ <g data-part="blatt">${LEAF}<circle class="hit" cx="262" cy="66" r="30"/></g>
+ <g data-part="fliege"><path d="M188 366l12-12 12 12M200 354v14M190 358h20" stroke="#5a3a1e" stroke-width="4" fill="none" stroke-linecap="round"/><circle class="hit" cx="200" cy="360" r="24"/></g>
+ ${o.labels?Object.keys(LBL).map(label).join(''):''}</svg>`}
+const PTS=[[200,90],[150,118],[250,118],[108,168],[292,168],[178,160],[226,168],[140,212],[262,212],[200,212],[168,66],[234,66],[92,135],[308,135],[202,140],[120,192],[282,192]];
+function baum(k,o={}){
+ const trunk='<path d="M178 380C184 320 182 272 168 232L188 226L200 258L211 222L234 229C221 272 216 320 224 380Z" fill="#7a4f2f"/>';
+ if(k==='winter')return `<svg class="apfel" viewBox="0 0 400 380" role="img" aria-label="Apfelbaum im Winter">${trunk}
+  <g stroke="#7a4f2f" stroke-linecap="round" fill="none"><path d="M178 238C150 200 110 180 80 150" stroke-width="13"/><path d="M226 236C252 200 292 180 322 150" stroke-width="13"/><path d="M200 240C198 190 200 130 200 70" stroke-width="13"/>
+  <path d="M120 186C112 160 116 130 128 110" stroke-width="8"/><path d="M282 186C292 160 286 130 274 110" stroke-width="8"/><path d="M200 150C176 128 160 108 152 84" stroke-width="7"/><path d="M200 130C224 110 240 92 248 70" stroke-width="7"/></g>
+  <g fill="#fff"><ellipse cx="82" cy="146" rx="16" ry="6"/><ellipse cx="320" cy="146" rx="16" ry="6"/><ellipse cx="200" cy="68" rx="14" ry="6"/><ellipse cx="128" cy="108" rx="11" ry="5"/><ellipse cx="274" cy="108" rx="11" ry="5"/></g></svg>`;
+ const g={fruehling:'#8fca6a',sommer:'#5fa83a',herbst:'#6c9f3a'}[k];
+ const crown=[[200,140,112],[118,172,72],[282,172,72],[150,96,66],[252,96,66]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${g}"/>`).join('');
+ let extra='';
+ if(k==='fruehling')extra=PTS.map(([x,y],i)=>`<g transform="translate(${x+(i%3-1)*9} ${y+(i%2)*6})"><circle r="10" fill="${i%3?'#fff':'#fbd3df'}" stroke="#f0a9be" stroke-width="2"/><circle r="3.5" fill="#f2c94c"/></g>`).join('');
+ if(k==='sommer'&&o.apples!==0)extra=PTS.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="#a9d851" stroke="#7fae2e" stroke-width="2"/>`).join('');
+ if(k==='herbst')extra=[[120,120,46],[270,140,40],[190,70,34]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d8962f" opacity=".55"/>`).join('')+
+   PTS.map(([x,y])=>`<g><circle cx="${x}" cy="${y}" r="13" fill="#d93a2b"/><circle cx="${x-4}" cy="${y-4}" r="3.5" fill="#fff" opacity=".5"/></g>`).join('')+
+   (o.ground===0?'':'<circle cx="120" cy="368" r="12" fill="#d93a2b"/><circle cx="290" cy="372" r="12" fill="#c8322a"/>');
+ return `<svg class="apfel" viewBox="0 0 400 385" role="img" aria-label="Apfelbaum">${trunk}${crown}${extra}</svg>`}
+const BLUETE_IN=`${[0,72,144,216,288].map(a=>`<ellipse cx="50" cy="26" rx="17" ry="22" fill="${a%144?'#fde9ef':'#fff'}" stroke="#f0a9be" stroke-width="2.5" transform="rotate(${a} 50 50)"/>`).join('')}<circle cx="50" cy="50" r="11" fill="#f2c94c"/><g fill="#d9a21f"><circle cx="45" cy="46" r="2"/><circle cx="55" cy="47" r="2"/><circle cx="50" cy="55" r="2"/></g>`;
+function bluete(){return `<svg class="apfel" viewBox="0 0 100 100" role="img" aria-label="Apfelblüte">${BLUETE_IN}</svg>`}
+function knospe(){return `<svg class="apfel" viewBox="0 0 100 100" role="img" aria-label="Knospe"><path d="M8 92Q46 76 56 38" stroke="#7a4f2f" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M34 80C22 64 30 52 42 56C46 66 42 74 34 80Z" fill="#5fa83a"/><ellipse cx="58" cy="26" rx="12" ry="18" fill="#f6b9cb" stroke="#e48aa6" stroke-width="2.5"/><path d="M46 36C50 44 66 44 70 36C66 40 50 40 46 36Z" fill="#5fa83a" stroke="#5fa83a" stroke-width="4" stroke-linejoin="round"/></svg>`}
+const bieneBluete=()=>`<span class="stk">${bluete()}<span class="bee" aria-hidden="true">🐝</span></span>`;
+const KERN='<svg viewBox="0 0 40 60" role="img" aria-label="Apfelkern"><path d="M20 4C8 22 6 40 12 50C16 57 24 57 28 50C34 40 32 22 20 4Z" fill="#4a2c16"/></svg>';
+const TWIG_OLD='<svg viewBox="0 0 200 40"><path d="M0 22Q100 8 200 18" stroke="#7a4f2f" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M60 16C70 0 92 0 100 6C90 18 72 22 60 16Z" fill="#5fa83a"/><path d="M140 14C150 32 170 34 178 28C170 16 152 10 140 14Z" fill="#5fa83a"/></svg>';
+const GREEN={c:'#a9d851',d:'#7fae2e'};
+
+/* ---------- Inhalte ---------- */
+const PARTS={
+ stiel:['der Stiel','Mit dem Stiel hängt der Apfel am Ast. Über den Stiel bekommt der Apfel Wasser vom Baum.'],
+ blatt:['das Blatt','Die Blätter brauchen Sonnenlicht. Mit dem Licht machen sie Nahrung für den Baum.'],
+ schale:['die Schale','Die Schale schützt den Apfel. Sie kann rot, grün oder gelb sein.'],
+ fruchtfleisch:['das Fruchtfleisch','Das Fruchtfleisch ist saftig. Es schmeckt süß oder sauer. Das essen wir.'],
+ kerne:['die Kerne','In der Mitte ist das Kerngehäuse mit den Kernen. Aus einem Kern kann ein neuer Apfelbaum wachsen.'],
+ fliege:['die Fliege','Unten am Apfel ist ein kleiner brauner Rest von der Blüte. Man nennt ihn Fliege.']};
+const GROW=[
+ {k:'knospe',w:'Knospe',pic:()=>knospe(),t:'Im Frühling hat der Apfelbaum kleine Knospen.'},
+ {k:'bluete',w:'Blüte',pic:()=>bluete(),t:'Aus der Knospe wird eine Blüte.'},
+ {k:'biene',w:'Biene',pic:()=>bieneBluete(),t:'Die Biene fliegt zur Blüte. Sie bringt Blütenstaub von einer anderen Blüte mit.'},
+ {k:'klein',w:'kleiner Apfel',pic:()=>sm(apfel(GREEN)),t:'Die Blütenblätter fallen ab. Ein kleiner grüner Apfel wächst.'},
+ {k:'gross',w:'reifer Apfel',pic:()=>apfel(),t:'Im Herbst ist der Apfel groß und reif.'}];
+const KUECHE=[
+ {e:'🧃',w:'Apfelsaft',g:1,t:'Apfelsaft! Aus Äpfeln presst man Saft.'},
+ {e:'🥧',w:'Apfelkuchen',g:1,t:'Apfelkuchen! Lecker! Dafür braucht man Äpfel.'},
+ {e:'🥣',w:'Apfelmus',g:1,t:'Apfelmus! Man kocht Äpfel weich und macht sie zu Mus.'},
+ {e:'🍏',w:'Apfelstücke',g:1,t:'Apfelstücke! Einfach waschen, schneiden und essen.'},
+ {e:'🍟',w:'Pommes',g:0,t:'Pommes? Nein! Pommes macht man aus Kartoffeln.'},
+ {e:'🍞',w:'Brot',g:0,t:'Brot? Nein! Brot macht man aus Getreide.'},
+ {e:'🥛',w:'Milch',g:0,t:'Milch? Nein! Milch kommt von der Kuh.'},
+ {e:'🍿',w:'Popcorn',g:0,t:'Popcorn? Nein! Popcorn macht man aus Mais.'}];
+const SEASONS={
+ fruehling:{w:'Frühling',e:'🌸',t:'Im Frühling blüht der Apfelbaum. Die Blüten sind weiß und rosa. Bienen fliegen von Blüte zu Blüte.'},
+ sommer:{w:'Sommer',e:'☀️',t:'Im Sommer wachsen kleine grüne Äpfel. Sonne und Regen helfen ihnen beim Wachsen.'},
+ herbst:{w:'Herbst',e:'🍂',t:'Im Herbst sind die Äpfel reif. Jetzt ist Apfelernte. Die Blätter werden bunt und fallen ab.'},
+ winter:{w:'Winter',e:'❄️',t:'Im Winter hat der Apfelbaum keine Blätter. Er ruht sich aus. Kleine Knospen warten auf den Frühling.'}};
+const TIERE=[
+ {e:'🐛',w:'Raupe',t:'Manchmal steckt ein Wurm im Apfel. Das ist eigentlich eine kleine Raupe. Sie frisst sich durch den Apfel.'},
+ {e:'🐦',w:'Amsel',t:'Amseln und andere Vögel picken gerne an Äpfeln, die unter dem Baum liegen.'},
+ {e:'🦋',w:'Schmetterling',t:'Im Herbst trinken manche Schmetterlinge den süßen Saft von Äpfeln, die am Boden liegen.'},
+ {e:'🐴',w:'Pferd',t:'Pferde fressen sehr gerne Äpfel. Frag aber immer zuerst, bevor du ein Pferd fütterst.'},
+ {e:'🦌',w:'Reh',t:'Im Herbst und Winter fressen Rehe gerne Äpfel, die auf der Wiese liegen.'}];
+const ICH=[
+ {e:'🚰',w:'Waschen',t:'Wasch den Apfel vor dem Essen mit Wasser.'},
+ {e:'💪',w:'Vitamine',t:'Äpfel haben Vitamine. Vitamine sind gut für deinen Körper.'},
+ {e:'😁',w:'Kauen',t:'Äpfel sind knackig. Beiß kleine Stücke ab und kaue gut.'},
+ {e:'🤝',w:'Teilen',t:'Einen Apfel kann man gut teilen. Schneide ihn in Stücke und teile mit deinen Freunden.'},
+ {e:'🗑️',w:'Biomüll',t:'Das Kerngehäuse und die Reste kommen in den Biomüll.'}];
+
+/* ---------- Navigation ---------- */
+const main=document.getElementById('main'),titleEl=document.getElementById('title'),homeBtn=document.getElementById('homeBtn'),earBtn=document.getElementById('earBtn');
+homeBtn.innerHTML=ICON.home;earBtn.innerHTML=ICON.ear;
+let intro='',cleanup=null;
+let visited={};try{visited=JSON.parse(localStorage.getItem('apfel-visited')||'{}')}catch(e){}
+function mark(k){visited[k]=1;try{localStorage.setItem('apfel-visited',JSON.stringify(visited))}catch(e){}}
+earBtn.onclick=()=>say(intro);homeBtn.onclick=()=>go('home');
+const SCREENS={home,teile,wachsen,jahreszeiten,kueche,tiere,kino,test};
+function go(k,silent){if(cleanup){cleanup();cleanup=null}hush();
+ homeBtn.hidden=k==='home';main.innerHTML='';window.scrollTo(0,0);SCREENS[k]();if(k!=='home')mark(k);if(!silent&&intro)say(intro)}
+const ORDER=['teile','wachsen','jahreszeiten','kueche','tiere','kino','test'];
+function stepNav(count,show,key){let i=-1;const nx=ORDER[ORDER.indexOf(key)+1],m=MENU.find(x=>x[0]===nx);
+ const bar=document.createElement('div');bar.className='stepnav';main.appendChild(bar);
+ function render(){const last=i>=count-1;
+  bar.innerHTML=(i>0?`<button class="bigbtn back" data-a="p" aria-label="Zurück">${ICON.back}<span>Zurück</span></button>`:'<span></span>')+
+   `<button class="bigbtn" data-a="n" aria-label="Weiter">${last&&m?`<span aria-hidden="true">${m[2]||'🍎'}</span><span>${m[1]}</span>`:'<span>Weiter</span>'}${ICON.next}</button>`}
+ bar.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;
+  if(b.dataset.a==='p'){if(i>0){i--;show(i);render()}}
+  else if(i<count-1){i++;show(i);render()}else if(nx)go(nx)};
+ render();return {set(j){i=j;render()}}}
+function selCard(b){main.querySelectorAll('.icard').forEach(x=>x.classList.toggle('on',x===b));try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}}
+function setTitle(w,pic){titleEl.innerHTML=`${pic?`<span aria-hidden="true">${pic}</span>`:''}<span class="word">${w}</span>`}
+const bump=(el,c)=>{el.classList.remove('mampf','nein');void el.offsetWidth;el.classList.add(c)};
+
+/* ---------- Start ---------- */
+const MENU=[['teile','Apfel-Teile',null],['wachsen','Wachsen','🌸'],['jahreszeiten','Apfelbaum','🌳'],['kueche','Apfel-Küche','🥧'],['tiere','Tiere und ich','🐛'],['kino','Kino','🎬'],['test','Test','⭐']];
+function home(){setTitle('Apfel Rudi','🍎');intro='Hallo! Ich bin Rudi, der Apfel. Tippe auf ein Bild. Dann lernst du alles über den Apfel. Zum Schluss gibt es einen Test.';
+ main.innerHTML=`<div class="app" style="padding:0">
+ <div class="hero"><div id="heroApfel">${apfel({face:1})}</div>
+  <div class="bubble">${spk(intro)}<span>Hallo! Ich bin <b>Rudi</b>, der Apfel.</span></div></div>
+ <div class="tiles">${MENU.map(([k,w,e])=>`<div role="button" tabindex="0" class="tile ${k==='test'?'test':''}" data-go="${k}">
+  ${visited[k]?`<span class="done">${ICON.check}</span>`:''}<span class="pic">${k==='teile'?apfelHalb():k==='jahreszeiten'?baum('herbst',{ground:0}):e}</span><span class="lab">${w} ${spk(w)}</span></div>`).join('')}</div>
+ <p class="hint">Alle Wörter und Aufgaben werden vorgelesen. Der große gelbe Knopf oben liest die Aufgabe noch einmal vor.</p></div>`;
+ main.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+ const ha=document.getElementById('heroApfel');
+ ha.onclick=()=>{bump(ha.querySelector('svg'),'mampf');say(['Hallo! Ich bin Rudi.','Hihi, das kitzelt!','Ich bin knackig und saftig!'][Math.floor(Math.random()*3)])}}
+
+/* ---------- Teile ---------- */
+function teile(){setTitle('Apfel-Teile');intro='Das ist ein Apfel. Er ist in der Mitte durchgeschnitten. Tippe auf den Apfel. Dann hörst du, wie das Teil heißt.';
+ main.innerHTML=`<div class="modes"><button class="mode" id="m1" aria-pressed="true">Entdecken ${spk('Entdecken')}</button><button class="mode" id="m2" aria-pressed="false">Zuordnen ${spk('Zuordnen')}</button></div>
+ <div class="split" style="margin-top:14px"><div class="panel" id="bodyBox">${apfelHalb({labels:1})}</div><div class="panel" id="side"></div></div>`;
+ const svg=document.querySelector('#bodyBox svg'),side=document.getElementById('side');
+ let mode='explore',sel=null,done=new Set();
+ const KEYS=Object.keys(PARTS);
+ const hl=k=>{svg.querySelectorAll('[data-part]').forEach(g=>g.classList.toggle('hi',g.dataset.part===k))};
+ const showLbl=(k,only)=>svg.querySelectorAll('.lbl').forEach(l=>{if(l.dataset.for===k)l.removeAttribute('hidden');else if(only)l.setAttribute('hidden','')});
+ function sideExplore(k){side.innerHTML=k?`<div class="info">${spk(PARTS[k][0]+'. '+PARTS[k][1])}<div><big>${PARTS[k][0]}</big>${PARTS[k][1]}</div></div>`:`<div class="info">${spk('Tippe auf den Apfel.')}<div><big>Tippe auf den Apfel.</big>Stiel, Blatt, Schale, Fruchtfleisch, Kerne oder Fliege.</div></div>`}
+ function sideMatch(){side.innerHTML=`<div class="info">${spk('Tippe zuerst auf ein Wort. Dann tippe auf den Apfel.')}<div>Tippe zuerst auf ein <b>Wort</b>. Dann tippe auf den <b>Apfel</b>.</div></div>
+  <div class="cards">${shuffle(KEYS).map(k=>`<div class="wcard ${done.has(k)?'ok':''}" data-k="${k}" role="button" tabindex="0">${LBL[k].w} ${spk(LBL[k].w)}</div>`).join('')}</div>`;
+  side.querySelectorAll('.wcard').forEach(c=>c.onclick=()=>{if(done.has(c.dataset.k))return;sel=c.dataset.k;side.querySelectorAll('.wcard').forEach(x=>x.classList.toggle('sel',x===c));say(LBL[sel].w+'. Wo '+(sel==='kerne'?'sind ':'ist ')+PARTS[sel][0]+'?')})}
+ function setMode(m){mode=m;sel=null;document.getElementById('m1').setAttribute('aria-pressed',m==='explore');document.getElementById('m2').setAttribute('aria-pressed',m==='match');hl(null);
+  svg.querySelectorAll('.lbl').forEach(l=>{if(m==='match'&&done.has(l.dataset.for))l.removeAttribute('hidden');else l.setAttribute('hidden','')});
+  if(m==='explore'){sideExplore(null);intro='Tippe auf den Apfel. Dann hörst du, wie das Teil heißt.'}else{if(done.size===KEYS.length){done=new Set();svg.querySelectorAll('.lbl').forEach(l=>l.setAttribute('hidden',''))}sideMatch();intro='Tippe zuerst auf ein Wort. Dann tippe auf die richtige Stelle am Apfel.'}}
+ document.getElementById('m1').onclick=()=>{setMode('explore');say(intro)};document.getElementById('m2').onclick=()=>{setMode('match');say(intro)};
+ svg.onclick=e=>{const p=e.target.closest('[data-part]');if(!p)return;const k=p.dataset.part;
+  if(mode==='explore'){hl(k);showLbl(k,true);sideExplore(k);say(PARTS[k][0]+'. '+PARTS[k][1]);nav.set(KEYS.indexOf(k));return}
+  if(!sel){say('Tippe zuerst auf ein Wort.');return}
+  if(k===sel){done.add(k);showLbl(k);hl(k);tone('ok');const c=side.querySelector(`[data-k="${k}"]`);c.classList.remove('sel');c.classList.add('ok');sel=null;
+   if(done.size===KEYS.length){setTimeout(()=>tone('win'),300);say('Super! Du hast alle Teile richtig zugeordnet!')}else say('Richtig! '+LBL[k].w+'.')}
+  else{tone('no');bump(svg,'nein');say('Das ist '+PARTS[k][0]+'. Versuch es noch einmal.')}};
+ setMode('explore');
+ const nav=stepNav(KEYS.length,i=>{if(mode!=='explore')setMode('explore');const k=KEYS[i];hl(k);showLbl(k,true);sideExplore(k);say(PARTS[k][0]+'. '+PARTS[k][1])},'teile')}
+
+/* ---------- Wachsen ---------- */
+function wachsen(){setTitle('Wachsen','🌸');intro='Wie wächst ein Apfel? Tippe die Bilder in der richtigen Reihenfolge an. Was ist zuerst da?';
+ let next=0;
+ main.innerHTML=`<div class="panel"><div class="info">${spk(intro)}<div>Wie wächst ein <b>Apfel</b>? Tippe die Bilder der Reihe nach an.</div></div>
+  <div class="gslots">${GROW.map((_,i)=>`<div class="gslot ${i===0?'next':''}"><span class="num">${i+1}</span><span class="in"></span></div>`).join('')}</div></div>
+  <div class="food" style="margin-top:6px" id="gcards">${shuffle(GROW).map(g=>`<div role="button" tabindex="0" class="item" data-k="${g.k}"><span class="pic">${g.pic()}</span><span class="lab">${g.w} ${spk(g.w)}</span></div>`).join('')}</div>
+  <div class="center" style="margin-top:6px"><button class="bigbtn" id="gAgain" hidden>${ICON.again}<span>Nochmal</span></button></div>`;
+ const slots=[...main.querySelectorAll('.gslot')],again=document.getElementById('gAgain');
+ main.querySelectorAll('#gcards .item').forEach(b=>b.onclick=()=>{if(b.classList.contains('eaten'))return;const g=GROW[next];
+  if(b.dataset.k===g.k){b.classList.add('eaten');const s=slots[next];s.classList.remove('next');s.classList.add('full');s.querySelector('.in').innerHTML=g.pic();tone('ok');next++;
+   if(next<slots.length){slots[next].classList.add('next');say(g.t)}
+   else{say(g.t+' Super! Du weißt, wie ein Apfel wächst.');setTimeout(()=>tone('win'),400);again.hidden=false}}
+  else{tone('no');bump(b,'nein');say(next===0?'Noch nicht. Was ist ganz am Anfang da?':'Noch nicht. Was kommt jetzt?')}});
+ again.onclick=()=>go('wachsen');
+ stepNav(0,null,'wachsen')}
+
+/* ---------- Apfelbaum im Jahr ---------- */
+function seasonScene(k){const fall=(e,n)=>Array.from({length:n},(_,i)=>`<span class="fall" style="left:${(i*97)%100}%;font-size:${3+(i%3)}cqw;animation-duration:${5+(i%4)}s;animation-delay:-${i*0.7}s">${e}</span>`).join('');
+ const T=(x,w)=>`<div class="actor" style="left:${x}%;bottom:2%;width:${w}%">${baum(k)}</div>`;
+ if(k==='fruehling')return `<div class="scene bg-fruehling"><span class="deco" style="right:6%;top:8%;font-size:8cqw">🌤️</span>${T(28,44)}<span class="deco" style="left:72%;top:36%;font-size:5cqw">🐝</span><span class="deco" style="left:20%;top:22%;font-size:4cqw">🐝</span><span class="deco" style="left:6%;bottom:6%;font-size:6cqw">🌷</span></div>`;
+ if(k==='sommer')return `<div class="scene bg-sommer"><span class="deco" style="right:6%;top:6%;font-size:9cqw">☀️</span>${T(28,44)}<span class="deco" style="left:6%;bottom:6%;font-size:6cqw">🌼</span></div>`;
+ if(k==='herbst')return `<div class="scene bg-herbst">${fall('🍂',8)}${T(22,44)}<span class="deco" style="right:8%;bottom:6%;font-size:10cqw">🧺</span></div>`;
+ return `<div class="scene bg-winter">${fall('❄️',14)}${T(28,44)}<span class="deco" style="left:6%;bottom:6%;font-size:8cqw">⛄</span></div>`}
+function jahreszeiten(){setTitle('Apfelbaum','🌳');intro='So lebt der Apfelbaum im Jahr. Tippe auf eine Jahreszeit.';
+ main.innerHTML=`<div class="seasons">${Object.entries(SEASONS).map(([k,s])=>`<div role="button" tabindex="0" class="season s-${k}" data-k="${k}" aria-pressed="false"><span class="pic">${s.e}</span><span class="lab">${s.w} ${spk(s.w)}</span></div>`).join('')}</div>
+ <div class="panel" style="margin-top:14px"><div id="sScene"></div><div class="info" id="sText"></div></div>`;
+ const show=k=>{main.querySelectorAll('.season').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));document.getElementById('sScene').innerHTML=seasonScene(k);
+  document.getElementById('sText').innerHTML=`${spk(SEASONS[k].w+'. '+SEASONS[k].t)}<div><big>${SEASONS[k].w}</big>${SEASONS[k].t}</div>`};
+ const SK=Object.keys(SEASONS);const sayS=k=>say(SEASONS[k].w+'. '+SEASONS[k].t);
+ const nav=stepNav(SK.length,i=>{show(SK[i]);sayS(SK[i])},'jahreszeiten');
+ main.querySelectorAll('.season').forEach(b=>b.onclick=()=>{show(b.dataset.k);sayS(b.dataset.k);nav.set(SK.indexOf(b.dataset.k))});show('fruehling');nav.set(0)}
+
+/* ---------- Apfel-Küche ---------- */
+function kueche(){setTitle('Apfel-Küche','🥧');intro='Was kann man aus Äpfeln machen? Tippe auf die Bilder. Finde alles, was aus Äpfeln gemacht wird.';
+ let found=0;
+ main.innerHTML=`<div class="feed"><div class="panel"><div id="kApfel">${apfel({face:1})}</div><div class="slots">${KUECHE.filter(f=>f.g).map(()=>'<span class="slot"></span>').join('')}</div>
+  <div class="info">${spk('Aus Äpfeln kann man viele leckere Sachen machen. Was gehört dazu?')}<div>Aus Äpfeln kann man viele <b>leckere Sachen</b> machen.</div></div></div>
+  <div class="food">${shuffle(KUECHE).map(f=>`<div role="button" tabindex="0" class="item" data-w="${f.w}"><span class="pic">${f.e}</span><span class="lab">${f.w} ${spk(f.w)}</span></div>`).join('')}</div></div>`;
+ const ap=()=>document.querySelector('#kApfel svg'),slots=[...main.querySelectorAll('.slot')];
+ main.querySelectorAll('.item').forEach(b=>b.onclick=()=>{const f=KUECHE.find(x=>x.w===b.dataset.w);
+  if(f.g){if(b.classList.contains('eaten'))return;b.classList.add('eaten');slots[found].textContent=f.e;slots[found].classList.add('full');found++;bump(ap(),'mampf');tone('ok');
+   if(found===slots.length){say(f.t+' Super! Du hast alles gefunden.');setTimeout(()=>tone('win'),400)}else say(f.t)}
+  else{b.classList.add('bad');bump(ap(),'nein');tone('no');say(f.t)}});
+ stepNav(0,null,'kueche')}
+
+/* ---------- Tiere und ich ---------- */
+function infoCards(list,cls){return `<div class="grid3">${list.map((c,i)=>`<div role="button" tabindex="0" class="icard ${cls||''}" data-i="${i}"><span class="pic">${c.e}</span><span class="lab">${c.w} ${spk(c.w)}</span><p>${c.t}</p></div>`).join('')}</div>`}
+function bindCards(root,list,cb){root.querySelectorAll('.icard').forEach(b=>b.onclick=()=>{selCard(b);const c=list[b.dataset.i];say(c.w+'. '+c.t);cb&&cb(+b.dataset.i)})}
+function tiere(){setTitle('Tiere und ich','🐛');intro='Viele Tiere mögen Äpfel. Tippe auf ein Bild. Unten erfährst du, was du beim Apfelessen wissen solltest.';
+ main.innerHTML=`<div class="sect"><span class="dot" style="background:var(--apple)"></span>Diese Tiere mögen Äpfel ${spk('Diese Tiere mögen Äpfel.')}</div><div id="ti">${infoCards(TIERE,'animal')}</div>
+ <div class="sect" style="margin-top:20px"><span class="dot" style="background:var(--ok)"></span>Der Apfel und ich ${spk('Der Apfel und ich.')}</div><div id="ic">${infoCards(ICH,'help')}</div>`;
+ const ALL=[...TIERE,...ICH],cards=[...main.querySelectorAll('.icard')];
+ const nav=stepNav(ALL.length,i=>{selCard(cards[i]);say((i===TIERE.length?'Der Apfel und ich. ':'')+ALL[i].w+'. '+ALL[i].t)},'tiere');
+ bindCards(document.getElementById('ti'),TIERE,i=>nav.set(i));bindCards(document.getElementById('ic'),ICH,i=>nav.set(TIERE.length+i))}
+
+/* ---------- Kino ---------- */
+let filmRun=0;
+const FILMS=[
+ {e:'🐝',w:'Die Biene und die Blüte',run:async S=>{S.bg('fruehling');S.add(baum('fruehling'),0,1,40);const bl=S.add(ast({what:'bluete'}),32,-25,60);
+   await S.say('Es ist Frühling. Der Apfelbaum blüht. Die Blüten sind weiß und rosa.');
+   const b=S.deco('🐝',105,80,7);b.style.transition='left 2.5s ease-in-out,bottom 2.5s ease-in-out';await S.wait(60);b.style.left='76%';b.style.bottom='57%';
+   await S.say('Da kommt eine Biene. Sie fliegt zur Blüte.');S.pop(b,'Summ!');
+   await S.say('Die Biene trinkt süßen Saft. Dabei bringt sie Blütenstaub von einer anderen Blüte mit.');
+   b.style.left='110%';b.style.bottom='90%';S.rain('🌸',8);
+   await S.say('Ein paar Tage später fallen die Blütenblätter ab.');S.rain(null);bl.innerHTML=ast({...GREEN,s:.12});await S.wait(60);growTo(bl,.2);
+   await S.say('Schau! Jetzt wächst dort ein kleiner grüner Apfel.')}},
+ {e:'🍏',w:'Der Apfel wird groß',run:async S=>{S.bg('sommer');S.deco('☀️',82,62,10);const a=S.add(ast({...GREEN,s:.25}),18,12,60);
+   await S.say('Es ist Sommer. Der kleine grüne Apfel hängt am Ast.');
+   S.rain('💧',12);await S.say('Die Sonne scheint. Es regnet. Der Apfel bekommt Wasser und wird größer.');growTo(a,.4);await S.wait(1300);S.rain(null);
+   S.bg('herbst');a.innerHTML=ast({c:'#e6c84a',d:'#c9a52c',s:.4});await S.wait(60);growTo(a,.55);await S.say('Es wird Herbst. Der Apfel wird groß und bekommt Farbe.');
+   a.innerHTML=ast({face:1,s:.55});await S.wait(60);growTo(a,.68);await S.say('Jetzt ist der Apfel reif. Er ist rot und süß. Lecker!')}},
+ {e:'🧺',w:'Apfelernte',run:async S=>{S.bg('herbst');S.add(baum('herbst',{ground:0}),2,2,42);const kid=S.deco('🧒',50,6,14);S.deco('🧺',74,4,13);
+   await S.say('Es ist Herbst. Die Äpfel sind reif. Tim hilft bei der Apfelernte.');
+   const a=S.add(apfel(),26,44,5);a.style.transition='left 1.6s ease,bottom 1.6s ease';
+   await S.say('Er pflückt einen Apfel vom Baum.');S.pop(kid,'Hmm!');a.style.left='79%';a.style.bottom='15%';await S.wait(1700);
+   await S.say('Der Apfel kommt in den Korb.');
+   const f=S.add(apfel(),12,38,5);f.style.transition='bottom .9s ease-in';await S.wait(60);f.style.bottom='3%';await S.wait(1000);S.pop(f,'Plumps!');
+   await S.say('Plumps! Ein Apfel fällt herunter. Das nennt man Fallobst.');
+   const v=S.deco('🐦',-10,40,7);v.style.transition='left 2s ease,bottom 2s ease';await S.wait(60);v.style.left='18%';v.style.bottom='3%';
+   await S.say('Eine Amsel kommt. Sie pickt am Fallobst.');
+   await S.say('Tim wäscht seinen Apfel. Dann beißt er hinein.');S.pop(kid,'Knack!');await S.say('Mmmh! Frische Äpfel sind lecker.')}},
+ {e:'🌱',w:'Vom Kern zum Baum',run:async S=>{S.bg('garten');const kid=S.deco('🧒',10,6,14);const k=S.add(KERN,47,10,2.5);
+   await S.say('Tim hat einen Apfelkern. Er steckt den Kern in die Erde.');k.style.transition='bottom 1s,opacity 1s';k.style.bottom='3%';k.style.opacity=.3;await S.wait(1000);
+   S.rain('💧',10);await S.say('Es regnet. Der Kern bekommt Wasser.');S.rain(null);
+   const sp=S.deco('🌱',43,4,9);sp.style.transformOrigin='50% 100%';sp.style.transform='scale(.2)';await S.wait(80);sp.style.transform='scale(1)';k.style.opacity=0;
+   await S.say('Nach einiger Zeit wächst ein kleiner Keimling.');
+   sp.style.opacity=0;const t=S.add(baum('sommer',{apples:0}),32,2,34);t.style.transformOrigin='50% 100%';t.style.transform='scale(.3)';await S.wait(80);t.style.transition='transform 3s ease';t.style.transform='scale(1)';
+   await S.say('Der Keimling wird ein kleiner Baum. Das dauert viele Jahre.');
+   t.innerHTML=baum('herbst');await S.say('Jetzt ist der Baum groß. Er trägt viele Äpfel. Wunderbar!');S.pop(kid,'Hurra!')}}];
+function kino(){setTitle('Kino','🎬');intro='Hier gibt es kleine Filme über den Apfel. Tippe auf einen Film.';
+ main.innerHTML=`<div class="films">${FILMS.map((f,i)=>`<div role="button" tabindex="0" class="film" data-i="${i}" aria-pressed="false"><span class="play">${ICON.play}</span><span class="pic">${f.e}</span><span class="lab">${f.w}</span>${spk(f.w)}</div>`).join('')}</div>
+ <div class="panel" style="margin-top:14px"><div class="scene bg-garten" id="stage"></div><div class="caption" id="cap">Tippe oben auf einen Film.</div>
+ <div class="center"><button class="bigbtn" id="again" hidden>${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="stopB" hidden>${ICON.stop}<span>Stopp</span></button></div></div>`;
+ const stage=document.getElementById('stage'),cap=document.getElementById('cap'),again=document.getElementById('again'),stopB=document.getElementById('stopB');let cur=null;
+ async function play(i){const id=++filmRun;cur=i;hush();stage.innerHTML='';stage.className='scene';again.hidden=true;stopB.hidden=false;
+  main.querySelectorAll('.film').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.i===i));
+  const chk=()=>{if(id!==filmRun)throw 'stop'};let rain=[];
+  const add=(html,x,b,w)=>{const d=document.createElement('div');d.className='actor';d.style.cssText=`left:${x}%;bottom:${b}%;width:${w}%;font-size:${w*.85}cqw`;d.innerHTML=html;stage.appendChild(d);return d};
+  const S={bg:k=>{stage.className='scene bg-'+k},
+   add,deco:(e,x,b,w)=>add(`<span>${e}</span>`,x,b,w),
+   wait:async ms=>{await new Promise(r=>setTimeout(r,ms));chk()},
+   say:async t=>{chk();cap.textContent=t;await say(t);chk();await new Promise(r=>setTimeout(r,350));chk()},
+   pop:(el,t)=>{const b=document.createElement('div');b.className='say-bub';b.textContent=t;b.style.left=el.style.left;b.style.bottom=Math.min(85,parseFloat(el.style.bottom)+parseFloat(el.style.width)*1.5)+'%';stage.appendChild(b);setTimeout(()=>b.remove(),1600)},
+   rain:(e,n)=>{rain.forEach(r=>r.remove());rain=[];if(!e)return;for(let j=0;j<n;j++){const s=document.createElement('span');s.className='fall';s.textContent=e;s.style.cssText=`left:${(j*97)%100}%;font-size:${3+j%3}cqw;animation-duration:${5+j%4}s;animation-delay:-${j*.7}s`;stage.appendChild(s);rain.push(s)}}};
+  try{await FILMS[i].run(S);tone('win');cap.textContent='Ende. '+cap.textContent;stopB.hidden=true;again.hidden=false}catch(e){}}
+ const nav=stepNav(FILMS.length,i=>play(i),'kino');
+ main.querySelectorAll('.film').forEach(b=>b.onclick=()=>{play(+b.dataset.i);nav.set(+b.dataset.i)});
+ again.onclick=()=>play(cur);stopB.onclick=()=>{filmRun++;hush();stopB.hidden=true;again.hidden=false;cap.textContent='Gestoppt.'};
+ stage.innerHTML=seasonScene('herbst').replace(/^<div class="scene bg-herbst">|<\/div>$/g,'');stage.className='scene bg-herbst';
+ cleanup=()=>{filmRun++}}
+
+/* ---------- Test ---------- */
+const PIC={BLUETE:()=>bluete(),KLEIN:()=>sm(apfel(GREEN)),GROSS:()=>apfel(),KNOSPE:()=>knospe()};
+const Q=[
+ {type:'part',q:'Tippe auf den Stiel.',a:'stiel',x:'Mit dem Stiel hängt der Apfel am Baum.'},
+ {type:'pick',q:'Was wächst am Apfelbaum?',c:[['GROSS','Apfel',1],['🍌','Banane'],['🥕','Karotte']],x:'Am Apfelbaum wachsen Äpfel.'},
+ {type:'part',q:'Tippe auf die Kerne.',a:'kerne',x:'Die Kerne sind in der Mitte, im Kerngehäuse.'},
+ {type:'season',q:'Wann blüht der Apfelbaum?',a:'fruehling',x:'Im Frühling blüht der Apfelbaum.'},
+ {type:'pick',q:'Wer hilft der Blüte, damit ein Apfel wächst?',c:[['🐝','Biene',1],['🐌','Schnecke'],['🐟','Fisch']],x:'Die Biene bringt Blütenstaub zur Blüte.'},
+ {type:'yesno',q:'Aus einem Apfelkern kann ein neuer Apfelbaum wachsen. Stimmt das?',pic:'🌱',a:1,x:'Aus einem Kern wächst ein Keimling. Daraus wird ein Baum.'},
+ {type:'pick',q:'Was ist zuerst da?',c:[['BLUETE','Blüte',1],['KLEIN','kleiner Apfel'],['GROSS','großer Apfel']],x:'Zuerst ist die Blüte da. Dann wächst der Apfel.'},
+ {type:'season',q:'Wann sind die Äpfel reif?',a:'herbst',x:'Im Herbst sind die Äpfel reif.'},
+ {type:'pick',q:'Was macht man aus Äpfeln?',c:[['🧃','Apfelsaft',1],['🍟','Pommes'],['🍿','Popcorn']],x:'Aus Äpfeln macht man Apfelsaft.'},
+ {type:'part',q:'Tippe auf die Schale.',a:'schale',x:'Die Schale schützt den Apfel.'},
+ {type:'yesno',q:'Im Winter hängen viele Äpfel am Baum. Stimmt das?',pic:'❄️',a:0,x:'Im Winter hat der Apfelbaum keine Blätter und keine Äpfel.'},
+ {type:'pick',q:'Welches Tier frisst gerne Äpfel?',c:[['🐴','Pferd',1],['🦈','Hai'],['🕷️','Spinne']],x:'Pferde fressen gerne Äpfel.'},
+ {type:'yesno',q:'Vor dem Essen wasche ich den Apfel. Stimmt das?',pic:'🚰',a:1,x:'Ein Apfel wird vor dem Essen gewaschen.'}];
+function test(){setTitle('Test','⭐');let n=0,res=[];
+ function dots(){return `<div class="dots">${Q.map((_,i)=>`<i class="${res[i]===1?'ok':res[i]===0?'no':i===n?'now':''}"></i>`).join('')}</div>`}
+ function show(){if(n>=Q.length)return end();const q=Q[n];intro=q.q;let body='';
+  if(q.type==='part')body=`<div class="panel" id="tBody" style="max-width:520px;margin:0 auto;width:100%">${apfelHalb()}</div>`;
+  if(q.type==='pick')body=`<div class="choices">${shuffle(q.c).map(c=>`<div role="button" tabindex="0" class="choice" data-ok="${c[2]?1:0}"><span class="pic">${PIC[c[0]]?PIC[c[0]]():c[0]}</span><span class="lab">${c[1]} ${spk(c[1])}</span></div>`).join('')}</div>`;
+  if(q.type==='season')body=`<div class="seasons">${shuffle(Object.keys(SEASONS)).map(k=>`<div role="button" tabindex="0" class="season choice s-${k}" data-ok="${k===q.a?1:0}"><span class="pic">${SEASONS[k].e}</span><span class="lab">${SEASONS[k].w} ${spk(SEASONS[k].w)}</span></div>`).join('')}</div>`;
+  if(q.type==='yesno')body=`<div class="ynpic">${q.pic}</div><div class="yn"><button class="yes choice" data-ok="${q.a?1:0}" aria-label="Stimmt">👍</button><button class="no choice" data-ok="${q.a?0:1}" aria-label="Stimmt nicht">👎</button></div>`;
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">${dots()}<div class="qbar">${spk(q.q)}<span>${q.q}</span></div>${body}<div id="fb"></div></div>`;
+  let answered=false;
+  const finish=ok=>{if(answered)return;answered=true;res[n]=ok?1:0;tone(ok?'ok':'no');
+   document.getElementById('fb').innerHTML=`<div class="feedback"><span class="mark ${ok?'ok':'no'}">${ok?ICON.check:ICON.cross}</span><span>${ok?'Richtig!':'Leider falsch.'}</span>${spk(q.x)}<button class="bigbtn" id="nx">${ICON.next}<span>Weiter</span></button></div>`;
+   say((ok?'Richtig! ':'Leider falsch. ')+q.x);document.getElementById('nx').onclick=()=>{n++;show();if(n<Q.length)say(Q[n].q)}};
+  if(q.type==='part'){const svg=main.querySelector('#tBody svg');svg.onclick=e=>{const p=e.target.closest('[data-part]');if(!p||answered)return;
+    svg.querySelectorAll('[data-part]').forEach(g=>g.classList.toggle('hi',g.dataset.part===q.a));finish(p.dataset.part===q.a)}}
+  else main.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{if(answered)return;const ok=b.dataset.ok==='1';b.classList.add(ok?'right':'wrong');
+    if(!ok)main.querySelector('.choice[data-ok="1"]').classList.add('right');finish(ok)})}
+ function end(){const s=res.filter(x=>x===1).length;intro=`Du hast ${s} von ${Q.length} Sternen. ${s>=10?'Super! Du bist ein Apfel-Profi!':s>=7?'Gut gemacht!':'Schau dir die Stationen noch einmal an und versuche es wieder.'}`;
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;align-items:center"><div style="width:min(300px,100%)">${apfel({face:1})}</div>
+   <div class="stars">${Q.map((_,i)=>`<span class="${res[i]===1?'':'off'}">⭐</span>`).join('')}</div>
+   <div class="qbar" style="width:100%">${spk(intro)}<span>${s} von ${Q.length} Sternen</span></div>
+   <div class="center"><button class="bigbtn" id="re">${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="hm">${ICON.home.replace('#7a4f2f','#2a1a05')}<span>Start</span></button></div></div>`;
+  tone('win');say(intro);document.getElementById('re').onclick=()=>{n=0;res=[];show();say(Q[0].q)};document.getElementById('hm').onclick=()=>go('home')}
+ show()}
+
+go('home',true);
+</script>
+</body>
+</html>
