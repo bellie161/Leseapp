@@ -104,7 +104,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   <div class="row">Schwierigkeit:
     <div class="seg" id="levelSeg"><button data-l="leicht">leicht</button><button data-l="schwer">schwer</button></div>
   </div>
-  <div class="row"><button id="gameBtn">🧱 Baumeister-Spiel</button></div>
+  <div class="row"><button id="gameBtn">🎮 Belohnungs-Spiele</button></div>
   <div class="progress" id="startProgress"></div>
 </section>
 
@@ -147,6 +147,15 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
 </section>
 
 <!-- ============ SPIEL ============ -->
+<section id="sling" class="screen">
+  <div class="ghead">
+    <button class="light" id="sHome">⬅</button>
+    <div class="t">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
 <section id="game" class="screen">
   <div class="ghead">
     <button class="light" id="gBack">⬅</button>
@@ -181,7 +190,14 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   <div class="big">🏆</div>
   <h2>Super gemacht!</h2>
   <p id="rewardTxt"></p>
-  <button id="rewardGo" style="background:var(--orange);font-size:26px">🧱 Zum Baumeister-Spiel</button>
+  <div class="row" style="margin-top:4px">
+    <button id="rewardGo" style="background:var(--orange);font-size:24px">🧱 Baumeister</button>
+    <button id="rewardSling" style="background:var(--red);font-size:24px">🎯 Gummi-Schleuder</button>
+  </div>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück zu den Aufgaben</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
 </div></div>
 
 <div class="overlay" id="winOv"><div class="card">
@@ -200,6 +216,8 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
     <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Aufgaben</div>
   <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
   <div class="setrow">Andock-Hilfe (Magnet) <div class="seg" id="magSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Schüsse bei der Gummi-Schleuder
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
   <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetStars" class="light">Sterne zurücksetzen</button></div>
   <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
 </div></div>
@@ -220,7 +238,7 @@ const adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d;};
 function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
 
-let S={goal:8,level:'leicht',voice:true,magnet:true,done:0,marks:[],solved:{}};
+let S={shots:10,goal:8,level:'leicht',voice:true,magnet:true,done:0,marks:[],solved:{}};
 try{Object.assign(S,JSON.parse(localStorage.getItem('winkelprofi')||'{}'));}catch(e){}
 function save(){try{localStorage.setItem('winkelprofi',JSON.stringify(S));}catch(e){}}
 
@@ -236,11 +254,12 @@ function segInit(id,getter,setter){const seg=$(id);const upd=()=>seg.querySelect
 segInit('#levelSeg',()=>S.level,v=>S.level=v);
 const updGoal=segInit('#goalSeg',()=>S.goal,v=>S.goal=+v);
 segInit('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1');
+(function(){const seg=$('#shotSeg');const upd=()=>seg.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',+b.dataset.v===S.shots));seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.shots=+b.dataset.v;save();upd();});upd();})();
 const updMag=segInit('#magSeg',()=>S.magnet?1:0,v=>{S.magnet=v==='1';updMagBtn();});
-function refreshStart(){const rest=Math.max(0,S.goal-S.done);$('#gameBtn').classList.toggle('locked',rest>0);$('#gameBtn').textContent=rest>0?'🔒 Baumeister-Spiel':'🧱 Baumeister-Spiel';$('#startProgress').textContent=rest>0?`Noch ${rest} Aufgabe${rest===1?'':'n'} bis zum Baumeister-Spiel ⭐`:'Das Baumeister-Spiel ist frei! 🎉';}
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);$('#gameBtn').classList.toggle('locked',rest>0);$('#gameBtn').textContent=rest>0?'🔒 Belohnungs-Spiele':'🎮 Belohnungs-Spiele';$('#startProgress').textContent=rest>0?`Noch ${rest} Aufgabe${rest===1?'':'n'} bis zu den Spielen ⭐ (Baumeister oder Gummi-Schleuder)`:'Die Spiele sind frei! 🎉';}
 refreshStart();
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.mode));
-$('#gameBtn').onclick=()=>{if(S.done>=S.goal){openGameMenu(true);}else{say(`Löse noch ${S.goal-S.done} Aufgaben. Dann darfst du bauen.`);$('#gameBtn').classList.add('shake');setTimeout(()=>$('#gameBtn').classList.remove('shake'),400);}};
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal){chooseGame(false);}else{say(`Löse noch ${S.goal-S.done} Aufgaben. Dann darfst du spielen.`);$('#gameBtn').classList.add('shake');setTimeout(()=>$('#gameBtn').classList.remove('shake'),400);}};
 $('#setBtn').onclick=()=>{$('#setOv').classList.add('on');updGoal();updMag();};
 $('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
 $('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
@@ -415,7 +434,8 @@ function answer(val,btn){
     }
   }
 }
-function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Aufgaben geschafft. Jetzt darfst du bauen!`;$('#rewardOv').classList.add('on');sound('win');confetti();say('Super gemacht! Jetzt darfst du bauen.');}
+function showReward(){chooseGame(true);}
+function chooseGame(celebrate){$('#rewardTxt').textContent=celebrate?`Du hast ${S.done} Aufgaben geschafft. Such dir ein Spiel aus!`:'Welches Spiel möchtest du spielen?';$('#rewardOv').classList.add('on');if(celebrate){sound('win');confetti();say('Super gemacht! Such dir ein Spiel aus.');}else say('Welches Spiel möchtest du spielen? Baumeister oder Gummi-Schleuder?');}
 $('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openGameMenu(true);};
 
 /* ---------- Baumeister-Spiel ---------- */
@@ -538,6 +558,61 @@ $('#gBack').onclick=()=>{if(G.mode!=='free')gTab=G.mode;show('gmenu');renderMenu
 $('#gReset').onclick=()=>startGame(G.mode,G.pz);
 $('#gSpeak').onclick=()=>say(GTXT[G.mode]+' Tippe auf ein Teil, um es zu drehen.');
 renderStars();
+
+/* ---------- Belohnung 2: Gummi-Schleuder ---------- */
+$('#rewardSling').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['sq','re','tri','sq','tri','bal'];
+let GSL=null,sraf=null,slast=0;
+function openSling(reward){if(reward){S.done=0;S.marks=[];save();}show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Formen!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Formen!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+ssvg.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+ssvg.addEventListener('pointerup',srelease);ssvg.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='sq')el('rect',{x:-s/2,y:-s/2,width:s,height:s,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
+  else if(t.shape==='re')el('rect',{x:-s*.7,y:-s*.4,width:s*1.4,height:s*.8,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
+  else if(t.shape==='tri')el('polygon',{points:`${-s/2},${s/2} ${s/2},${s/2} ${-s/2},${-s/2}`,fill:c,stroke:'#fff','stroke-width':4,'stroke-linejoin':'round'},g);
+  else{el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);}
+  if(t.shape!=='bal'){const m=s*.2,x0=t.shape==='re'?-s*.7:-s/2,y0=t.shape==='re'?s*.4:s/2;el('path',{d:`M${x0+m},${y0} L${x0+m},${y0-m} L${x0},${y0-m}`,fill:'none',stroke:'#fff','stroke-width':3},g);}}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});
+  const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});
+}
+function endSling(){$('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`;$('#slingEndOv').classList.add('on');confetti();sound('win');say(`Toll! Du hast ${GSL.hits} Mal getroffen.`);}
 </script>
 </body>
 </html>
