@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meine Lern-Apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fdf8ef; --ink:#2e2a24; --soft:#6b6257;
+    --mathe:#3b82c4; --mathe-bg:#e3effa;
+    --deutsch:#d9573b; --deutsch-bg:#fbe6df;
+    --musik:#8a5cc4; --musik-bg:#efe6fa;
+    --hund:#3f9a5a; --hund-bg:#e2f3e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Andika,system-ui,sans-serif;
+    padding:28px 20px 48px; min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{text-align:center;margin-bottom:22px}
+  h1{font-family:Fredoka,sans-serif;font-weight:700;font-size:clamp(2rem,5vw,3rem);margin:0 0 4px;letter-spacing:.5px}
+  header p{margin:0;color:var(--soft);font-size:1.1rem}
+  nav{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0 30px}
+  nav button{font-family:Fredoka,sans-serif;font-weight:600;font-size:1.05rem;border:3px solid transparent;
+    background:#fff;color:var(--ink);padding:10px 18px;border-radius:999px;cursor:pointer;
+    box-shadow:0 2px 0 rgba(0,0,0,.08)}
+  nav button[aria-pressed="true"]{border-color:var(--ink)}
+  section{margin-bottom:34px}
+  section h2{font-family:Fredoka,sans-serif;font-weight:600;font-size:1.5rem;margin:0 0 14px;
+    display:flex;align-items:center;gap:10px}
+  section h2 .dot{width:16px;height:16px;border-radius:50%}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  a.tile{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--ink);
+    background:#fff;border-radius:22px;padding:18px 18px 16px;border-top:8px solid var(--c);
+    box-shadow:0 3px 0 rgba(0,0,0,.07),0 8px 20px rgba(0,0,0,.04);
+    transition:transform .12s ease, box-shadow .12s ease; min-height:150px}
+  a.tile:hover,a.tile:focus-visible{transform:translateY(-3px);box-shadow:0 6px 0 rgba(0,0,0,.07),0 12px 24px rgba(0,0,0,.06);outline:none}
+  a.tile:active{transform:translateY(1px)}
+  .icon{width:58px;height:58px;border-radius:16px;background:var(--cbg);display:grid;place-items:center;font-size:2rem}
+  .name{font-family:Fredoka,sans-serif;font-weight:600;font-size:1.3rem;line-height:1.15}
+  .desc{font-size:.95rem;color:var(--soft);line-height:1.35}
+  .mathe{--c:var(--mathe);--cbg:var(--mathe-bg)}
+  .deutsch{--c:var(--deutsch);--cbg:var(--deutsch-bg)}
+  .musik{--c:var(--musik);--cbg:var(--musik-bg)}
+  .hund{--c:var(--hund);--cbg:var(--hund-bg)}
+  .mathe{--c:#3b82c4;--cbg:#e3effa}.deutsch{--c:#d9573b;--cbg:#fbe6df}.sache{--c:#8a5cc4;--cbg:#efe6fa}.hund{--c:#3f9a5a;--cbg:#e2f3e6}
+  section h2 .dot{background:var(--c)}
+  [hidden]{display:none!important}
+  footer{text-align:center;color:var(--soft);font-size:.9rem;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎒 Meine Lern-Apps</h1>
+    <p>Tippe auf eine Karte, um die App zu öffnen.</p>
+  </header>
+  <nav id="filter"><button data-f="alle" aria-pressed="true">⭐ Alle</button><button data-f="mathe" aria-pressed="false">🔢 Mathe</button><button data-f="deutsch" aria-pressed="false">📖 Deutsch</button><button data-f="sache" aria-pressed="false">🌿 Sachunterricht</button><button data-f="hund" aria-pressed="false">🐾 Schulhund</button></nav>
+<section data-g="mathe" class="mathe"><h2><span class="dot"></span>Mathe</h2><div class="grid"><a class="tile mathe" href="https://bellie161.github.io/zahlendetektiv/"><div class="icon">🔍</div><div class="name">Zahlendetektiv</div><div class="desc">Zahlen bis 1000 mit Platten, Stangen und Würfeln</div></a><a class="tile mathe" href="https://bellie161.github.io/Leseapp/schuettelbox.html"><div class="icon">📦</div><div class="name">Schüttelbox</div><div class="desc">Zahlen zerlegen und Zahlenhäuser</div></a><a class="tile mathe" href="https://bellie161.github.io/Leseapp/mal-und-teilen.html"><div class="icon">✖️</div><div class="name">Mal &amp; Teilen</div><div class="desc">2er-, 5er- und 10er-Reihe, mal und geteilt</div></a><a class="tile mathe" href="https://bellie161.github.io/Leseapp/geldladen.html"><div class="icon">🪙</div><div class="name">Geldladen</div><div class="desc">Rechnen und Einkaufen mit Euro</div></a><a class="tile mathe" href="https://bellie161.github.io/Leseapp/blitzblick.html"><div class="icon">⚡</div><div class="name">Blitzblick</div><div class="desc">Mengen schnell erkennen mit der Fünferstruktur</div></a><a class="tile mathe" href="https://bellie161.github.io/Leseapp/winkelprofi.html"><div class="icon">📐</div><div class="name">Winkel-Profi</div><div class="desc">Rechte Winkel prüfen</div></a></div></section>
+<section data-g="deutsch" class="deutsch"><h2><span class="dot"></span>Deutsch &amp; Lesen</h2><div class="grid"><a class="tile deutsch" href="https://bellie161.github.io/Leseapp/leseapp.html"><div class="icon">📚</div><div class="name">Lese-Abenteuer</div><div class="desc">Texte lesen und Fragen beantworten</div></a><a class="tile deutsch" href="https://bellie161.github.io/Leseapp/lesetresor.html"><div class="icon">🔐</div><div class="name">Lese-Tresor</div><div class="desc">Spannende Geschichten in Teilen – knack den Tresor!</div></a><a class="tile deutsch" href="https://bellie161.github.io/Leseapp/hoerabenteuer.html"><div class="icon">🎧</div><div class="name">HörAbenteuer</div><div class="desc">Geschichten hören und Fragen beantworten</div></a><a class="tile deutsch" href="https://bellie161.github.io/Leseapp/sprechtrainer.html"><div class="icon">🎤</div><div class="name">Sprechtrainer</div><div class="desc">Vorlesen üben und vergleichen</div></a><a class="tile deutsch" href="https://bellie161.github.io/Leseapp/fehlerdetektiv.html"><div class="icon">🕵️</div><div class="name">Fehlerdetektiv</div><div class="desc">Fehler in Sätzen finden und verbessern</div></a><a class="tile deutsch" href="https://bellie161.github.io/Leseapp/Praeteritum-Gluecksrad.html"><div class="icon">🎡</div><div class="name">Präteritum-Glücksrad</div><div class="desc">Verben in der Vergangenheit üben</div></a></div></section>
+<section data-g="sache" class="sache"><h2><span class="dot"></span>Sachunterricht, Musik &amp; Medien</h2><div class="grid"><a class="tile sache" href="https://bellie161.github.io/Leseapp/igel.html"><div class="icon">🦔</div><div class="name">Igel Pieks</div><div class="desc">Alles über den Igel – zum Anhören</div></a><a class="tile sache" href="https://bellie161.github.io/Leseapp/notenglockenspiel.html"><div class="icon">🎶</div><div class="name">Notenglockenspiel</div><div class="desc">Noten lesen und spielen</div></a><a class="tile sache" href="https://bellie161.github.io/Leseapp/trickfilm-werkstatt.html"><div class="icon">🎬</div><div class="name">Trickfilm-Werkstatt</div><div class="desc">Einen Stopmotion-Film drehen</div></a></div></section>
+<section data-g="hund" class="hund"><h2><span class="dot"></span>Schulhund Pepe</h2><div class="grid"><a class="tile hund" href="https://bellie161.github.io/Leseapp/schulhund-schulanfaenger.html"><div class="icon">🐶</div><div class="name">Schulhund Schulanfänger</div><div class="desc">Pepe und Jade kennenlernen – zum Anhören</div></a><a class="tile hund" href="https://bellie161.github.io/Leseapp/schulhund.html"><div class="icon">🐕</div><div class="name">Schulhund</div><div class="desc">Pepe und Jade – für Kinder, die schon lesen</div></a><a class="tile hund" href="https://bellie161.github.io/Leseapp/pepes-hundesprache.html"><div class="icon">💬</div><div class="name">Pepes Hundesprache</div><div class="desc">Was sagt der Hund mit seinem Körper?</div></a><a class="tile hund" href="https://bellie161.github.io/Leseapp/hundesprache-profi.html"><div class="icon">🏅</div><div class="name">Hundesprache Profi</div><div class="desc">Für Klasse 5–7</div></a><a class="tile hund" href="https://claude.ai/artifact/YLnwrhULCZVXfAPdx7YxHB"><div class="icon">🎲</div><div class="name">Hunde-Bingo</div><div class="desc">Bingo rund um den Hund</div></a><a class="tile hund" href="https://claude.ai/artifact/KJ72KZeVaNyGSr1jhrG5G5"><div class="icon">👀</div><div class="name">Körpersprache-Bingo</div><div class="desc">Hundesprache als Bingo</div></a></div></section>
+  <footer>Abteischule Wadgassen</footer>
+</div>
+<script>
+  const btns=document.querySelectorAll('#filter button');
+  const secs=document.querySelectorAll('section[data-g]');
+  function show(f){
+    btns.forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===f));
+    secs.forEach(s=>s.hidden=!(f==='alle'||s.dataset.g===f));
+    try{localStorage.setItem('lernapps-filter',f)}catch(e){}
+  }
+  btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.f)));
+  let start='alle';try{start=localStorage.getItem('lernapps-filter')||'alle'}catch(e){}
+  show(start);
+</script>
+</body>
+</html>
