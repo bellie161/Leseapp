@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Winkel-Profi – rechte Winkel prüfen</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+/* Start */
+#start{align-items:center;overflow-y:auto;padding:20px}
+h1{font-size:44px;margin:8px 0 0;color:var(--blue)}
+.sub{font-size:20px;margin:4px 0 18px;color:#4b5563}
+.modes{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.mode{width:230px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:21px;border:4px solid transparent}
+.mode svg{width:150px;height:110px}
+.mode .num{display:inline-flex;width:36px;height:36px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:18px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--blue);padding:10px 22px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0;border-left:none}
+.seg button.sel{background:var(--blue);color:#fff}
+#gameBtn{background:var(--orange);font-size:22px;padding:14px 24px}
+#gameBtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+/* Task */
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:23px;font-weight:700;line-height:1.2}
+.stars{display:flex;gap:3px;flex-wrap:wrap;max-width:280px;justify-content:flex-end}
+.star{font-size:24px;color:#d5dbe3;line-height:1}
+.star.gold{color:#F5B700}.star.silver{color:#9fb3c8}.star.help{color:#7cc0ff}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.geotools{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:10px}
+.geotools button{width:62px;height:62px;padding:0;font-size:30px;background:#fff;color:var(--ink)}
+.geotools button.off{opacity:.45}
+.feedback{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:#fff;border-radius:18px;padding:12px 22px;font-size:26px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none;text-align:center;max-width:80%}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.answers{display:flex;gap:16px;justify-content:center;align-items:center;padding:12px;background:#fff;min-height:100px;flex-wrap:wrap}
+.answers button{font-size:26px;padding:16px 28px;min-width:90px}
+.answers .yes{background:var(--green)}.answers .no{background:var(--red)}
+.answers .circ{width:84px;height:84px;border-radius:50%;font-size:38px;padding:0}
+.answers .numb{width:84px;height:84px;font-size:38px;padding:0;background:var(--purple)}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.dim{opacity:.35;pointer-events:none}
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:26px 30px;max-width:640px;width:92%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:34px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:22px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+/* Game */
+.ghead{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;min-height:64px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.ghead .t{flex:1;font-size:21px;font-weight:700}
+.ghead button{padding:8px 14px;font-size:20px}
+#menuGrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;padding:14px;overflow-y:auto}
+.pz{width:150px;background:#fff;color:var(--ink);border-radius:18px;padding:8px;font-size:17px;display:flex;flex-direction:column;align-items:center;position:relative}
+.pz svg{width:120px;height:100px}
+.pz .ok{position:absolute;top:4px;right:8px;color:var(--green);font-size:26px}
+.tabs{display:flex;gap:10px;justify-content:center;padding:14px 10px 0;flex-wrap:wrap}
+.tabs button{background:#fff;color:var(--ink);border:3px solid var(--orange)}
+.tabs button.sel{background:var(--orange);color:#fff}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<!-- ============ START ============ -->
+<section id="start" class="screen on">
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>📐 Winkel-Profi</h1>
+  <div class="sub">Rechte Winkel finden und prüfen</div>
+  <div class="modes">
+    <button class="mode" data-mode="1">
+      <svg viewBox="0 0 150 110"><line x1="40" y1="90" x2="130" y2="90" stroke="#E63946" stroke-width="8" stroke-linecap="round"/><line x1="40" y1="90" x2="40" y2="15" stroke="#E63946" stroke-width="8" stroke-linecap="round"/><path d="M40 70 h20 v20" fill="none" stroke="#333" stroke-width="3"/><circle cx="50" cy="80" r="3" fill="#333"/></svg>
+      <span><span class="num" style="background:#E63946">1</span> Winkel prüfen</span>
+    </button>
+    <button class="mode" data-mode="2">
+      <svg viewBox="0 0 150 110"><g stroke-width="7" stroke-linecap="round"><path d="M10 80 L45 80 M10 80 L35 50" stroke="#1D7FD8"/><path d="M60 85 L95 85 M60 85 L60 45" stroke="#2A9D4B"/><path d="M110 80 L145 80 M110 80 L95 50" stroke="#F28C28"/></g></svg>
+      <span><span class="num" style="background:#2A9D4B">2</span> Finde den rechten Winkel</span>
+    </button>
+    <button class="mode" data-mode="3">
+      <svg viewBox="0 0 150 110"><polygon points="25,95 125,95 125,45 75,12 25,45" fill="rgba(142,68,173,.15)" stroke="#8E44AD" stroke-width="7" stroke-linejoin="round"/></svg>
+      <span><span class="num" style="background:#8E44AD">3</span> Formen prüfen</span>
+    </button>
+  </div>
+  <div class="row">Schwierigkeit:
+    <div class="seg" id="levelSeg"><button data-l="leicht">leicht</button><button data-l="schwer">schwer</button></div>
+  </div>
+  <div class="row"><button id="gameBtn">🧱 Baumeister-Spiel</button></div>
+  <div class="progress" id="startProgress"></div>
+</section>
+
+<!-- ============ AUFGABEN ============ -->
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="stars" id="stars"></div>
+  </div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <g id="taskLayer"></g><g id="markLayer"></g>
+    </svg>
+    <div class="geotools">
+      <button id="rotL" aria-label="nach links drehen">↺</button>
+      <button id="rotR" aria-label="nach rechts drehen">↻</button>
+      <button id="geoReset" aria-label="Geodreieck zurück">📐</button>
+      <button id="magBtn" aria-label="Andock-Hilfe">🧲</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="answers" id="answers"></div>
+</section>
+
+<!-- ============ SPIEL-MENÜ ============ -->
+<section id="gmenu" class="screen">
+  <div class="ghead">
+    <button class="light" id="gmBack">⬅ Aufgaben</button>
+    <div class="t">🧱 Baumeister – Bauen mit rechten Winkeln</div>
+  </div>
+  <div class="tabs" id="gTabs">
+    <button data-g="fill">Ausfüllen</button>
+    <button data-g="copy">Nachbauen</button>
+    <button data-g="free">Frei bauen</button>
+  </div>
+  <div id="menuGrid"></div>
+</section>
+
+<!-- ============ SPIEL ============ -->
+<section id="game" class="screen">
+  <div class="ghead">
+    <button class="light" id="gBack">⬅</button>
+    <div class="t" id="gTitle"></div>
+    <button class="light" id="gSpeak">🔊</button>
+    <button class="light" id="gReset">↺ Neu</button>
+  </div>
+  <div class="stagewrap">
+    <svg class="stage" id="gsvg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
+      <g id="gBoard"></g><g id="gTarget"></g><g id="gTray"></g><g id="gPieces"></g>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ OVERLAYS ============ -->
+<div class="overlay" id="helpOv"><div class="card">
+  <h2>So prüfst du</h2>
+  <svg viewBox="0 0 300 120" style="width:300px;height:120px">
+    <polygon points="30,110 270,110 150,-10" fill="rgba(170,215,255,.5)" stroke="#1d4f8a" stroke-width="2" transform="rotate(180 150 60)"/>
+  </svg>
+  <ol class="steps">
+    <li><span class="n">1</span>Rote Ecke vom Geodreieck auf den Punkt.</li>
+    <li><span class="n">2</span>Eine rote Kante genau auf eine Linie.</li>
+    <li><span class="n">3</span>Schau: Liegt die andere Linie genau an der anderen roten Kante?</li>
+    <li><span class="n">4</span>Passt genau → rechter Winkel ✓ &nbsp; Lücke → kein rechter Winkel</li>
+  </ol>
+  <div style="font-size:19px;color:#4b5563;margin-bottom:14px">Schieben: mit dem Finger. Drehen: am orangen Knopf ↻ oder mit zwei Fingern.</div>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div>
+  <h2>Super gemacht!</h2>
+  <p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🧱 Zum Baumeister-Spiel</button>
+</div></div>
+
+<div class="overlay" id="winOv"><div class="card">
+  <div class="big">🎉</div>
+  <h2>Geschafft!</h2>
+  <p>Das hast du toll gebaut.</p>
+  <div class="row" style="margin-top:6px">
+    <button id="winMenu" class="light">Alle Bilder</button>
+    <button id="winNext" style="background:var(--green)">Nächstes Bild ➜</button>
+  </div>
+</div></div>
+
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Aufgaben</div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Andock-Hilfe (Magnet) <div class="seg" id="magSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetStars" class="light">Sterne zurücksetzen</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+/* ---------- Grundlagen ---------- */
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3','#B8860B'];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const norm=a=>((a%360)+360)%360;
+const adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d;};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+
+let S={goal:8,level:'leicht',voice:true,magnet:true,done:0,marks:[],solved:{}};
+try{Object.assign(S,JSON.parse(localStorage.getItem('winkelprofi')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('winkelprofi',JSON.stringify(S));}catch(e){}}
+
+/* Sprache und Töne */
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.25,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='no'){tone(220,0,.35,'triangle');}else if(k==='snap'){tone(1200,0,.08);}else if(k==='win'){[523,659,784,1046].forEach((f,i)=>tone(f,i*.13,.3));}}
+function confetti(){for(let i=0;i<50;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Startseite ---------- */
+function segInit(id,getter,setter){const seg=$(id);const upd=()=>seg.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(getter())||b.dataset.l===String(getter())));seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{setter(b.dataset.v!==undefined?b.dataset.v:b.dataset.l);save();upd();refreshStart();});upd();return upd;}
+segInit('#levelSeg',()=>S.level,v=>S.level=v);
+const updGoal=segInit('#goalSeg',()=>S.goal,v=>S.goal=+v);
+segInit('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1');
+const updMag=segInit('#magSeg',()=>S.magnet?1:0,v=>{S.magnet=v==='1';updMagBtn();});
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);$('#gameBtn').classList.toggle('locked',rest>0);$('#gameBtn').textContent=rest>0?'🔒 Baumeister-Spiel':'🧱 Baumeister-Spiel';$('#startProgress').textContent=rest>0?`Noch ${rest} Aufgabe${rest===1?'':'n'} bis zum Baumeister-Spiel ⭐`:'Das Baumeister-Spiel ist frei! 🎉';}
+refreshStart();
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.mode));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal){openGameMenu(true);}else{say(`Löse noch ${S.goal-S.done} Aufgaben. Dann darfst du bauen.`);$('#gameBtn').classList.add('shake');setTimeout(()=>$('#gameBtn').classList.remove('shake'),400);}};
+$('#setBtn').onclick=()=>{$('#setOv').classList.add('on');updGoal();updMag();};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetStars').onclick=()=>{S.done=0;S.marks=[];save();refreshStart();};
+
+/* ---------- Geodreieck ---------- */
+const stage=$('#stage'), taskLayer=$('#taskLayer'), markLayer=$('#markLayer');
+const H=230, CM=26;
+const geo={x:770,y:480,rot:0};
+let geoHome={x:770,y:480,rot:0};
+const geoG=el('g',{id:'geo',style:'cursor:grab'},stage);
+const geoInner=el('g',{},geoG);
+(function buildGeo(){
+  const g=el('g',{transform:`translate(0,${H/3})`},geoInner);
+  el('polygon',{points:`${-H},0 ${H},0 0,${-H}`,fill:'rgba(170,215,255,0.5)',stroke:'#1d4f8a','stroke-width':2.5,'stroke-linejoin':'round'},g);
+  // rote Prüf-Kanten am rechten Winkel
+  el('line',{x1:0,y1:-H,x2:-H+6,y2:-6,stroke:'#E63946','stroke-width':6,'stroke-linecap':'round',opacity:.85},g);
+  el('line',{x1:0,y1:-H,x2:H-6,y2:-6,stroke:'#E63946','stroke-width':6,'stroke-linecap':'round',opacity:.85},g);
+  // Zentimeter-Skala
+  for(let k=-14;k<=14;k++){const x=k*CM/2,big=k%2===0;el('line',{x1:x,y1:0,x2:x,y2:big?-16:-9,stroke:'#1d3557','stroke-width':big?2.2:1.4},g);
+    if(big&&k!==0)txt(g,x,-27,String(Math.abs(k/2)),{'font-size':15,fill:'#1d3557'});}
+  // Nulllinie
+  el('line',{x1:0,y1:-2,x2:0,y2:-H+46,stroke:'#1d3557','stroke-width':3},g);
+  el('circle',{cx:0,cy:-30,r:13,fill:'#fff',stroke:'#1d3557','stroke-width':2},g);
+  txt(g,0,-30,'0',{'font-size':17,fill:'#E63946'});
+  // Markierung rechter Winkel
+  const s=30,u=s/Math.SQRT2;
+  el('polygon',{points:`0,${-H} ${u},${-H+u} 0,${-H+2*u} ${-u},${-H+u}`,fill:'#E63946'},g);
+  el('circle',{cx:0,cy:-H+u,r:4,fill:'#fff'},g);
+  // Drehknopf
+  const h=el('g',{class:'geohandle',style:'cursor:alias'},g);
+  el('circle',{cx:H-26,cy:34,r:27,fill:'#F28C28',stroke:'#fff','stroke-width':3},h);
+  txt(h,H-26,35,'↻',{'font-size':32,fill:'#fff'});
+})();
+function drawGeo(){geoInner.setAttribute('transform',`translate(${geo.x},${geo.y}) rotate(${geo.rot})`);}
+function toWorld(lx,ly){const py=ly+H/3,c=Math.cos(rad(geo.rot)),s=Math.sin(rad(geo.rot));return[geo.x+lx*c-py*s,geo.y+lx*s+py*c];}
+function clampGeo(){geo.x=Math.max(20,Math.min(980,geo.x));geo.y=Math.max(20,Math.min(600,geo.y));}
+const ptrs=new Map();let gmode=null,gs=null;
+function beginGesture(){const pts=[...ptrs.values()];if(pts.length===1){gmode='move';gs={px:pts[0].x,py:pts[0].y,x:geo.x,y:geo.y};}else{const[a,b]=pts;gmode='pinch';gs={ang:deg(Math.atan2(b.y-a.y,b.x-a.x)),mx:(a.x+b.x)/2,my:(a.y+b.y)/2,x:geo.x,y:geo.y,rot:geo.rot};}}
+geoG.addEventListener('pointerdown',e=>{e.preventDefault();const p=svgPt(stage,e);ptrs.set(e.pointerId,p);try{geoG.setPointerCapture(e.pointerId);}catch(_){}
+  if(e.target.closest('.geohandle')&&ptrs.size===1){gmode='rot';gs={a0:deg(Math.atan2(p.y-geo.y,p.x-geo.x)),rot0:geo.rot};}else beginGesture();});
+geoG.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const p=svgPt(stage,e);ptrs.set(e.pointerId,p);
+  if(gmode==='rot'){geo.rot=gs.rot0+adiff(deg(Math.atan2(p.y-geo.y,p.x-geo.x)),gs.a0);}
+  else if(gmode==='move'){geo.x=gs.x+p.x-gs.px;geo.y=gs.y+p.y-gs.py;}
+  else if(gmode==='pinch'&&ptrs.size>=2){const[a,b]=[...ptrs.values()];geo.rot=gs.rot+adiff(deg(Math.atan2(b.y-a.y,b.x-a.x)),gs.ang);geo.x=gs.x+(a.x+b.x)/2-gs.mx;geo.y=gs.y+(a.y+b.y)/2-gs.my;}
+  clampGeo();drawGeo();});
+function endPtr(e){if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(ptrs.size===0){gmode=null;snapGeo();}else beginGesture();}
+geoG.addEventListener('pointerup',endPtr);geoG.addEventListener('pointercancel',endPtr);
+let snapTargets=[];
+function snapGeo(){
+  if(!S.magnet||!snapTargets.length)return;
+  const A=toWorld(0,-H),legs=[45+geo.rot,135+geo.rot];let best=null;
+  for(const t of snapTargets){const d=Math.hypot(A[0]-t.v[0],A[1]-t.v[1]);if(d>45)continue;
+    for(const r of t.rays)for(const L of legs){const df=adiff(r,L);const sc=Math.abs(df)+d/8;if(Math.abs(df)<14&&(!best||sc<best.sc))best={sc,df,v:t.v};}}
+  if(!best)return;
+  geo.rot+=best.df;const A2=toWorld(0,-H);geo.x+=best.v[0]-A2[0];geo.y+=best.v[1]-A2[1];drawGeo();sound('snap');
+}
+function rotBy(d){geo.rot+=d;drawGeo();}
+$('#rotL').onclick=()=>rotBy(-15);$('#rotR').onclick=()=>rotBy(15);
+$('#geoReset').onclick=()=>{Object.assign(geo,geoHome);drawGeo();};
+function updMagBtn(){$('#magBtn').classList.toggle('off',!S.magnet);}
+$('#magBtn').onclick=()=>{S.magnet=!S.magnet;save();updMagBtn();say(S.magnet?'Magnet an':'Magnet aus');};
+updMagBtn();
+
+/* ---------- Aufgaben ---------- */
+let TM=1,task=null,tries=0,locked=false;
+const INSTR={1:'Ist das ein rechter Winkel? Prüfe mit dem Geodreieck.',2:'Welcher Winkel ist ein rechter Winkel? Prüfe mit dem Geodreieck.',3:'Wie viele rechte Winkel hat die Form? Prüfe jede Ecke.'};
+function startMode(m){TM=m;show('task');$('#instr').textContent=INSTR[m];newTask();
+  if(!S.seenHelp){S.seenHelp=true;save();openHelp();}else say(INSTR[m]);}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
+$('#speakBtn').onclick=()=>say(INSTR[TM]);
+function openHelp(){$('#helpOv').classList.add('on');say('So prüfst du. Rote Ecke auf den Punkt. Eine rote Kante genau auf eine Linie. Schau: Liegt die andere Linie genau an der anderen roten Kante? Dann ist es ein rechter Winkel.');}
+$('#helpBtn').onclick=openHelp;
+$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');say(INSTR[TM]);};
+
+function renderStars(){const box=$('#stars');box.innerHTML='';for(let i=0;i<S.goal;i++){const s=document.createElement('span');s.className='star '+(S.marks[i]||'');s.textContent='★';box.appendChild(s);}}
+
+function placeAngle(s,op,L,c){const p1=[L*Math.cos(rad(s)),L*Math.sin(rad(s))],p2=[L*Math.cos(rad(s+op)),L*Math.sin(rad(s+op))];
+  const xs=[0,p1[0],p2[0]],ys=[0,p1[1],p2[1]];const ox=c[0]-(Math.min(...xs)+Math.max(...xs))/2,oy=c[1]-(Math.min(...ys)+Math.max(...ys))/2;
+  return{v:[ox,oy],e1:[ox+p1[0],oy+p1[1]],e2:[ox+p2[0],oy+p2[1]],s,op};}
+function drawAngle(a,col,label){const g=el('g',{},taskLayer);
+  el('line',{x1:a.v[0],y1:a.v[1],x2:a.e1[0],y2:a.e1[1],stroke:col,'stroke-width':9,'stroke-linecap':'round'},g);
+  el('line',{x1:a.v[0],y1:a.v[1],x2:a.e2[0],y2:a.e2[1],stroke:col,'stroke-width':9,'stroke-linecap':'round'},g);
+  el('circle',{cx:a.v[0],cy:a.v[1],r:9,fill:col},g);
+  if(label){const b=rad(a.s+a.op/2);const lx=a.v[0]-42*Math.cos(b),ly=a.v[1]-42*Math.sin(b);el('circle',{cx:lx,cy:ly,r:22,fill:col},g);txt(g,lx,ly+1,String(label),{'font-size':24,fill:'#fff'});}}
+function rightMark(v,a1,a2,color){const s=30,u1=[Math.cos(rad(a1)),Math.sin(rad(a1))],u2=[Math.cos(rad(a2)),Math.sin(rad(a2))];
+  const p1=[v[0]+s*u1[0],v[1]+s*u1[1]],p3=[v[0]+s*u2[0],v[1]+s*u2[1]],p2=[p1[0]+s*u2[0],p1[1]+s*u2[1]];
+  el('path',{d:`M${p1} L${p2} L${p3}`,fill:'none',stroke:color||'#111','stroke-width':4},markLayer);
+  el('circle',{cx:v[0]+s*.5*(u1[0]+u2[0]),cy:v[1]+s*.5*(u1[1]+u2[1]),r:4.5,fill:color||'#111'},markLayer);}
+
+const DIST={leicht:[30,40,45,55,60,130,140,150],schwer:[65,70,75,80,100,105,110,115]};
+const SHAPES={
+ leicht:[
+  {n:'Quadrat',p:[[0,0],[1,0],[1,1],[0,1]]},
+  {n:'Rechteck',p:[[0,0],[1.6,0],[1.6,.9],[0,.9]]},
+  {n:'Dreieck',p:[[0,0],[0,1.1],[1.5,1.1]]},
+  {n:'Dreieck',p:[[.55,0],[1.2,1.1],[0,1.1]]},
+  {n:'Haus',p:[[0,1.25],[1.2,1.25],[1.2,.55],[.6,0],[0,.55]]},
+  {n:'Trapez',p:[[0,0],[1,0],[1.55,.95],[0,.95]]},
+  {n:'Parallelogramm',p:[[.45,0],[1.65,0],[1.2,.9],[0,.9]]},
+  {n:'Sechseck',p:[[.3,0],[.9,0],[1.2,.52],[.9,1.04],[.3,1.04],[0,.52]]}],
+ schwer:[
+  {n:'Viereck',p:[[.16,0],[1.56,0],[1.4,.9],[0,.9]]},
+  {n:'Viereck',p:[[0,0],[1.2,0],[1.38,.95],[.08,.95]]},
+  {n:'Viereck',p:[[0,0],[1.2,0],[1.5,1],[0,.8]]},
+  {n:'Dreieck',p:[[0,0],[1.5,.12],[.1,1.1]]},
+  {n:'Fünfeck',p:[[0,0],[1.3,0],[1.3,.7],[.75,1.15],[0,.95]]},
+  {n:'Drachen',p:[[.6,0],[1.2,.6],[.6,1.3],[0,.6]]},
+  {n:'Rechteck',p:[[0,0],[1.5,0],[1.5,.7],[0,.7]]},
+  {n:'Dreieck',p:[[0,0],[0,1],[1.4,1]]}]
+};
+function newTask(){
+  taskLayer.innerHTML='';markLayer.innerHTML='';$('#feedback').className='feedback';tries=0;locked=false;renderStars();
+  const ans=$('#answers');ans.innerHTML='';
+  if(TM===1){
+    const right=Math.random()<.5,op=right?90:pick(DIST[S.level]),s=Math.random()<.2?pick([0,90,180,270]):rnd(0,360);
+    const a=placeAngle(s,op,230,[350,300]);drawAngle(a,pick(COLORS));
+    snapTargets=[{v:a.v,rays:[s,s+op]}];task={angles:[a],answer:right};
+    geoHome={x:770,y:480,rot:0};
+    addBtn(ans,'✓ Ja, rechter Winkel','yes',true);addBtn(ans,'✗ Nein','no',false);
+  }else if(TM===2){
+    const ops=shuffle([90,...shuffle(DIST[S.level].slice()).slice(0,2)]),cols=shuffle(COLORS.slice()).slice(0,3);
+    const cs=[[180,225],[500,225],[820,225]];
+    const angles=ops.map((op,i)=>{const a=placeAngle(rnd(0,360),op,135,cs[i]);drawAngle(a,cols[i],i+1);return a;});
+    snapTargets=angles.map(a=>({v:a.v,rays:[a.s,a.s+a.op]}));task={angles,answer:ops.indexOf(90)};
+    geoHome={x:500,y:468,rot:0};
+    angles.forEach((a,i)=>{const b=addBtn(ans,String(i+1),'circ',i);b.style.background=cols[i];});
+  }else{
+    const sh=pick(S.level==='leicht'?SHAPES.leicht:SHAPES.schwer.concat(SHAPES.leicht.slice(0,4)));
+    const r=rad(pick(S.level==='leicht'?[0,0,15,-20,30]:[0,20,-30,45,60,-50]));
+    let pts=sh.p.map(([x,y])=>[x*230,y*230]);
+    pts=pts.map(([x,y])=>[x*Math.cos(r)-y*Math.sin(r),x*Math.sin(r)+y*Math.cos(r)]);
+    const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const ox=360-(Math.min(...xs)+Math.max(...xs))/2,oy=300-(Math.min(...ys)+Math.max(...ys))/2;
+    pts=pts.map(([x,y])=>[x+ox,y+oy]);
+    const col=pick(COLORS);
+    el('polygon',{points:pts.map(p=>p.join(',')).join(' '),fill:col+'26',stroke:col,'stroke-width':8,'stroke-linejoin':'round'},taskLayer);
+    const n=pts.length;const verts=pts.map((v,i)=>{const a=pts[(i+n-1)%n],b=pts[(i+1)%n];
+      const r1=deg(Math.atan2(a[1]-v[1],a[0]-v[0])),r2=deg(Math.atan2(b[1]-v[1],b[0]-v[0]));
+      const u=[a[0]-v[0],a[1]-v[1]],w=[b[0]-v[0],b[1]-v[1]];const cos=(u[0]*w[0]+u[1]*w[1])/Math.hypot(...u)/Math.hypot(...w);
+      el('circle',{cx:v[0],cy:v[1],r:7,fill:col},taskLayer);return{v,rays:[r1,r2],right:Math.abs(cos)<.01};});
+    snapTargets=verts;task={verts,answer:verts.filter(v=>v.right).length};
+    geoHome={x:770,y:480,rot:0};
+    for(let i=0;i<=4;i++)addBtn(ans,String(i),'numb',i);
+  }
+  Object.assign(geo,geoHome);drawGeo();
+}
+function addBtn(box,label,cls,val){const b=document.createElement('button');b.className=cls;b.textContent=label;b.onclick=()=>answer(val,b);box.appendChild(b);return b;}
+function showSolution(){
+  if(TM===1||TM===2)task.angles.forEach(a=>{if(a.op===90)rightMark(a.v,a.s,a.s+a.op);});
+  if(TM===2){const a=task.angles[task.answer];el('circle',{cx:a.v[0],cy:a.v[1],r:60,fill:'none',stroke:'#2A9D4B','stroke-width':6,'stroke-dasharray':'10 8'},markLayer);}
+  if(TM===3)task.verts.forEach(v=>{if(v.right)rightMark(v.v,v.rays[0],v.rays[1]);});
+}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+cls;}
+function answer(val,btn){
+  if(locked)return;
+  if(val===task.answer){
+    locked=true;showSolution();sound('ok');S.marks.push(tries===0?'gold':'silver');S.done++;save();renderStars();
+    const w=pick(['Super!','Toll gemacht!','Richtig!','Klasse!','Prima!']);feedback(w+' ⭐','ok');say(w);
+    document.querySelectorAll('#answers button').forEach(b=>{if(b!==btn)b.classList.add('dim');});
+    setTimeout(()=>{if(S.done>=S.goal&&S.marks.length>=S.goal)showReward();else newTask();},2300);
+  }else{
+    tries++;sound('no');btn.classList.add('shake','dim');setTimeout(()=>btn.classList.remove('shake'),400);
+    if(tries<2){feedback('Schau noch einmal genau. Prüfe mit dem Geodreieck!','try');say('Schau noch einmal genau. Prüfe mit dem Geodreieck.');}
+    else{
+      locked=true;showSolution();let t;
+      if(TM===1)t=task.answer?'Das ist ein rechter Winkel. Siehst du das Zeichen?':'Das ist kein rechter Winkel. Es bleibt eine Lücke.';
+      else if(TM===2)t=`Winkel ${task.answer+1} ist der rechte Winkel.`;
+      else t=`Die Form hat ${task.answer} rechte Winkel.`;
+      feedback(t,'sol');say(t);S.marks.push('help');S.done++;save();renderStars();
+      const ans=$('#answers');ans.innerHTML='';const b=document.createElement('button');b.textContent='Weiter ➜';b.style.background='var(--blue)';
+      b.onclick=()=>{if(S.done>=S.goal)showReward();else newTask();};ans.appendChild(b);
+    }
+  }
+}
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Aufgaben geschafft. Jetzt darfst du bauen!`;$('#rewardOv').classList.add('on');sound('win');confetti();say('Super gemacht! Jetzt darfst du bauen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openGameMenu(true);};
+
+/* ---------- Baumeister-Spiel ---------- */
+const TYPES={
+ sq1:{p:[[0,0],[1,0],[1,1],[0,1]],c:'#1D7FD8'},
+ sq2:{p:[[0,0],[2,0],[2,2],[0,2]],c:'#E63946'},
+ re21:{p:[[0,0],[2,0],[2,1],[0,1]],c:'#2A9D4B'},
+ re31:{p:[[0,0],[3,0],[3,1],[0,1]],c:'#8E44AD'},
+ tri1:{p:[[0,0],[1,1],[0,1]],c:'#F28C28'},
+ tri2:{p:[[0,0],[2,2],[0,2]],c:'#F2C200'},
+ triM:{p:[[0,1],[2,1],[1,0]],c:'#D6338A'}};
+function rotPoly(p,r){let q=p.map(a=>a.slice());for(let i=0;i<r;i++){q=q.map(([x,y])=>[-y,x]);const mx=Math.min(...q.map(a=>a[0])),my=Math.min(...q.map(a=>a[1]));q=q.map(([x,y])=>[x-mx,y-my]);}return q;}
+function pip(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];if(((yi>pt[1])!==(yj>pt[1]))&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c;}return c;}
+const QC=[[.5,1/6],[5/6,.5],[.5,5/6],[1/6,.5]];
+function cover(poly,ox,oy){const out=[],P=poly.map(([x,y])=>[x+ox,y+oy]),xs=P.map(a=>a[0]),ys=P.map(a=>a[1]);
+  for(let cx=Math.floor(Math.min(...xs));cx<Math.max(...xs);cx++)for(let cy=Math.floor(Math.min(...ys));cy<Math.max(...ys);cy++)QC.forEach((q,i)=>{if(pip([cx+q[0],cy+q[1]],P))out.push(cx+','+cy+','+i);});return out;}
+function bbox(poly){return[Math.max(...poly.map(a=>a[0])),Math.max(...poly.map(a=>a[1]))];}
+const PUZZLES=[
+ {n:'Haus',s:[['triM',0,0,0],['sq2',0,0,1]]},
+ {n:'Quadrat',s:[['tri2',0,0,0],['tri2',2,0,0]]},
+ {n:'Rechteck',s:[['sq2',0,0,0],['re21',1,2,0]]},
+ {n:'Baum',s:[['tri2',3,0,0],['tri2',0,2,0],['re21',0,1,2]]},
+ {n:'Fisch',s:[['triM',0,0,0],['triM',2,0,1],['triM',3,2,0]]},
+ {n:'Turm',s:[['triM',0,0,0],['re21',1,0,1],['re21',1,1,1],['re21',0,0,3]]},
+ {n:'Pfeil',s:[['re21',1,0,1],['sq2',0,1,1],['tri2',0,3,0],['tri2',1,3,2]]},
+ {n:'Haus mit Garage',s:[['triM',0,0,0],['sq2',0,0,1],['triM',0,2,1],['re21',0,2,2]]},
+ {n:'Rakete',s:[['triM',0,1,0],['sq2',0,1,1],['re21',0,1,3],['tri1',3,0,3],['tri1',0,3,3]]},
+ {n:'Boot',s:[['tri2',0,2,0],['tri1',2,0,2],['re21',0,1,2],['sq1',0,3,2],['tri1',1,4,2]]},
+ {n:'Zug',s:[['re31',0,0,2],['sq2',0,3,1],['sq1',0,1,1],['tri1',3,0,1],['re21',0,0,3],['re21',0,2,3]]},
+ {n:'Katze',s:[['tri1',0,0,0],['tri1',3,1,0],['re21',0,0,1],['sq2',0,0,2],['tri2',0,2,2]]}
+];
+function solPieces(pz){return pz.s.map(([t,r,x,y])=>({type:t,poly:rotPoly(TYPES[t].p,r),x,y}));}
+function solSize(pz){let w=0,h=0;solPieces(pz).forEach(p=>{const[bw,bh]=bbox(p.poly);w=Math.max(w,p.x+bw);h=Math.max(h,p.y+bh);});return[w,h];}
+
+const gsvg=$('#gsvg'),gBoard=$('#gBoard'),gTarget=$('#gTarget'),gTray=$('#gTray'),gPieces=$('#gPieces');
+const U=60,BX=24,BY=36,BC=9,BR=8,TX=600,TW=380;
+let G={mode:'fill',pz:0,pieces:[],target:null};let gTab='fill';
+function rightCorners(poly){const n=poly.length,res=[];poly.forEach((v,i)=>{const a=poly[(i+n-1)%n],b=poly[(i+1)%n];const u=[a[0]-v[0],a[1]-v[1]],w=[b[0]-v[0],b[1]-v[1]];if(Math.abs(u[0]*w[0]+u[1]*w[1])<1e-9)res.push([v,u.map(z=>z/Math.hypot(...u)),w.map(z=>z/Math.hypot(...w))]);});return res;}
+function drawPoly(parent,poly,unit,fill,stroke,marks){const g=el('g',{},parent);
+  el('polygon',{points:poly.map(([x,y])=>`${x*unit},${y*unit}`).join(' '),fill,stroke,'stroke-width':unit>40?2.5:1.5,'stroke-linejoin':'round'},g);
+  if(marks)rightCorners(poly).forEach(([v,u,w])=>{const s=unit*.2,V=[v[0]*unit,v[1]*unit];el('path',{d:`M${V[0]+u[0]*s},${V[1]+u[1]*s} L${V[0]+(u[0]+w[0])*s},${V[1]+(u[1]+w[1])*s} L${V[0]+w[0]*s},${V[1]+w[1]*s}`,fill:'none',stroke:'#fff','stroke-width':2.5,opacity:.9},g);});
+  return g;}
+
+function openGameMenu(reward){if(reward){S.done=0;S.marks=[];save();}show('gmenu');renderMenu();}
+$('#gmBack').onclick=()=>{show('start');refreshStart();};
+document.querySelectorAll('#gTabs button').forEach(b=>b.onclick=()=>{gTab=b.dataset.g;if(gTab==='free'){startGame('free',0);}else renderMenu();});
+function renderMenu(){document.querySelectorAll('#gTabs button').forEach(b=>b.classList.toggle('sel',b.dataset.g===gTab));
+  const grid=$('#menuGrid');grid.innerHTML='';
+  PUZZLES.forEach((pz,i)=>{const b=document.createElement('button');b.className='pz';const[w,h]=solSize(pz);
+    const sv=el('svg',{viewBox:`-0.3 -0.3 ${w+.6} ${h+.6}`});
+    solPieces(pz).forEach(p=>{const g=drawPoly(sv,p.poly,1,gTab==='fill'?'#9aa5b1':TYPES[p.type].c,gTab==='fill'?'#9aa5b1':'#fff',false);g.setAttribute('transform',`translate(${p.x},${p.y})`);g.querySelector('polygon').setAttribute('stroke-width',gTab==='fill'?.03:.06);});
+    b.appendChild(sv);const l=document.createElement('div');l.textContent=(i+1)+'. '+pz.n;b.appendChild(l);
+    if(S.solved[gTab+i]){const ok=document.createElement('div');ok.className='ok';ok.textContent='✓';b.appendChild(ok);}
+    b.onclick=()=>startGame(gTab,i);grid.appendChild(b);});
+}
+const GTXT={fill:'Fülle die graue Form mit den Teilen aus.',copy:'Baue das Bild nach.',free:'Baue, was du möchtest!'};
+function startGame(mode,i){
+  G={mode,pz:i,pieces:[],target:null};show('game');
+  gBoard.innerHTML='';gTarget.innerHTML='';gTray.innerHTML='';gPieces.innerHTML='';
+  // Brett
+  el('rect',{x:BX-8,y:BY-8,width:BC*U+16,height:BR*U+16,rx:16,fill:'#fff',stroke:'#cfd8e3','stroke-width':2},gBoard);
+  for(let x=0;x<=BC;x++)for(let y=0;y<=BR;y++)el('circle',{cx:BX+x*U,cy:BY+y*U,r:2.5,fill:'#b8c4d2'},gBoard);
+  el('rect',{x:TX,y:20,width:TW,height:560,rx:18,fill:'#FFF6D6',stroke:'#E0B400','stroke-width':2},gTray);
+  if(mode==='free'){
+    $('#gTitle').textContent='🧱 Frei bauen – '+GTXT.free;
+    Object.keys(TYPES).forEach(t=>G.pieces.push({id:Math.random(),type:t,rot:0,poly:TYPES[t].p,x:null,tpl:true}));
+  }else{
+    const pz=PUZZLES[i];$('#gTitle').textContent=`${i+1}. ${pz.n} – ${GTXT[mode]}`;
+    const[w,h]=solSize(pz);const sol=solPieces(pz);
+    if(mode==='fill'){
+      const ox=Math.floor((BC-w)/2),oy=Math.floor((BR-h)/2);G.target=new Set();
+      sol.forEach(p=>{cover(p.poly,p.x+ox,p.y+oy).forEach(k=>G.target.add(k));const g=drawPoly(gTarget,p.poly,U,'#B8C2CF','#B8C2CF',false);g.setAttribute('transform',`translate(${BX+(p.x+ox)*U},${BY+(p.y+oy)*U})`);});
+    }else{
+      G.target=normSet(new Set(sol.flatMap(p=>cover(p.poly,p.x,p.y))));
+      const mu=Math.min(34,320/w,150/h);txt(gTray,TX+TW/2,44,'Baue das nach:',{'font-size':20,fill:'#7a5b00'});
+      const mg=el('g',{transform:`translate(${TX+(TW-w*mu)/2},${70})`},gTray);
+      sol.forEach(p=>{const g=drawPoly(mg,p.poly,mu,TYPES[p.type].c,'#fff',false);g.setAttribute('transform',`translate(${p.x*mu},${p.y*mu})`);});
+      el('line',{x1:TX+20,y1:240,x2:TX+TW-20,y2:240,stroke:'#E0B400','stroke-width':2,'stroke-dasharray':'6 6'},gTray);
+    }
+    // Teile gemischt und in Grundlage gedreht, damit Drehen nötig ist
+    shuffle(sol.slice()).forEach(p=>{const r=p.type==='sq1'||p.type==='sq2'?0:Math.floor(Math.random()*4);G.pieces.push({id:Math.random(),type:p.type,rot:r,poly:rotPoly(TYPES[p.type].p,r),x:null});});
+  }
+  layoutTray();renderPieces();say(GTXT[mode]+(mode==='free'?'':' Tippe auf ein Teil, um es zu drehen.'));
+}
+function normSet(set){const arr=[...set].map(k=>k.split(',').map(Number));const mx=Math.min(...arr.map(a=>a[0])),my=Math.min(...arr.map(a=>a[1]));return new Set(arr.map(a=>(a[0]-mx)+','+(a[1]-my)+','+a[2]));}
+function layoutTray(){let x=TX+20,y=(G.mode==='copy'?256:40),rowH=0;
+  G.pieces.filter(p=>p.x===null).forEach(p=>{const[w,h]=bbox(p.poly);const pw=w*U,ph=h*U;if(x+pw>TX+TW-16){x=TX+20;y+=rowH+18;rowH=0;}p.tx=x;p.ty=y;x+=pw+18;rowH=Math.max(rowH,ph);});}
+function pxOf(p){return p.x===null?[p.tx,p.ty]:[BX+p.x*U,BY+p.y*U];}
+function renderPieces(){gPieces.innerHTML='';G.pieces.forEach(p=>{const g=drawPoly(gPieces,p.poly,U,TYPES[p.type].c,'rgba(0,0,0,.35)',true);g.dataset.id=p.id;g.style.cursor='grab';const[x,y]=pxOf(p);g.setAttribute('transform',`translate(${x},${y})`);p.g=g;});}
+let drag=null;
+gsvg.addEventListener('pointerdown',e=>{
+  if(drag)return;const g=e.target.closest('#gPieces > g');if(!g)return;e.preventDefault();
+  let p=G.pieces.find(q=>String(q.id)===g.dataset.id);if(!p)return;let spawned=null;
+  if(p.tpl){spawned={id:Math.random(),type:p.type,rot:p.rot,poly:p.poly,x:null,tx:p.tx,ty:p.ty};G.pieces.push(spawned);renderPieces();spawned.tplRef=p;p=spawned;}
+  const pt=svgPt(gsvg,e);const[ox,oy]=pxOf(p);drag={p,sx:pt.x,sy:pt.y,ox,oy,moved:false,id:e.pointerId,spawned:!!spawned};
+  gPieces.appendChild(p.g);try{gsvg.setPointerCapture(e.pointerId);}catch(_){}
+});
+gsvg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const pt=svgPt(gsvg,e);const dx=pt.x-drag.sx,dy=pt.y-drag.sy;if(Math.hypot(dx,dy)>8)drag.moved=true;if(drag.moved)drag.p.g.setAttribute('transform',`translate(${drag.ox+dx},${drag.oy+dy})`);});
+function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;const p=d.p;
+  if(!d.moved){
+    if(d.spawned){G.pieces.splice(G.pieces.indexOf(p),1);const t=p.tplRef;t.rot=(t.rot+1)%4;t.poly=rotPoly(TYPES[t.type].p,t.rot);}
+    else{p.rot=(p.rot+1)%4;p.poly=rotPoly(TYPES[p.type].p,p.rot);if(p.x!==null){const[w,h]=bbox(p.poly);p.x=Math.min(p.x,BC-w);p.y=Math.min(p.y,BR-h);}}
+    tone(700,0,.06);
+  }else{
+    const pt=svgPt(gsvg,e);const px=d.ox+pt.x-d.sx,py=d.oy+pt.y-d.sy;const[w,h]=bbox(p.poly);const cx=px+w*U/2,cy=py+h*U/2;
+    if(cx>=BX-U/2&&cx<=BX+BC*U+U/2&&cy>=BY-U/2&&cy<=BY+BR*U+U/2){p.x=Math.max(0,Math.min(BC-w,Math.round((px-BX)/U)));p.y=Math.max(0,Math.min(BR-h,Math.round((py-BY)/U)));sound('snap');}
+    else{if(G.mode==='free')G.pieces.splice(G.pieces.indexOf(p),1);else p.x=null;}
+  }
+  layoutTray();renderPieces();checkGame();}
+gsvg.addEventListener('pointerup',endDrag);gsvg.addEventListener('pointercancel',endDrag);
+function checkGame(){
+  if(G.mode==='free')return;if(G.pieces.some(p=>p.x===null))return;
+  const all=G.pieces.flatMap(p=>cover(p.poly,p.x,p.y));const set=new Set(all);if(set.size!==all.length)return;
+  const tgt=G.target,cmp=G.mode==='fill'?set:normSet(set);
+  if(cmp.size===tgt.size&&[...cmp].every(k=>tgt.has(k))){S.solved[G.mode+G.pz]=true;save();sound('win');confetti();say('Geschafft! Das hast du toll gebaut.');setTimeout(()=>$('#winOv').classList.add('on'),600);}
+}
+$('#winNext').onclick=()=>{$('#winOv').classList.remove('on');startGame(G.mode,(G.pz+1)%PUZZLES.length);};
+$('#winMenu').onclick=()=>{$('#winOv').classList.remove('on');gTab=G.mode;show('gmenu');renderMenu();};
+$('#gBack').onclick=()=>{if(G.mode!=='free')gTab=G.mode;show('gmenu');renderMenu();};
+$('#gReset').onclick=()=>startGame(G.mode,G.pz);
+$('#gSpeak').onclick=()=>say(GTXT[G.mode]+' Tippe auf ein Teil, um es zu drehen.');
+renderStars();
+</script>
+</body>
+</html>
