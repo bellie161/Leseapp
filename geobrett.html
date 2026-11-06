@@ -482,7 +482,7 @@ function drawGame(){const g=gsvg;g.innerHTML='';
   // Schleuder
   el('path',{d:`M${ANC.x},560 L${ANC.x},470 L${POSTL.x},${POSTL.y} M${ANC.x},470 L${POSTR.x},${POSTR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
   const b=GS.ball,pulled=GS.state==='aim'||GS.state==='ready';
-  if(GS.state==='aim'){const vx=(ANC.x-b.x)*7.2,vy=(ANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+GRAV*tt*tt/2,r:5,fill:'#fff',opacity:1-k*.06},g);}}
+  if(GS.state==='aim'){const vx=(ANC.x-b.x)*7.2,vy=(ANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+GRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
   if(pulled){el('line',{x1:POSTL.x,y1:POSTL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);}
   else el('line',{x1:POSTL.x,y1:POSTL.y,x2:POSTR.x,y2:POSTR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
   if(GS.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:BR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
