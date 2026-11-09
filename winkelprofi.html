@@ -299,15 +299,16 @@ function toWorld(lx,ly){const py=ly+H/3,c=Math.cos(rad(geo.rot)),s=Math.sin(rad(
 function clampGeo(){geo.x=Math.max(20,Math.min(980,geo.x));geo.y=Math.max(20,Math.min(600,geo.y));}
 const ptrs=new Map();let gmode=null,gs=null;
 function beginGesture(){const pts=[...ptrs.values()];if(pts.length===1){gmode='move';gs={px:pts[0].x,py:pts[0].y,x:geo.x,y:geo.y};}else{const[a,b]=pts;gmode='pinch';gs={ang:deg(Math.atan2(b.y-a.y,b.x-a.x)),mx:(a.x+b.x)/2,my:(a.y+b.y)/2,x:geo.x,y:geo.y,rot:geo.rot};}}
-geoG.addEventListener('pointerdown',e=>{e.preventDefault();const p=svgPt(stage,e);ptrs.set(e.pointerId,p);try{geoG.setPointerCapture(e.pointerId);}catch(_){}
+geoG.addEventListener('pointerdown',e=>{e.preventDefault();if(e.isPrimary||ptrs.size>=2){ptrs.clear();gmode=null;}const p=svgPt(stage,e);ptrs.set(e.pointerId,p);try{geoG.setPointerCapture(e.pointerId);}catch(_){}
   if(e.target.closest('.geohandle')&&ptrs.size===1){gmode='rot';gs={a0:deg(Math.atan2(p.y-geo.y,p.x-geo.x)),rot0:geo.rot};}else beginGesture();});
-geoG.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const p=svgPt(stage,e);ptrs.set(e.pointerId,p);
+window.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const p=svgPt(stage,e);ptrs.set(e.pointerId,p);
   if(gmode==='rot'){geo.rot=gs.rot0+adiff(deg(Math.atan2(p.y-geo.y,p.x-geo.x)),gs.a0);}
   else if(gmode==='move'){geo.x=gs.x+p.x-gs.px;geo.y=gs.y+p.y-gs.py;}
   else if(gmode==='pinch'&&ptrs.size>=2){const[a,b]=[...ptrs.values()];geo.rot=gs.rot+adiff(deg(Math.atan2(b.y-a.y,b.x-a.x)),gs.ang);geo.x=gs.x+(a.x+b.x)/2-gs.mx;geo.y=gs.y+(a.y+b.y)/2-gs.my;}
   clampGeo();drawGeo();});
 function endPtr(e){if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(ptrs.size===0){gmode=null;snapGeo();}else beginGesture();}
-geoG.addEventListener('pointerup',endPtr);geoG.addEventListener('pointercancel',endPtr);
+window.addEventListener('pointerup',endPtr);window.addEventListener('pointercancel',endPtr);
+function resetPointers(){ptrs.clear();gmode=null;}
 let snapTargets=[];
 function snapGeo(){
   if(!S.magnet||!snapTargets.length)return;
@@ -372,6 +373,7 @@ const SHAPES={
   {n:'Dreieck',p:[[0,0],[0,1],[1.4,1]]}]
 };
 function newTask(){
+  resetPointers();
   taskLayer.innerHTML='';markLayer.innerHTML='';$('#feedback').className='feedback';tries=0;locked=false;renderStars();
   const ans=$('#answers');ans.innerHTML='';
   if(TM===1){
@@ -527,13 +529,13 @@ function pxOf(p){return p.x===null?[p.tx,p.ty]:[BX+p.x*U,BY+p.y*U];}
 function renderPieces(){gPieces.innerHTML='';G.pieces.forEach(p=>{const g=drawPoly(gPieces,p.poly,U,TYPES[p.type].c,'rgba(0,0,0,.35)',true);g.dataset.id=p.id;g.style.cursor='grab';const[x,y]=pxOf(p);g.setAttribute('transform',`translate(${x},${y})`);p.g=g;});}
 let drag=null;
 gsvg.addEventListener('pointerdown',e=>{
-  if(drag)return;const g=e.target.closest('#gPieces > g');if(!g)return;e.preventDefault();
+  if(drag){if(e.isPrimary){drag=null;layoutTray();renderPieces();}else return;}const g=e.target.closest('#gPieces > g');if(!g)return;e.preventDefault();
   let p=G.pieces.find(q=>String(q.id)===g.dataset.id);if(!p)return;let spawned=null;
   if(p.tpl){spawned={id:Math.random(),type:p.type,rot:p.rot,poly:p.poly,x:null,tx:p.tx,ty:p.ty};G.pieces.push(spawned);renderPieces();spawned.tplRef=p;p=spawned;}
   const pt=svgPt(gsvg,e);const[ox,oy]=pxOf(p);drag={p,sx:pt.x,sy:pt.y,ox,oy,moved:false,id:e.pointerId,spawned:!!spawned};
   gPieces.appendChild(p.g);try{gsvg.setPointerCapture(e.pointerId);}catch(_){}
 });
-gsvg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const pt=svgPt(gsvg,e);const dx=pt.x-drag.sx,dy=pt.y-drag.sy;if(Math.hypot(dx,dy)>8)drag.moved=true;if(drag.moved)drag.p.g.setAttribute('transform',`translate(${drag.ox+dx},${drag.oy+dy})`);});
+window.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const pt=svgPt(gsvg,e);const dx=pt.x-drag.sx,dy=pt.y-drag.sy;if(Math.hypot(dx,dy)>8)drag.moved=true;if(drag.moved)drag.p.g.setAttribute('transform',`translate(${drag.ox+dx},${drag.oy+dy})`);});
 function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;const p=d.p;
   if(!d.moved){
     if(d.spawned){G.pieces.splice(G.pieces.indexOf(p),1);const t=p.tplRef;t.rot=(t.rot+1)%4;t.poly=rotPoly(TYPES[t.type].p,t.rot);}
@@ -545,7 +547,7 @@ function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=nul
     else{if(G.mode==='free')G.pieces.splice(G.pieces.indexOf(p),1);else p.x=null;}
   }
   layoutTray();renderPieces();checkGame();}
-gsvg.addEventListener('pointerup',endDrag);gsvg.addEventListener('pointercancel',endDrag);
+window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
 function checkGame(){
   if(G.mode==='free')return;if(G.pieces.some(p=>p.x===null))return;
   const all=G.pieces.flatMap(p=>cover(p.poly,p.x,p.y));const set=new Set(all);if(set.size!==all.length)return;
@@ -572,13 +574,13 @@ $('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start
 $('#slingAgain').onclick=()=>{$('#slingEndOv').classList.remove('on');startSling();};
 function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
 function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
-ssvg.addEventListener('pointerdown',e=>{if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
-ssvg.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary){GSL.state='ready';}if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
 function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
 function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
   if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
   GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
-ssvg.addEventListener('pointerup',srelease);ssvg.addEventListener('pointercancel',srelease);
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
 function sshape(g,t){const s=t.sz,c=t.c;
   if(t.shape==='sq')el('rect',{x:-s/2,y:-s/2,width:s,height:s,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
   else if(t.shape==='re')el('rect',{x:-s*.7,y:-s*.4,width:s*1.4,height:s*.8,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
