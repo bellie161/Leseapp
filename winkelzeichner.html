@@ -258,7 +258,7 @@ function newTask(){
     if(LVL<3){P=[C[0]+d[0]*rnd(-110,110),C[1]+d[1]*rnd(-110,110)];F=P;}
     else{F=[C[0]+d[0]*rnd(-90,90),C[1]+d[1]*rnd(-90,90)];const s=pick([1,-1])*rnd(120,165);P=[F[0]+nv[0]*s,F[1]+nv[1]*s];}
     const room=[1,-1].some(sg=>inView([F[0]+nv[0]*sg*200,F[1]+nv[1]*sg*200],30));
-    ok=inView(P,70)&&inView(F,70)&&room;T={ang,d,nv,P,F,col:pick(COLORS.slice(1))};
+    ok=inView(P,70)&&inView(F,70)&&room;T={ang,d,nv,P,F,col:pick(['#1D7FD8','#2A9D4B','#F28C28','#0FA3A3'])};
   }
   const{d,P,F,col}=T;const L=900;
   el('line',{x1:F[0]-d[0]*L,y1:F[1]-d[1]*L,x2:F[0]+d[0]*L,y2:F[1]+d[1]*L,stroke:col,'stroke-width':7,'stroke-linecap':'round'},taskLayer);
@@ -308,7 +308,9 @@ function endStroke(e){if(!cur||e.pointerId!==cur.id)return;const a=lerp(cur.ed,c
   if(Math.hypot(b[0]-a[0],b[1]-a[1])>15){strokes.push({a,b});sound('pen');$('#feedback').className='feedback';}renderStrokes();}
 window.addEventListener('pointerup',endStroke);window.addEventListener('pointercancel',endStroke);
 function renderStrokes(){strokeLayer.innerHTML='';const all=strokes.slice();if(cur)all.push({a:lerp(cur.ed,cur.t0),b:lerp(cur.ed,cur.t1)});
-  all.forEach(s=>el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:'#2b2b2b','stroke-width':4.5,'stroke-linecap':'round'},strokeLayer));}
+  all.forEach(s=>{el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:'#fff','stroke-width':11,'stroke-linecap':'round',opacity:.8},strokeLayer);
+    el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:'#D6338A','stroke-width':7,'stroke-linecap':'round'},strokeLayer);});
+  if(cur){const b=lerp(cur.ed,cur.t1);el('circle',{cx:b[0],cy:b[1],r:13,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeLayer);txt(strokeLayer,b[0]+22,b[1]-22,'✏️',{'font-size':26});}}
 $('#undoBtn').onclick=()=>{if(locked)return;strokes.pop();renderStrokes();};
 $('#hintBtn').onclick=()=>{ghostOn=!ghostOn;drawGhost();if(ghostOn)say('Lege das Geodreieck auf die gestrichelte Form.');};
 function drawGhost(){ghostLayer.innerHTML='';if(!ghostOn)return;let poses=goalPoses().filter(goodPose);if(!poses.length)poses=goalPoses();const pz=poses[0];
@@ -411,6 +413,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
   $('#slingEndOv').classList.add('on');confetti();sound('ok');
   say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Zeichnen.':''));}
 drawGeo();
+strokeLayer.setAttribute('pointer-events','none');stage.appendChild(strokeLayer);stage.appendChild(markLayer);markLayer.setAttribute('pointer-events','none');
 </script>
 </body>
 </html>
