@@ -177,7 +177,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
     <polygon points="30,110 270,110 150,-10" fill="rgba(170,215,255,.5)" stroke="#1d4f8a" stroke-width="2" transform="rotate(180 150 60)"/>
   </svg>
   <ol class="steps">
-    <li><span class="n">1</span>Rote Ecke vom Geodreieck auf den Punkt.</li>
+    <li><span class="n">1</span>Spitze vom Geodreieck auf den Punkt.</li>
     <li><span class="n">2</span>Eine rote Kante genau auf eine Linie.</li>
     <li><span class="n">3</span>Schau: Liegt die andere Linie genau an der anderen roten Kante?</li>
     <li><span class="n">4</span>Passt genau → rechter Winkel ✓ &nbsp; Lücke → kein rechter Winkel</li>
@@ -333,7 +333,7 @@ function startMode(m){TM=m;show('task');$('#instr').textContent=INSTR[m];newTask
   if(!S.seenHelp){S.seenHelp=true;save();openHelp();}else say(INSTR[m]);}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>say(INSTR[TM]);
-function openHelp(){$('#helpOv').classList.add('on');say('So prüfst du. Rote Ecke auf den Punkt. Eine rote Kante genau auf eine Linie. Schau: Liegt die andere Linie genau an der anderen roten Kante? Dann ist es ein rechter Winkel.');}
+function openHelp(){$('#helpOv').classList.add('on');say('So prüfst du. Spitze vom Geodreieck auf den Punkt. Eine rote Kante genau auf eine Linie. Schau: Liegt die andere Linie genau an der anderen roten Kante? Dann ist es ein rechter Winkel.');}
 $('#helpBtn').onclick=openHelp;
 $('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');say(INSTR[TM]);};
 
