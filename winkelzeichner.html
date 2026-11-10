@@ -267,7 +267,7 @@ function newTask(){
   if(gp)txt(taskLayer,gp[0],gp[1],'g',{'font-size':30,fill:col,'font-style':'italic'});
   el('circle',{cx:P[0],cy:P[1],r:9,fill:'#E63946',stroke:'#fff','stroke-width':3},taskLayer);
   txt(taskLayer,P[0]+20,P[1]-22,'P',{'font-size':28,fill:'#E63946'});
-  Object.assign(geo,HOME);drawGeo();setTool('move');
+  geoG.style.transition='none';geoG.style.opacity='1';Object.assign(geo,HOME);drawGeo();setTool('move');
 }
 /* richtige Lage des Geodreiecks (für Magnet und Hilfe) */
 function goalPoses(){const out=[];const g=T.ang;
@@ -349,7 +349,7 @@ $('#checkBtn').onclick=()=>{
   tries++;sound('no');
   if(tries>=2){ghostOn=true;drawGhost();t+=' Die gestrichelte Form hilft dir.';feedback(t,'sol');}else feedback(t+' Nimm ↶ und versuche es nochmal.','try');
   say(t);};
-function success(){locked=true;S.done++;S.stars++;save();updStars();sound('ok');confetti();
+function success(){locked=true;geoG.style.transition='opacity .8s';geoG.style.opacity='.12';geoG.style.pointerEvents='none';S.done++;S.stars++;save();updStars();sound('ok');confetti();
   const F=T.F;let n=T.nv;
   const d=T.d,z=34;const p1=[F[0]+d[0]*z,F[1]+d[1]*z],p3=[F[0]+n[0]*z,F[1]+n[1]*z],p2=[p1[0]+n[0]*z,p1[1]+n[1]*z];
   el('path',{d:`M${p1} L${p2} L${p3}`,fill:'none',stroke:'#2A9D4B','stroke-width':5},markLayer);
