@@ -40,6 +40,8 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
 .geotools{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:10px}
 .geotools button{width:62px;height:62px;padding:0;font-size:30px;background:#fff;color:var(--ink)}
 .geotools button.off{opacity:.45}
+.geotools #magBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.maglbl{font-size:10px;font-weight:700;margin-top:3px;color:#555}
 .feedback{position:absolute;left:46%;top:10px;transform:translateX(-50%);background:#fff;border-radius:18px;padding:10px 22px;font-size:23px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none;text-align:center;max-width:80%}
 .feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
 .feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
@@ -144,7 +146,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   <div class="setrow">Schüsse pro Runde
     <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
   <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
-  <div class="setrow">Andock-Hilfe (Magnet) <div class="seg" id="magSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Magnet (Andock-Hilfe) <div class="seg" id="magSeg"><button data-v="gross">großzügig</button><button data-v="genau">genau</button><button data-v="aus">aus</button></div></div>
   <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
   <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
 </div></div>
@@ -163,6 +165,7 @@ function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;r
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
 let S={goal:10,done:0,stars:0,shots:10,voice:true,magnet:true,seen:{}};
 try{Object.assign(S,JSON.parse(localStorage.getItem('winkelzeichner')||'{}'));}catch(e){}
+if(!S.mag)S.mag=S.magnet===false?'aus':'gross';
 function save(){try{localStorage.setItem('winkelzeichner',JSON.stringify(S));}catch(e){}}
 function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
 let AC=null;
@@ -187,7 +190,7 @@ function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startLevel(+b.dataset.l));
 $('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Löse noch ${S.goal-S.done} Aufgaben richtig. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
 function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
-const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),segSet('#magSeg',()=>S.magnet?1:0,v=>{S.magnet=v==='1';updMag();})];
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),segSet('#magSeg',()=>S.mag,v=>{S.mag=v;updMag();})];
 $('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
 $('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
 $('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
@@ -229,8 +232,9 @@ function endG(e){if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(!p
 window.addEventListener('pointerup',endG);window.addEventListener('pointercancel',endG);
 $('#rotL').onclick=()=>{geo.rot-=15;drawGeo();};$('#rotR').onclick=()=>{geo.rot+=15;drawGeo();};
 $('#geoReset').onclick=()=>{Object.assign(geo,HOME);drawGeo();};
-function updMag(){$('#magBtn').classList.toggle('off',!S.magnet);}
-$('#magBtn').onclick=()=>{S.magnet=!S.magnet;save();updMag();say(S.magnet?'Magnet an':'Magnet aus');};updMag();
+const MAGTXT={gross:'großzügig',genau:'genau',aus:'aus'};
+function updMag(){const b=$('#magBtn');b.classList.toggle('off',S.mag==='aus');b.innerHTML='🧲<span class="maglbl">'+MAGTXT[S.mag]+'</span>';}
+$('#magBtn').onclick=()=>{S.mag={gross:'genau',genau:'aus',aus:'gross'}[S.mag];save();updMag();say({gross:'Magnet großzügig',genau:'Magnet genau. Du musst sehr genau anlegen.',aus:'Magnet aus'}[S.mag]);};updMag();
 
 /* ---------- Aufgabe ---------- */
 let LVL=1,T=null,strokes=[],tries=0,locked=false,tool='move',cur=null,ghostOn=false;
@@ -272,14 +276,22 @@ function goalPoses(){const out=[];const g=T.ang;
   return out;}
 function goodPose(pz){const c=toWorldG(pz,0,-H/3);return inView(c,0);}
 function snapGeo(){
-  if(!S.magnet||locked)return;let best=null;
+  if(S.mag==='aus'||locked)return;let best=null;
+  const LOOSE={a:18,d:55},TH=S.mag==='genau'?{a:4,d:15}:LOOSE;
+  const near=t=>{feedback(t,'try');say(t);};
   if(LVL===1){const A=toWorld(0,-H);const dA=Math.hypot(A[0]-T.P[0],A[1]-T.P[1]);if(dA>45)return;
     for(const L of[45,135]){const df=ldiff(T.ang,geo.rot+L);if(Math.abs(df)<14&&(!best||Math.abs(df)<Math.abs(best.df)))best={df};}
     if(!best)return;geo.rot+=best.df;placeSo(geo,0,-H,T.P);}
-  else{const df=ldiff(T.ang,geo.rot-90);if(Math.abs(df)>14)return;
+  else{const df=ldiff(T.ang,geo.rot-90);
     const Z=toWorld(0,0);const v=[Z[0]-T.F[0],Z[1]-T.F[1]];const along=v[0]*T.d[0]+v[1]*T.d[1],off=v[0]*T.nv[0]+v[1]*T.nv[1];
-    if(Math.abs(off)>45)return;geo.rot+=df;
-    const tgt=Math.abs(along)<45?T.F:[T.F[0]+T.d[0]*along,T.F[1]+T.d[1]*along];placeSo(geo,0,0,tgt);}
+    if(Math.abs(df)>TH.a||Math.abs(off)>TH.d){
+      if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&Math.abs(off)<=LOOSE.d)near('Fast! Lege die Nulllinie noch genauer auf die Linie g.');
+      return;}
+    geo.rot+=df;
+    const tgt=Math.abs(along)<=TH.d?T.F:[T.F[0]+T.d[0]*along,T.F[1]+T.d[1]*along];placeSo(geo,0,0,tgt);
+    if(Math.abs(along)>TH.d){drawGeo();sound('snap');
+      if(S.mag==='genau'&&Math.abs(along)<=LOOSE.d)near(LVL===3?'Fast! Schiebe das Geodreieck noch genauer, bis die lange Kante durch P geht.':'Fast! Schiebe die 0 noch genauer auf den Punkt P.');
+      return;}}
   drawGeo();sound('snap');
   if(isGoalPose()){feedback('Gut angelegt! Jetzt tippe auf ✏️ Zeichnen.','ok');say('Gut angelegt! Jetzt zeichnen.');}
 }
