@@ -166,8 +166,9 @@ const adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d;};
 function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
 
-let S={board:5,level:'leicht',voice:true,stars:0,seenHelp:false,goal:8,done:0,shots:10};
+let S={board:5,level:'leicht',voice:true,stars:0,seenHelp:false,goal:10,done:0,shots:10};
 try{Object.assign(S,JSON.parse(localStorage.getItem('geobrett')||'{}'));}catch(e){}
+if(!S.v10){S.goal=10;S.v10=true;}try{localStorage.setItem('geobrett',JSON.stringify(S));}catch(e){}
 function save(){try{localStorage.setItem('geobrett',JSON.stringify(S));}catch(e){}}
 function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
 let AC=null;
@@ -388,7 +389,7 @@ function answerCount(v,b){
   if(v===rk)return success();
   tries++;sound('no');b.classList.add('shake');b.style.opacity=.35;setTimeout(()=>b.classList.remove('shake'),400);
   if(tries<2){const t='Noch nicht. Prüfe jede Ecke mit dem Geodreieck.';feedback(t,'try');say(t);if(!geoOn){geoOn=true;resetGeo();buildCtrl();}}
-  else{locked=true;done=true;countPhase=false;S.done++;save();updStars();if(MODE==='find')solShown=true;const t=rk===0?'Diese Form hat keinen rechten Winkel.':`Die Form hat ${rk} rechte${rk===1?'n':''} Winkel. Schau dir die Zeichen an.`;feedback(t,'sol');say(t);render();showNext();}
+  else{locked=true;done=true;countPhase=false;if(MODE==='find')solShown=true;const t=rk===0?'Diese Form hat keinen rechten Winkel.':`Die Form hat ${rk} rechte${rk===1?'n':''} Winkel. Schau dir die Zeichen an.`;feedback(t,'sol');say(t);render();showNext();}
 }
 /* ---------- Bedienleiste ---------- */
 function btn(parent,label,cls,fn){const b=document.createElement('button');b.className=cls||'';b.innerHTML=label;b.onclick=fn;parent.appendChild(b);return b;}
@@ -443,11 +444,12 @@ function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Aufgaben ge
 $('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openGame(true);};
 const gsvg=$('#gsvg');const ANC={x:160,y:430},POSTL={x:126,y:400},POSTR={x:194,y:400},BR=17,GRAV=900,SHAPES=['sq','re','tri','sq','tri','bal'];
 let GS=null,raf=null,last=0;
-function openGame(reward){if(reward){S.done=0;save();}show('game');startRound();say('Zieh den Gummi zurück und lass los. Triff die Formen!');}
+let slingRounds=0;const MAXR=3;
+function openGame(reward){if(reward){S.done=0;save();}slingRounds=0;show('game');startRound();say('Zieh den Gummi zurück und lass los. Triff die Formen!');}
 $('#gHome').onclick=()=>{stopLoop();show('start');refreshStart();};
 $('#gSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Formen!');
 $('#endBack').onclick=()=>{$('#endOv').classList.remove('on');show('start');refreshStart();};
-$('#endAgain').onclick=()=>{$('#endOv').classList.remove('on');startRound();};
+$('#endAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#endOv').classList.remove('on');startRound();};
 function newTarget(){return{shape:pick(SHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
 function startRound(){GS={shots:S.shots,hits:0,ball:{x:ANC.x,y:ANC.y,vx:0,vy:0},state:'ready',targets:[newTarget(),newTarget(),newTarget()],pops:[],t:0,aim:null};stopLoop();last=performance.now();raf=requestAnimationFrame(loop);}
 function stopLoop(){if(raf)cancelAnimationFrame(raf);raf=null;}
@@ -490,10 +492,15 @@ function drawGame(){const g=gsvg;g.innerHTML='';
   [POSTL,POSTR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'url(#pin)',stroke:'#7a5a30','stroke-width':2},g));
   // Anzeige
   for(let i=0;i<GS.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
-  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GS.hits,{'font-size':24,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GS.hits,{'font-size':24,fill:'#1F2A37'});el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
   if(GS.state==='ready'&&GS.shots===S.shots&&GS.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});
 }
-function endRound(){$('#endTxt').textContent=`Du hast ${GS.hits} Mal getroffen!`;$('#endOv').classList.add('on');confetti();sound('ok');say(`Toll! Du hast ${GS.hits} Mal getroffen.`);}
+function endRound(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#endTxt').textContent=`Du hast ${GS.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#endAgain').style.display=last?'none':'';$('#endAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#endBack').textContent=last?'Weiter üben ➜':'Zurück zum Geobrett';$('#endBack').style.background=last?'var(--green)':'';$('#endBack').style.color=last?'#fff':'';
+  $('#endOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GS.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter am Geobrett.':''));}
 </script>
 </body>
 </html>
