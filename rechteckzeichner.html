@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Rechteck-Zeichner – Rechtecke zeichnen</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--purple);text-align:center}
+.sub{font-size:20px;margin:4px 0 16px;color:#4b5563;text-align:center}
+.modes{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:110px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--purple);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--purple);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.L{border-color:var(--blue);color:var(--blue)}
+.chip.W{border-color:var(--orange);color:#c2610f}
+.chip.name{border-color:var(--purple);color:var(--purple)}
+.chip.cur{background:#FFF6CC;border-color:#E0B000;color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.geotools{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:10px}
+.geotools button{width:62px;height:62px;padding:0;font-size:30px;background:#fff;color:var(--ink)}
+.geotools button.off{opacity:.45}
+.geotools #magBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.maglbl{font-size:10px;font-weight:700;margin-top:3px;color:#555}
+.feedback{position:absolute;left:46%;top:10px;transform:translateX(-50%);background:#fff;border-radius:18px;padding:10px 22px;font-size:23px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none;text-align:center;max-width:80%}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:21px;padding:14px 18px}
+.tool{background:#fff;color:var(--ink)}
+.toolsel{background:var(--purple)!important;color:#fff!important}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:24px 30px;max-width:660px;width:92%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:32px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>▭ Rechteck-Zeichner</h1>
+  <div class="sub">Rechtecke zeichnen mit dem Geodreieck – Seite für Seite</div>
+  <div class="modes">
+    <button class="mode" data-l="1">
+      <svg viewBox="0 0 170 110"><rect x="35" y="20" width="100" height="65" fill="none" stroke="#bbb" stroke-width="3" stroke-dasharray="7 6"/><line x1="35" y1="85" x2="135" y2="85" stroke="#1D7FD8" stroke-width="6" stroke-linecap="round"/><line x1="35" y1="85" x2="35" y2="20" stroke="#F28C28" stroke-width="6" stroke-linecap="round"/><path d="M35 72 h13 v13" fill="none" stroke="#2A9D4B" stroke-width="3"/></svg>
+      <span><span class="num" style="background:#1D7FD8">1</span> Seiten hochziehen</span><small>Die untere Seite ist schon da.</small>
+    </button>
+    <button class="mode" data-l="2">
+      <svg viewBox="0 0 170 110"><rect x="35" y="20" width="100" height="65" fill="none" stroke="#bbb" stroke-width="3" stroke-dasharray="7 6"/><circle cx="35" cy="85" r="7" fill="#E63946"/><text x="20" y="104" font-size="18" font-weight="700" fill="#E63946">A</text></svg>
+      <span><span class="num" style="background:#8E44AD">2</span> Ganzes Rechteck</span><small>Du fängst beim Punkt A an.</small>
+    </button>
+    <button class="mode" data-l="3">
+      <svg viewBox="0 0 170 110"><rect x="10" y="20" width="150" height="70" rx="8" fill="#fff" stroke="#2A9D4B" stroke-width="3"/><text x="85" y="48" text-anchor="middle" font-size="19" font-weight="700" fill="#2A9D4B">A  B  C</text><text x="85" y="76" text-anchor="middle" font-size="19" font-weight="700" fill="#2A9D4B">D  E  F</text></svg>
+      <span><span class="num" style="background:#2A9D4B">3</span> Rechtecke aus dem Buch</span><small>Aufgabe 4, Seite 34</small>
+    </button>
+  </div>
+  <div class="row"><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="fillLayer"></g><g id="taskLayer"></g><g id="ghostLayer"></g><g id="strokeLayer"></g><g id="markLayer"></g>
+    </svg>
+    <div class="geotools">
+      <button id="rotL" aria-label="nach links drehen">↺</button>
+      <button id="rotR" aria-label="nach rechts drehen">↻</button>
+      <button id="geoReset" aria-label="Geodreieck zurück">📐</button>
+      <button id="magBtn" aria-label="Andock-Hilfe">🧲</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="ctrl" id="ctrl">
+    <button class="tool" id="toolMove">📐 Geodreieck legen</button>
+    <button class="tool" id="toolDraw">✏️ Zeichnen</button>
+    <button class="tool" id="undoBtn">↶ Strich weg</button>
+    <button class="tool" id="hintBtn">💡 Hilfe</button>
+  </div>
+</section>
+
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So zeichnest du</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="3">3</button><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button></div> Rechtecken</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">cm-Zahl beim Zeichnen zeigen <div class="seg" id="cmSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Stift rastet bei ganzen cm ein <div class="seg" id="snapSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Magnet (Andock-Hilfe) <div class="seg" id="magSeg"><button data-v="gross">großzügig</button><button data-v="genau">genau</button><button data-v="aus">aus</button></div></div>
+  <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const COL={L:'#1D7FD8',W:'#F28C28'};
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI,norm=a=>((a%360)+360)%360;
+const adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d;};
+const ldiff=(a,b)=>{let d=norm(a-b)%180;return d>90?d-180:d;};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+let S={goal:5,done:0,stars:0,shots:10,voice:true,mag:'gross',cm:true,snap:true,seen:{},book:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem('rechteckzeichner')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('rechteckzeichner',JSON.stringify(S));}catch(e){}}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/✏️|📐|✓/g,''));u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='snap')tone(1200,0,.08);else if(k==='pen')tone(500,0,.05,'triangle');else if(k==='tick')tone(900,0,.03);}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Startseite & Einstellungen ---------- */
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Rechteck${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startLevel(+b.dataset.l));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Zeichne noch ${S.goal-S.done} Rechtecke. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#cmSeg',()=>S.cm?1:0,v=>S.cm=v==='1'),segSet('#snapSeg',()=>S.snap?1:0,v=>S.snap=v==='1'),segSet('#magSeg',()=>S.mag,v=>{S.mag=v;updMag();})];
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.book=0;save();refreshStart();};
+refreshStart();
+
+/* ---------- Geodreieck (1 cm = 36 Einheiten) ---------- */
+const stage=$('#stage'),fillLayer=$('#fillLayer'),taskLayer=$('#taskLayer'),ghostLayer=$('#ghostLayer'),strokeLayer=$('#strokeLayer'),markLayer=$('#markLayer');
+const CM=36,H=7.6*CM,HOME={x:840,y:560,rot:0};const geo=Object.assign({},HOME);
+const geoG=el('g',{id:'geo',style:'cursor:grab'},stage);const geoInner=el('g',{},geoG);let glow=null;
+(function(){const g=el('g',{transform:`translate(0,${H/3})`},geoInner);
+  el('polygon',{points:`${-H},0 ${H},0 0,${-H}`,fill:'rgba(170,215,255,0.5)',stroke:'#1d4f8a','stroke-width':2.5,'stroke-linejoin':'round'},g);
+  for(let k=-14;k<=14;k++){const x=k*CM/2,big=k%2===0;el('line',{x1:x,y1:0,x2:x,y2:big?-16:-9,stroke:'#1d3557','stroke-width':big?2.2:1.3},g);if(big&&k!==0)txt(g,x,-28,String(Math.abs(k/2)),{'font-size':17,fill:'#1d3557'});}
+  el('line',{x1:0,y1:-2,x2:0,y2:-H+46,stroke:'#1d3557','stroke-width':3},g);
+  el('circle',{cx:0,cy:-30,r:13,fill:'#fff',stroke:'#1d3557','stroke-width':2},g);txt(g,0,-30,'0',{'font-size':18,fill:'#E63946'});
+  const u=28/Math.SQRT2;el('polygon',{points:`0,${-H} ${u},${-H+u} 0,${-H+2*u} ${-u},${-H+u}`,fill:'#E63946'},g);el('circle',{cx:0,cy:-H+u,r:4,fill:'#fff'},g);
+  glow=el('line',{x1:-H,y1:0,x2:H,y2:0,stroke:'#FFD400','stroke-width':14,'stroke-linecap':'round',opacity:.75,'pointer-events':'none',style:'display:none'},g);
+  const h=el('g',{class:'geohandle'},g);el('circle',{cx:H-30,cy:34,r:27,fill:'#F28C28',stroke:'#fff','stroke-width':3},h);txt(h,H-30,35,'↻',{'font-size':30,fill:'#fff'});})();
+function drawGeo(){geoInner.setAttribute('transform',`translate(${geo.x},${geo.y}) rotate(${geo.rot})`);}
+function toWorldG(g,lx,ly){const py=ly+H/3,c=Math.cos(rad(g.rot)),s=Math.sin(rad(g.rot));return[g.x+lx*c-py*s,g.y+lx*s+py*c];}
+const toWorld=(lx,ly)=>toWorldG(geo,lx,ly);
+function placeSo(g,lx,ly,P){g.x=0;g.y=0;const w=toWorldG(g,lx,ly);g.x=P[0]-w[0];g.y=P[1]-w[1];return g;}
+const ptrs=new Map();let gm=null,gs=null;
+function resetPointers(){ptrs.clear();gm=null;}
+function beginG(){const pts=[...ptrs.values()];if(pts.length===1){gm='move';gs={px:pts[0].x,py:pts[0].y,x:geo.x,y:geo.y};}else{const[a,b]=pts;gm='pinch';gs={ang:deg(Math.atan2(b.y-a.y,b.x-a.x)),mx:(a.x+b.x)/2,my:(a.y+b.y)/2,x:geo.x,y:geo.y,rot:geo.rot};}}
+geoG.addEventListener('pointerdown',e=>{if(tool!=='move'||locked)return;e.preventDefault();e.stopPropagation();if(e.isPrimary||ptrs.size>=2)resetPointers();const p=svgPt(stage,e);ptrs.set(e.pointerId,p);try{geoG.setPointerCapture(e.pointerId);}catch(_){}
+  if(e.target.closest('.geohandle')&&ptrs.size===1){gm='rot';gs={a0:deg(Math.atan2(p.y-geo.y,p.x-geo.x)),rot0:geo.rot};}else beginG();});
+window.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const p=svgPt(stage,e);ptrs.set(e.pointerId,p);
+  if(gm==='rot')geo.rot=gs.rot0+adiff(deg(Math.atan2(p.y-geo.y,p.x-geo.x)),gs.a0);
+  else if(gm==='move'){geo.x=gs.x+p.x-gs.px;geo.y=gs.y+p.y-gs.py;}
+  else if(gm==='pinch'&&ptrs.size>=2){const[a,b]=[...ptrs.values()];geo.rot=gs.rot+adiff(deg(Math.atan2(b.y-a.y,b.x-a.x)),gs.ang);geo.x=gs.x+(a.x+b.x)/2-gs.mx;geo.y=gs.y+(a.y+b.y)/2-gs.my;}
+  geo.x=Math.max(20,Math.min(980,geo.x));geo.y=Math.max(20,Math.min(600,geo.y));drawGeo();});
+function endG(e){if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(!ptrs.size){gm=null;snapGeo();}else beginG();}
+window.addEventListener('pointerup',endG);window.addEventListener('pointercancel',endG);
+$('#rotL').onclick=()=>{geo.rot-=15;drawGeo();snapGeo();};$('#rotR').onclick=()=>{geo.rot+=15;drawGeo();snapGeo();};
+$('#geoReset').onclick=()=>{Object.assign(geo,HOME);drawGeo();};
+const MAGTXT={gross:'großzügig',genau:'genau',aus:'aus'};
+function updMag(){const b=$('#magBtn');b.classList.toggle('off',S.mag==='aus');b.innerHTML='🧲<span class="maglbl">'+MAGTXT[S.mag]+'</span>';}
+$('#magBtn').onclick=()=>{S.mag={gross:'genau',genau:'aus',aus:'gross'}[S.mag];save();updMag();say({gross:'Magnet großzügig',genau:'Magnet genau. Du musst sehr genau anlegen.',aus:'Magnet aus'}[S.mag]);};updMag();
+
+/* ---------- Aufgaben ---------- */
+const BOOK=[{n:'A',L:5,W:4},{n:'B',L:6,W:6},{n:'C',L:2,W:7},{n:'D',L:3,W:3},{n:'E',L:1,W:4},{n:'F',L:2,W:3,mm:true}];
+let LVL=1,T=null,steps=[],si=0,strokes=[],tries=0,locked=false,tool='move',cur=null,ghostOn=false;
+function startLevel(l){LVL=l;show('task');newTask();if(!S.seen[l]){S.seen[l]=true;save();openHelp();}else sayStep();}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
+$('#speakBtn').onclick=()=>sayStep();
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+cls;}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function makeSize(){
+  if(LVL===3){const b=BOOK[S.book%BOOK.length];S.book++;save();return Object.assign({},b);}
+  if(Math.random()<.2){const s=rint(2,5);return{L:s,W:s};}
+  return{L:rint(3,7),W:rint(2,5)};}
+function newTask(){
+  const nb=$('#nextBtn');if(nb)nb.remove();[...$('#ctrl').children].forEach(b=>b.style.display='');
+  resetPointers();strokes=[];tries=0;locked=false;ghostOn=false;cur=null;$('#feedback').className='feedback';
+  fillLayer.innerHTML='';taskLayer.innerHTML='';ghostLayer.innerHTML='';strokeLayer.innerHTML='';markLayer.innerHTML='';updStars();
+  const sz=makeSize();const Lp=sz.L*CM,Wp=sz.W*CM;
+  const ax=rnd(210,Math.max(215,720-Lp)),ay=rnd(Math.max(400,Wp+120),500);
+  const A=[ax,ay],B=[ax+Lp,ay],D=[ax,ay-Wp],C=[ax+Lp,ay-Wp];
+  T={L:sz.L,W:sz.W,n:sz.n,mm:sz.mm,A,B,C,D,Lp,Wp};
+  const mk=(key,P0,P1,kind)=>{const len=Math.hypot(P1[0]-P0[0],P1[1]-P0[1]);return{key,P0,P1,kind,len,u:[(P1[0]-P0[0])/len,(P1[1]-P0[1])/len],done:false};};
+  steps=[];
+  if(LVL>1)steps.push(mk('base',A,B,'L'));
+  steps.push(mk('left',A,D,'W'),mk('right',B,C,'W'),mk('top',D,C,'L'));
+  si=0;
+  if(LVL===1)strokes.push({a:A,b:B,status:'ok',col:COL.L,step:-1});
+  drawPoints();renderStrokes();buildStrip();
+  geoG.style.transition='none';geoG.style.opacity='1';geoG.style.pointerEvents='';Object.assign(geo,HOME);drawGeo();setTool('move');
+  $('#instr').textContent=stepInstr();
+}
+function drawPoints(){taskLayer.innerHTML='';const{A,B,C,D}=T;
+  const dot=(P,c,lab,dx,dy)=>{el('circle',{cx:P[0],cy:P[1],r:9,fill:c,stroke:'#fff','stroke-width':3},taskLayer);if(lab)txt(taskLayer,P[0]+dx,P[1]+dy,lab,{'font-size':28,fill:c});};
+  dot(A,'#E63946','A',-30,30);
+  if(LVL===1||steps[0].done)dot(B,'#E63946','B',30,30);
+  const l=steps.find(s=>s.key==='left'),r=steps.find(s=>s.key==='right');
+  if(l.done)dot(D,'#8E44AD');if(r.done)dot(C,'#8E44AD');}
+function buildStrip(){const st=$('#strip');st.innerHTML='';
+  const add=(cls,t)=>{const s=document.createElement('span');s.className='chip '+cls;s.textContent=t;st.appendChild(s);};
+  if(T.n)add('name','Rechteck '+T.n);
+  add('L','Länge '+(T.mm?T.L*10+' mm = '+T.L+' cm':T.L+' cm'));
+  add('W','Breite '+(T.mm?T.W*10+' mm = '+T.W+' cm':T.W+' cm'));
+  const sp=document.createElement('span');sp.className='sp';st.appendChild(sp);
+  const NM={base:'unten',left:'links',right:'rechts',top:'oben'};
+  if(LVL===1)add('done','unten ✓');
+  steps.forEach((s,i)=>add(s.done?'done':(i===si?'cur':''),(LVL===1?i+2:i+1)+' '+NM[s.key]+(s.done?' ✓':'')));}
+function stepInstr(){const s=steps[si];if(!s)return'';
+  if(s.key==='base')return`Zeichne von A aus die untere Seite: ${T.L} cm nach rechts.`;
+  if(s.key==='left')return`Zeichne an der Ecke A eine Seite nach oben: ${T.W} cm.`;
+  if(s.key==='right')return`Zeichne an der Ecke B eine Seite nach oben: ${T.W} cm.`;
+  return'Verbinde die beiden lila Punkte. Dann ist das Rechteck fertig.';}
+function sayStep(){say(stepInstr());}
+function helpFor(s){
+  if(s.key==='base')return{t:'Die untere Seite',st:['Lege die 0 vom Geodreieck genau auf den Punkt A.','Die lange Kante liegt gerade – wie der Boden.','Tippe auf ✏️ Zeichnen.',`Zeichne an der langen Kante von 0 bis ${T.L} cm nach rechts.`]};
+  if(s.key==='top')return{t:'Die obere Seite',st:['Lege die lange Kante genau an die beiden lila Punkte.','Tippe auf ✏️ Zeichnen.','Zeichne von einem lila Punkt bis zum anderen.']};
+  const X=s.key==='left'?'A':'B';
+  return{t:'Die Seite nach oben',st:['Lege die Nulllinie genau auf die untere Linie.',`Schiebe die 0 genau auf die Ecke ${X}.`,'Tippe auf ✏️ Zeichnen.',`Zeichne an der langen Kante von 0 bis ${T.W} cm nach oben.`]};}
+function openHelp(){const h=helpFor(steps[si]);$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.st.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayStep();};
+
+/* ---------- Magnet & richtige Lage ---------- */
+function goalPose(s){
+  if(s.key==='base')return placeSo({rot:0},0,0,s.P0);
+  if(s.key==='left')return placeSo({rot:-90},0,0,s.P0);
+  if(s.key==='right')return placeSo({rot:90},0,0,s.P0);
+  return placeSo({rot:0},0,0,[(s.P0[0]+s.P1[0])/2,s.P0[1]]);}
+function topSpanOk(){const s=steps[si],Z=toWorld(0,0),c=Math.cos(rad(geo.rot)),sn=Math.sin(rad(geo.rot));
+  return[s.P0,s.P1].every(P=>Math.abs((P[0]-Z[0])*c+(P[1]-Z[1])*sn)<=H-10);}
+function isGoalPose(){const s=steps[si];if(!s)return false;const Z=toWorld(0,0);
+  if(s.key==='top')return Math.abs(Z[1]-s.P0[1])<3&&Math.abs(ldiff(0,geo.rot))<1&&topSpanOk();
+  const want=s.key==='base'?geo.rot:geo.rot-90;
+  return Math.hypot(Z[0]-s.P0[0],Z[1]-s.P0[1])<3&&Math.abs(ldiff(0,want))<1;}
+function snapGeo(){
+  const s=steps[si];if(S.mag==='aus'||locked||!s)return;
+  const LOOSE={a:18,d:55},TH=S.mag==='genau'?{a:4,d:15}:LOOSE;
+  const near=t=>{feedback(t,'try');say(t);};
+  const Z=toWorld(0,0);
+  if(s.key==='top'){
+    const df=ldiff(0,geo.rot),off=Math.abs(Z[1]-s.P0[1]);
+    if(Math.abs(df)>TH.a||off>TH.d){if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&off<=LOOSE.d)near('Fast! Lege die lange Kante noch genauer an die lila Punkte.');return;}
+    geo.rot+=df;const lo=Math.max(s.P0[0],s.P1[0])-(H-14),hi=Math.min(s.P0[0],s.P1[0])+(H-14);
+    placeSo(geo,0,0,[Math.max(lo,Math.min(hi,Z[0])),s.P0[1]]);
+  }else{
+    const df=ldiff(0,s.key==='base'?geo.rot:geo.rot-90),dd=Math.hypot(Z[0]-s.P0[0],Z[1]-s.P0[1]);
+    if(Math.abs(df)>TH.a||dd>TH.d){
+      if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&dd<=LOOSE.d)near(s.key==='base'?'Fast! Lege die 0 noch genauer auf den Punkt A.':'Fast! Lege die Nulllinie und die 0 noch genauer an.');
+      return;}
+    geo.rot+=df;placeSo(geo,0,0,s.P0);}
+  drawGeo();sound('snap');
+  if(isGoalPose()){feedback('Gut angelegt! Jetzt tippe auf ✏️ Zeichnen.','ok');say('Gut angelegt! Jetzt zeichnen.');}
+}
+
+/* ---------- Werkzeuge & Zeichnen ---------- */
+function setTool(t){tool=t;$('#toolMove').classList.toggle('toolsel',t==='move');$('#toolDraw').classList.toggle('toolsel',t==='draw');
+  geoG.style.pointerEvents=t==='move'&&!locked?'':'none';glow.style.display=t==='draw'?'':'none';geoG.style.cursor=t==='move'?'grab':'crosshair';}
+$('#toolMove').onclick=()=>setTool('move');
+$('#toolDraw').onclick=()=>{setTool('draw');say('Zeichne an der langen Kante entlang.');};
+function longEdge(){return{a:toWorld(-H,0),b:toWorld(H,0)};}
+function projT(e,q){const v=[e.b[0]-e.a[0],e.b[1]-e.a[1]],l2=v[0]*v[0]+v[1]*v[1];return Math.max(0,Math.min(1,((q[0]-e.a[0])*v[0]+(q[1]-e.a[1])*v[1])/l2));}
+const lerp=(e,t)=>[e.a[0]+(e.b[0]-e.a[0])*t,e.a[1]+(e.b[1]-e.a[1])*t];
+const tx=t=>-H+t*2*H;
+function snapT(t){if(!S.snap)return t;let x=tx(t);const xr=Math.round(x/CM)*CM;if(Math.abs(x-xr)<CM*.35&&Math.abs(xr)<=7*CM)x=xr;return(x+H)/(2*H);}
+let lastCm=null;
+stage.addEventListener('pointerdown',e=>{
+  if(tool!=='draw'||locked)return;if(cur&&!e.isPrimary)return;e.preventDefault();const p=svgPt(stage,e),q=[p.x,p.y];
+  const ed=longEdge(),t=projT(ed,q),w=lerp(ed,t);
+  if(Math.hypot(w[0]-q[0],w[1]-q[1])>45){feedback('Zeichne genau an der langen Kante vom Geodreieck.','try');say('Zeichne an der langen Kante vom Geodreieck.');return;}
+  const t0=snapT(t);cur={id:e.pointerId,ed,t0,t1:t0};lastCm=null;renderStrokes();});
+window.addEventListener('pointermove',e=>{if(!cur||e.pointerId!==cur.id)return;const p=svgPt(stage,e);cur.t1=snapT(projT(cur.ed,[p.x,p.y]));
+  const c=Math.abs(tx(cur.t1)-tx(cur.t0))/CM;if(Number.isInteger(Math.round(c*100)/100)&&c!==lastCm&&c>0){lastCm=c;sound('tick');}renderStrokes();});
+function endStroke(e){if(!cur||e.pointerId!==cur.id)return;const a=lerp(cur.ed,cur.t0),b=lerp(cur.ed,cur.t1);cur=null;
+  if(Math.hypot(b[0]-a[0],b[1]-a[1])>12){const s={a,b,status:'pend',step:si};strokes.push(s);sound('pen');$('#feedback').className='feedback';renderStrokes();checkStroke(s);}
+  else renderStrokes();}
+window.addEventListener('pointerup',endStroke);window.addEventListener('pointercancel',endStroke);
+function cmText(c){c=Math.round(c*10)/10;return(Number.isInteger(c)?String(c):String(c).replace('.',','))+' cm';}
+function renderStrokes(){strokeLayer.innerHTML='';const all=strokes.slice();if(cur)all.push({a:lerp(cur.ed,cur.t0),b:lerp(cur.ed,cur.t1),status:'pend'});
+  all.forEach(s=>{const c=s.status==='ok'?s.col:s.status==='bad'?'#E63946':'#D6338A';
+    el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:'#fff','stroke-width':11,'stroke-linecap':'round',opacity:.8},strokeLayer);
+    el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:c,'stroke-width':7,'stroke-linecap':'round','stroke-dasharray':s.status==='bad'?'14 8':'none'},strokeLayer);});
+  if(cur){const b=lerp(cur.ed,cur.t1);el('circle',{cx:b[0],cy:b[1],r:13,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeLayer);txt(strokeLayer,b[0]+22,b[1]-22,'✏️',{'font-size':26});
+    if(S.cm){const c=Math.abs(tx(cur.t1)-tx(cur.t0))/CM,lx=b[0]+70,ly=b[1]+30;el('rect',{x:lx-48,y:ly-22,width:96,height:44,rx:12,fill:'#fff',stroke:'#D6338A','stroke-width':3},strokeLayer);txt(strokeLayer,lx,ly+1,cmText(c),{'font-size':24,fill:'#1F2A37'});}}}
+$('#undoBtn').onclick=()=>{if(locked)return;for(let i=strokes.length-1;i>=0;i--)if(strokes[i].status==='pend'){strokes.splice(i,1);break;}renderStrokes();};
+$('#hintBtn').onclick=()=>{ghostOn=!ghostOn;drawGhost();if(ghostOn)say('Lege das Geodreieck auf die gestrichelte Form.');};
+function drawGhost(){ghostLayer.innerHTML='';const s=steps[si];if(!ghostOn||!s)return;
+  const pz=goalPose(s);const pts=[[-H,0],[H,0],[0,-H]].map(([x,y])=>toWorldG(pz,x,y));
+  el('polygon',{points:pts.map(p=>p.join(',')).join(' '),fill:'rgba(255,212,0,.15)',stroke:'#C99700','stroke-width':3,'stroke-dasharray':'12 8'},ghostLayer);
+  el('line',{x1:s.P0[0],y1:s.P0[1],x2:s.P1[0],y2:s.P1[1],stroke:'#9aa5b1','stroke-width':5,'stroke-dasharray':'10 8'},ghostLayer);
+  el('circle',{cx:s.P1[0],cy:s.P1[1],r:8,fill:'none',stroke:'#9aa5b1','stroke-width':3},ghostLayer);}
+
+/* ---------- Prüfen nach jedem Strich ---------- */
+function evalStroke(s,st){const v=[s.b[0]-s.a[0],s.b[1]-s.a[1]],len=Math.hypot(...v),us=[v[0]/len,v[1]/len];
+  const angOk=Math.abs(us[0]*st.u[1]-us[1]*st.u[0])<Math.sin(rad(3));
+  const m=[(s.a[0]+s.b[0])/2-st.P0[0],(s.a[1]+s.b[1])/2-st.P0[1]];const off=Math.abs(m[0]*st.u[1]-m[1]*st.u[0]);
+  const ta=(s.a[0]-st.P0[0])*st.u[0]+(s.a[1]-st.P0[1])*st.u[1],tb=(s.b[0]-st.P0[0])*st.u[0]+(s.b[1]-st.P0[1])*st.u[1];
+  return{angOk,offOk:off<8,lo:Math.min(ta,tb),hi:Math.max(ta,tb)};}
+function checkStroke(s){
+  const st=steps[si],r=evalStroke(s,st),TOL=9,len=st.len,nm=st.kind==='L'?T.L:T.W;
+  const vert=st.key==='left'||st.key==='right',X=st.key==='left'?'A':'B';
+  if(!r.angOk)return wrong(s,vert?'Der Strich ist schief. Das ist kein rechter Winkel. Lege die Nulllinie genau auf die untere Linie.':st.key==='base'?'Der Strich ist schief. Lege die lange Kante gerade hin.':'Der Strich ist schief. Lege die lange Kante genau an die lila Punkte.');
+  if(!r.offOk)return wrong(s,vert?`Der Strich geht nicht durch die Ecke ${X}. Schiebe die 0 genau auf die Ecke.`:st.key==='base'?'Der Strich geht nicht durch den Punkt A.':'Der Strich geht nicht durch die lila Punkte.');
+  const parts=strokes.filter(x=>x.step===si&&x.status==='pend').map(x=>evalStroke(x,st));
+  const lo=Math.min(...parts.map(p=>p.lo)),hi=Math.max(...parts.map(p=>p.hi));
+  if(r.hi<TOL&&st.key!=='top')return wrong(s,vert?'Falsche Richtung. Zeichne nach oben.':'Falsche Richtung. Zeichne nach rechts.');
+  if(lo<-TOL)return wrong(s,st.key==='top'?'Zu lang! Hör genau beim lila Punkt auf.':vert?`Fang genau an der Ecke ${X} an – bei 0.`:'Fang genau beim Punkt A an – bei 0.');
+  if(hi>len+TOL)return wrong(s,st.key==='top'?'Zu lang! Hör genau beim lila Punkt auf.':`Zu lang! Die Seite soll nur ${nm} cm lang sein.`);
+  if(lo>TOL)return wrong(s,st.key==='top'?'Fang genau beim lila Punkt an.':vert?`Fang genau an der Ecke ${X} an – bei 0.`:'Fang genau beim Punkt A an – bei 0.');
+  if(hi<len-TOL){const t=st.key==='top'?'Gut! Zeichne weiter bis zum lila Punkt.':`Gut! Zeichne weiter bis ${nm} cm.`;feedback(t,'try');say(t);return;}
+  stepDone();}
+function wrong(s,t){s.status='bad';renderStrokes();tries++;sound('no');locked=true;
+  if(tries>=2&&!ghostOn){ghostOn=true;drawGhost();t+=' Die gestrichelte Form hilft dir.';feedback(t,'sol');}else feedback(t,'try');
+  say(t);setTimeout(()=>{strokes=strokes.filter(x=>x!==s);locked=false;setTool(tool);renderStrokes();},1700);}
+function corner(P,u,v,col){const z=30;const p1=[P[0]+u[0]*z,P[1]+u[1]*z],p3=[P[0]+v[0]*z,P[1]+v[1]*z],p2=[p1[0]+v[0]*z,p1[1]+v[1]*z];
+  el('path',{d:`M${p1} L${p2} L${p3}`,fill:'none',stroke:col||'#2A9D4B','stroke-width':4},markLayer);
+  el('circle',{cx:P[0]+(u[0]+v[0])*z/2,cy:P[1]+(u[1]+v[1])*z/2,r:4.5,fill:col||'#2A9D4B'},markLayer);}
+function stepDone(){const st=steps[si];
+  strokes=strokes.filter(x=>!(x.step===si&&x.status==='pend'));strokes.push({a:st.P0,b:st.P1,status:'ok',col:COL[st.kind],step:si});
+  st.done=true;tries=0;ghostOn=false;ghostLayer.innerHTML='';
+  if(st.key==='left')corner(T.A,[1,0],[0,-1]);
+  if(st.key==='right')corner(T.B,[-1,0],[0,-1]);
+  si++;renderStrokes();drawPoints();buildStrip();
+  if(si>=steps.length)return success();
+  sound('step');const w=pick(['Prima!','Super!','Genau!','Toll!']);
+  const extra=st.key==='left'||st.key==='right'?' Das ist ein rechter Winkel.':'';
+  feedback(w+extra+' ✓','ok');$('#instr').textContent=stepInstr();setTool('move');
+  locked=true;say(w+extra+' '+stepInstr());setTimeout(()=>{locked=false;setTool('move');},600);}
+function success(){locked=true;setTool('move');geoG.style.transition='opacity .8s';geoG.style.opacity='.1';geoG.style.pointerEvents='none';
+  S.done++;S.stars++;save();updStars();sound('ok');confetti();
+  const{A,B,C,D}=T;el('polygon',{points:[A,B,C,D].map(p=>p.join(',')).join(' '),fill:'rgba(255,230,120,.35)'},fillLayer);
+  corner(D,[1,0],[0,1]);corner(C,[-1,0],[0,1]);
+  txt(markLayer,(A[0]+B[0])/2,A[1]+30,T.L+' cm',{'font-size':26,fill:COL.L});
+  txt(markLayer,A[0]-45,(A[1]+D[1])/2,T.W+' cm',{'font-size':26,fill:'#c2610f'});
+  const q=T.L===T.W;
+  const t=q?'Super! Das ist ein Quadrat. Alle Seiten sind gleich lang. Es hat vier rechte Winkel.':'Super! Dein Rechteck ist fertig. Es hat vier rechte Winkel.';
+  feedback(t+' ⭐','ok');say(t);$('#instr').textContent=q?'Fertig – ein Quadrat! ⭐':'Fertig – ein Rechteck! ⭐';
+  const c=$('#ctrl');[...c.children].forEach(b=>b.style.display='none');
+  const nb=document.createElement('button');nb.id='nextBtn';nb.textContent='Weiter ➜';nb.style.fontSize='26px';
+  nb.onclick=()=>{nb.remove();[...c.children].forEach(b=>b.style.display='');if(S.done>=S.goal)showReward();else{newTask();sayStep();}};c.appendChild(nb);}
+
+/* ---------- Belohnung: Gummi-Schleuder (3 Runden) ---------- */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Rechtecke gezeichnet. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['sq','re','re','sq','tri','bal'],MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Formen!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Formen!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='sq')el('rect',{x:-s/2,y:-s/2,width:s,height:s,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
+  else if(t.shape==='re')el('rect',{x:-s*.7,y:-s*.4,width:s*1.4,height:s*.8,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
+  else if(t.shape==='tri')el('polygon',{points:`${-s/2},${s/2} ${s/2},${s/2} ${-s/2},${-s/2}`,fill:c,stroke:'#fff','stroke-width':4,'stroke-linejoin':'round'},g);
+  else{el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);}
+  if(t.shape!=='bal'){const m=s*.2,x0=t.shape==='re'?-s*.7:-s/2,y0=t.shape==='re'?s*.4:s/2;el('path',{d:`M${x0+m},${y0} L${x0+m},${y0-m} L${x0},${y0-m}`,fill:'none',stroke:'#fff','stroke-width':3},g);}}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Zeichnen.':''));}
+drawGeo();
+strokeLayer.setAttribute('pointer-events','none');markLayer.setAttribute('pointer-events','none');ghostLayer.setAttribute('pointer-events','none');
+stage.appendChild(strokeLayer);stage.appendChild(markLayer);
+</script>
+</body>
+</html>
