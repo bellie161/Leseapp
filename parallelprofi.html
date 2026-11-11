@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Parallel-Profi – Parallele Linien und Rechtecke</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--teal);text-align:center}
+.sub{font-size:20px;margin:4px 0 16px;color:#4b5563;text-align:center}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:105px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--teal);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--teal);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.D{border-color:var(--purple);color:var(--purple)}
+.chip.cur{background:#FFF6CC;border-color:#E0B000;color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.geotools{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:10px}
+.geotools button{width:62px;height:62px;padding:0;font-size:30px;background:#fff;color:var(--ink)}
+.geotools button.off{opacity:.45}
+.geotools #magBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.maglbl{font-size:10px;font-weight:700;margin-top:3px;color:#555}
+.feedback{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:#fff;border-radius:18px;padding:10px 22px;font-size:23px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none;text-align:center;max-width:78%;pointer-events:none}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:21px;padding:14px 18px}
+.tool{background:#fff;color:var(--ink)}
+.toolsel{background:var(--teal)!important;color:#fff!important}
+.yes{background:var(--green)}.no{background:var(--red)}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:24px 30px;max-width:680px;width:92%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:32px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:12px 0;padding:10px;border:3px solid #E63946;border-radius:16px;font-size:20px}
+.merk svg{flex:none;width:120px;height:80px}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.blink{animation:blink .5s 4 alternate}
+@keyframes blink{from{opacity:1}to{opacity:.15}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>🛤️ Parallel-Profi</h1>
+  <div class="sub">Parallele Linien, Rechtecke und Quadrate – Schritt für Schritt</div>
+  <div class="modes">
+    <button class="mode" data-m="1">
+      <svg viewBox="0 0 170 105"><g stroke="#8B5A2B" stroke-width="7">
+        <line x1="25" y1="28" x2="25" y2="77"/><line x1="55" y1="28" x2="55" y2="77"/><line x1="85" y1="28" x2="85" y2="77"/><line x1="115" y1="28" x2="115" y2="77"/><line x1="145" y1="28" x2="145" y2="77"/></g>
+        <line x1="10" y1="36" x2="160" y2="36" stroke="#6b7280" stroke-width="6"/><line x1="10" y1="69" x2="160" y2="69" stroke="#6b7280" stroke-width="6"/></svg>
+      <span><span class="num" style="background:#1D7FD8">1</span> Schienen-Check</span><small>Parallel – ja oder nein?</small>
+    </button>
+    <button class="mode" data-m="2">
+      <svg viewBox="0 0 170 105"><line x1="10" y1="80" x2="160" y2="80" stroke="#1D7FD8" stroke-width="5"/><line x1="10" y1="35" x2="160" y2="35" stroke="#8E44AD" stroke-width="5"/>
+        <line x1="45" y1="80" x2="45" y2="35" stroke="#8E44AD" stroke-width="3" stroke-dasharray="6 5"/><line x1="125" y1="80" x2="125" y2="35" stroke="#8E44AD" stroke-width="3" stroke-dasharray="6 5"/>
+        <circle cx="45" cy="80" r="6" fill="#2A9D4B"/><circle cx="125" cy="80" r="6" fill="#2A9D4B"/><circle cx="45" cy="35" r="6" fill="#8E44AD"/><circle cx="125" cy="35" r="6" fill="#8E44AD"/></svg>
+      <span><span class="num" style="background:#8E44AD">2</span> Parallele zeichnen</span><small>Mit dem Geodreieck</small>
+    </button>
+    <button class="mode" data-m="3">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#F3E3CC"/><line x1="40" y1="25" x2="130" y2="25" stroke="#1D7FD8" stroke-width="6"/><line x1="40" y1="80" x2="130" y2="80" stroke="#1D7FD8" stroke-width="6"/><line x1="40" y1="25" x2="40" y2="80" stroke="#F28C28" stroke-width="6"/><line x1="130" y1="25" x2="130" y2="80" stroke="#F28C28" stroke-width="6"/><path d="M40 37 h12 v-12" fill="none" stroke="#2A9D4B" stroke-width="3"/></svg>
+      <span><span class="num" style="background:#F28C28">3</span> Seiten färben</span><small>Welche Seiten sind parallel?</small>
+    </button>
+    <button class="mode" data-m="4">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#F3E3CC"/><rect x="22" y="30" width="50" height="50" fill="none" stroke="#2A9D4B" stroke-width="5"/><polygon points="95,80 155,80 140,30 105,30" fill="none" stroke="#2A9D4B" stroke-width="5"/><text x="47" y="22" text-anchor="middle" font-size="16" font-weight="700" fill="#2A9D4B">✓</text><text x="125" y="22" text-anchor="middle" font-size="16" font-weight="700" fill="#E63946">✗</text></svg>
+      <span><span class="num" style="background:#2A9D4B">4</span> Rechteck? Quadrat?</span><small>Ecken prüfen und entscheiden</small>
+    </button>
+  </div>
+  <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="bgL"></g><g id="fillL"></g><g id="taskL"></g><g id="ghostL" pointer-events="none"></g><g id="geoHolder"></g>
+      <g id="strokeL" pointer-events="none"></g><g id="markL" pointer-events="none"></g><g id="uiL" pointer-events="none"></g><g id="hitL"></g>
+    </svg>
+    <div class="geotools" id="geotools">
+      <button id="rotL" aria-label="nach links drehen">↺</button>
+      <button id="rotR" aria-label="nach rechts drehen">↻</button>
+      <button id="geoReset" aria-label="Geodreieck zurück">📐</button>
+      <button id="magBtn" aria-label="Andock-Hilfe">🧲</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div class="merk"><svg viewBox="0 0 120 80"><line x1="5" y1="20" x2="115" y2="20" stroke="#1D7FD8" stroke-width="5"/><line x1="5" y1="60" x2="115" y2="60" stroke="#1D7FD8" stroke-width="5"/><line x1="30" y1="20" x2="30" y2="60" stroke="#8E44AD" stroke-width="3" stroke-dasharray="5 4"/><line x1="90" y1="20" x2="90" y2="60" stroke="#8E44AD" stroke-width="3" stroke-dasharray="5 4"/></svg>
+    <div><b>Parallel</b><br>Zwei Linien sind parallel, wenn der Abstand überall gleich ist. Sie treffen sich nie.</div></div>
+  <div class="merk"><svg viewBox="0 0 120 80"><rect x="10" y="15" width="100" height="50" fill="#2A9D4B"/><path d="M10 27 h12 v-12 M98 15 v12 h12 M10 53 h12 v12 M98 65 v-12 h12" stroke="#fff" stroke-width="3" fill="none"/></svg>
+    <div><b>Rechteck</b><br>4 Ecken, 4 rechte Winkel. Die Seiten gegenüber sind parallel und gleich lang.</div></div>
+  <div class="merk"><svg viewBox="0 0 120 80"><rect x="30" y="10" width="60" height="60" fill="#2A9D4B"/></svg>
+    <div><b>Quadrat</b><br>Ein Rechteck mit 4 gleich langen Seiten.</div></div>
+  <div class="row"><button id="merkSpeak" class="light">🔊 Vorlesen</button><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Abstände auch mit ½ cm (15 mm, 25 mm …) <div class="seg" id="halfSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Parallele zeichnen: Linie auch schräg <div class="seg" id="slantSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Magnet (Andock-Hilfe) <div class="seg" id="magSeg"><button data-v="gross">großzügig</button><button data-v="genau">genau</button><button data-v="aus">aus</button></div></div>
+  <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI,norm=a=>((a%360)+360)%360;
+const adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d;};
+const ldiff=(a,b)=>{let d=norm(a-b)%180;return d>90?d-180:d;};
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],mul=(a,k)=>[a[0]*k,a[1]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+const unit=v=>{const l=Math.hypot(v[0],v[1]);return[v[0]/l,v[1]/l];};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+function cmT(c){c=Math.round(c*2)/2;const w=Math.floor(c),h=c-w>0.25;return(h?(w?w+'½':'½'):String(w))+' cm';}
+function cmSay(c){c=Math.round(c*2)/2;const w=Math.floor(c),h=c-w>0.25;return h?(w?w+' einhalb Zentimeter':'einen halben Zentimeter'):(w===1?'1 Zentimeter':w+' Zentimeter');}
+
+let S={goal:10,done:0,stars:0,shots:10,voice:true,mag:'gross',half:false,slant:false,seen:{},n1:0,n2:0,n3:0,n4:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem('parallelprofi')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('parallelprofi',JSON.stringify(S));}catch(e){}}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[✏️📐✓✗⭐➜📏💡🚂🚧]/gu,'').replace(/(\d)½ cm/g,'$1 einhalb Zentimeter').replace(/½ cm/g,'einen halben Zentimeter').replace(/(\d) cm/g,'$1 Zentimeter'));u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='snap')tone(1200,0,.08);else if(k==='pen')tone(500,0,.05,'triangle');else if(k==='tick')tone(900,0,.03);else if(k==='choo'){tone(420,0,.2,'square');tone(380,.25,.2,'square');}}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Startseite, Merken, Einstellungen ---------- */
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.m));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+const MERK='Parallel: Zwei Linien sind parallel, wenn der Abstand überall gleich ist. Sie treffen sich nie. Rechteck: 4 Ecken, 4 rechte Winkel. Die Seiten gegenüber sind parallel und gleich lang. Quadrat: Ein Rechteck mit 4 gleich langen Seiten.';
+$('#merkBtn').onclick=()=>{$('#merkOv').classList.add('on');say(MERK);};
+$('#merkSpeak').onclick=()=>say(MERK);
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');try{speechSynthesis.cancel();}catch(e){}};
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#halfSeg',()=>S.half?1:0,v=>S.half=v==='1'),segSet('#slantSeg',()=>S.slant?1:0,v=>S.slant=v==='1'),segSet('#magSeg',()=>S.mag,v=>{S.mag=v;updMag();})];
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.n1=S.n2=S.n3=S.n4=0;S.seen={};save();refreshStart();};
+refreshStart();
+
+/* ---------- Gemeinsames ---------- */
+const stage=$('#stage'),bgL=$('#bgL'),fillL=$('#fillL'),taskL=$('#taskL'),ghostL=$('#ghostL'),strokeL=$('#strokeL'),markL=$('#markL'),uiL=$('#uiL'),hitL=$('#hitL');
+let MODE=1,locked=false,instrText='',anim=null;
+function clearStage(){[bgL,fillL,taskL,ghostL,strokeL,markL,uiL,hitL].forEach(l=>l.innerHTML='');}
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function startMode(m){MODE=m;show('task');$('#geotools').style.display=m===2?'':'none';geoG.style.display=m===2?'':'none';newTask();
+  if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
+function newTask(){if(anim){cancelAnimationFrame(anim);anim=null;}locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4][MODE]();}
+$('#homeBtn').onclick=()=>{if(anim){cancelAnimationFrame(anim);anim=null;}show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+  if(MODE===2){geoG.style.transition='opacity .8s';geoG.style.opacity='.1';geoG.style.pointerEvents='none';}
+  setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
+  $('#ctrl button').style.fontSize='26px';}
+function helpData(){
+  if(MODE===1)return{t:'Parallel oder nicht?',st:['Schau dir die zwei Linien an.','Parallel heißt: Der Abstand ist überall gleich.','Tippe auf 📏 Abstand messen. Vergleiche die Zahlen.','Tippe dann: parallel oder nicht parallel.']};
+  if(MODE===2){const s=steps[si];if(s&&s.type==='line')return{t:'Die parallele Linie',st:['Lege die lange Kante vom Geodreieck an die 2 lila Punkte.','Tippe auf ✏️ Linie zeichnen.','Zeichne an der langen Kante – durch beide lila Punkte.']};
+    return{t:'Den Abstand messen',st:['Lege die Nulllinie vom Geodreieck genau auf die blaue Linie.',`Schiebe die 0 genau auf den grünen Punkt${s?' '+s.k:''}.`,'Tippe auf ✏️ Punkt setzen.',`Tippe an der langen Kante bei ${cmT(T2?T2.d:1)}. Dort kommt der Punkt hin.`]};}
+  if(MODE===3)return{t:'Parallele Seiten färben',st:['Tippe eine Seite an. Sie wird blau.','Suche die Seite gegenüber. Sie ist parallel. Tippe sie an.','Mach das Gleiche mit den zwei grünen Seiten. Sie werden orange.','Tippe dann die 4 Ecken an. So zeigst du die rechten Winkel.']};
+  return{t:'Rechteck oder Quadrat?',st:['Tippe jede Ecke an. Du siehst: rechter Winkel – oder nicht.','Ein Rechteck hat 4 rechte Winkel.','Ein Quadrat ist ein Rechteck mit 4 gleich langen Seiten.','Bist du unsicher? Tippe auf 📏 Seiten vergleichen.']};}
+function openHelp(){const h=helpData();$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.st.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+function corner(P,u,v,col,z,layer){z=z||28;u=unit(u);v=unit(v);const p1=add(P,mul(u,z)),p3=add(P,mul(v,z)),p2=add(p1,mul(v,z));
+  el('path',{d:`M${p1} L${p2} L${p3}`,fill:'none',stroke:col||'#2A9D4B','stroke-width':4},layer||markL);
+  el('circle',{cx:P[0]+(u[0]+v[0])*z/2,cy:P[1]+(u[1]+v[1])*z/2,r:4.5,fill:col||'#2A9D4B'},layer||markL);}
+function arcMark(P,u,v,col,r,layer){u=unit(u);v=unit(v);const a=add(P,mul(u,r)),b=add(P,mul(v,r));const sw=(u[0]*v[1]-u[1]*v[0])>0?1:0;
+  el('path',{d:`M${a} A${r},${r} 0 0 ${sw} ${b}`,fill:'none',stroke:col,'stroke-width':4},layer||markL);}
+function measureBar(A,B,col,label,layer){layer=layer||markL;const v=unit(sub(B,A)),p=[-v[1],v[0]];
+  el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':4,'stroke-dasharray':'9 6'},layer);
+  [A,B].forEach(Q=>el('line',{x1:Q[0]-p[0]*9,y1:Q[1]-p[1]*9,x2:Q[0]+p[0]*9,y2:Q[1]+p[1]*9,stroke:col,'stroke-width':4},layer));
+  if(label){const M=mul(add(A,B),.5);el('rect',{x:M[0]-46,y:M[1]-19,width:92,height:38,rx:11,fill:'#fff',stroke:col,'stroke-width':3},layer);txt(layer,M[0],M[1]+1,label,{'font-size':22,fill:'#1F2A37'});}}
+
+/* ================= Modus 1: Schienen-Check ================= */
+let M1=null,hist1=[];
+function lineHit(P,n,c2,u2){const D=sub(c2,P);const det=-n[0]*u2[1]+u2[0]*n[1];if(Math.abs(det)<1e-9)return null;return(-D[0]*u2[1]+u2[0]*D[1])/det;}
+function newTask1(){
+  const easy=(S.n1||0)<4;
+  let par=Math.random()<.5;if(hist1.length>=2&&hist1.slice(-2).every(h=>h===par))par=!par;hist1.push(par);
+  const cross=!par&&!easy&&Math.random()<.25;
+  const th=pick(easy?[0,0,90]:[0,0,90,30,-30,60,-60]);
+  const len=th===90?440:Math.abs(th)>=45?470:620;
+  const u=[Math.cos(rad(th)),Math.sin(rad(th))],n=[u[1],-u[0]];
+  const d=par?rint(2,4)*CM:rnd(3,4)*CM;const C=[500,310];
+  let c1,c2,delta=0;
+  if(cross){delta=pick([-1,1])*rnd(22,32);c1=C;c2=C;}
+  else{delta=par?0:pick([-1,1])*rnd(10,14);c1=add(C,mul(n,-d/2));c2=add(C,mul(n,d/2));}
+  const u2=[Math.cos(rad(th+delta)),Math.sin(rad(th+delta))];
+  const rails=!cross&&(easy||Math.random()<.5);
+  M1={par,cross,th,len,u,n,u2,c1,c2,d,rails,tries:0,measured:false};
+  draw1();
+  setInstr(rails?'Sind die Schienen parallel?':'Sind die zwei Linien parallel?');
+  setCtrl1();}
+function setCtrl1(){setCtrl([{t:'📏 Abstand messen',fn:measure1},{t:'✓ Ja, parallel',cls:'yes',fn:()=>answer1(true)},{t:'✗ Nein, nicht parallel',cls:'no',fn:()=>answer1(false)}]);}
+function onLine2(s){const P=add(M1.c1,mul(M1.u,s));const t=lineHit(P,M1.n,M1.c2,M1.u2);return t===null?null:add(P,mul(M1.n,t));}
+function draw1(){const{c1,c2,u,u2,len,rails,n}=M1;
+  const e1=[add(c1,mul(u,-len/2)),add(c1,mul(u,len/2))],e2=[add(c2,mul(u2,-len/2)),add(c2,mul(u2,len/2))];
+  if(rails){for(let s=-len/2+20;s<=len/2-20;s+=46){const A=add(c1,mul(u,s)),B=onLine2(s);if(!B)continue;const v=unit(sub(B,A));const A2=sub(A,mul(v,16)),B2=add(B,mul(v,16));
+      el('line',{x1:A2[0],y1:A2[1],x2:B2[0],y2:B2[1],stroke:'#8B5A2B','stroke-width':16},fillL);}
+    [e1,e2].forEach(e=>el('line',{x1:e[0][0],y1:e[0][1],x2:e[1][0],y2:e[1][1],stroke:'#6b7280','stroke-width':10,'stroke-linecap':'round'},taskL));}
+  else{el('line',{x1:e1[0][0],y1:e1[0][1],x2:e1[1][0],y2:e1[1][1],stroke:'#1D7FD8','stroke-width':7,'stroke-linecap':'round'},taskL);
+    el('line',{x1:e2[0][0],y1:e2[0][1],x2:e2[1][0],y2:e2[1][1],stroke:'#E63946','stroke-width':7,'stroke-linecap':'round'},taskL);}}
+function measure1(){if(locked)return;
+  if(M1.cross){feedback('Die Linien kreuzen sich. Dort ist der Abstand 0.','sol');say('Die Linien kreuzen sich. Dort ist der Abstand null.');
+    const t=lineHit(M1.c1,[M1.u2[0],M1.u2[1]],M1.c1,M1.u);el('circle',{cx:M1.c1[0],cy:M1.c1[1],r:22,fill:'none',stroke:'#8E44AD','stroke-width':5},markL);M1.measured=true;return;}
+  if(M1.measured){say(M1.sayTxt);return;}
+  const vals=[];[-.36,0,.36].forEach(f=>{const s=f*M1.len;const A=add(M1.c1,mul(M1.u,s)),B=onLine2(s);const c=dist(A,B)/CM;vals.push(cmT(c));measureBar(A,B,'#8E44AD',cmT(c));});
+  M1.measured=true;sound('tick');
+  M1.sayTxt=M1.par?`Überall ${vals[0]}. Der Abstand ist gleich.`:`Hier ${vals[0]}, hier ${vals[1]}, hier ${vals[2]}. Vergleiche die Zahlen.`;
+  feedback(vals.join('   ·   '),'sol');say(M1.sayTxt);}
+function answer1(yes){if(locked)return;
+  if(yes===M1.par){
+    locked=true;setCtrl([]);
+    if(M1.par){feedback('Richtig! 🚂','ok');say('Richtig! Schau mal, der Zug fährt.');train1(true,()=>win(`Richtig! Die Linien sind parallel. Der Abstand ist überall ${cmT(M1.d/CM)}. Der Zug kann fahren.`));}
+    else if(M1.cross)win('Richtig! Die Linien kreuzen sich. Sie sind nicht parallel.');
+    else{feedback('Richtig! 🚧','ok');say('Richtig! Schau mal, was der Zug macht.');train1(false,()=>{if(!M1.measured)measure1();win('Richtig! Der Abstand ist nicht überall gleich. Die Linien sind nicht parallel. Der Zug bleibt stecken.');});}
+  }else{
+    M1.tries++;sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);
+    if(!M1.measured)measure1();
+    const t=M1.par?'Schau genau: Der Abstand ist überall gleich. Also sind die Linien parallel.':M1.cross?'Schau genau: Die Linien kreuzen sich. Parallele Linien treffen sich nie.':'Schau genau: Die Zahlen sind verschieden. Der Abstand ist nicht überall gleich.';
+    setTimeout(()=>{feedback(t,'try');say(t+' Versuch es nochmal.');},900);}}
+function train1(ok,done){const{c1,u,len,th}=M1;const g=el('g',{},markL);const tr=txt(g,0,0,'🚂',{'font-size':52});
+  const s0=-len/2-10,s1=ok?len/2+10:(M1.d<0?0:len*.1);let tStart=null;const dur=ok?2200:1600;
+  const flip=Math.cos(rad(th))<0;sound('choo');
+  const midAt=s=>{const A=add(c1,mul(u,s)),B=onLine2(s);return B?mul(add(A,B),.5):A;};
+  // nicht parallel: der Zug startet an der breiten Seite
+  let from=s0,to=s1;
+  if(!ok){const wl=dist(add(c1,mul(u,-len/2)),onLine2(-len/2)),wr=dist(add(c1,mul(u,len/2)),onLine2(len/2));
+    const sNarrow=wl<wr?-len/2:len/2,sWide=-sNarrow;const need=1.55*CM;
+    let stop=sWide;for(let k=0;k<=60;k++){const s=sWide+(sNarrow-sWide)*k/60;if(dist(add(c1,mul(u,s)),onLine2(s))<need){stop=s;break;}stop=s;}
+    from=sWide;to=stop;}
+  const dirSign=to>=from?1:-1;
+  function step(ts){if(tStart===null)tStart=ts;let f=Math.min(1,(ts-tStart)/dur);const e=ok?f:1-Math.pow(1-f,2);const s=from+(to-from)*e;const P=midAt(s);
+    const sx=(dirSign>0)!==flip?-1:1;tr.setAttribute('transform',`translate(${P[0]},${P[1]}) rotate(${th+(flip?180:0)}) scale(${sx},1)`);
+    if(f<1)anim=requestAnimationFrame(step);else{anim=null;if(!ok){txt(markL,P[0],P[1]-56,'🚧',{'font-size':44});sound('no');}setTimeout(done,ok?200:700);}}
+  anim=requestAnimationFrame(step);}
+
+/* ================= Modus 2: Parallele zeichnen (Geodreieck) ================= */
+const CM=36,H=7.6*CM,HOME={x:850,y:585,rot:0};const geo=Object.assign({},HOME);
+const geoG=el('g',{id:'geo',style:'cursor:grab'},$('#geoHolder'));const geoInner=el('g',{},geoG);let glow=null;
+(function(){const g=el('g',{transform:`translate(0,${H/3})`},geoInner);
+  el('polygon',{points:`${-H},0 ${H},0 0,${-H}`,fill:'rgba(170,215,255,0.5)',stroke:'#1d4f8a','stroke-width':2.5,'stroke-linejoin':'round'},g);
+  for(let k=-14;k<=14;k++){const x=k*CM/2,big=k%2===0;el('line',{x1:x,y1:0,x2:x,y2:big?-16:-9,stroke:'#1d3557','stroke-width':big?2.2:1.3},g);if(big&&k!==0)txt(g,x,-28,String(Math.abs(k/2)),{'font-size':17,fill:'#1d3557'});}
+  el('line',{x1:0,y1:-2,x2:0,y2:-H+46,stroke:'#1d3557','stroke-width':3},g);
+  el('circle',{cx:0,cy:-30,r:13,fill:'#fff',stroke:'#1d3557','stroke-width':2},g);txt(g,0,-30,'0',{'font-size':18,fill:'#E63946'});
+  const u=28/Math.SQRT2;el('polygon',{points:`0,${-H} ${u},${-H+u} 0,${-H+2*u} ${-u},${-H+u}`,fill:'#E63946'},g);el('circle',{cx:0,cy:-H+u,r:4,fill:'#fff'},g);
+  glow=el('line',{x1:-H,y1:0,x2:H,y2:0,stroke:'#FFD400','stroke-width':14,'stroke-linecap':'round',opacity:.75,'pointer-events':'none',style:'display:none'},g);
+  const h=el('g',{class:'geohandle'},g);el('circle',{cx:H-30,cy:34,r:27,fill:'#F28C28',stroke:'#fff','stroke-width':3},h);txt(h,H-30,35,'↻',{'font-size':30,fill:'#fff'});})();
+function drawGeo(){geoInner.setAttribute('transform',`translate(${geo.x},${geo.y}) rotate(${geo.rot})`);}
+function toWorldG(g,lx,ly){const py=ly+H/3,c=Math.cos(rad(g.rot)),s=Math.sin(rad(g.rot));return[g.x+lx*c-py*s,g.y+lx*s+py*c];}
+const toWorld=(lx,ly)=>toWorldG(geo,lx,ly);
+function placeSo(g,lx,ly,P){g.x=0;g.y=0;const w=toWorldG(g,lx,ly);g.x=P[0]-w[0];g.y=P[1]-w[1];return g;}
+const ptrs=new Map();let gm=null,gs=null;
+function resetPointers(){ptrs.clear();gm=null;}
+function beginG(){const pts=[...ptrs.values()];if(pts.length===1){gm='move';gs={px:pts[0].x,py:pts[0].y,x:geo.x,y:geo.y};}else{const[a,b]=pts;gm='pinch';gs={ang:deg(Math.atan2(b.y-a.y,b.x-a.x)),mx:(a.x+b.x)/2,my:(a.y+b.y)/2,x:geo.x,y:geo.y,rot:geo.rot};}}
+geoG.addEventListener('pointerdown',e=>{if(MODE!==2||tool!=='move'||locked)return;e.preventDefault();e.stopPropagation();if(e.isPrimary||ptrs.size>=2)resetPointers();const p=svgPt(stage,e);ptrs.set(e.pointerId,p);try{geoG.setPointerCapture(e.pointerId);}catch(_){}
+  if(e.target.closest('.geohandle')&&ptrs.size===1){gm='rot';gs={a0:deg(Math.atan2(p.y-geo.y,p.x-geo.x)),rot0:geo.rot};}else beginG();});
+window.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const p=svgPt(stage,e);ptrs.set(e.pointerId,p);
+  if(gm==='rot')geo.rot=gs.rot0+adiff(deg(Math.atan2(p.y-geo.y,p.x-geo.x)),gs.a0);
+  else if(gm==='move'){geo.x=gs.x+p.x-gs.px;geo.y=gs.y+p.y-gs.py;}
+  else if(gm==='pinch'&&ptrs.size>=2){const[a,b]=[...ptrs.values()];geo.rot=gs.rot+adiff(deg(Math.atan2(b.y-a.y,b.x-a.x)),gs.ang);geo.x=gs.x+(a.x+b.x)/2-gs.mx;geo.y=gs.y+(a.y+b.y)/2-gs.my;}
+  geo.x=Math.max(20,Math.min(980,geo.x));geo.y=Math.max(20,Math.min(600,geo.y));drawGeo();});
+function endG(e){if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(!ptrs.size){gm=null;snapGeo();}else beginG();}
+window.addEventListener('pointerup',endG);window.addEventListener('pointercancel',endG);
+$('#rotL').onclick=()=>{if(locked)return;geo.rot-=15;drawGeo();snapGeo();};$('#rotR').onclick=()=>{if(locked)return;geo.rot+=15;drawGeo();snapGeo();};
+$('#geoReset').onclick=()=>{Object.assign(geo,HOME);drawGeo();};
+const MAGTXT={gross:'großzügig',genau:'genau',aus:'aus'};
+function updMag(){const b=$('#magBtn');b.classList.toggle('off',S.mag==='aus');b.innerHTML='🧲<span class="maglbl">'+MAGTXT[S.mag]+'</span>';}
+$('#magBtn').onclick=()=>{S.mag={gross:'genau',genau:'aus',aus:'gross'}[S.mag];save();updMag();say({gross:'Magnet großzügig',genau:'Magnet genau. Du musst sehr genau anlegen.',aus:'Magnet aus'}[S.mag]);};updMag();
+
+let T2=null,steps=[],si=0,strokes=[],dots=[],tries=0,tool='move',cur=null,ghostOn=false,lastD2=null;
+function newTask2(){
+  resetPointers();strokes=[];dots=[];tries=0;ghostOn=false;cur=null;
+  const th=S.slant&&Math.random()<.5?pick([-15,-10,10,15]):0;
+  const dl=S.half?[1,1.5,2,2.5,3,3.5]:[1,2,3];let d=pick(dl);if(d===lastD2)d=pick(dl.filter(x=>x!==d));lastD2=d;
+  const u=[Math.cos(rad(th)),Math.sin(rad(th))],n=[u[1],-u[0]],C=[470,420];
+  const S1=add(C,mul(u,-190)),S2=add(C,mul(u,190)),Q1=add(S1,mul(n,d*CM)),Q2=add(S2,mul(n,d*CM));
+  T2={th,d,u,n,C,S1,S2,Q1,Q2};
+  steps=[{type:'mark',k:1,spot:S1,Q:Q1},{type:'mark',k:2,spot:S2,Q:Q2},{type:'line',P0:Q1,P1:Q2,u,len:dist(Q1,Q2)}];si=0;
+  const A=add(C,mul(u,-430)),B=add(C,mul(u,430));
+  el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#1D7FD8','stroke-width':6,'stroke-linecap':'round'},taskL);
+  [[S1,1],[S2,2]].forEach(([P,k])=>{el('circle',{cx:P[0],cy:P[1],r:10,fill:'#2A9D4B',stroke:'#fff','stroke-width':3},taskL);const L=add(P,mul(n,-32));txt(taskL,L[0],L[1],String(k),{'font-size':26,fill:'#2A9D4B'});});
+  geoG.style.transition='none';geoG.style.opacity='1';geoG.style.pointerEvents='';Object.assign(geo,HOME);drawGeo();
+  setCtrl([{t:'📐 Geodreieck legen',id:'toolMove',fn:()=>setTool('move')},{t:'✏️ Punkt setzen',id:'toolDraw',fn:()=>{setTool('draw');say(steps[si]&&steps[si].type==='line'?'Zeichne an der langen Kante entlang.':'Tippe an der langen Kante auf die richtige Zahl.');}},
+    {t:'↶ Weg damit',fn:undo2},{t:'💡 Hilfe',fn:()=>{ghostOn=!ghostOn;drawGhost();if(ghostOn)say('Lege das Geodreieck auf die gestrichelte Form.');}}]);
+  setTool('move');strip2();setInstr(instr2());}
+function strip2(){const it=[{t:'Abstand '+(Number.isInteger(T2.d)?cmT(T2.d):(T2.d*10)+' mm = '+cmT(T2.d)),c:'D'},'|'];
+  ['Punkt 1','Punkt 2','Linie'].forEach((t,i)=>it.push({t:t+(i<si?' ✓':''),c:i<si?'done':i===si?'cur':''}));setStrip(it);}
+function instr2(){const s=steps[si];if(!s)return'';if(s.type==='line')return'Verbinde die 2 lila Punkte mit einer langen Linie.';
+  return`Grüner Punkt ${s.k}: Miss ${cmT(T2.d)} nach oben. Setze dort einen Punkt.`;}
+function rotN(){return deg(Math.atan2(T2.n[1],T2.n[0]));}
+function goalPose(s){if(s.type==='mark')return placeSo({rot:rotN()},0,0,s.spot);return placeSo({rot:T2.th},0,0,mul(add(s.P0,s.P1),.5));}
+function lineSpanOk(s){const Z=toWorld(0,0),c=Math.cos(rad(geo.rot)),sn=Math.sin(rad(geo.rot));return[s.P0,s.P1].every(P=>Math.abs((P[0]-Z[0])*c+(P[1]-Z[1])*sn)<=H-10);}
+function isGoalPose(){const s=steps[si];if(!s)return false;const Z=toWorld(0,0);
+  if(s.type==='line')return Math.abs(dot(sub(Z,s.P0),T2.n))<3&&Math.abs(ldiff(0,geo.rot-T2.th))<1&&lineSpanOk(s);
+  return dist(Z,s.spot)<3&&Math.abs(ldiff(0,geo.rot-rotN()))<1;}
+function snapGeo(){if(MODE!==2)return;const s=steps[si];if(S.mag==='aus'||locked||!s)return;
+  const LOOSE={a:18,d:55},TH=S.mag==='genau'?{a:4,d:15}:LOOSE;const near=t=>{feedback(t,'try');say(t);};const Z=toWorld(0,0);
+  if(s.type==='line'){const df=ldiff(0,geo.rot-T2.th),off=Math.abs(dot(sub(Z,s.P0),T2.n));
+    if(Math.abs(df)>TH.a||off>TH.d){if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&off<=LOOSE.d)near('Fast! Lege die lange Kante noch genauer an die lila Punkte.');return;}
+    geo.rot+=df;let a=dot(sub(Z,s.P0),T2.u);a=Math.max(s.len-(H-14),Math.min(H-14,a));placeSo(geo,0,0,add(s.P0,mul(T2.u,a)));}
+  else{const df=ldiff(0,geo.rot-rotN()),dd=dist(Z,s.spot);
+    if(Math.abs(df)>TH.a||dd>TH.d){if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&dd<=LOOSE.d)near('Fast! Lege die Nulllinie und die 0 noch genauer an.');return;}
+    geo.rot+=df;placeSo(geo,0,0,s.spot);}
+  drawGeo();sound('snap');
+  if(isGoalPose()){const t=s.type==='line'?'Gut angelegt! Jetzt tippe auf ✏️ Linie zeichnen.':'Gut angelegt! Jetzt tippe auf ✏️ Punkt setzen.';feedback(t,'ok');say(t.replace('Jetzt tippe auf','Jetzt'));}}
+function setTool(t){tool=t;const m=$('#toolMove'),d=$('#toolDraw');if(m)m.classList.toggle('toolsel',t==='move');if(d){d.classList.toggle('toolsel',t==='draw');d.textContent=steps[si]&&steps[si].type==='line'?'✏️ Linie zeichnen':'✏️ Punkt setzen';}
+  geoG.style.pointerEvents=t==='move'&&!locked?'':'none';glow.style.display=t==='draw'?'':'none';geoG.style.cursor=t==='move'?'grab':'crosshair';}
+function longEdge(){return{a:toWorld(-H,0),b:toWorld(H,0)};}
+function projT(e,q){const v=sub(e.b,e.a),l2=dot(v,v);return Math.max(0,Math.min(1,dot(sub(q,e.a),v)/l2));}
+const lerp=(e,t)=>[e.a[0]+(e.b[0]-e.a[0])*t,e.a[1]+(e.b[1]-e.a[1])*t];
+const tx=t=>-H+t*2*H;
+function snapDot(t){const step=Number.isInteger(T2.d)?CM:CM/2;let x=Math.round(tx(t)/step)*step;x=Math.max(-7*CM,Math.min(7*CM,x));return(x+H)/(2*H);}
+let lastCm=null;
+stage.addEventListener('pointerdown',e=>{
+  if(MODE!==2||tool!=='draw'||locked)return;if(cur&&!e.isPrimary)return;const st=steps[si];if(!st)return;e.preventDefault();const p=svgPt(stage,e),q=[p.x,p.y];
+  const ed=longEdge(),t=projT(ed,q),w=lerp(ed,t);
+  if(dist(w,q)>45){const m='Tippe genau an die lange Kante vom Geodreieck.';feedback(m,'try');say(m);return;}
+  hideFb();lastCm=null;
+  if(st.type==='mark')cur={type:'dot',id:e.pointerId,ed,t:snapDot(t)};else cur={type:'line',id:e.pointerId,ed,t0:t,t1:t};render2();});
+window.addEventListener('pointermove',e=>{if(!cur||e.pointerId!==cur.id)return;const p=svgPt(stage,e),q=[p.x,p.y];
+  if(cur.type==='dot'){const t=snapDot(projT(cur.ed,q));if(t!==cur.t){cur.t=t;sound('tick');}}else cur.t1=projT(cur.ed,q);render2();});
+function endStroke(e){if(!cur||e.pointerId!==cur.id)return;const c=cur;cur=null;
+  if(c.type==='dot'){const P=lerp(c.ed,c.t);sound('pen');checkDot(P);return;}
+  const a=lerp(c.ed,c.t0),b=lerp(c.ed,c.t1);
+  if(dist(a,b)>12){const s={a,b,status:'pend'};strokes.push(s);sound('pen');render2();checkStroke2(s);}else render2();}
+window.addEventListener('pointerup',endStroke);window.addEventListener('pointercancel',endStroke);
+function render2(){strokeL.innerHTML='';
+  strokes.forEach(s=>{const c=s.status==='ok'?'#8E44AD':s.status==='bad'?'#E63946':'#D6338A';
+    el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:'#fff','stroke-width':11,'stroke-linecap':'round',opacity:.8},strokeL);
+    el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:c,'stroke-width':7,'stroke-linecap':'round','stroke-dasharray':s.status==='bad'?'14 8':'none'},strokeL);});
+  dots.forEach(d=>el('circle',{cx:d.P[0],cy:d.P[1],r:10,fill:d.status==='bad'?'#E63946':'#D6338A',stroke:'#fff','stroke-width':3},strokeL));
+  if(!cur)return;
+  if(cur.type==='dot'){const P=lerp(cur.ed,cur.t),c=Math.abs(tx(cur.t))/CM;el('circle',{cx:P[0],cy:P[1],r:11,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeL);
+    const lx=P[0]+62,ly=P[1]-34;el('rect',{x:lx-48,y:ly-22,width:96,height:44,rx:12,fill:'#fff',stroke:'#D6338A','stroke-width':3},strokeL);txt(strokeL,lx,ly+1,cmT(c),{'font-size':24,fill:'#1F2A37'});}
+  else{const a=lerp(cur.ed,cur.t0),b=lerp(cur.ed,cur.t1);el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'#D6338A','stroke-width':7,'stroke-linecap':'round'},strokeL);
+    el('circle',{cx:b[0],cy:b[1],r:12,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeL);txt(strokeL,b[0]+22,b[1]-22,'✏️',{'font-size':26});}}
+function undo2(){if(locked)return;for(let i=strokes.length-1;i>=0;i--)if(strokes[i].status==='pend'){strokes.splice(i,1);break;}render2();}
+function drawGhost(){ghostL.innerHTML='';const s=steps[si];if(!ghostOn||!s)return;
+  const pz=goalPose(s);const pts=[[-H,0],[H,0],[0,-H]].map(([x,y])=>toWorldG(pz,x,y));
+  el('polygon',{points:pts.map(p=>p.join(',')).join(' '),fill:'rgba(255,212,0,.15)',stroke:'#C99700','stroke-width':3,'stroke-dasharray':'12 8'},ghostL);
+  if(s.type==='mark')el('circle',{cx:s.Q[0],cy:s.Q[1],r:12,fill:'none',stroke:'#9aa5b1','stroke-width':4,'stroke-dasharray':'6 5'},ghostL);
+  else el('line',{x1:s.P0[0],y1:s.P0[1],x2:s.P1[0],y2:s.P1[1],stroke:'#9aa5b1','stroke-width':5,'stroke-dasharray':'10 8'},ghostL);}
+function checkDot(P){const st=steps[si];const D=sub(P,st.spot),a=dot(D,T2.u),h=dot(D,T2.n);const obj={P,status:'pend'};dots.push(obj);render2();
+  if(dist(P,st.Q)<8){dots=dots.filter(x=>x!==obj);return stepDone2();}
+  if(Math.abs(a)>8)return wrong2(obj,`Der Punkt ist nicht genau über dem grünen Punkt ${st.k}. Lege die 0 genau auf den grünen Punkt und die Nulllinie auf die blaue Linie.`);
+  if(h<0)return wrong2(obj,'Der Punkt ist unter der blauen Linie. Setze ihn oben.');
+  return wrong2(obj,`Das sind ${cmT(h/CM)}. Der Abstand soll ${cmT(T2.d)} sein.`);}
+function evalStroke(s,st){const us=unit(sub(s.b,s.a));const angOk=Math.abs(us[0]*st.u[1]-us[1]*st.u[0])<Math.sin(rad(3));
+  const m=sub(mul(add(s.a,s.b),.5),st.P0);const off=Math.abs(m[0]*st.u[1]-m[1]*st.u[0]);
+  const ta=dot(sub(s.a,st.P0),st.u),tb=dot(sub(s.b,st.P0),st.u);return{angOk,offOk:off<8,lo:Math.min(ta,tb),hi:Math.max(ta,tb)};}
+function checkStroke2(s){const st=steps[si],r=evalStroke(s,st),TOL=9;
+  if(!r.angOk)return wrong2(s,'Der Strich ist schief. Lege die lange Kante genau an die 2 lila Punkte.');
+  if(!r.offOk)return wrong2(s,'Der Strich geht nicht durch die lila Punkte. Lege die lange Kante genau an.');
+  const parts=strokes.filter(x=>x.status==='pend').map(x=>evalStroke(x,st));const lo=Math.min(...parts.map(p=>p.lo)),hi=Math.max(...parts.map(p=>p.hi));
+  if(lo<=TOL&&hi>=st.len-TOL)return stepDone2();
+  const t='Gut! Zeichne weiter – durch beide lila Punkte.';feedback(t,'try');say(t);}
+function wrong2(obj,t){obj.status='bad';render2();tries++;sound('no');locked=true;setTool(tool);
+  if(tries>=2&&!ghostOn){ghostOn=true;drawGhost();t+=' Die gestrichelte Form hilft dir.';feedback(t,'sol');}else feedback(t,'try');
+  say(t);setTimeout(()=>{strokes=strokes.filter(x=>x!==obj);dots=dots.filter(x=>x!==obj);locked=false;setTool(tool);render2();},2200);}
+function stepDone2(){const st=steps[si];tries=0;ghostOn=false;ghostL.innerHTML='';
+  if(st.type==='mark'){measureBar(st.spot,st.Q,'#8E44AD',cmT(T2.d),fillL);corner(st.spot,T2.u,T2.n,'#2A9D4B',22,fillL);
+    el('circle',{cx:st.Q[0],cy:st.Q[1],r:10,fill:'#8E44AD',stroke:'#fff','stroke-width':3},taskL);}
+  si++;render2();strip2();
+  if(si>=steps.length)return success2();
+  sound('step');const w=pick(['Prima!','Super!','Genau!','Toll!']);feedback(w+' ✓','ok');setInstr(instr2());setTool('move');
+  locked=true;say(w+' '+instr2());setTimeout(()=>{locked=false;setTool('move');},600);}
+function success2(){strokes=[];render2();const{u,Q1,C,n,d}=T2;const Cq=add(C,mul(n,d*CM));
+  const A=add(Cq,mul(u,-430)),B=add(Cq,mul(u,430));el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#8E44AD','stroke-width':6,'stroke-linecap':'round'},taskL);
+  measureBar(add(C,mul(u,-380)),add(add(C,mul(u,-380)),mul(n,d*CM)),'#2A9D4B',cmT(d),markL);
+  measureBar(add(C,mul(u,380)),add(add(C,mul(u,380)),mul(n,d*CM)),'#2A9D4B',cmT(d),markL);
+  measureBar(C,Cq,'#2A9D4B',cmT(d),markL);
+  setInstr('Fertig – zwei parallele Linien! ⭐');
+  win(`Super! Die zwei Linien sind parallel. Der Abstand ist überall ${cmT(d)}.`,2);}
+
+/* ================= Geobrett-Formen (Modus 3 & 4) ================= */
+const GR={sp:80,x0:300,y0:110};
+const gpt=g=>[GR.x0+g[0]*GR.sp,GR.y0+g[1]*GR.sp];
+function drawBoard(){el('rect',{x:GR.x0-40,y:GR.y0-40,width:5*GR.sp+80,height:5*GR.sp+80,rx:18,fill:'#F3E3CC',stroke:'#dcc4a2','stroke-width':3},bgL);
+  for(let i=0;i<6;i++)for(let j=0;j<6;j++){const P=gpt([i,j]);el('circle',{cx:P[0],cy:P[1],r:5,fill:'#7a6650'},bgL);}}
+function convex(p){let sg=0;for(let i=0;i<4;i++){const a=p[i],b=p[(i+1)%4],c=p[(i+2)%4];const cr=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);if(cr===0)return false;if(sg&&Math.sign(cr)!==sg)return false;sg=Math.sign(cr);}return true;}
+function fit(p){const xs=p.map(q=>q[0]),ys=p.map(q=>q[1]);const mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys);
+  if(mxx-mnx>5||mxy-mny>5)return null;const ox=rint(-mnx,5-mxx),oy=rint(-mny,5-mxy);return p.map(q=>[q[0]+ox,q[1]+oy]);}
+const rightAt=(p,i)=>dot(sub(p[(i+3)%4],p[i]),sub(p[(i+1)%4],p[i]))===0;
+const len2=(p,i)=>{const v=sub(p[(i+1)%4],p[i]);return dot(v,v);};
+const isRectP=p=>[0,1,2,3].every(i=>rightAt(p,i));
+const isSqP=p=>isRectP(p)&&[1,2,3].every(i=>len2(p,i)===len2(p,0));
+function rawShape(kind){
+  if(kind==='rect'){let w=rint(2,5),h=rint(1,4);if(w===h)h=w-1;if(Math.random()<.4)[w,h]=[h,w];return[[0,0],[w,0],[w,h],[0,h]];}
+  if(kind==='square'){const s=rint(2,4);return[[0,0],[s,0],[s,s],[0,s]];}
+  if(kind==='rotSquare'){const u=pick([[1,1],[2,1],[1,2],[2,2],[3,1],[1,3],[2,-1],[1,-2]]),v=[-u[1],u[0]];return[[0,0],u,add(u,v),v];}
+  if(kind==='rotRect'){const b=pick([[1,1],[1,-1],[2,1],[1,2]]),[k1,k2]=pick([[1,2],[2,1],[1,3],[3,1]]);const u=mul(b,k1),v=mul([-b[1],b[0]],k2);return[[0,0],u,add(u,v),v];}
+  if(kind==='trap')return pick([[[0,0],[4,0],[3,2],[1,2]],[[0,0],[4,0],[4,2],[1,2]],[[0,0],[5,0],[4,3],[0,3]],[[1,0],[3,0],[4,2],[0,2]],[[0,0],[3,0],[3,3],[0,2]]]);
+  if(kind==='para')return pick([[[0,0],[3,0],[4,2],[1,2]],[[1,0],[4,0],[3,3],[0,3]],[[0,0],[2,1],[2,4],[0,3]]]);
+  if(kind==='rhombus')return pick([[[0,1],[2,0],[4,1],[2,2]],[[1,0],[2,2],[1,4],[0,2]],[[0,0],[2,1],[3,3],[1,2]]]);
+  if(kind==='irregA'||kind==='irreg'){const p=rawShape(kind==='irregA'?pick(['rect','square']):pick(['rotSquare','rotRect']));const i=rint(0,3);p[i]=add(p[i],pick([[1,0],[-1,0],[0,1],[0,-1]]));return p;}}
+function makeShape(kind){for(let k=0;k<80;k++){let p=rawShape(kind);if(!convex(p))continue;
+    if((kind==='irreg'||kind==='irregA')&&isRectP(p))continue;p=fit(p);if(p)return p;}return[[0,0],[4,0],[4,2],[0,2]];}
+function shapeLines(P,cols,w){for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:cols[i]||'#2A9D4B','stroke-width':w||8,'stroke-linecap':'round',id:'side'+i},taskL);}}
+function sideHits(P,fn){for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];const h=el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'rgba(0,0,0,0)','stroke-width':46,'pointer-events':'stroke',style:'cursor:pointer'},hitL);h.addEventListener('pointerdown',e=>{e.preventDefault();fn(i);});}}
+function cornerHits(P,fn,skip){P.forEach((Q,i)=>{if(skip&&skip[i])return;const h=el('circle',{cx:Q[0],cy:Q[1],r:36,fill:'rgba(255,212,0,.25)',stroke:'#E0B000','stroke-width':3,'stroke-dasharray':'6 5','pointer-events':'all',style:'cursor:pointer'},hitL);h.addEventListener('pointerdown',e=>{e.preventDefault();fn(i);});});}
+function blinkEl(node){if(!node)return;node.classList.remove('blink');void node.getBBox();node.classList.add('blink');setTimeout(()=>node.classList.remove('blink'),2100);}
+
+/* ================= Modus 3: Parallele Seiten färben ================= */
+let M3=null;const PC=['#1D7FD8','#F28C28'],PN=['blauen','orangen'],PA=['blaue','orange'];
+function newTask3(){GR.x0=300;GR.y0=135;const easy=(S.n3||0)<3;
+  const g=makeShape(pick(easy?['rect','rect','square']:['rect','square','rotRect','rotSquare']));
+  M3={g,P:g.map(gpt),col:[null,null,null,null],phase:'pick',pair:0,first:-1,tries:0,done:[false,false,false,false],sq:isSqP(g)};
+  drawBoard();render3();setInstr('Tippe eine Seite an.');setCtrl([{t:'💡 Hilfe',fn:hint3}]);strip3();}
+function strip3(){const ph=M3.phase,pr=M3.pair;const st=[{t:'1 blaues Paar',d:pr>0||ph==='corners'},{t:'2 oranges Paar',d:ph==='corners'},{t:'3 rechte Winkel',d:false}];
+  const curI=ph==='corners'?2:pr;setStrip(['|',...st.map((s,i)=>({t:s.t+(s.d?' ✓':''),c:s.d?'done':i===curI?'cur':''}))]);}
+function render3(){taskL.innerHTML='';hitL.innerHTML='';shapeLines(M3.P,M3.col);
+  M3.P.forEach(Q=>el('circle',{cx:Q[0],cy:Q[1],r:7,fill:'#1F5E2E'},taskL));
+  if(M3.phase==='corners')cornerHits(M3.P,tapCorner3,M3.done);else sideHits(M3.P,tapSide3);}
+function tapSide3(i){if(locked)return;
+  if(M3.phase==='pick'){if(M3.col[i]){const t='Diese Seite hat schon eine Farbe. Tippe eine grüne Seite an.';feedback(t,'try');say(t);return;}
+    M3.col[i]=PC[M3.pair];M3.first=i;M3.phase='par';M3.tries=0;sound('tick');hideFb();render3();
+    setInstr(`Welche Seite ist parallel zur ${PN[M3.pair]} Seite? Tippe sie an.`);sayInstr();return;}
+  if(M3.phase==='par'){const opp=(M3.first+2)%4;
+    if(i===M3.first){const t=`Das ist die ${PA[M3.pair]} Seite selbst. Suche die Seite gegenüber.`;feedback(t,'try');say(t);return;}
+    if(i===opp){M3.col[i]=PC[M3.pair];const P=M3.P,a=P[M3.first],b=P[(M3.first+1)%4],side=sub(P[(M3.first+3)%4],a);
+      [.3,.7].forEach(f=>{const A=add(a,mul(sub(b,a),f));measureBar(A,add(A,side),PC[M3.pair],null,fillL);});
+      M3.pair++;sound('step');
+      if(M3.pair<2){M3.phase='pick';render3();strip3();feedback('Genau! Diese 2 Seiten sind parallel. ✓','ok');setInstr('Jetzt die 2 grünen Seiten: Tippe eine an.');say('Genau! Diese zwei Seiten sind parallel. Der Abstand ist überall gleich. '+instrText);}
+      else{M3.phase='corners';render3();strip3();feedback('Super! Auch diese 2 Seiten sind parallel. ✓','ok');setInstr('Zeig die rechten Winkel: Tippe alle 4 Ecken an.');say('Super! Auch diese zwei Seiten sind parallel. '+instrText);}
+      return;}
+    M3.tries++;sound('no');const ln=$('#side'+i);if(ln){ln.setAttribute('stroke','#E63946');setTimeout(()=>{ln.setAttribute('stroke',M3.col[i]||'#2A9D4B');},1200);}
+    let t=`Nein. Diese Seite trifft die ${PA[M3.pair]} Seite an einer Ecke. Parallele Seiten treffen sich nie.`;
+    if(M3.tries>=2){t+=' Schau: Die blinkende Seite ist gegenüber.';blinkEl($('#side'+opp));}
+    feedback(t,'try');say(t);}}
+function tapCorner3(i){if(locked||M3.done[i])return;M3.done[i]=true;const P=M3.P;corner(P[i],sub(P[(i+1)%4],P[i]),sub(P[(i+3)%4],P[i]),'#E63946',24);sound('tick');render3();
+  const n=M3.done.filter(x=>x).length;
+  if(n<4){feedback(`Rechter Winkel ✓  (${n} von 4)`,'ok');say(n===1?'Ein rechter Winkel.':n+' rechte Winkel.');return;}
+  setStrip([]);win(M3.sq?'Super! 2 Paare parallele Seiten und 4 rechte Winkel. Alle Seiten sind gleich lang: ein Quadrat.':'Super! 2 Paare parallele Seiten und 4 rechte Winkel. Das ist ein Rechteck.');}
+function hint3(){if(locked)return;
+  if(M3.phase==='pick'){const t='Tippe eine grüne Seite an.';say(t);feedback(t,'sol');for(let i=0;i<4;i++)if(!M3.col[i])blinkEl($('#side'+i));}
+  else if(M3.phase==='par'){const t='Die Seite gegenüber blinkt. Sie ist parallel.';say(t);feedback(t,'sol');blinkEl($('#side'+((M3.first+2)%4)));}
+  else{const t='Tippe auf die gelben Kreise an den Ecken.';say(t);feedback(t,'sol');[...hitL.children].forEach(blinkEl);}}
+
+/* ================= Modus 4: Rechteck? Quadrat? ================= */
+let M4=null,hist4=[];const SC=['#1D7FD8','#F28C28','#8E44AD','#D6338A'];
+function newTask4(){GR.x0=110;GR.y0=135;const easy=(S.n4||0)<4;
+  let rect=Math.random()<.55;if(hist4.length>=2&&hist4.slice(-2).every(h=>h===rect))rect=!rect;hist4.push(rect);
+  const kind=rect?pick(easy?['rect','square']:['rect','square','rotRect','rotSquare']):pick(easy?['trap','irregA']:['trap','para','rhombus','irreg','irregA']);
+  const g=makeShape(kind);
+  M4={g,P:g.map(gpt),right:[0,1,2,3].map(i=>rightAt(g,i)),isRect:isRectP(g),isSq:isSqP(g),checked:[false,false,false,false],phase:'corners',tries:0,bars:false,cols:[null,null,null,null]};
+  drawBoard();render4();setInstr('Prüfe die Ecken: Tippe jede Ecke an.');setCtrl([{t:'💡 Hilfe',fn:hint4}]);strip4();}
+function strip4(){const ph=M4.phase;const it=[{t:'1 Ecken prüfen',k:'corners'},{t:'2 Rechteck?',k:'q1'},{t:'3 Quadrat?',k:'q2'}];const order=['corners','q1','q2'];const ci=order.indexOf(ph);
+  setStrip(['|',...it.map((s,i)=>({t:s.t+(i<ci?' ✓':''),c:i<ci?'done':i===ci?'cur':''}))]);}
+function panel4(){uiL.innerHTML='';const n=M4.checked.filter(x=>x).length,r=M4.right.filter((x,i)=>x&&M4.checked[i]).length,nr=n-r;
+  el('rect',{x:600,y:70,width:380,height:150,rx:18,fill:'#FAFBFE',stroke:'#e5e7eb','stroke-width':3},uiL);
+  txt(uiL,790,110,`✓ rechte Winkel: ${r}`,{'font-size':30,fill:'#2A9D4B'});
+  txt(uiL,790,170,`✗ keine rechten Winkel: ${nr}`,{'font-size':26,fill:'#E63946'});
+  if(M4.bars){const P=M4.P;txt(uiL,790,262,'Seiten nebeneinander:',{'font-size':24,fill:'#1F2A37'});
+    for(let i=0;i<4;i++){const L=dist(P[i],P[(i+1)%4]),y=310+i*62;el('line',{x1:600,y1:y,x2:600+L,y2:y,stroke:SC[i],'stroke-width':14,'stroke-linecap':'round'},uiL);}
+    el('line',{x1:600,y1:285,x2:600,y2:520,stroke:'#9aa5b1','stroke-width':2,'stroke-dasharray':'5 5'},uiL);}}
+function render4(){taskL.innerHTML='';hitL.innerHTML='';shapeLines(M4.P,M4.cols);M4.P.forEach(Q=>el('circle',{cx:Q[0],cy:Q[1],r:7,fill:'#1F5E2E'},taskL));
+  if(M4.phase==='corners')cornerHits(M4.P,tapCorner4,M4.checked);panel4();}
+function markCorner4(i){const P=M4.P,Q=P[i],u=sub(P[(i+1)%4],Q),v=sub(P[(i+3)%4],Q);const bis=unit(add(unit(u),unit(v))),L=add(Q,mul(bis,58));
+  const g=el('g',{id:'cm'+i},markL);
+  if(M4.right[i]){corner(Q,u,v,'#2A9D4B',24,g);txt(g,L[0],L[1],'✓',{'font-size':30,fill:'#2A9D4B'});}
+  else{arcMark(Q,u,v,'#E63946',30,g);txt(g,L[0],L[1],'✗',{'font-size':30,fill:'#E63946'});}}
+function tapCorner4(i){if(locked||M4.checked[i])return;M4.checked[i]=true;markCorner4(i);render4();
+  if(M4.right[i]){sound('step');feedback('Rechter Winkel ✓','ok');say('Rechter Winkel.');}else{sound('tick');feedback('Kein rechter Winkel ✗','try');say('Kein rechter Winkel.');}
+  if(M4.checked.every(x=>x)){M4.phase='q1';strip4();locked=true;
+    setTimeout(()=>{locked=false;hideFb();setInstr('Ist das ein Rechteck? Ein Rechteck hat 4 rechte Winkel.');sayInstr();
+      setCtrl([{t:'✓ Ja, ein Rechteck',cls:'yes',fn:()=>answer4a(true)},{t:'✗ Nein, kein Rechteck',cls:'no',fn:()=>answer4a(false)}]);},1100);}}
+function nope(t,blinkFn){M4.tries++;sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(blinkFn)blinkFn();}
+function answer4a(yes){if(locked)return;const r=M4.right.filter(x=>x).length;
+  if(yes!==M4.isRect){
+    if(yes)nope(`Schau auf die Ecken: Nur ${r} Ecke${r===1?' ist ein rechter Winkel':'n sind rechte Winkel'}. Ein Rechteck braucht 4.`,()=>M4.right.forEach((x,i)=>{if(!x)blinkEl($('#cm'+i));}));
+    else nope('Schau auf die Ecken: Alle 4 Ecken sind rechte Winkel. Dann ist es ein Rechteck.',()=>[0,1,2,3].forEach(i=>blinkEl($('#cm'+i))));return;}
+  if(!M4.isRect){win(r===0?'Richtig! Es hat keinen rechten Winkel. Es ist kein Rechteck.':`Richtig! Es hat nur ${r} rechte${r===1?'n':''} Winkel. Es ist kein Rechteck.`);return;}
+  sound('step');M4.phase='q2';strip4();feedback('Richtig! 4 rechte Winkel – ein Rechteck. ✓','ok');
+  setInstr('Ist es auch ein Quadrat? Sind alle 4 Seiten gleich lang?');say('Richtig! Es ist ein Rechteck. '+instrText);
+  setCtrl([{t:'📏 Seiten vergleichen',fn:bars4},{t:'✓ Ja, ein Quadrat',cls:'yes',fn:()=>answer4b(true)},{t:'✗ Nein, kein Quadrat',cls:'no',fn:()=>answer4b(false)}]);}
+function bars4(){if(M4.bars||locked)return;M4.bars=true;M4.cols=SC.slice();render4();sound('tick');
+  const t='Die 4 Seiten liegen jetzt nebeneinander. Sind alle gleich lang?';feedback(t,'sol');say(t);}
+function answer4b(yes){if(locked)return;
+  if(yes!==M4.isSq){if(!M4.bars){M4.bars=true;M4.cols=SC.slice();render4();}
+    nope(yes?'Schau die Seiten an: 2 Seiten sind länger als die anderen 2. Es ist kein Quadrat.':'Schau die Seiten an: Alle 4 Seiten sind gleich lang. Es ist ein Quadrat.');return;}
+  win(M4.isSq?'Super! Alle 4 Seiten sind gleich lang. Es ist ein Quadrat – und auch ein Rechteck.':'Super! Es ist ein Rechteck. Aber nicht alle Seiten sind gleich lang. Es ist kein Quadrat.');}
+function hint4(){if(locked)return;const t='Tippe auf die gelben Kreise an den Ecken.';feedback(t,'sol');say(t);[...hitL.children].forEach(blinkEl);}
+
+/* ================= Belohnung: Gummi-Schleuder (3 Runden) ================= */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['sq','re','re','sq','tri','bal'],MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Formen!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Formen!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='sq')el('rect',{x:-s/2,y:-s/2,width:s,height:s,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
+  else if(t.shape==='re')el('rect',{x:-s*.7,y:-s*.4,width:s*1.4,height:s*.8,rx:4,fill:c,stroke:'#fff','stroke-width':4},g);
+  else if(t.shape==='tri')el('polygon',{points:`${-s/2},${s/2} ${s/2},${s/2} ${-s/2},${-s/2}`,fill:c,stroke:'#fff','stroke-width':4,'stroke-linejoin':'round'},g);
+  else{el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);}
+  if(t.shape!=='bal'){const m=s*.2,x0=t.shape==='re'?-s*.7:-s/2,y0=t.shape==='re'?s*.4:s/2;el('path',{d:`M${x0+m},${y0} L${x0+m},${y0-m} L${x0},${y0-m}`,fill:'none',stroke:'#fff','stroke-width':3},g);}}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+drawGeo();
+</script>
+</body>
+</html>
