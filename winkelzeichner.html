@@ -310,6 +310,8 @@ function projT(e,q){const v=[e.b[0]-e.a[0],e.b[1]-e.a[1]],l2=v[0]*v[0]+v[1]*v[1]
 const lerp=(e,t)=>[e.a[0]+(e.b[0]-e.a[0])*t,e.a[1]+(e.b[1]-e.a[1])*t];
 stage.addEventListener('pointerdown',e=>{
   if(tool!=='draw'||locked)return;if(cur&&!e.isPrimary)return;e.preventDefault();const p=svgPt(stage,e),q=[p.x,p.y];
+  if(LVL>1){const Z=toWorld(0,0),off=Math.abs((Z[0]-T.F[0])*T.nv[0]+(Z[1]-T.F[1])*T.nv[1]);
+    if(Math.abs(ldiff(T.ang,geo.rot-90))>=2||off>=6){const m='Halt! Die Nulllinie muss genau auf der Linie g liegen. Erst dann darfst du zeichnen.';feedback(m,'try');say(m);sound('no');return;}}
   let best=null;edges().forEach(ed=>{const t=projT(ed,q),w=lerp(ed,t),d=Math.hypot(w[0]-q[0],w[1]-q[1]);if(d<45&&(!best||d<best.d))best={ed,t,d};});
   if(!best){feedback('Zeichne genau an einer Kante vom Geodreieck.','try');say('Zeichne an einer Kante vom Geodreieck.');return;}
   cur={id:e.pointerId,ed:best.ed,t0:best.t,t1:best.t};renderStrokes();});

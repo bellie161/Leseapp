@@ -411,6 +411,7 @@ function snapDot(t){const step=Number.isInteger(T2.d)?CM:CM/2;let x=Math.round(t
 let lastCm=null;
 stage.addEventListener('pointerdown',e=>{
   if(MODE!==2||tool!=='draw'||locked)return;if(cur&&!e.isPrimary)return;const st=steps[si];if(!st)return;e.preventDefault();const p=svgPt(stage,e),q=[p.x,p.y];
+  if(st.type==='mark'){const Z=toWorld(0,0);if(Math.abs(ldiff(T2.th,geo.rot-90))>=2||Math.abs(dot(sub(Z,T2.S1),T2.n))>=6){const m='Halt! Die Nulllinie muss genau auf der blauen Linie liegen. Erst dann darfst du messen.';feedback(m,'try');say(m);sound('no');return;}}
   const ed=longEdge(),t=projT(ed,q),w=lerp(ed,t);
   if(dist(w,q)>45){const m='Tippe genau an die lange Kante vom Geodreieck.';feedback(m,'try');say(m);return;}
   hideFb();lastCm=null;
