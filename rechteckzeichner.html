@@ -98,7 +98,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   </div>
   <div class="row"><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
   <div class="progress" id="startProgress"></div>
-  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 12.11.2026</div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 12.11.2026 · 2</div>
 </section>
 
 <section id="task" class="screen">
@@ -164,6 +164,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   <div class="setrow">Stift rastet bei ganzen cm ein <div class="seg" id="snapSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
   <div class="setrow">Magnet (Andock-Hilfe) <div class="seg" id="magSeg"><button data-v="gross">großzügig</button><button data-v="genau">genau</button><button data-v="aus">aus</button></div></div>
   <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
   <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
 </div></div>
 
@@ -485,6 +486,12 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 drawGeo();
 strokeLayer.setAttribute('pointer-events','none');markLayer.setAttribute('pointer-events','none');ghostLayer.setAttribute('pointer-events','none');
 stage.appendChild(strokeLayer);stage.appendChild(markLayer);
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
 </script>
 </body>
 </html>
