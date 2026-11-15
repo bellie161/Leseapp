@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zahlendetektiv bis 1 Million</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600&display=swap">
+<style>
+  :root {
+    --bg: #f0f3f9; --card: #ffffff; --ink: #18223d; --muted: #56637f; --line: #d3dbea;
+    --key: #f5f7fc; --accent: #2c4fa3; --accent-ink: #ffffff; --accent-soft: #e3eaf9;
+    --plate: #bcd2f6; --rod: #bde6c8; --cube: #f9dc7c;
+    --kilo: #f5b5a8; --zt: #d6c3f1; --ht: #a6dfd9; --mio: #f7c98c;
+    --grid: #6f86b8;
+    --good: #1b7a45; --good-bg: #e1f3e8; --miss: #a04a08; --miss-bg: #fdebd4;
+    --font-body: "Andika", "Trebuchet MS", system-ui, sans-serif;
+    --font-display: "Fredoka", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1729; --card: #18223a; --ink: #e9eefb; --muted: #a2b0cf; --line: #2c3a5e;
+      --key: #202c4a; --accent: #86a8ff; --accent-ink: #0b1430; --accent-soft: #23325a;
+      --plate: #4a6fb5; --rod: #3f8f5d; --cube: #d8b436;
+      --kilo: #b8604f; --zt: #7b62a8; --ht: #2f8c84; --mio: #b9803a;
+      --grid: #a9bde6;
+      --good: #8fe0ad; --good-bg: #1b3a2a; --miss: #f3b36b; --miss-bg: #3e2d18;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-body); font-size: 17px; line-height: 1.45;
+    padding-inline: 16px; padding-block: 16px 32px;
+  }
+  .app { max-width: 1000px; margin-inline: auto; display: grid; gap: 16px; }
+  h1, h2 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  button { font-family: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .top { display: grid; gap: 10px; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+  .brand svg { flex: none; }
+  .home { border: 0; background: none; color: inherit; padding: 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font: inherit; }
+  .count { color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; text-align: right; }
+  .progress, .dots { display: flex; gap: 5px; }
+  .progress span, .dots span { flex: 1; height: 9px; border-radius: 5px; background: var(--line); }
+  .progress span.cur { background: var(--accent); }
+  .progress span.ok, .dots span.ok { background: var(--good); }
+  .progress span.miss, .dots span.miss { background: var(--miss); }
+
+  .card { background: var(--card); border: 1.5px solid var(--line); border-radius: 18px; padding: 18px; }
+
+  /* Startseite */
+  .start { display: grid; gap: 16px; }
+  .start-copy { display: grid; gap: 16px; align-content: start; }
+  .start h1 { font-size: clamp(30px, 5.4vw, 44px); line-height: 1.08; }
+  .pick-label { font-family: var(--font-display); font-weight: 500; font-size: 18px; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    min-height: 50px; padding: 0 16px; border-radius: 14px; border: 2px solid var(--line);
+    background: var(--key); color: var(--ink); font-size: 18px; font-weight: 700; cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .steps { display: grid; gap: 8px; }
+  .step {
+    display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; text-align: left;
+    min-height: 64px; padding: 8px 14px; border-radius: 14px; border: 2px solid var(--line);
+    background: var(--key); color: var(--ink); cursor: pointer;
+  }
+  .step .num {
+    width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--card); border: 2px solid var(--line); font-family: var(--font-display); font-weight: 600; font-size: 19px;
+  }
+  .step b { display: block; font-size: 18px; }
+  .step small { display: block; color: var(--muted); font-size: 15px; line-height: 1.3; }
+  .step[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .step[aria-pressed="true"] .num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .stats { color: var(--muted); font-size: 15px; }
+  .ex-title { font-family: var(--font-display); font-weight: 500; font-size: 20px; margin-bottom: 8px; }
+  .ex-note { margin-top: 12px; color: var(--muted); }
+  .ex-note b { color: var(--ink); }
+  .ladder { margin-top: 14px; padding-top: 12px; border-top: 1.5px dashed var(--line); display: grid; gap: 4px; font-size: 15px; color: var(--muted); }
+  .ladder-title { color: var(--ink); font-weight: 700; }
+
+  /* Aufgaben */
+  .task { display: grid; gap: 16px; }
+  .prompt { font-family: var(--font-display); font-weight: 500; font-size: 24px; margin-bottom: 10px; }
+  .drawing svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; padding-top: 12px; border-top: 1.5px dashed var(--line); font-size: 14px; color: var(--muted); }
+  .lg { display: inline-flex; align-items: center; gap: 7px; }
+  .lg svg { flex: none; }
+
+  .plate { fill: var(--plate); stroke: var(--ink); stroke-width: 1.3; }
+  .rod { fill: var(--rod); stroke: var(--ink); stroke-width: 1.3; }
+  .cube { fill: var(--cube); stroke: var(--ink); stroke-width: 1.3; }
+  .kilo { fill: var(--kilo); }
+  .zt { fill: var(--zt); }
+  .ht { fill: var(--ht); }
+  .mio { fill: var(--mio); }
+  .face { stroke: var(--ink); stroke-width: 1.2; stroke-linejoin: round; }
+  .lit { fill: #fff; opacity: .38; }
+  .dim3 { fill: #000; opacity: .16; }
+  .grid { fill: none; stroke: var(--grid); stroke-width: .5; }
+  .grid3 { fill: none; stroke: var(--ink); stroke-width: .35; opacity: .55; }
+  .guide { stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 5; }
+  .bignum { font-family: var(--font-display); font-weight: 600; fill: var(--ink); }
+
+  .panel { display: grid; gap: 12px; align-content: start; }
+  .answer-label { font-size: 15px; color: var(--muted); margin-bottom: 4px; }
+  .answer {
+    min-height: 78px; display: flex; align-items: center; justify-content: center;
+    background: var(--card); border: 2px solid var(--line); border-radius: 16px;
+    font-size: clamp(38px, 6vw, 54px); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .03em;
+  }
+  .answer.edit { border-color: var(--accent); }
+  .answer .ph { color: var(--line); }
+  .answer.edit::after { content: ""; width: 3px; height: .85em; background: var(--accent); margin-left: 6px; animation: blink 1.1s steps(2, start) infinite; }
+  @keyframes blink { to { visibility: hidden; } }
+
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .key {
+    min-height: clamp(58px, 9vh, 74px); border-radius: 14px; border: 1.5px solid var(--line);
+    background: var(--key); color: var(--ink); font-size: 30px; font-weight: 700;
+    box-shadow: 0 3px 0 var(--line); user-select: none; -webkit-user-select: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .key:active { transform: translateY(3px); box-shadow: 0 0 0 var(--line); }
+  .key.ok { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+  .key:disabled { opacity: .4; cursor: default; transform: none; }
+
+  .tf { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tf button {
+    min-height: 92px; border-radius: 16px; border: 2px solid var(--line); background: var(--key); color: var(--ink);
+    font-family: var(--font-display); font-weight: 500; font-size: 26px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  }
+  .tf button:active:not(:disabled) { transform: translateY(2px); }
+  .tf button:disabled { cursor: default; }
+  .tf button.right { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+  .tf button.wrong { background: var(--miss-bg); border-color: var(--miss); color: var(--miss); }
+  .tf button.dim { opacity: .45; }
+
+  .feedback { border-radius: 16px; padding: 14px 16px; border: 2px solid var(--line); display: grid; gap: 8px; }
+  .feedback.good { background: var(--good-bg); border-color: var(--good); }
+  .feedback.miss { background: var(--miss-bg); border-color: var(--miss); }
+  .feedback.hint { background: var(--accent-soft); border-color: var(--accent); }
+  .fb-title { font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+  .feedback.good .fb-title { color: var(--good); }
+  .feedback.miss .fb-title { color: var(--miss); }
+
+  .stv { width: 100%; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed; }
+  .stv th { font-size: 13px; font-weight: 400; color: var(--muted); padding-bottom: 4px; overflow: hidden; text-overflow: ellipsis; }
+  .stv td { text-align: center; font-size: 30px; font-weight: 700; background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 4px 0; color: var(--ink); }
+  .stv td.zero { background: var(--miss-bg); border-color: var(--miss); color: var(--miss); }
+  .stv.wide td { font-size: 24px; }
+  .stv-sum { font-size: 17px; }
+  .stv-sum b { font-size: 22px; }
+
+  .primary {
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 16px; min-height: 62px;
+    font-size: 22px; font-weight: 700; padding: 0 28px; cursor: pointer; width: 100%;
+  }
+  .primary:active { transform: translateY(2px); }
+  .secondary {
+    background: transparent; color: var(--accent); border: 2px solid var(--accent); border-radius: 16px; min-height: 62px;
+    font-size: 20px; font-weight: 700; padding: 0 24px; cursor: pointer; width: 100%;
+  }
+
+  .end-card { display: grid; gap: 14px; }
+  .end-kicker { color: var(--muted); font-size: 15px; }
+  .end-card h2 { font-size: clamp(30px, 5vw, 40px); }
+  .end-score { font-size: 22px; }
+  .end-score b { font-family: var(--font-display); font-size: 44px; font-weight: 600; margin-right: 6px; }
+  .misses { display: grid; gap: 10px; }
+  .misses h3 { font-family: var(--font-display); font-weight: 500; font-size: 20px; margin: 4px 0 0; }
+  .miss-item { display: grid; grid-template-columns: minmax(110px, 190px) 1fr; gap: 14px; align-items: center; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 14px; }
+  .miss-item svg { width: 100%; height: auto; display: block; }
+  .miss-item p { font-size: 16px; }
+  .end-actions { display: grid; gap: 10px; }
+
+  @media (min-width: 760px) {
+    body { padding-inline: 28px; padding-block: 24px 40px; }
+    .start { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 28px; }
+    .task { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; gap: 20px; }
+    .end-actions { grid-template-columns: 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .answer.edit::after { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <button class="home brand" id="btn-home" aria-label="Zur Startseite">
+        <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+          <path d="M18.5 18.5 L26 26" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+          <rect x="8" y="8" width="8" height="8" rx="1.5" fill="var(--plate)" stroke="var(--ink)" stroke-width="1"/>
+        </svg>
+        <span>Zahlendetektiv bis 1 Million</span>
+      </button>
+      <div class="count" id="count" hidden></div>
+    </div>
+    <div class="progress" id="progress" hidden></div>
+  </header>
+
+  <!-- Startseite -->
+  <section id="screen-start" class="start">
+    <div class="start-copy">
+      <h1>Löse die Fälle mit Würfeln, Platten und Stangen.</h1>
+      <div>
+        <p class="pick-label">Zahlenraum</p>
+        <div class="chips" id="modes"></div>
+      </div>
+      <div>
+        <p class="pick-label">Stufe</p>
+        <div class="steps" id="steps"></div>
+      </div>
+      <button class="primary" id="btn-start">Aufgaben starten</button>
+      <p class="stats" id="stats" hidden></p>
+    </div>
+    <div class="card">
+      <p class="ex-title">So liest du eine Darstellung</p>
+      <div class="drawing" id="ex-drawing"></div>
+      <div class="legend" id="ex-legend"></div>
+      <div id="ex-table" style="margin-top:14px"></div>
+      <p class="ex-note" id="ex-note"></p>
+      <div class="ladder" id="ex-ladder"></div>
+    </div>
+  </section>
+
+  <!-- Aufgabe -->
+  <section id="screen-task" class="task" hidden>
+    <div class="card">
+      <p class="prompt" id="prompt"></p>
+      <div class="drawing" id="drawing"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="panel">
+      <div>
+        <p class="answer-label" id="answer-label"></p>
+        <div class="answer" id="answer" aria-live="polite"></div>
+      </div>
+      <div class="feedback" id="feedback" aria-live="polite" hidden></div>
+      <div class="keypad" id="keypad">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key" data-key="back" aria-label="Letzte Ziffer löschen">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-5 6M12 9l5 6"/></svg>
+        </button>
+        <button class="key" data-key="0">0</button>
+        <button class="key ok" data-key="ok" id="key-ok" aria-label="Zahl prüfen">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
+        </button>
+      </div>
+      <div class="tf" id="tf" hidden>
+        <button id="btn-true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
+          richtig
+        </button>
+        <button id="btn-false">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          falsch
+        </button>
+      </div>
+      <button class="primary" id="btn-next" hidden>Weiter</button>
+    </div>
+  </section>
+
+  <!-- Ergebnis -->
+  <section id="screen-end" hidden>
+    <div class="card end-card">
+      <p class="end-kicker" id="end-kicker"></p>
+      <h2 id="end-title"></h2>
+      <p class="end-score"><b id="end-n"></b>von <span id="end-total"></span> beim ersten Versuch richtig</p>
+      <div class="dots" id="end-dots"></div>
+      <div class="misses" id="end-misses" hidden>
+        <h3>Das schauen wir uns noch einmal an</h3>
+        <div id="end-list" class="misses"></div>
+      </div>
+      <div class="end-actions">
+        <button class="secondary" id="btn-practice" hidden>Fehler noch einmal üben</button>
+        <button class="primary" id="btn-again">Neue Runde</button>
+      </div>
+      <button class="secondary" id="btn-back">Zahlenraum oder Stufe wechseln</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /*GEN-START*/
+  var rand = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); };
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  var shuffle = function (a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  };
+  var POW = function (i) { return Math.pow(10, i); };
+  var range = function (a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; };
+
+  // Stellenwerte: Index 0 = Einer … 6 = Million
+  var PL = [
+    { item: 'Einerwürfel', items: 'Einerwürfel', sw: 'Einer', k: 'E' },
+    { item: 'Zehnerstange', items: 'Zehnerstangen', sw: 'Zehner', k: 'Z' },
+    { item: 'Hunderterplatte', items: 'Hunderterplatten', sw: 'Hunderter', k: 'H' },
+    { item: 'Tausenderwürfel', items: 'Tausenderwürfel', sw: 'Tausender', k: 'T' },
+    { item: 'Zehntausenderstange', items: 'Zehntausenderstangen', sw: 'Zehntausender', k: 'ZT' },
+    { item: 'Hunderttausenderplatte', items: 'Hunderttausenderplatten', sw: 'Hunderttausender', k: 'HT' },
+    { item: 'Millionenwürfel', items: 'Millionenwürfel', sw: 'Millionen', k: 'M' }
+  ];
+  var itemName = function (i, n) { return n === 1 ? PL[i].item : PL[i].items; };
+  var swName = function (i, n) { return i === 6 ? (n === 1 ? 'Million' : 'Millionen') : PL[i].sw; };
+
+  // Zahlenräume: top = höchste Stelle, die in Stufe 3 vorkommt
+  var MODES = [
+    { id: '1000', top: 2, label: 'bis 1 000' },
+    { id: '10000', top: 3, label: 'bis 10 000' },
+    { id: '100000', top: 4, label: 'bis 100 000' },
+    { id: '1000000', top: 5, label: 'bis 1 Million' }
+  ];
+
+  function fmt(n) {
+    var s = String(n);
+    if (s.length < 5) return s;
+    return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+  function digitsOf(n) { var c = []; for (var i = 0; i <= 6; i++) c.push(Math.floor(n / POW(i)) % 10); return c; }
+  function numOf(c) { var n = 0; for (var i = 0; i < c.length; i++) n += (c[i] || 0) * POW(i); return n; }
+  function highest(c) { for (var i = c.length - 1; i >= 0; i--) if (c[i] > 0) return i; return 0; }
+
+  function two() {
+    var a = rand(1, 9), b = rand(1, 9);
+    while (b === a) b = rand(1, 9);
+    return [a, b];
+  }
+
+  /* ---- Aufgabenarten ---- */
+  function entryTask(n) { return { type: 'entry', n: n, c: digitsOf(n), tries: 0, result: null, wrong: [] }; }
+  function bundleTask(p) {
+    var c = [0, 0, 0, 0, 0, 0, 0]; c[p] = 10;
+    return { type: 'entry', bundle: true, bp: p, n: POW(p + 1), c: c, tries: 0, result: null, wrong: [] };
+  }
+  function countTask(p, k) {
+    var n = k * POW(p);
+    return { type: 'count', p: p, k: k, n: n, c: digitsOf(n), tries: 0, result: null, wrong: [] };
+  }
+  function tfTask(n, label) {
+    return { type: 'tf', n: n, c: digitsOf(n), label: label, isTrue: label === n, tries: 0, result: null, wrong: [] };
+  }
+
+  // Blöcke mischen: Zahlenfamilien bleiben zusammen, nie mehr als zwei Richtig-falsch-Aufgaben hintereinander
+  function assemble(f1, f2, tfs) {
+    var all = {}, cnt = 0;
+    f1.concat(f2).forEach(function (n) { if (!all[n]) { all[n] = 1; cnt++; } });
+    if (cnt !== 8) return null;
+    var seen = {}, dup = false;
+    tfs.forEach(function (t) { if (all[t.n] || seen[t.n] || t.label === t.n && false) dup = true; seen[t.n] = 1; });
+    if (dup) return null;
+    var blocks = [
+      { fam: true, tasks: shuffle(f1.slice()).map(entryTask) },
+      { fam: true, tasks: shuffle(f2.slice()).map(entryTask) }
+    ].concat(tfs.map(function (t) { return { fam: false, tasks: [t] }; }));
+    for (var k = 0; k < 200; k++) {
+      shuffle(blocks);
+      if (!blocks[0].fam) continue;
+      var run = 0, bad = false;
+      blocks.forEach(function (b) { run = b.fam ? 0 : run + 1; if (run > 2) bad = true; });
+      if (!bad) {
+        var out = [];
+        blocks.forEach(function (b) { out = out.concat(b.tasks); });
+        return out;
+      }
+    }
+    return null;
+  }
+  function truthTF(pairs) {
+    // pairs: [[n, fake], …] → 2 wahr, 2 falsch
+    var truth = shuffle([true, true, false, false]);
+    return pairs.map(function (p, i) { return tfTask(p[0], truth[i] ? p[0] : p[1]); });
+  }
+
+  /* ---- Stufe 1: neue Stufenzahl kennenlernen (1 Tausender = 1000 …) ---- */
+  function buildStep1(t) {
+    var U = POW(t);
+    for (var guard = 0; guard < 500; guard++) {
+      var ks = shuffle(range(1, 9));
+      var ent = ks.slice(0, 5), cnt = ks.slice(5, 8);
+      if (!ent.some(function (k) { return k >= 6; }) || !cnt.some(function (k) { return k >= 6; })) continue;
+      var kTrue = ks[8], kFalse = pick(ent);
+      var fake = pick([kFalse * U / 10, kFalse * U * 10]);
+      var mid = ent.map(function (k) { return entryTask(k * U); })
+        .concat(cnt.map(function (k) { return countTask(t, k); }))
+        .concat([tfTask(kTrue * U, kTrue * U), tfTask(kFalse * U, fake)]);
+      for (var j = 0; j < 100; j++) {
+        shuffle(mid);
+        if (mid[0].type !== 'entry') continue;
+        var ok = true;
+        for (var i = 2; i < mid.length; i++) if (mid[i].type === mid[i - 1].type && mid[i].type === mid[i - 2].type && mid[i].type !== 'entry') ok = false;
+        if (ok) break;
+      }
+      return [bundleTask(t - 1)].concat(mid, [bundleTask(t)]);
+    }
+    throw new Error('Stufe 1');
+  }
+
+  /* ---- Stufe 2: zwei Stellen (3400, 4300, 3000, 400) ---- */
+  function buildStep2(t) {
+    var U = POW(t), V = POW(t - 1);
+    var fam = function () { var p = two(), a = p[0], b = p[1]; return [a * U + b * V, b * U + a * V, a * U, b * V]; };
+    for (var guard = 0; guard < 500; guard++) {
+      var p1 = two(), p2 = two(), p3 = two(), p4 = two();
+      var pairs = shuffle([
+        [p1[0] * U + p1[1] * V, p1[1] * U + p1[0] * V],   // vertauscht
+        [p2[0] * U + p2[1] * V, 10 * p2[0] + p2[1]],      // Nullen vergessen
+        [p3[1] * V, p3[1] * U],                           // eine Null zu viel
+        [p4[0] * U, p4[0] * V]                            // eine Null zu wenig
+      ]);
+      var out = assemble(fam(), fam(), truthTF(pairs));
+      if (out) return out;
+    }
+    throw new Error('Stufe 2');
+  }
+
+  /* ---- Stufe 3, Zahlenraum 1000: wie bisher ---- */
+  var FAMILIES3 = {
+    zero: function () { var p = two(), a = p[0], b = p[1]; return [100 * a + 10 * b, 100 * a + b, 100 * b + a, 10 * b + a]; },
+    nul: function () { var p = two(), a = p[0], b = p[1]; return [10 * a + b, 100 * a + 10 * b, 100 * a + b, 100 * b + 10 * a]; },
+    triple: function () {
+      var x = rand(1, 9), y, z;
+      do { y = rand(1, 9); } while (y === x);
+      do { z = rand(1, 9); } while (z === x || z === y);
+      return [100 * x + 10 * y + z, 100 * y + 10 * z + x, 100 * z + 10 * x + y, 10 * y + z];
+    }
+  };
+  function tfPair1000(kind) {
+    var h, t, o;
+    if (kind === 'A') { h = rand(1, 9); o = rand(1, 9); return [100 * h + o, 10 * h + o]; }
+    if (kind === 'B') { t = rand(1, 9); o = rand(0, 9); return [10 * t + o, o === 0 ? 100 * t : 100 * t + 10 * o]; }
+    if (kind === 'C') { h = rand(1, 9); t = rand(1, 9); return [100 * h + 10 * t, 10 * t]; }
+    h = rand(1, 9); t = rand(1, 9);
+    do { o = rand(1, 9); } while (o === t);
+    return [100 * h + 10 * t + o, 100 * h + 10 * o + t];
+  }
+  function buildStep3_1000() {
+    for (var guard = 0; guard < 500; guard++) {
+      var types = Math.random() < 0.8 ? ['zero', 'nul'] : ['triple', pick(['zero', 'nul'])];
+      shuffle(types);
+      var pairs = shuffle(['A', 'B', 'C', 'D']).map(tfPair1000);
+      var out = assemble(FAMILIES3[types[0]](), FAMILIES3[types[1]](), truthTF(pairs));
+      if (out) return out;
+    }
+    throw new Error('Stufe 3');
+  }
+
+  /* ---- Stufe 3 ab 10 000: alle Stellen, Nullen als Platzhalter ---- */
+  function randDigits(t) { var d = []; for (var i = 0; i <= t; i++) d.push(rand(1, 9)); return d; }
+  function swapAt(d, i) { var e = d.slice(), x = e[i]; e[i] = e[i + 1]; e[i + 1] = x; return numOf(e); }
+  var FAMILIES = {
+    // 4050, 4005, 4500, 405
+    nullen: function (t) {
+      var p = two(), a = p[0], b = p[1];
+      var out = shuffle(range(0, t - 1)).slice(0, 3).map(function (j) { return a * POW(t) + b * POW(j); });
+      out.push(a * POW(t - 1) + b * POW(rand(0, t - 2)));
+      return out;
+    },
+    // 4500, 450, 5040, 5004
+    klang: function (t) {
+      var p = two(), a = p[0], b = p[1];
+      return [a * POW(t) + b * POW(t - 1), a * POW(t - 1) + b * POW(t - 2), b * POW(t) + a * POW(t - 2), b * POW(t) + a];
+    },
+    // 3405, 3045, 3450, 405: gleiche Ziffern, andere Stellen
+    voll: function (t) {
+      var d = randDigits(t);
+      if (t >= 3 && Math.random() < 0.6) d[rand(1, t - 2)] = 0;
+      var cand = range(0, t - 2).filter(function (i) { return d[i] !== d[i + 1]; });
+      if (cand.length < 2) return [1, 1, 1, 1];
+      shuffle(cand);
+      var n1 = numOf(d);
+      return [n1, swapAt(d, cand[0]), swapAt(d, cand[1]), n1 - d[t] * POW(t)];
+    }
+  };
+  function tfPairGen(kind, t) {
+    var d, n, z, i;
+    if (kind === 'A') {          // Null in der Mitte vergessen (3045 → 345)
+      d = randDigits(t); z = rand(1, t - 1); d[z] = 0; n = numOf(d);
+      return [n, Math.floor(n / POW(z + 1)) * POW(z) + n % POW(z)];
+    }
+    if (kind === 'B') {          // Null am Ende vergessen (4050 → 405)
+      d = randDigits(t); d[0] = 0; n = numOf(d); return [n, n / 10];
+    }
+    if (kind === 'C') {          // eine Stelle zu viel (4050 → 40500)
+      d = randDigits(t - 1); d[0] = 0; n = numOf(d); return [n, n * 10];
+    }
+    if (kind === 'Z') {          // die größte Zahl (10000 → 1000)
+      return [POW(t + 1), POW(t)];
+    }
+    d = randDigits(t);           // zwei Stellen vertauscht
+    i = rand(0, t - 2);
+    if (d[i] === d[i + 1]) d[i + 1] = d[i] === 9 ? 1 : d[i] + 1;
+    return [numOf(d), swapAt(d, i)];
+  }
+  function buildStep3(t) {
+    if (t === 2) return buildStep3_1000();
+    for (var guard = 0; guard < 500; guard++) {
+      var types = Math.random() < 0.75 ? ['nullen', 'klang'] : ['voll', pick(['nullen', 'klang'])];
+      shuffle(types);
+      var kinds = shuffle(['A', 'B', Math.random() < 0.3 ? 'Z' : 'C', 'D']);
+      var pairs = kinds.map(function (k) { return tfPairGen(k, t); });
+      var out = assemble(FAMILIES[types[0]](t), FAMILIES[types[1]](t), truthTF(pairs));
+      if (out) return out;
+    }
+    throw new Error('Stufe 3 gross');
+  }
+
+  function buildRound(t, step) {
+    return step === 1 ? buildStep1(t) : step === 2 ? buildStep2(t) : buildStep3(t);
+  }
+
+  /* ---- Tipps ---- */
+  function hintFor(task, g) {
+    var ns = String(task.n), i, p;
+    if (task.type === 'count') {
+      p = task.p;
+      if (g === ns || g.length > 2) return 'Gefragt ist, wie viele ' + PL[p].items + ' du brauchst, nicht die Zahl selbst.';
+      return '1 ' + PL[p].item + ' ist ' + fmt(POW(p)) + '. Zähle in ' + fmt(POW(p)) + 'er-Schritten bis ' + fmt(task.n) + '.';
+    }
+    if (task.bundle) {
+      p = task.bp;
+      return '10 ' + PL[p].items + ' sind so viel wie 1 ' + PL[p + 1].item + '. Also: 10 ' + swName(p, 10) + ' = 1 ' + swName(p + 1, 1) + '.';
+    }
+    for (i = 1; i < ns.length; i++) {
+      if (ns[i] !== '0') continue;
+      if (ns.slice(0, i) + ns.slice(i + 1) === g) {
+        p = ns.length - 1 - i;
+        return 'Es gibt keine ' + PL[p].items + '. Für 0 ' + PL[p].sw + ' schreibst du ' + (p === 0 ? 'am Ende ' : '') + 'eine 0.';
+      }
+    }
+    var stripped = ns[0] + ns.slice(1).replace(/0/g, '');
+    if (stripped !== ns && g === stripped) {
+      var miss = [];
+      for (i = 1; i < ns.length; i++) if (ns[i] === '0') miss.push(PL[ns.length - 1 - i].sw);
+      return 'Es fehlen ' + miss.join(' und ') + '. Für jede Stelle ohne Bündel schreibst du eine 0.';
+    }
+    if (g.length > ns.length) return 'Die Zahl hat nur ' + ns.length + ' Stellen. Es gibt keine ' + PL[ns.length].items + '.';
+    if (g.length < ns.length) return 'Die Zahl hat ' + ns.length + ' Stellen. Denk an die Nullen.';
+    return 'Zähle jede Sorte einzeln, von oben nach unten, und schreibe die Ziffern in dieser Reihenfolge.';
+  }
+
+  function compose(task, top) {
+    if (task.bundle) return '10 ' + PL[task.bp].items + ' sind 1 ' + PL[task.bp + 1].item + '.';
+    var d = digitsOf(task.n), hi = Math.max(top, highest(d)), parts = [];
+    for (var i = hi; i >= 0; i--) parts.push(d[i] + ' ' + swName(i, d[i]));
+    return parts.join(', ');
+  }
+
+  /* ---- Zeichnen ---- */
+  function plateEl(x, y, s) {
+    var st = s / 10, d = '';
+    for (var i = 1; i < 10; i++) d += 'M' + (x + i * st) + ' ' + y + 'v' + s + 'M' + x + ' ' + (y + i * st) + 'h' + s;
+    return '<rect class="plate" x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '" rx="2"/><path class="grid" d="' + d + '"/>';
+  }
+  function rodEl(x, y, w, h) {
+    var st = h / 10, d = '';
+    for (var i = 1; i < 10; i++) d += 'M' + x + ' ' + (y + i * st) + 'h' + w;
+    return '<rect class="rod" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="1.5"/><path class="grid" d="' + d + '"/>';
+  }
+  function cubeEl(x, y, s) {
+    return '<rect class="cube" x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '" rx="1.5"/>';
+  }
+  var r1 = function (v) { return Math.round(v * 10) / 10; };
+  // Schrägbild eines Quaders: Vorderfläche w×h, Tiefe d nach rechts oben; gx/gy/gz = Teilungen
+  function box3d(x, y, w, h, d, cls, gx, gy, gz) {
+    var P = function (a) { return a.map(function (p) { return r1(p[0]) + ',' + r1(p[1]); }).join(' '); };
+    var top = [[x, y + d], [x + d, y], [x + d + w, y], [x + w, y + d]];
+    var side = [[x + w, y + d], [x + w + d, y], [x + w + d, y + h], [x + w, y + h + d]];
+    var s = '<rect class="' + cls + ' face" x="' + x + '" y="' + (y + d) + '" width="' + w + '" height="' + h + '"/>' +
+      '<polygon class="' + cls + ' face" points="' + P(top) + '"/><polygon class="lit" points="' + P(top) + '"/>' +
+      '<polygon class="' + cls + ' face" points="' + P(side) + '"/><polygon class="dim3" points="' + P(side) + '"/>';
+    var g = '', i;
+    for (i = 1; i < gx; i++) {
+      var gxp = x + i * w / gx;
+      g += 'M' + r1(gxp) + ' ' + r1(y + d) + 'v' + h + 'M' + r1(gxp) + ' ' + r1(y + d) + 'l' + d + ' ' + (-d);
+    }
+    for (i = 1; i < gy; i++) {
+      var gyp = y + d + i * h / gy;
+      g += 'M' + x + ' ' + r1(gyp) + 'h' + w + 'l' + d + ' ' + (-d);
+    }
+    for (i = 1; i < gz; i++) {
+      var dz = i * d / gz;
+      g += 'M' + r1(x + dz) + ' ' + r1(y + d - dz) + 'h' + w + 'v' + h;
+    }
+    if (g) s += '<path class="grid3" d="' + g + '"/>';
+    s += '<rect x="' + x + '" y="' + (y + d) + '" width="' + w + '" height="' + h + '" fill="none" stroke="var(--ink)" stroke-width="1.2"/>';
+    return s;
+  }
+
+  // Maße je Stellenwert; two = ab 6 Stück zweite Reihe (wie Hunderterplatten)
+  var SH = [
+    { w: 11, h: 11, two: false, gap: 7 },
+    { w: 11, h: 34, two: false, gap: 9 },
+    { w: 34, h: 34, two: true, gap: 6 },
+    { w: 36, h: 36, two: true, gap: 8 },
+    { w: 15, h: 105, two: false, gap: 10 },
+    { w: 64, h: 64, two: true, gap: 8 },
+    { w: 136, h: 136, two: false, gap: 10 }
+  ];
+  function drawItem(i, x, y) {
+    if (i === 0) return cubeEl(x, y, 11);
+    if (i === 1) return rodEl(x, y, 11, 34);
+    if (i === 2) return plateEl(x, y, 34);
+    if (i === 3) return box3d(x, y, 26, 26, 10, 'kilo', 10, 10, 10);
+    if (i === 4) return box3d(x, y, 10, 100, 5, 'zt', 1, 10, 1);
+    if (i === 5) return box3d(x, y, 56, 56, 8, 'ht', 10, 10, 1);
+    return box3d(x, y, 100, 100, 36, 'mio', 10, 10, 10);
+  }
+
+  function svgBlocks(c, top) {
+    // Fünferstruktur: fünf Stück als Einheit, dann Lücke (oder zweite Reihe), dann der Rest.
+    var W = 400, X = 10, RS = 8, RG = 16, G5 = 18;
+    var hi = Math.max(top, highest(c)), y = 8, s = '', guides = '', parts = [];
+    for (var i = hi; i >= 0; i--) {
+      var n = c[i] || 0, sh = SH[i];
+      var rows = sh.two && n > 5 ? 2 : 1;
+      var bh = n === 0 ? Math.min(sh.h, 40) : rows * sh.h + (rows - 1) * RS;
+      for (var j = 0; j < n; j++) {
+        var x, yy = y;
+        if (sh.two) { var col = j < 5 ? j : j - 5; x = X + col * (sh.w + sh.gap); if (j >= 5) yy = y + sh.h + RS; }
+        else x = X + j * (sh.w + sh.gap) + (j >= 5 ? G5 : 0);
+        s += drawItem(i, x, yy);
+      }
+      parts.push(n + ' ' + itemName(i, n));
+      y += bh;
+      if (i > 0) guides += '<line class="guide" x1="' + X + '" x2="' + (W - X) + '" y1="' + (y + 7) + '" y2="' + (y + 7) + '"/>';
+      y += RG;
+    }
+    var H = y - RG + 10;
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + parts.join(', ') + '">' + guides + s + '</svg>';
+  }
+
+  function legendIcon(i) {
+    if (i === 0) return '<svg width="11" height="11" viewBox="0 0 11 11" aria-hidden="true">' + cubeEl(1, 1, 9) + '</svg>';
+    if (i === 1) return '<svg width="9" height="22" viewBox="0 0 9 22" aria-hidden="true">' + rodEl(1, 1, 7, 20) + '</svg>';
+    if (i === 2) return '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">' + plateEl(1, 1, 20) + '</svg>';
+    if (i === 3) return '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">' + box3d(1, 1, 16, 16, 6, 'kilo', 0, 0, 0) + '</svg>';
+    if (i === 4) return '<svg width="12" height="30" viewBox="0 0 12 30" aria-hidden="true">' + box3d(1, 1, 7, 25, 3, 'zt', 1, 5, 1) + '</svg>';
+    if (i === 5) return '<svg width="27" height="27" viewBox="0 0 27 27" aria-hidden="true">' + box3d(1, 1, 22, 22, 3, 'ht', 5, 5, 1) + '</svg>';
+    return '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">' + box3d(1, 1, 20, 20, 8, 'mio', 4, 4, 4) + '</svg>';
+  }
+  function legendHTML(top) {
+    var h = '';
+    for (var i = Math.min(top + 1, 6); i >= 0; i--) h += '<span class="lg">' + legendIcon(i) + PL[i].item + ' = ' + fmt(POW(i)) + '</span>';
+    return h;
+  }
+
+  function tableHTML(n, top, showNumber) {
+    var d = digitsOf(n), hi = Math.max(top, highest(d)), cols = hi + 1, head = '', body = '';
+    for (var i = hi; i >= 0; i--) {
+      head += '<th>' + (cols <= 4 ? PL[i].sw : PL[i].k) + '</th>';
+      body += '<td class="' + (d[i] === 0 ? 'zero' : '') + '">' + d[i] + '</td>';
+    }
+    return '<table class="stv' + (cols > 5 ? ' wide' : '') + '"><thead><tr>' + head + '</tr></thead><tbody><tr>' + body + '</tr></tbody></table>' +
+      (showNumber ? '<p class="stv-sum">Die Zahl heißt <b>' + fmt(n) + '</b>.</p>' : '');
+  }
+  /*GEN-END*/
+
+  /* ---------- Zustand ---------- */
+  var $ = function (s) { return document.querySelector(s); };
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SEL_KEY = 'zahlendetektiv.auswahl';
+  var sel = { mode: '1000', step: 3 };
+  try { var rs = JSON.parse(localStorage.getItem(SEL_KEY) || 'null'); if (rs && rs.mode && rs.step) sel = rs; } catch (e) {}
+  var modeTop = function (id) { for (var i = 0; i < MODES.length; i++) if (MODES[i].id === id) return MODES[i].top; return 2; };
+
+  var S = { tasks: [], i: 0, input: '', phase: 'answer', practice: false, top: 2, step: 3 };
+  var cur = function () { return S.tasks[S.i]; };
+
+  function statKey(mode, step) { return mode === '1000' && step === 3 ? 'zahlendetektiv.v1' : 'zahlendetektiv.' + mode + '.' + step; }
+  function loadStats(k) { try { var r = localStorage.getItem(k); if (r) return JSON.parse(r); } catch (e) {} return null; }
+  function saveStats(k, st) { try { localStorage.setItem(k, JSON.stringify(st)); } catch (e) {} }
+  function saveSel() { try { localStorage.setItem(SEL_KEY, JSON.stringify(sel)); } catch (e) {} }
+
+  function stepInfo(t, step) {
+    var U = POW(t);
+    if (step === 1) return { title: PL[t].sw + 'zahlen', sub: '1 ' + PL[t].sw + ' = ' + fmt(U) + ', 2 ' + PL[t].sw + ' = ' + fmt(2 * U) + ' … und bündeln: 10 ' + PL[t - 1].items + ' = 1 ' + PL[t].item };
+    if (step === 2) return { title: PL[t].sw + ' und ' + PL[t - 1].sw, sub: 'z. B. ' + fmt(3 * U + 4 * U / 10) + ', ' + fmt(4 * U + 3 * U / 10) + ' oder ' + fmt(4 * U / 10) };
+    var ex = t === 2 ? '306, 540, 54' : t === 3 ? '4050, 4005, 405' : t === 4 ? fmt(40500) + ', ' + fmt(40050) : fmt(405000) + ', ' + fmt(400050);
+    return { title: 'Alle Stellen', sub: 'Mit Nullen als Platzhalter, z. B. ' + ex };
+  }
+
+  /* ---------- Startseite ---------- */
+  function renderStart() {
+    var t = modeTop(sel.mode);
+    $('#modes').innerHTML = MODES.map(function (m) {
+      return '<button class="chip" data-mode="' + m.id + '" aria-pressed="' + (m.id === sel.mode) + '">' + m.label + '</button>';
+    }).join('');
+    $('#steps').innerHTML = [1, 2, 3].map(function (st) {
+      var info = stepInfo(t, st);
+      return '<button class="step" data-step="' + st + '" aria-pressed="' + (st === sel.step) + '"><span class="num">' + st + '</span><span><b>' + info.title + '</b><small>' + info.sub + '</small></span></button>';
+    }).join('');
+
+    // Beispiel
+    var c = [0, 0, 0, 0, 0, 0, 0], note;
+    if (sel.step === 1) {
+      c[t] = 3;
+      note = 'Jede Sorte hat ihren Platz. Hier liegen nur ' + PL[t].items + ': <b>3 ' + PL[t].sw + '</b> sind <b>' + fmt(3 * POW(t)) + '</b>. Für die leeren Stellen schreibst du Nullen.';
+    } else if (sel.step === 2) {
+      c[t] = 3; c[t - 1] = 4;
+      note = '<b>3 ' + PL[t].sw + '</b> und <b>4 ' + PL[t - 1].sw + '</b>. Die übrigen Stellen bekommen eine 0. Die Zahl heißt <b>' + fmt(numOf(c)) + '</b>.';
+    } else {
+      var fill = [6, 3, 1, 4, 2];
+      c[t] = 3; c[t - 1] = 0;
+      for (var i = t - 2, k = 0; i >= 0; i--, k++) c[i] = fill[k];
+      note = 'Es gibt keine ' + PL[t - 1].items + '. Für <b>0 ' + PL[t - 1].sw + '</b> schreibst du eine <b>0</b>. Die Zahl heißt <b>' + fmt(numOf(c)) + '</b>.';
+    }
+    $('#ex-drawing').innerHTML = svgBlocks(c, t);
+    $('#ex-legend').innerHTML = legendHTML(t);
+    $('#ex-table').innerHTML = tableHTML(numOf(c), t, false);
+    $('#ex-note').innerHTML = note;
+
+    var lad = '<p class="ladder-title">So wird gebündelt</p>';
+    for (var p = 0; p <= Math.min(t, 5); p++) lad += '<p>10 ' + PL[p].items + ' = 1 ' + PL[p + 1].item + ' (' + fmt(POW(p + 1)) + ')</p>';
+    $('#ex-ladder').innerHTML = lad;
+
+    var st = loadStats(statKey(sel.mode, sel.step)), s = $('#stats');
+    if (st && st.runden > 0) {
+      s.hidden = false;
+      s.textContent = 'In dieser Stufe bisher ' + st.runden + (st.runden === 1 ? ' Runde' : ' Runden') + ' gespielt. Bestes Ergebnis: ' + st.best + ' von 12.';
+    } else s.hidden = true;
+  }
+
+  $('#modes').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    sel.mode = b.getAttribute('data-mode'); saveSel(); renderStart();
+  });
+  $('#steps').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    sel.step = Number(b.getAttribute('data-step')); saveSel(); renderStart();
+  });
+
+  function showScreen(name) {
+    ['start', 'task', 'end'].forEach(function (n) { $('#screen-' + n).hidden = n !== name; });
+    var inRound = name === 'task';
+    $('#progress').hidden = !inRound;
+    $('#count').hidden = !inRound;
+    if (name === 'start') renderStart();
+    window.scrollTo(0, 0);
+  }
+
+  function buildProgress() {
+    var html = '';
+    for (var i = 0; i < S.tasks.length; i++) html += '<span></span>';
+    $('#progress').innerHTML = html;
+  }
+  function updateProgress() {
+    var segs = $('#progress').children;
+    for (var i = 0; i < segs.length; i++) {
+      var t = S.tasks[i];
+      segs[i].className = t.result ? t.result : (i === S.i ? 'cur' : '');
+    }
+    var m = MODES.filter(function (x) { return x.top === S.top; })[0];
+    $('#count').textContent = m.label + ' · Stufe ' + S.step + ' · Aufgabe ' + (S.i + 1) + ' von ' + S.tasks.length;
+  }
+
+  function startRound(tasks, practice) {
+    S = { tasks: tasks, i: 0, input: '', phase: 'answer', practice: practice, top: modeTop(sel.mode), step: sel.step, mode: sel.mode };
+    $('#legend').innerHTML = legendHTML(S.top);
+    buildProgress();
+    showScreen('task');
+    renderTask();
+  }
+
+  function bigNumberSVG(n) {
+    return '<svg viewBox="0 0 400 130" role="img" aria-label="' + fmt(n) + '"><text class="bignum" x="200" y="88" text-anchor="middle" font-size="66">' + fmt(n) + '</text></svg>';
+  }
+
+  function renderTask() {
+    var t = cur();
+    S.input = ''; S.phase = 'answer';
+    if (t.type === 'count') {
+      $('#prompt').textContent = 'Wie viele ' + PL[t.p].items + ' brauchst du für diese Zahl?';
+      $('#drawing').innerHTML = bigNumberSVG(t.n);
+      $('#answer-label').textContent = 'Anzahl ' + PL[t.p].items;
+    } else {
+      $('#prompt').textContent = t.type === 'entry' ? 'Wie heißt die Zahl?' : 'Passt die Zahl zur Darstellung?';
+      $('#drawing').innerHTML = svgBlocks(t.c, S.top);
+      $('#answer-label').textContent = t.type === 'entry' ? 'Die Zahl heißt' : 'Dort steht die Zahl';
+    }
+    var typing = t.type !== 'tf';
+    $('#keypad').hidden = !typing;
+    $('#tf').hidden = typing;
+    $('#feedback').hidden = true;
+    $('#btn-next').hidden = true;
+    ['#btn-true', '#btn-false'].forEach(function (id) { var b = $(id); b.disabled = false; b.className = ''; });
+    updateAnswer();
+    updateProgress();
+    window.scrollTo(0, 0);
+  }
+
+  function updateAnswer() {
+    var t = cur(), a = $('#answer');
+    if (t.type !== 'tf') {
+      a.className = 'answer' + (S.phase === 'answer' ? ' edit' : '');
+      a.innerHTML = S.input ? fmt(S.input) : '<span class="ph">?</span>';
+      $('#key-ok').disabled = S.input === '';
+    } else {
+      a.className = 'answer';
+      a.textContent = fmt(t.label);
+    }
+  }
+
+  function feedback(kind, title, text, table, showNumber) {
+    var box = $('#feedback'), t = cur();
+    box.className = 'feedback ' + kind;
+    box.hidden = false;
+    box.innerHTML = '<p class="fb-title">' + title + '</p>' +
+      (text ? '<p>' + text + '</p>' : '') +
+      (table ? tableHTML(t.n, S.top, showNumber) : '');
+    box.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  function endTask() {
+    S.phase = 'done';
+    var t = cur();
+    if (t.type !== 'tf') { $('#keypad').hidden = true; updateAnswer(); }
+    if (t.type === 'count') $('#drawing').innerHTML = svgBlocks(t.c, S.top);
+    var last = S.i === S.tasks.length - 1;
+    var nb = $('#btn-next');
+    nb.textContent = last ? 'Ergebnis ansehen' : 'Weiter';
+    nb.hidden = false;
+    updateProgress();
+    nb.focus({ preventScroll: true });
+    nb.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  var PRAISE = ['Richtig!', 'Genau!', 'Stimmt!', 'Gut erkannt!'];
+
+  function solvedText(t) {
+    if (t.type === 'count') return t.k + ' ' + itemName(t.p, t.k) + ' sind ' + t.k + ' ' + swName(t.p, t.k) + ' = ' + fmt(t.n) + '.';
+    return compose(t, S.top) + '. Die Zahl heißt ' + fmt(t.n) + '.';
+  }
+
+  function check() {
+    var t = cur();
+    if (t.type === 'tf' || S.phase !== 'answer' || S.input === '') return;
+    var given = S.input, want = t.type === 'count' ? String(t.k) : String(t.n);
+    t.tries++;
+    if (given === want) {
+      t.result = t.tries === 1 ? 'ok' : 'miss';
+      feedback('good', t.tries === 1 ? pick(PRAISE) : 'Jetzt stimmt es!', solvedText(t), false);
+      endTask();
+      return;
+    }
+    t.wrong.push(given);
+    var tip = hintFor(t, given);
+    if (t.tries >= 2) {
+      t.result = 'miss';
+      feedback('miss', 'Das war knifflig.', tip + ' ' + solvedText(t), t.type !== 'count', true);
+      endTask();
+    } else {
+      feedback('hint', 'Noch nicht ganz.', tip + ' Versuche es noch einmal.', false, false);
+      S.input = '';
+      updateAnswer();
+    }
+  }
+
+  function answerTF(sayTrue) {
+    var t = cur();
+    if (t.type !== 'tf' || S.phase !== 'answer') return;
+    var right = sayTrue === t.isTrue;
+    t.result = right ? 'ok' : 'miss';
+    var bt = $('#btn-true'), bf = $('#btn-false');
+    bt.disabled = bf.disabled = true;
+    var chosen = sayTrue ? bt : bf, other = sayTrue ? bf : bt;
+    chosen.className = right ? 'right' : 'wrong';
+    other.className = 'dim';
+    if (right && t.isTrue) feedback('good', pick(PRAISE), compose(t, S.top) + '. ' + fmt(t.n) + ' passt.', false);
+    else if (right) feedback('good', pick(PRAISE), 'Die Darstellung zeigt ' + fmt(t.n) + ', nicht ' + fmt(t.label) + '.', false);
+    else if (t.isTrue) feedback('miss', 'Die Zahl passt doch.', 'Die Darstellung zeigt ' + fmt(t.n) + '.', true, true);
+    else feedback('miss', 'Die Zahl passt nicht.', 'Dort steht ' + fmt(t.label) + ', die Darstellung zeigt aber ' + fmt(t.n) + '.', true, true);
+    endTask();
+  }
+
+  function next() {
+    if (S.phase !== 'done') return;
+    if (S.i < S.tasks.length - 1) { S.i++; renderTask(); }
+    else showEnd();
+  }
+
+  function showEnd() {
+    var total = S.tasks.length;
+    var ok = S.tasks.filter(function (t) { return t.result === 'ok'; }).length;
+    var misses = S.tasks.filter(function (t) { return t.result !== 'ok'; });
+    var ratio = ok / total;
+
+    $('#end-kicker').textContent = (S.practice ? 'Übungsrunde' : 'Fall abgeschlossen') + ' · Stufe ' + S.step;
+    $('#end-title').textContent = ratio >= 0.9 ? 'Scharf beobachtet!' : ratio >= 0.6 ? 'Gut gespürt!' : 'Dranbleiben lohnt sich!';
+    $('#end-n').textContent = ok;
+    $('#end-total').textContent = total;
+    $('#end-dots').innerHTML = S.tasks.map(function (t) { return '<span class="' + t.result + '"></span>'; }).join('');
+
+    $('#end-list').innerHTML = misses.map(function (t) {
+      var txt;
+      if (t.type === 'count') txt = 'Für <b>' + fmt(t.n) + '</b> brauchst du <b>' + t.k + '</b> ' + itemName(t.p, t.k) + '. Erster Versuch: ' + t.wrong[0] + '.';
+      else if (t.type === 'entry') txt = 'Gezeigt war <b>' + fmt(t.n) + '</b>. Erster Versuch: ' + fmt(t.wrong[0]) + '.';
+      else if (t.isTrue) txt = 'Die Zahl <b>' + fmt(t.n) + '</b> passte zur Darstellung.';
+      else txt = 'Dort stand ' + fmt(t.label) + ', gezeigt war <b>' + fmt(t.n) + '</b>.';
+      return '<div class="miss-item">' + svgBlocks(t.c, S.top) + '<p>' + txt + '</p></div>';
+    }).join('');
+    $('#end-misses').hidden = misses.length === 0;
+    $('#btn-practice').hidden = misses.length === 0;
+
+    if (!S.practice) {
+      var k = statKey(S.mode, S.step);
+      var st = loadStats(k) || { runden: 0, best: 0 };
+      st.runden += 1;
+      st.best = Math.max(st.best, ok);
+      saveStats(k, st);
+    }
+    S.missed = misses;
+    showScreen('end');
+  }
+
+  /* ---------- Ereignisse ---------- */
+  function press(k) {
+    var t = cur();
+    if (S.phase !== 'answer' || t.type === 'tf') return;
+    var max = t.type === 'count' ? 2 : S.top + 2;
+    if (k === 'back') S.input = S.input.slice(0, -1);
+    else if (k === 'ok') { check(); return; }
+    else if (S.input.length < max && !(S.input === '' && k === '0')) S.input += k;
+    updateAnswer();
+  }
+
+  $('#keypad').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b) press(b.getAttribute('data-key'));
+  });
+  $('#btn-true').addEventListener('click', function () { answerTF(true); });
+  $('#btn-false').addEventListener('click', function () { answerTF(false); });
+  $('#btn-next').addEventListener('click', next);
+  $('#btn-start').addEventListener('click', function () { startRound(buildRound(modeTop(sel.mode), sel.step), false); });
+  $('#btn-again').addEventListener('click', function () { startRound(buildRound(S.top, S.step), false); });
+  $('#btn-back').addEventListener('click', function () { showScreen('start'); });
+  $('#btn-home').addEventListener('click', function () { showScreen('start'); });
+  $('#btn-practice').addEventListener('click', function () {
+    var again = S.missed.map(function (t) {
+      var c = {}; for (var k in t) c[k] = t[k];
+      c.tries = 0; c.result = null; c.wrong = [];
+      return c;
+    });
+    var keep = { top: S.top, step: S.step, mode: S.mode };
+    startRound(again, true);
+    S.top = keep.top; S.step = keep.step; S.mode = keep.mode;
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if ($('#screen-task').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^[0-9]$/.test(e.key)) { press(e.key); }
+    else if (e.key === 'Backspace') { press('back'); e.preventDefault(); }
+    else if (e.key === 'Enter') {
+      var ae = document.activeElement;
+      if (ae && ae.tagName === 'BUTTON' && ae.offsetParent !== null) return;
+      if (S.phase === 'done') next(); else press('ok');
+    }
+  });
+
+  renderStart();
+})();
+</script>
+</body>
+</html>
