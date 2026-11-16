@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Vierecke-Profi – Trapez, Parallelogramm, Raute, Rechteck, Quadrat</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--teal);text-align:center}
+.sub{font-size:20px;margin:4px 0 16px;color:#4b5563;text-align:center}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:105px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--teal);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--teal);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.cur{background:#FFF6CC;border-color:#E0B000;color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.feedback{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:#fff;border-radius:18px;padding:10px 22px;font-size:23px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none;text-align:center;max-width:82%;pointer-events:none}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:21px;padding:14px 18px}
+.tool{background:#fff;color:var(--ink)}
+.toolsel{background:#E7F6EC!important;color:var(--green)!important}
+.yes{background:var(--green)}.no{background:var(--red)}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:24px 30px;max-width:720px;width:92%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:32px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:10px 0;padding:10px;border:3px solid #E63946;border-radius:16px;font-size:20px;cursor:pointer}
+.merk svg{flex:none;width:110px;height:74px}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+#hausSvg{width:100%;max-width:620px;height:auto}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.blink{animation:blink .5s 4 alternate}
+@keyframes blink{from{opacity:1}to{opacity:.15}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>🔷 Vierecke-Profi</h1>
+  <div class="sub">Trapez, Parallelogramm, Raute, Rechteck und Quadrat – Schritt für Schritt</div>
+  <div class="modes">
+    <button class="mode" data-m="1">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#F3E3CC"/><line x1="35" y1="80" x2="135" y2="80" stroke="#1D7FD8" stroke-width="6"/><line x1="60" y1="28" x2="115" y2="28" stroke="#1D7FD8" stroke-width="6"/><line x1="35" y1="80" x2="60" y2="28" stroke="#2A9D4B" stroke-width="6"/><line x1="135" y1="80" x2="115" y2="28" stroke="#2A9D4B" stroke-width="6"/></svg>
+      <span><span class="num" style="background:#1D7FD8">1</span> Parallele finden</span><small>Welche Seiten sind parallel?</small>
+    </button>
+    <button class="mode" data-m="2">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#F3E3CC"/><polygon points="25,75 85,75 100,30 40,30" fill="none" stroke="#2A9D4B" stroke-width="5"/><text x="135" y="62" text-anchor="middle" font-size="40" font-weight="700" fill="#8E44AD">?</text></svg>
+      <span><span class="num" style="background:#8E44AD">2</span> Wie heißt es?</span><small>Prüfen und benennen</small>
+    </button>
+    <button class="mode" data-m="3">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#F3E3CC"/><g fill="#7a6650"><circle cx="35" cy="25" r="4"/><circle cx="65" cy="25" r="4"/><circle cx="95" cy="25" r="4"/><circle cx="125" cy="25" r="4"/><circle cx="35" cy="52" r="4"/><circle cx="65" cy="52" r="4"/><circle cx="95" cy="52" r="4"/><circle cx="125" cy="52" r="4"/><circle cx="35" cy="80" r="4"/><circle cx="65" cy="80" r="4"/><circle cx="95" cy="80" r="4"/><circle cx="125" cy="80" r="4"/></g><polygon points="65,25 125,25 95,80 35,80" fill="none" stroke="#E07A1F" stroke-width="6" stroke-linejoin="round"/></svg>
+      <span><span class="num" style="background:#F28C28">3</span> Vierecke spannen</span><small>Am Geobrett</small>
+    </button>
+    <button class="mode" data-m="4">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#F3E3CC"/><polygon points="20,52 45,30 70,52 45,74" fill="none" stroke="#2A9D4B" stroke-width="5"/><g font-size="13" font-weight="700" fill="#1F2A37"><rect x="85" y="22" width="14" height="14" fill="#fff" stroke="#2A9D4B" stroke-width="2"/><text x="104" y="34">✓ …</text><rect x="85" y="45" width="14" height="14" fill="#fff" stroke="#9aa5b1" stroke-width="2"/><text x="104" y="57">…</text><rect x="85" y="68" width="14" height="14" fill="#fff" stroke="#2A9D4B" stroke-width="2"/><text x="104" y="80">✓ …</text></g></svg>
+      <span><span class="num" style="background:#2A9D4B">4</span> Steckbrief</span><small>Was passt zum Viereck?</small>
+    </button>
+    <button class="mode" data-m="5">
+      <svg viewBox="0 0 170 105"><rect x="5" y="5" width="160" height="95" rx="10" fill="#FFF6CC"/><text x="85" y="42" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2A37">„Jedes Quadrat ist</text><text x="85" y="62" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2A37">auch eine Raute.“</text><text x="60" y="90" text-anchor="middle" font-size="18" font-weight="700" fill="#2A9D4B">✓</text><text x="110" y="90" text-anchor="middle" font-size="18" font-weight="700" fill="#E63946">✗</text></svg>
+      <span><span class="num" style="background:#D6338A">5</span> Kann das stimmen?</span><small>Richtig oder falsch?</small>
+    </button>
+  </div>
+  <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="hausBtn" style="background:#0F8B8D">🏠 Haus der Vierecke</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 16.11.2026 · 1</div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="bgL"></g><g id="fillL"></g><g id="ghostL" pointer-events="none"></g><g id="taskL"></g>
+      <g id="markL" pointer-events="none"></g><g id="uiL" pointer-events="none"></g><g id="hitL"></g><g id="btnL"></g>
+    </svg>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div style="font-size:16px;color:#6b7280;margin-bottom:4px">Tippe auf ein Kärtchen. Dann wird es vorgelesen.</div>
+  <div id="merkList"></div>
+  <div class="row"><button id="merkHaus" style="background:#0F8B8D">🏠 Haus der Vierecke</button><button id="merkSpeak" class="light">🔊 Alles vorlesen</button><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="hausOv"><div class="card">
+  <h2>🏠 Haus der Vierecke</h2>
+  <svg id="hausSvg" viewBox="0 0 620 560"></svg>
+  <div style="font-size:19px;margin:6px 0" id="hausTxt"></div>
+  <div class="row"><button id="hausSpeak" class="light">🔊 Vorlesen</button><button id="hausClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Drachen (Drachenviereck) mitüben<br><small style="color:#6b7280;font-size:15px">Kommt im Buch nicht vor – zusätzlich</small></span><div class="seg" id="kiteSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Wie heißt es? Den genauesten Namen verlangen<br><small style="color:#6b7280;font-size:15px">„aus“: Jeder richtige Name zählt</small></span><div class="seg" id="exactSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],mul=(a,k)=>[a[0]*k,a[1]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+const cr=(a,b)=>a[0]*b[1]-a[1]*b[0];
+const unit=v=>{const l=Math.hypot(v[0],v[1]);return[v[0]/l,v[1]/l];};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+
+let S={goal:10,done:0,stars:0,shots:10,voice:true,kite:false,exact:true,seen:{},n1:0,n2:0,n3:0,n4:0,n5:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem('viereckeprofi')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('viereckeprofi',JSON.stringify(S));}catch(e){}}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[\p{Extended_Pictographic}️✓✗➜]/gu,'').replace(/–/g,','));u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='tick')tone(900,0,.03);else if(k==='pluck'){tone(520,0,.08,'triangle');tone(780,.04,.1);}}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ================= Vierecke: Geometrie auf dem Geobrett ================= */
+const sv=(p,i)=>sub(p[(i+1)%4],p[i]);
+const rightAt=(p,i)=>dot(sub(p[(i+3)%4],p[i]),sub(p[(i+1)%4],p[i]))===0;
+const len2=(p,i)=>{const v=sv(p,i);return dot(v,v);};
+function convex(p){let sg=0;for(let i=0;i<4;i++){const c=cr(sv(p,i),sv(p,(i+1)%4));if(c===0)return false;if(sg&&Math.sign(c)!==sg)return false;sg=Math.sign(c);}return true;}
+function area(p){let a=0;for(let i=0;i<4;i++){const q=p[i],r=p[(i+1)%4];a+=q[0]*r[1]-r[0]*q[1];}return Math.abs(a)/2;}
+/* Eigenschaften eines (konvexen) Vierecks mit ganzzahligen Ecken */
+function info(p){
+  const par=[cr(sv(p,0),sv(p,2))===0,cr(sv(p,1),sv(p,3))===0];const np=par.filter(x=>x).length;
+  const L=[0,1,2,3].map(i=>len2(p,i)),eq=L.every(x=>x===L[0]);
+  const right=[0,1,2,3].map(i=>rightAt(p,i)),nr=right.filter(x=>x).length;
+  const kite=!eq&&((L[0]===L[1]&&L[2]===L[3])||(L[1]===L[2]&&L[3]===L[0]));
+  const prec=nr===4&&eq?'sq':nr===4?'rect':np===2&&eq?'raute':np===2?'para':np===1?'trap':kite?'kite':'other';
+  return{par,np,L,eq,right,nr,kite,prec};}
+const eff=inf=>inf.prec==='kite'&&!S.kite?'other':inf.prec;
+const FAM={sq:['sq','rect','raute','para','trap','kite'],rect:['rect','para','trap'],raute:['raute','para','trap','kite'],para:['para','trap'],trap:['trap'],kite:['kite'],other:['other']};
+const fam=k=>FAM[k].filter(x=>S.kite||x!=='kite');
+const NAMES={trap:'Trapez',para:'Parallelogramm',raute:'Raute',rect:'Rechteck',sq:'Quadrat',kite:'Drachen',other:'anderes Viereck'};
+const ART={trap:'ein Trapez',para:'ein Parallelogramm',raute:'eine Raute',rect:'ein Rechteck',sq:'ein Quadrat',kite:'ein Drachen',other:'ein anderes Viereck'};
+const ICON={trap:'5,35 55,35 42,6 18,6',para:'4,35 40,35 56,6 20,6',raute:'30,2 54,20 30,38 6,20',rect:'5,7 55,7 55,33 5,33',sq:'13,3 47,3 47,37 13,37',kite:'30,2 47,14 30,38 13,14',other:'6,30 50,36 44,8 16,4'};
+const ICOL={trap:'#F28C28',para:'#1D7FD8',raute:'#D6338A',rect:'#2A9D4B',sq:'#0F8B8D',kite:'#8E44AD',other:'#6b7280'};
+function iconSvg(k,w,h,fill){return`<svg viewBox="0 0 60 40" width="${w}" height="${h}"><polygon points="${ICON[k]}" fill="${fill?ICOL[k]:'none'}" stroke="${ICOL[k]}" stroke-width="3" stroke-linejoin="round"/></svg>`;}
+function iconAt(parent,k,x,y,s,fill){const g=el('g',{transform:`translate(${x},${y}) scale(${s})`},parent);el('polygon',{points:ICON[k],fill:fill?ICOL[k]:'#fff',stroke:ICOL[k],'stroke-width':3/s+1,'stroke-linejoin':'round'},g);return g;}
+function kinds(){return['rect','sq','para','raute','trap','trap','other'].concat(S.kite?['kite']:[]);}
+
+/* Zufallsformen auf dem 6×6-Geobrett (Koordinaten 0…5) */
+function sym(p){const k=rint(0,7);return p.map(([x,y])=>{let q=[x,y];if(k&4)q=[-q[0],q[1]];for(let r=0;r<(k&3);r++)q=[-q[1],q[0]];return q;});}
+function fit(p){const xs=p.map(q=>q[0]),ys=p.map(q=>q[1]);const mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys);
+  if(mxx-mnx>5||mxy-mny>5)return null;const ox=rint(-mnx,5-mxx),oy=rint(-mny,5-mxy);return p.map(q=>[q[0]+ox,q[1]+oy]);}
+function raw(kind){
+  if(kind==='sq'){if(Math.random()<.55){const s=rint(1,4);return[[0,0],[s,0],[s,s],[0,s]];}const u=pick([[1,1],[2,1],[1,2],[2,2],[3,1],[1,3],[3,2],[2,3]]),v=[-u[1],u[0]];return[[0,0],u,add(u,v),v];}
+  if(kind==='rect'){if(Math.random()<.6){let w=rint(1,5),h=rint(1,4);if(w===h)w=w<5?w+1:w-1;return[[0,0],[w,0],[w,h],[0,h]];}
+    const b=pick([[1,1],[2,1],[1,2]]),k=pick([[1,2],[2,1],[1,3],[3,1]]);const u=mul(b,k[0]),v=mul([-b[1],b[0]],k[1]);return[[0,0],u,add(u,v),v];}
+  if(kind==='para'){if(Math.random()<.7){const a=rint(2,4),h=rint(1,3),s=pick([-2,-1,1,2]);return[[0,0],[a,0],[a+s,h],[s,h]];}
+    const u=pick([[2,1],[3,1],[1,2],[2,-1]]),v=pick([[0,2],[1,3],[0,3],[-1,2],[1,1]]);return[[0,0],u,add(u,v),v];}
+  if(kind==='raute'){const t=pick(['d','d','v21','v31','v32']);
+    if(t==='d'){const[w,h]=pick([[1,2],[2,1]]);return[[w,0],[2*w,h],[w,2*h],[0,h]];}
+    const[u,v]={v21:[[2,1],[1,2]],v31:[[3,1],[1,3]],v32:[[3,2],[2,3]]}[t];return[[0,0],u,add(u,v),v];}
+  if(kind==='trap'){const a=rint(2,5),h=rint(1,4),b=rint(-1,a-1),t=rint(1,4);return[[0,0],[a,0],[b+t,h],[b,h]];}
+  if(kind==='kite'){const c=rint(1,2),a=rint(1,2),b=rint(a+1,5);return[[c,0],[2*c,a],[c,b],[0,a]];}
+  const pts=[];while(pts.length<4){const q=[rint(0,5),rint(0,5)];if(!pts.some(r=>r[0]===q[0]&&r[1]===q[1]))pts.push(q);}return sortRing(pts);}
+function sortRing(pts){const c=[pts.reduce((s,q)=>s+q[0],0)/pts.length,pts.reduce((s,q)=>s+q[1],0)/pts.length];
+  return pts.slice().sort((a,b)=>Math.atan2(a[1]-c[1],a[0]-c[0])-Math.atan2(b[1]-c[1],b[0]-c[0]));}
+function makeShape(kind,test){for(let k=0;k<400;k++){let p=raw(kind);p=sym(p);if(!convex(p))continue;p=fit(p);if(!p)continue;if(area(p)<1.5)continue;
+    const i=info(p);if(i.prec!==kind)continue;if(test&&!test(i,p))continue;return p;}
+  return{sq:[[1,1],[4,1],[4,4],[1,4]],rect:[[0,1],[5,1],[5,3],[0,3]],para:[[0,1],[3,1],[4,3],[1,3]],raute:[[2,0],[4,1],[2,2],[0,1]],trap:[[0,0],[5,0],[4,3],[1,3]],kite:[[2,0],[4,1],[2,4],[0,1]],other:[[0,1],[4,0],[5,4],[1,3]]}[kind];}
+
+/* ---------- Startseite, Merken, Haus, Einstellungen ---------- */
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.m));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+const DEF={
+  par:'Parallel: Zwei Linien sind parallel, wenn sie überall den gleichen Abstand haben. Sie treffen sich nie.',
+  trap:'Trapez: Ein Trapez ist ein Viereck. Mindestens 2 Seiten gegenüber sind parallel.',
+  para:'Parallelogramm: Ein Parallelogramm ist ein Viereck. Die Seiten gegenüber sind parallel und jeweils gleich lang.',
+  raute:'Raute: Eine Raute ist ein Viereck. Alle Seiten sind gleich lang. Die Seiten gegenüber sind parallel.',
+  rect:'Rechteck: Ein Rechteck ist ein Viereck mit 4 rechten Winkeln. Die Seiten gegenüber sind parallel und gleich lang.',
+  sq:'Quadrat: Ein Quadrat ist ein Rechteck mit 4 gleich langen Seiten.',
+  kite:'Drachen: Ein Drachen ist ein Viereck. Je 2 Seiten nebeneinander sind gleich lang.',
+  other:'Viereck: Jedes Viereck hat 4 Ecken und 4 Seiten.'};
+const DEFL={trap:['Mindestens 2 Seiten','gegenüber sind parallel.'],para:['Die Seiten gegenüber sind','parallel und gleich lang.'],raute:['Alle 4 Seiten sind gleich lang.','Die Seiten gegenüber','sind parallel.'],
+  rect:['4 rechte Winkel.','Die Seiten gegenüber sind','parallel und gleich lang.'],sq:['4 rechte Winkel und','4 gleich lange Seiten.'],kite:['Je 2 Seiten nebeneinander','sind gleich lang.'],nopar:['Keine Seite ist parallel','zu einer anderen Seite.']};
+function merkKinds(){return['trap','para','raute','rect','sq'].concat(S.kite?['kite']:[]);}
+function merkText(){return[DEF.par].concat(merkKinds().map(k=>DEF[k])).join(' ');}
+function buildMerk(){const L=$('#merkList');L.innerHTML='';
+  const add1=(svg,html,t)=>{const d=document.createElement('div');d.className='merk';d.innerHTML=svg+'<div>'+html+'</div>';d.onclick=()=>say(t);L.appendChild(d);};
+  add1('<svg viewBox="0 0 120 80"><line x1="5" y1="20" x2="115" y2="20" stroke="#1D7FD8" stroke-width="5"/><line x1="5" y1="60" x2="115" y2="60" stroke="#1D7FD8" stroke-width="5"/><line x1="30" y1="20" x2="30" y2="60" stroke="#8E44AD" stroke-width="3" stroke-dasharray="5 4"/><line x1="90" y1="20" x2="90" y2="60" stroke="#8E44AD" stroke-width="3" stroke-dasharray="5 4"/></svg>',
+    '<b>parallel</b><br>Zwei Linien sind parallel, wenn sie überall den gleichen Abstand haben. Sie treffen sich nie.',DEF.par);
+  merkKinds().forEach(k=>add1(iconSvg(k,110,74,true),`<b>${k==='raute'?'die':'das'} ${NAMES[k]}${k==='kite'?' <small style="color:#6b7280">(der Drachen)</small>':''}</b><br>`+DEF[k].split(': ')[1],DEF[k]));}
+$('#merkBtn').onclick=()=>{buildMerk();$('#merkOv').classList.add('on');say('Tippe auf ein Kärtchen. Dann wird es vorgelesen.');};
+$('#merkSpeak').onclick=()=>say(merkText());
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');try{speechSynthesis.cancel();}catch(e){}};
+$('#merkHaus').onclick=()=>{$('#merkOv').classList.remove('on');openHaus();};
+function hausText(){return S.kite?'Oben stehen die Vierecke mit wenig Regeln. Je weiter unten, desto mehr Regeln. Ein Quadrat ist auch ein Rechteck, eine Raute, ein Parallelogramm, ein Trapez und ein Drachen. Jedes Rechteck ist auch ein Parallelogramm und ein Trapez. Tippe auf ein Viereck.':
+  'Oben stehen die Vierecke mit wenig Regeln. Je weiter unten, desto mehr Regeln. Ein Quadrat ist auch ein Rechteck, eine Raute, ein Parallelogramm und ein Trapez. Jedes Rechteck ist auch ein Parallelogramm und ein Trapez. Tippe auf ein Viereck.';}
+function openHaus(hi){const g=$('#hausSvg');g.innerHTML='';
+  el('polygon',{points:'310,8 612,150 612,552 8,552 8,150',fill:'#FFF8EC',stroke:'#C2410C','stroke-width':5,'stroke-linejoin':'round'},g);
+  const k=S.kite,N={viereck:[310,78],trap:[k?190:310,170],kite:[440,170],para:[k?250:310,268],rect:[160,370],raute:[460,370],sq:[310,478]};
+  const E=[['viereck','trap'],['trap','para'],['para','rect'],['para','raute'],['rect','sq'],['raute','sq']].concat(k?[['viereck','kite'],['kite','raute']]:[]);
+  E.forEach(([a,b])=>{const A=N[a],B=N[b];el('line',{x1:A[0],y1:A[1]+30,x2:B[0],y2:B[1]-36,stroke:'#94a3b8','stroke-width':4,'marker-end':''},g);
+    const d=unit(sub(B,A)),T=[B[0]-d[0]*0,B[1]-36];el('polygon',{points:`${T[0]},${T[1]} ${T[0]-7},${T[1]-12} ${T[0]+7},${T[1]-12}`,fill:'#94a3b8'},g);});
+  Object.keys(N).forEach(n=>{if(n==='kite'&&!k)return;const[x,y]=N[n];const gg=el('g',{style:'cursor:pointer'},g);
+    const isHi=hi&&FAM[hi].includes(n);
+    el('rect',{x:x-104,y:y-34,width:208,height:68,rx:16,fill:isHi?'#FFF2B3':'#fff',stroke:n==='viereck'?'#6b7280':ICOL[n],'stroke-width':isHi?6:3},gg);
+    if(n==='viereck'){txt(gg,x,y,'Viereck',{'font-size':24,fill:'#1F2A37'});}
+    else{iconAt(gg,n,x-98,y-18,.9,true);txt(gg,x+34,y,NAMES[n],{'font-size':n==='para'?18:22,fill:'#1F2A37'});}
+    gg.addEventListener('pointerdown',e=>{e.preventDefault();say(n==='viereck'?DEF.other:DEF[n]);});});
+  $('#hausTxt').textContent=hi?`So heißt dieses Viereck: ${fam(hi).map(x=>NAMES[x]).join(', ')}. Der genaueste Name ist ${NAMES[hi]}.`:'Je weiter unten, desto mehr Regeln. Was unten steht, ist auch alles, was darüber verbunden ist.';
+  $('#hausOv').classList.add('on');say(hi?$('#hausTxt').textContent:hausText());}
+$('#hausBtn').onclick=()=>openHaus();
+$('#hausSpeak').onclick=()=>say(hausText());
+$('#hausClose').onclick=()=>{$('#hausOv').classList.remove('on');try{speechSynthesis.cancel();}catch(e){}};
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#kiteSeg',()=>S.kite?1:0,v=>S.kite=v==='1'),segSet('#exactSeg',()=>S.exact?1:0,v=>S.exact=v==='1')];
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.n1=S.n2=S.n3=S.n4=S.n5=0;S.seen={};save();refreshStart();};
+refreshStart();
+
+/* ---------- Gemeinsames ---------- */
+const stage=$('#stage'),bgL=$('#bgL'),fillL=$('#fillL'),taskL=$('#taskL'),ghostL=$('#ghostL'),markL=$('#markL'),uiL=$('#uiL'),hitL=$('#hitL'),btnL=$('#btnL');
+let MODE=1,locked=false,instrText='';
+function clearStage(){[bgL,fillL,taskL,ghostL,markL,uiL,hitL,btnL].forEach(l=>l.innerHTML='');}
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.style.top=MODE===5?'auto':'';f.style.bottom=MODE===5?'8px':'';f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function startMode(m){MODE=m;show('task');newTask();if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
+function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5][MODE]();}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+  setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
+  $('#ctrl button').style.fontSize='26px';}
+function nope(t,blinkFn){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(blinkFn)blinkFn();}
+function helpData(){
+  if(MODE===1)return{t:'Parallele Seiten finden',st:['Tippe eine Seite an. Sie leuchtet gelb.','Tippe dann die Seite gegenüber an. Sind die 2 Seiten parallel? Dann werden sie bunt.','Suche alle parallelen Seiten. Manche Vierecke haben 2 Paare, manche 1 Paar, manche keins.','Findest du keine weiteren? Tippe auf Fertig.']};
+  if(MODE===2)return{t:'Wie heißt das Viereck?',st:['Prüfe das Viereck mit den Werkzeugen unten.','🎨 zeigt die parallelen Seiten. 📐 zeigt die rechten Winkel. 📏 legt die Seiten nebeneinander.','Tippe dann rechts auf den Namen.','Manche Vierecke haben mehrere Namen. Suche den genauesten Namen.']};
+  if(MODE===3)return{t:'Vierecke spannen',st:['Tippe 4 Nägel an. Der Gummi spannt sich von selbst.','Falscher Nagel? Tippe ihn nochmal an. Dann ist er weg.','Tippe auf ✓ Prüfen.','Rechts steht, was das Viereck haben muss. 💡 zeigt dir ein Beispiel.']};
+  if(MODE===4)return{t:'Steckbrief',st:['Schau dir das Viereck an. Prüfe es mit den Werkzeugen unten.','Tippe rechts alle Kärtchen an, die zu diesem Viereck passen.','Tippe auf ✓ Prüfen.','Rote Kärtchen stimmen noch nicht. Prüfe sie nochmal.']};
+  return{t:'Kann das stimmen?',st:['Lies den Satz oben. Oder tippe auf 🔊.','Schau dir die Vierecke an.','Stimmt der Satz? Tippe auf ✓ oder ✗.','Danach siehst du, warum.']};}
+function openHelp(){const h=helpData();$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.st.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+function corner(P,u,v,col,z,layer){z=z||22;u=unit(u);v=unit(v);const p1=add(P,mul(u,z)),p3=add(P,mul(v,z)),p2=add(p1,mul(v,z));
+  el('path',{d:`M${p1} L${p2} L${p3}`,fill:'none',stroke:col||'#2A9D4B','stroke-width':4},layer||markL);
+  el('circle',{cx:P[0]+(u[0]+v[0])*z/2,cy:P[1]+(u[1]+v[1])*z/2,r:4,fill:col||'#2A9D4B'},layer||markL);}
+function arcMark(P,u,v,col,r,layer){u=unit(u);v=unit(v);const a=add(P,mul(u,r)),b=add(P,mul(v,r));const sw=(u[0]*v[1]-u[1]*v[0])>0?1:0;
+  el('path',{d:`M${a} A${r},${r} 0 0 ${sw} ${b}`,fill:'none',stroke:col,'stroke-width':4},layer||markL);}
+function measureBar(A,B,col,layer){layer=layer||markL;const v=unit(sub(B,A)),p=[-v[1],v[0]];
+  el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':3,'stroke-dasharray':'7 5'},layer);
+  [A,B].forEach(Q=>el('line',{x1:Q[0]-p[0]*7,y1:Q[1]-p[1]*7,x2:Q[0]+p[0]*7,y2:Q[1]+p[1]*7,stroke:col,'stroke-width':3},layer));}
+function blinkEl(node){if(!node)return;node.classList.remove('blink');void node.getBBox();node.classList.add('blink');setTimeout(()=>node.classList.remove('blink'),2100);}
+function foot(Q,a,b){const v=sub(b,a);const t=dot(sub(Q,a),v)/dot(v,v);return add(a,mul(v,t));}
+
+/* Geobrett */
+const GR={sp:80,x0:300,y0:110};
+const gpt=g=>[GR.x0+g[0]*GR.sp,GR.y0+g[1]*GR.sp];
+function drawBoard(){const m=GR.sp*.5;el('rect',{x:GR.x0-m,y:GR.y0-m,width:5*GR.sp+2*m,height:5*GR.sp+2*m,rx:18,fill:'#F3E3CC',stroke:'#dcc4a2','stroke-width':3},bgL);
+  for(let i=0;i<6;i++)for(let j=0;j<6;j++){const P=gpt([i,j]);el('circle',{cx:P[0],cy:P[1],r:5,fill:'#7a6650'},bgL);}}
+const PC=['#1D7FD8','#F28C28'];
+/* Viereck mit Werkzeug-Anzeigen zeichnen (Modus 2 und 4) */
+function sideCols(T){const c=['#2A9D4B','#2A9D4B','#2A9D4B','#2A9D4B'];if(T.tools.par){let k=0;[0,1].forEach(j=>{if(T.inf.par[j]){c[j]=c[j+2]=PC[k];k++;}});}return c;}
+function renderQ(T){taskL.innerHTML='';markL.innerHTML='';const P=T.P,cols=sideCols(T);
+  for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:cols[i],'stroke-width':8,'stroke-linecap':'round',id:'side'+i},taskL);}
+  P.forEach(Q=>el('circle',{cx:Q[0],cy:Q[1],r:6,fill:'#1F5E2E'},taskL));
+  if(T.tools.ang)P.forEach((Q,i)=>{const u=sub(P[(i+1)%4],Q),v=sub(P[(i+3)%4],Q);if(T.inf.right[i])corner(Q,u,v,'#2A9D4B',20);else arcMark(Q,u,v,'#E63946',24);});
+  const C=mul(P.reduce((s,q)=>add(s,q),[0,0]),.25);
+  if(T.tools.len)for(let i=0;i<4;i++){const M=mul(add(P[i],P[(i+1)%4]),.5),d=unit(sub(M,C)),L=add(M,mul(d,26));
+    el('circle',{cx:L[0],cy:L[1],r:14,fill:'#fff',stroke:'#475569','stroke-width':2},markL);txt(markL,L[0],L[1]+1,String(i+1),{'font-size':17,fill:'#1F2A37'});}
+  if(T.tools.par)[0,1].forEach(j=>{if(!T.inf.par[j])return;const a=P[j],b=P[j+1],c=P[(j+2)%4],d=P[(j+3)%4];
+    [.35,.65].forEach(f=>{const A=add(a,mul(sub(b,a),f));measureBar(A,foot(A,c,d),PC[[0,1].filter(x=>T.inf.par[x]).indexOf(j)],markL);});});
+  infoPanel(T);}
+function infoPanel(T){uiL.innerHTML='';if(!T.panel)return;const{x,y,w}=T.panel;const P=T.P,inf=T.inf;
+  el('rect',{x,y,width:w,height:150,rx:16,fill:'#FAFBFE',stroke:'#e5e7eb','stroke-width':3},uiL);
+  const a=T.tools.par?(inf.np===0?'keine':inf.np===1?'1 Paar':'2 Paare'):'?';const b=T.tools.ang?String(inf.nr):'?';
+  txt(uiL,x+14,y+22,`🎨 parallel: ${a}`,{'font-size':19,fill:'#1F2A37','text-anchor':'start'});
+  txt(uiL,x+w/2+20,y+22,`📐 rechte Winkel: ${b}`,{'font-size':19,fill:'#1F2A37','text-anchor':'start'});
+  if(!T.tools.len){txt(uiL,x+14,y+80,'📏 Seiten: ?',{'font-size':19,fill:'#1F2A37','text-anchor':'start'});return;}
+  const L=[0,1,2,3].map(i=>dist(P[i],P[(i+1)%4])),sc=Math.min(1,(w-70)/Math.max(...L)),cols=sideCols(T);
+  L.forEach((l,i)=>{const yy=y+52+i*24;txt(uiL,x+22,yy,String(i+1),{'font-size':16,fill:'#475569'});el('line',{x1:x+44,y1:yy,x2:x+44+l*sc,y2:yy,stroke:cols[i],'stroke-width':12,'stroke-linecap':'butt'},uiL);});
+  el('line',{x1:x+44,y1:y+40,x2:x+44,y2:y+136,stroke:'#9aa5b1','stroke-width':2,'stroke-dasharray':'4 4'},uiL);}
+function toolBtns(T){const b=(k,t)=>({t,id:'tl_'+k,fn:()=>useTool(T,k)});return[b('par','🎨 Parallele'),b('ang','📐 Rechte Winkel'),b('len','📏 Seiten vergleichen')];}
+function markToolBtns(T){['par','ang','len'].forEach(k=>{const e=$('#tl_'+k);if(e)e.classList.toggle('toolsel',!!T.tools[k]);});}
+function toolSay(T,k){const i=T.inf;
+  if(k==='par')return i.np===0?'Keine Seiten sind parallel.':i.np===1?'2 Seiten sind parallel. Das ist 1 Paar.':'Die Seiten gegenüber sind parallel. Das sind 2 Paare.';
+  if(k==='ang')return i.nr===0?'Kein rechter Winkel.':i.nr===1?'1 rechter Winkel.':i.nr+' rechte Winkel.';
+  return'Die 4 Seiten liegen jetzt nebeneinander. Vergleiche: Welche Seiten sind gleich lang?';}
+function useTool(T,k,quiet){if(locked&&!quiet)return;T.tools[k]=true;renderQ(T);markToolBtns(T);if(T.after)T.after();if(!quiet){sound('tick');const t=toolSay(T,k);feedback(t,'sol');say(t);}}
+
+/* ================= Modus 1: Parallele Seiten finden ================= */
+let M1=null,last1=null;
+function newTask1(){GR.sp=80;GR.x0=300;GR.y0=118;
+  const easy=(S.n1||0)<4,pool=easy?['rect','trap','para','sq','trap']:kinds();let kind=pick(pool);if(kind===last1)kind=pick(pool);last1=kind;
+  const g=makeShape(kind);
+  M1={g,P:g.map(gpt),inf:info(g),col:[null,null,null,null],sel:-1,found:[false,false],pc:0,fin:0};
+  drawBoard();render1();setInstr('Finde parallele Seiten: Tippe eine Seite an.');
+  setCtrl([{t:'✓ Fertig: keine weiteren parallelen Seiten',cls:'yes',id:'fin1',fn:finish1},{t:'💡 Hilfe',fn:hint1}]);strip1();}
+function strip1(){const n=M1.pc;setStrip([{t:'Gefunden: '+(n===0?'noch keine':n===1?'1 Paar parallele Seiten':'2 Paare parallele Seiten'),c:n?'done':'cur'}]);}
+function render1(){taskL.innerHTML='';hitL.innerHTML='';const P=M1.P;
+  for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];
+    if(i===M1.sel)el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'#FFD400','stroke-width':22,'stroke-linecap':'round',opacity:.85},taskL);
+    el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:M1.col[i]||'#2A9D4B','stroke-width':8,'stroke-linecap':'round',id:'side'+i},taskL);}
+  P.forEach(Q=>el('circle',{cx:Q[0],cy:Q[1],r:7,fill:'#1F5E2E'},taskL));
+  for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];const h=el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'rgba(0,0,0,0)','stroke-width':46,'pointer-events':'stroke',style:'cursor:pointer'},hitL);h.addEventListener('pointerdown',e=>{e.preventDefault();tapSide1(i);});}}
+function firstInstr1(){return M1.pc?'Gibt es noch mehr parallele Seiten? Tippe eine Seite an – oder auf Fertig.':'Finde parallele Seiten: Tippe eine Seite an.';}
+function showMeet(i,j){ghostL.innerHTML='';const P=M1.P,a=P[i],b=P[(i+1)%4],c=P[j],d=P[(j+1)%4];
+  const u=sub(b,a),v=sub(d,c),den=cr(u,v);if(den===0)return;const t=cr(sub(c,a),v)/den,X=add(a,mul(u,t));
+  const inView=X[0]>-20&&X[0]<1020&&X[1]>-20&&X[1]<640;
+  [[a,b],[c,d]].forEach(([p,q])=>{let A,B;if(inView){A=dist(p,X)>dist(q,X)?p:q;B=X;}else{const w=unit(sub(q,p));A=add(p,mul(w,-1400));B=add(p,mul(w,1400));}
+    el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#E63946','stroke-width':4,'stroke-dasharray':'12 9',opacity:.8},ghostL);});
+  if(inView){el('circle',{cx:X[0],cy:X[1],r:16,fill:'none',stroke:'#E63946','stroke-width':5},ghostL);}}
+function tapSide1(i){if(locked)return;ghostL.innerHTML='';
+  if(M1.col[i]){const t='Diese Seite ist schon gefärbt. Tippe eine grüne Seite an.';feedback(t,'try');say(t);return;}
+  if(M1.sel<0){M1.sel=i;sound('tick');hideFb();render1();setInstr('Welche Seite ist parallel dazu? Tippe sie an.');sayInstr();return;}
+  if(i===M1.sel){M1.sel=-1;render1();setInstr(firstInstr1());return;}
+  const a=M1.sel;M1.sel=-1;render1();
+  if((i-a+4)%4!==2){sound('no');showMeet(a,i);const t='Diese 2 Seiten treffen sich an einer Ecke. Parallele Seiten treffen sich nie.';feedback(t,'try');say(t);setInstr(firstInstr1());return;}
+  const k=a%2;
+  if(M1.inf.par[k]){M1.found[k]=true;const col=PC[M1.pc++];M1.col[a]=M1.col[i]=col;sound('step');render1();strip1();
+    const P=M1.P,p=P[k],q=P[k+1],c=P[(k+2)%4],d=P[(k+3)%4];[.3,.7].forEach(f=>{const A=add(p,mul(sub(q,p),f));measureBar(A,foot(A,c,d),col,fillL);});
+    if(M1.pc===2)return win1();
+    const t='Genau! Diese 2 Seiten sind parallel. Der Abstand ist überall gleich.';feedback(t+' ✓','ok');setInstr(firstInstr1());say(t+' '+instrText);return;}
+  sound('no');showMeet(a,i);const t='Nicht parallel! Verlängert man die Seiten, treffen sie sich.';feedback(t,'try');say(t);setInstr(firstInstr1());}
+function finish1(){if(locked)return;const miss=[0,1].filter(k=>M1.inf.par[k]&&!M1.found[k]);
+  if(miss.length){M1.fin++;nope(M1.pc?'Schau nochmal genau. Es gibt noch 2 Seiten, die parallel sind.':'Schau nochmal genau. Es gibt 2 Seiten, die parallel sind.',M1.fin>=2?()=>blinkEl($('#side'+miss[0])):null);return;}
+  win1();}
+function win1(){const n=M1.inf.np,e=eff(M1.inf);let t=n===0?'Richtig! Bei diesem Viereck ist keine Seite parallel.':n===1?'Richtig! Dieses Viereck hat 1 Paar parallele Seiten.':'Super! Dieses Viereck hat 2 Paare parallele Seiten.';
+  if(e!=='other')t+=` Es ist ${ART[e]}.`;setStrip([]);win(t);}
+function hint1(){if(locked)return;const miss=[0,1].filter(k=>M1.inf.par[k]&&!M1.found[k]);
+  if(miss.length){const k=miss[0];const t='Die blinkende Seite hat eine parallele Seite. Sie liegt gegenüber.';feedback(t,'sol');say(t);blinkEl($('#side'+(M1.col[k]?k+2:k)));}
+  else{const t=M1.pc?'Es gibt keine weiteren parallelen Seiten. Tippe auf Fertig.':'Hier ist keine Seite parallel. Tippe auf Fertig.';feedback(t,'sol');say(t);blinkEl($('#fin1'));}}
+
+/* ================= Modus 2: Wie heißt das Viereck? ================= */
+let M2=null,last2=null;
+function answerKinds(){return['trap','para','raute','rect','sq'].concat(S.kite?['kite']:[]).concat(['other']);}
+function newTask2(){GR.sp=64;GR.x0=90;GR.y0=78;
+  const easy=(S.n2||0)<5,pool=easy?['rect','sq','trap','para']:kinds();let kind=pick(pool);if(kind===last2)kind=pick(pool);last2=kind;
+  const g=makeShape(kind);
+  M2={g,P:g.map(gpt),inf:info(g),tools:{par:false,ang:false,len:false},picked:{},tries:0,panel:{x:40,y:462,w:420}};
+  drawBoard();renderQ(M2);drawAnswers();setInstr('Wie heißt das Viereck? Prüfe es und tippe den Namen an.');
+  setCtrl(toolBtns(M2).concat([{t:'📖 Merken',fn:()=>{buildMerk();$('#merkOv').classList.add('on');}}]));}
+function drawAnswers(){btnL.innerHTML='';const ks=answerKinds();
+  ks.forEach((k,n)=>{const col=n%2,row=Math.floor(n/2),x=490+col*252,y=40+row*(ks.length>6?132:140),w=238,h=118;
+    const st=M2.picked[k];const g=el('g',{style:'cursor:pointer',id:'ans_'+k},btnL);
+    el('rect',{x,y,width:w,height:h,rx:18,fill:st==='part'?'#E7F6EC':st==='no'?'#FDECEC':st==='ok'?'#C9F0D6':'#fff',stroke:st==='no'?'#E63946':st?'#2A9D4B':'#cbd5e1','stroke-width':st?5:3},g);
+    iconAt(g,k,x+w/2-45,y+12,1.5,false);
+    txt(g,x+w/2,y+h-24,NAMES[k],{'font-size':k==='para'||k==='other'?21:24,fill:'#1F2A37'});
+    if(st)txt(g,x+w-22,y+22,st==='no'?'✗':'✓',{'font-size':26,fill:st==='no'?'#E63946':'#2A9D4B'});
+    g.addEventListener('pointerdown',e=>{e.preventDefault();answer2(k);});});}
+function alsoTxt(e){const o=fam(e).filter(x=>x!==e);if(!o.length)return'';const n=o.map(x=>ART[x]);return` ${ART[e][0].toUpperCase()+ART[e].slice(1)} ist auch ${n.length>1?n.slice(0,-1).join(', ')+' und '+n[n.length-1]:n[0]}.`;}
+function nudge(e){return{sq:'Schau auf die Ecken und auf die Seiten.',rect:'Schau auf die Ecken.',raute:'Vergleiche die Seiten.',para:'Wie viele Paare parallele Seiten hat es?',kite:'Vergleiche die Seiten.'}[e]||'';}
+function reasonNot(k,i){const r=i.nr;
+  if(k==='trap')return['Ein Trapez braucht 2 Seiten gegenüber, die parallel sind. Hier ist keine Seite parallel.','par'];
+  if(k==='para')return[i.np===1?'Ein Parallelogramm hat 2 Paare parallele Seiten. Hier ist es nur 1 Paar.':'Ein Parallelogramm hat 2 Paare parallele Seiten. Hier ist keine Seite parallel.','par'];
+  if(k==='raute')return['Bei einer Raute sind alle 4 Seiten gleich lang. Hier nicht.','len'];
+  if(k==='rect')return[`Ein Rechteck hat 4 rechte Winkel. Hier ${r===0?'ist keiner':r===1?'ist es nur 1':'sind es nur '+r}.`,'ang'];
+  if(k==='sq')return r<4?[`Ein Quadrat hat 4 rechte Winkel. Hier ${r===0?'ist keiner':r===1?'ist es nur 1':'sind es nur '+r}.`,'ang']:['Ein Quadrat hat 4 gleich lange Seiten. Hier nicht.','len'];
+  if(k==='kite')return['Beim Drachen sind je 2 Seiten nebeneinander gleich lang. Hier nicht.','len'];
+  return i.np>0?['Dieses Viereck hat parallele Seiten. Es hat einen besonderen Namen.','par']:['Dieses Viereck hat einen besonderen Namen. Vergleiche die Seiten.','len'];}
+function answer2(k){if(locked)return;const e=eff(M2.inf),names=fam(e);
+  if(k===e||(!S.exact&&names.includes(k))){M2.picked[k]='ok';drawAnswers();setCtrl([]);
+    win(k===e?`Richtig! Es ist ${ART[e]}.`+alsoTxt(e):`Richtig! Es ist ${ART[k]}. Genauer gesagt: ${ART[e]}.`);
+    setCtrl([{t:'🏠 Im Haus zeigen',fn:()=>openHaus(e)},{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);return;}
+  if(names.includes(k)){M2.picked[k]='part';drawAnswers();sound('step');const t=`Stimmt, es ist auch ${ART[k]}! Aber es gibt einen genaueren Namen. ${nudge(e)}`;feedback(t,'sol');say(t);return;}
+  M2.picked[k]='no';M2.tries++;drawAnswers();const[t,tool]=reasonNot(k,M2.inf);useTool(M2,tool,true);nope(t);}
+
+/* ================= Modus 3: Vierecke spannen ================= */
+const TARGETS=[
+  {k:'rect',t:'Spanne ein Rechteck.',lv:0},
+  {k:'sq',t:'Spanne ein Quadrat.',lv:0},
+  {k:'trap',not:['para'],t:'Spanne ein Trapez. Nur 2 Seiten sollen parallel sein.',lv:0,extra:'Nur 2 Seiten parallel.'},
+  {k:'para',not:['rect'],t:'Spanne ein Parallelogramm ohne rechte Winkel.',lv:0,extra:'Ohne rechte Winkel.'},
+  {k:'raute',not:['sq'],t:'Spanne eine Raute. Sie soll kein Quadrat sein.',lv:1,extra:'Kein Quadrat.'},
+  {k:'rect',not:['sq'],t:'Spanne ein Rechteck. Es soll kein Quadrat sein.',lv:1,extra:'Kein Quadrat.'},
+  {k:'trap',not:['para'],ex:i=>i.nr===2,exMsg:'Es soll genau 2 rechte Winkel haben.',t:'Spanne ein Trapez mit 2 rechten Winkeln.',lv:1,extra:'Genau 2 rechte Winkel.'},
+  {k:'sq',ex:(i,g)=>sv(g,0)[0]!==0&&sv(g,0)[1]!==0,exMsg:'Es soll schräg liegen. Die Seiten sollen nicht gerade nach oben oder zur Seite gehen.',t:'Spanne ein schräges Quadrat.',lv:1,extra:'Schräg gedreht.'},
+  {k:'para',not:['rect','raute'],t:'Spanne ein Parallelogramm. Keine rechten Winkel, nicht alle Seiten gleich lang.',lv:1,extra:'Ohne rechte Winkel, nicht alle Seiten gleich lang.'},
+  {k:'nopar',t:'Spanne ein Viereck, bei dem keine Seite parallel ist.',lv:1},
+  {k:'kite',not:['raute'],t:'Spanne einen Drachen. Er soll keine Raute sein.',lv:1,kite:true,extra:'Keine Raute.'}];
+let M3=null,last3=null;
+function ok3(T,inf,g){const e=eff(inf),names=fam(e);if(T.k==='nopar')return inf.np===0;
+  return names.includes(T.k)&&!(T.not||[]).some(n=>names.includes(n))&&(!T.ex||T.ex(inf,g));}
+function newTask3(){GR.sp=80;GR.x0=100;GR.y0=95;
+  const easy=(S.n3||0)<4;let pool=TARGETS.filter(T=>(easy?T.lv===0:true)&&(!T.kite||S.kite));let T=pick(pool);if(T===last3)T=pick(pool);last3=T;
+  M3={T,pts:[],tries:0,ghost:false,shown:false};
+  drawBoard();drawPegs3();render3();card3();setInstr(T.t);
+  setCtrl([{t:'✓ Prüfen',cls:'yes',fn:check3},{t:'↺ Neu spannen',fn:()=>{if(locked)return;M3.pts=[];M3.shown=false;hideFb();render3();}},{t:'💡 Beispiel',fn:ghost3}]);}
+function card3(){btnL.innerHTML='';const T=M3.T,k=T.k==='nopar'?'other':T.k,x=600,y=40,w=370;
+  el('rect',{x,y,width:w,height:420,rx:20,fill:'#FFF8EC',stroke:'#F28C28','stroke-width':4},uiL);
+  txt(uiL,x+w/2,y+34,'Gesucht:',{'font-size':22,fill:'#6b7280'});
+  iconAt(uiL,k,x+w/2-75,y+60,2.5,true);
+  txt(uiL,x+w/2,y+190,T.k==='nopar'?'Viereck':NAMES[k],{'font-size':32,fill:'#1F2A37'});
+  (DEFL[T.k]||[]).forEach((l,i)=>txt(uiL,x+w/2,y+236+i*30,l,{'font-size':21,fill:'#1F2A37','font-weight':400}));
+  if(T.extra)wrap(T.extra,26).forEach((l,i)=>txt(uiL,x+w/2,y+340+i*30,(i?'':'⚠️ ')+l,{'font-size':21,fill:'#C2410C'}));}
+function wrap(s,n){const w=s.split(' '),out=[];let c='';w.forEach(x=>{if((c+' '+x).trim().length>n){out.push(c);c=x;}else c=(c+' '+x).trim();});if(c)out.push(c);return out;}
+function drawPegs3(){hitL.innerHTML='';for(let i=0;i<6;i++)for(let j=0;j<6;j++){const P=gpt([i,j]);const h=el('circle',{cx:P[0],cy:P[1],r:34,fill:'rgba(0,0,0,0)','pointer-events':'all',style:'cursor:pointer'},hitL);
+  h.addEventListener('pointerdown',e=>{e.preventDefault();tapPeg3([i,j]);});}}
+function tapPeg3(q){if(locked)return;const idx=M3.pts.findIndex(r=>r[0]===q[0]&&r[1]===q[1]);hideFb();
+  if(idx>=0){M3.pts.splice(idx,1);sound('tick');}
+  else{if(M3.pts.length>=4){const t='Du hast schon 4 Nägel. Tippe einen Nagel an. Dann ist er weg.';feedback(t,'try');say(t);return;}M3.pts.push(q);boing();}
+  M3.shown=false;render3();}
+function render3(){taskL.innerHTML='';markL.innerHTML='';const pts=M3.pts;
+  if(pts.length>=2){const R=sortRing(pts).map(gpt);
+    el('polygon',{points:R.map(p=>p.join(',')).join(' '),fill:pts.length===4?'rgba(242,140,40,.12)':'none',stroke:'#E07A1F','stroke-width':9,'stroke-linejoin':'round'},taskL);}
+  pts.forEach(q=>{const P=gpt(q);el('circle',{cx:P[0],cy:P[1],r:12,fill:'#E07A1F',stroke:'#fff','stroke-width':3},taskL);});
+  setStrip([{t:'Nägel: '+pts.length+' von 4',c:pts.length===4?'done':'cur'}]);}
+function features3(g){const inf=info(g),P=g.map(gpt);taskL.innerHTML='';let k=0;const cols=['#E07A1F','#E07A1F','#E07A1F','#E07A1F'];
+  [0,1].forEach(j=>{if(inf.par[j]){cols[j]=cols[j+2]=PC[k];k++;}});
+  for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:cols[i],'stroke-width':9,'stroke-linecap':'round'},taskL);}
+  P.forEach((Q,i)=>{el('circle',{cx:Q[0],cy:Q[1],r:10,fill:'#E07A1F',stroke:'#fff','stroke-width':3},taskL);if(inf.right[i])corner(Q,sub(P[(i+1)%4],Q),sub(P[(i+3)%4],Q),'#2A9D4B',20);});}
+function check3(){if(locked)return;const n=M3.pts.length;
+  if(n<4){const t=`Tippe genau 4 Nägel an. Du hast ${n===0?'noch keinen':n===1?'erst 1':'erst '+n}.`;feedback(t,'try');say(t);return;}
+  const g=sortRing(M3.pts);
+  for(let i=0;i<4;i++)if(cr(sv(g,i),sv(g,(i+1)%4))===0){nope('3 Nägel liegen auf einer geraden Linie. Dann ist es kein Viereck. Nimm einen anderen Nagel.');return;}
+  if(!convex(g)){nope('Eine Ecke zeigt nach innen. Nimm einen anderen Nagel.');return;}
+  const inf=info(g),e=eff(inf),T=M3.T,names=fam(e);features3(g);
+  if(ok3(T,inf,g)){const t=T.k==='nopar'?(e==='kite'?'Super! Keine Seite ist parallel. Das ist übrigens ein Drachen.':'Super! Keine Seite ist parallel.'):
+      e===T.k?`Super! Du hast ${ART[e]} gespannt.`:`Super! Das ist ${ART[T.k]} – es ist sogar ${ART[e]}.`;
+    win(t,2);return;}
+  M3.tries++;let t;
+  if(T.k==='nopar')t=`Das ist ${ART[e]}. Hier sind Seiten parallel. Die bunten Seiten sind parallel.`;
+  else if(!names.includes(T.k))t=`Das ist ${ART[e]}. `+reasonNot(T.k,inf)[0];
+  else{const bad=(T.not||[]).find(x=>names.includes(x));t=bad?`Das ist sogar ${ART[bad]}. Das soll es aber nicht sein.`:T.exMsg;}
+  if(M3.tries>=2&&!M3.ghost){t+=' Schau dir das Beispiel an.';ghost3(true);}
+  nope(t);}
+function ghost3(quiet){if(locked&&quiet!==true)return;ghostL.innerHTML='';M3.ghost=true;const T=M3.T;
+  let g;for(let k=0;k<30;k++){g=makeShape(T.k==='nopar'?'other':T.k,(i,p)=>ok3(T,i,p));if(ok3(T,info(g),g))break;}
+  const P=g.map(gpt);el('polygon',{points:P.map(p=>p.join(',')).join(' '),fill:'rgba(15,139,141,.10)',stroke:'#0F8B8D','stroke-width':6,'stroke-dasharray':'14 9','stroke-linejoin':'round'},ghostL);
+  if(quiet!==true){const t='So könnte es aussehen. Spanne es nach – oder finde ein eigenes.';feedback(t,'sol');say(t);}}
+
+/* ================= Modus 4: Steckbrief ================= */
+const PROPS=[{t:'4 Ecken und 4 Seiten',f:i=>true,w:'Jedes Viereck hat 4 Ecken und 4 Seiten.'},
+  {t:'Alle Seiten gegenüber sind parallel',f:i=>i.np===2,w:i=>i.np===2?'Hier sind beide Paare Seiten gegenüber parallel.':i.np===1?'Hier ist nur 1 Paar parallel.':'Hier ist keine Seite parallel.'},
+  {t:'Nur 2 Seiten gegenüber sind parallel',f:i=>i.np===1,w:i=>i.np===1?'Hier sind nur 2 Seiten parallel.':i.np===2?'Hier sind sogar 2 Paare parallel.':'Hier ist keine Seite parallel.'},
+  {t:'4 gleich lange Seiten',f:i=>i.eq,w:i=>i.eq?'Alle 4 Seiten sind gleich lang.':'Die Seiten sind nicht alle gleich lang.'},
+  {t:'4 rechte Winkel',f:i=>i.nr===4,w:i=>i.nr===4?'Alle 4 Ecken sind rechte Winkel.':'Nicht alle Ecken sind rechte Winkel.'},
+  {t:'Keine rechten Winkel',f:i=>i.nr===0,w:i=>i.nr===0?'Hier gibt es keinen rechten Winkel.':'Hier gibt es rechte Winkel.'}];
+let M4=null,last4=null;
+function newTask4(){GR.sp=64;GR.x0=90;GR.y0=78;
+  const easy=(S.n4||0)<4,pool=easy?['rect','sq','trap','para']:['rect','sq','trap','para','raute'].concat(S.kite?['kite']:[]);let kind=pick(pool);if(kind===last4)kind=pick(pool);last4=kind;
+  const g=makeShape(kind);
+  M4={g,P:g.map(gpt),inf:info(g),tools:{par:false,ang:false,len:false},sel:[false,false,false,false,false,false],st:[null,null,null,null,null,null],tries:0,panel:{x:40,y:462,w:420}};
+  drawBoard();renderQ(M4);drawProps4();setInstr('Was passt zu diesem Viereck? Tippe alle passenden Kärtchen an.');
+  setCtrl(toolBtns(M4).concat([{t:'✓ Prüfen',cls:'yes',fn:check4}]));}
+function drawProps4(){btnL.innerHTML='';PROPS.forEach((p,n)=>{const x=480,y=22+n*90,w=505,h=78,s=M4.sel[n],st=M4.st[n];
+  const g=el('g',{style:'cursor:pointer'},btnL);
+  el('rect',{x,y,width:w,height:h,rx:16,fill:st==='bad'?'#FDECEC':st==='ok'?'#E7F6EC':s?'#FFF6CC':'#fff',stroke:st==='bad'?'#E63946':st==='ok'?'#2A9D4B':s?'#E0B000':'#cbd5e1','stroke-width':s||st?5:3},g);
+  el('rect',{x:x+16,y:y+19,width:40,height:40,rx:8,fill:'#fff',stroke:s?'#2A9D4B':'#9aa5b1','stroke-width':4},g);if(s)txt(g,x+36,y+40,'✓',{'font-size':32,fill:'#2A9D4B'});
+  txt(g,x+74,y+h/2+1,p.t,{'font-size':23,fill:'#1F2A37','text-anchor':'start'});
+  g.addEventListener('pointerdown',e=>{e.preventDefault();if(locked)return;M4.sel[n]=!M4.sel[n];M4.st[n]=null;sound('tick');drawProps4();say(p.t);});});}
+function check4(){if(locked)return;const bad=[];PROPS.forEach((p,n)=>{const right=p.f(M4.inf)===M4.sel[n];M4.st[n]=right?(M4.sel[n]?'ok':null):'bad';if(!right)bad.push(n);});drawProps4();
+  if(!bad.length){const e=eff(M4.inf);win(`Super! Der Steckbrief stimmt. Es ist ${ART[e]}.`);return;}
+  M4.tries++;const p=PROPS[bad[0]],why=typeof p.w==='function'?p.w(M4.inf):p.w;
+  if(M4.tries>=2)['par','ang','len'].forEach(k=>useTool(M4,k,true));
+  nope(`${bad.length===1?'1 Kärtchen stimmt':bad.length+' Kärtchen stimmen'} noch nicht. Zum Beispiel: „${p.t}“. ${why}`);}
+
+/* ================= Modus 5: Kann das stimmen? ================= */
+const FIG={rect:[[0,0],[4,0],[4,2],[0,2]],sq:[[0,0],[3,0],[3,3],[0,3]],trap:[[2,0],[4,0],[5,3],[0,3]],trapR:[[0,0],[3,0],[4,3],[0,3]],
+  para:[[1,0],[5,0],[4,3],[0,3]],raute:[[0,0],[3,1],[4,4],[1,3]],other:[[0,1],[4,0],[5,4],[1,3]],kite:[[2,0],[4,1],[2,4],[0,1]]};
+const STM=[
+  {s:'Jedes Rechteck ist ein Quadrat.',v:false,f:['rect','sq'],sh:['ang','len'],w:'Ein Quadrat braucht 4 gleich lange Seiten. Dieses Rechteck hat das nicht. Es ist kein Quadrat.'},
+  {s:'Ein Trapez hat nie rechte Winkel.',v:false,f:['trapR','trap'],sh:['par','ang'],w:'Das linke Trapez hat 2 rechte Winkel.'},
+  {s:'Eine Raute hat nie rechte Winkel.',v:false,f:['sq','raute'],sh:['ang','len'],w:'Ein Quadrat ist auch eine Raute. Und es hat 4 rechte Winkel.'},
+  {s:'Jedes Quadrat ist auch ein Parallelogramm.',v:true,f:['sq','para'],sh:['par','len'],w:'Beim Quadrat sind die Seiten gegenüber parallel und gleich lang. Das reicht für ein Parallelogramm.'},
+  {s:'Ein Parallelogramm hat immer rechte Winkel.',v:false,f:['para'],sh:['par','ang'],w:'Dieses Parallelogramm hat keinen einzigen rechten Winkel.'},
+  {s:'Jedes Quadrat ist auch eine Raute.',v:true,f:['sq','raute'],sh:['par','len'],w:'Beim Quadrat sind alle Seiten gleich lang und die Seiten gegenüber parallel. Das reicht für eine Raute.'},
+  {s:'Jedes Viereck hat 4 Seiten und 4 Ecken.',v:true,f:['other','trap'],sh:['len'],w:'Darum heißt es ja Vier-Eck.'},
+  {s:'Bei einem Trapez müssen alle Seiten gleich lang sein.',v:false,f:['trap'],sh:['len'],w:'Bei diesem Trapez sind die Seiten verschieden lang. Ein Trapez braucht nur parallele Seiten.'},
+  {s:'Ein Trapez hat mindestens 2 parallele Seiten.',v:true,f:['trap','trapR'],sh:['par'],w:'So steht es im Merksatz: Mindestens 2 Seiten gegenüber sind parallel.'},
+  {s:'Jedes Parallelogramm ist auch ein Trapez.',v:true,f:['para','trap'],sh:['par'],w:'Ein Parallelogramm hat sogar 2 Paare parallele Seiten. Mindestens 2 parallele Seiten – das reicht für ein Trapez.'},
+  {s:'Ein Viereck hat immer 4 gleich lange Seiten.',v:false,f:['rect','other'],sh:['len'],w:'Diese Vierecke haben Seiten, die verschieden lang sind.'},
+  {s:'Ein Rechteck hat 4 rechte Winkel.',v:true,f:['rect'],sh:['ang'],w:'Alle 4 Ecken sind rechte Winkel.'},
+  {s:'Beim Parallelogramm sind alle Seiten gleich lang.',v:false,f:['para'],sh:['len'],w:'Nur die Seiten gegenüber sind gleich lang. Nicht alle 4.'},
+  {s:'Jedes Rechteck ist auch ein Parallelogramm.',v:true,f:['rect','para'],sh:['par','len'],w:'Beim Rechteck sind die Seiten gegenüber parallel und gleich lang. Das reicht für ein Parallelogramm.'},
+  {s:'Eine Raute hat 4 gleich lange Seiten.',v:true,f:['raute'],sh:['len','par'],w:'Bei der Raute sind alle Seiten gleich lang.'},
+  {s:'Ein Trapez hat immer 2 Paare parallele Seiten.',v:false,f:['trap'],sh:['par'],w:'Dieses Trapez hat nur 1 Paar parallele Seiten. Das reicht schon für ein Trapez.'},
+  {s:'Jede Raute ist ein Quadrat.',v:false,f:['raute','sq'],sh:['ang'],w:'Diese Raute hat keine rechten Winkel. Sie ist kein Quadrat.'},
+  {s:'Jedes Trapez ist ein Parallelogramm.',v:false,f:['trap','para'],sh:['par'],w:'Dieses Trapez hat nur 1 Paar parallele Seiten. Ein Parallelogramm braucht 2 Paare.'},
+  {s:'Jedes Quadrat ist auch ein Rechteck.',v:true,f:['sq','rect'],sh:['ang'],w:'Das Quadrat hat 4 rechte Winkel. Das reicht für ein Rechteck.'},
+  {s:'Jede Raute ist auch ein Drachen.',v:true,f:['raute','kite'],sh:['len'],w:'Bei der Raute sind alle Seiten gleich lang. Also sind auch je 2 Seiten nebeneinander gleich lang.',kite:true},
+  {s:'Ein Drachen hat immer parallele Seiten.',v:false,f:['kite'],sh:['par','len'],w:'Bei diesem Drachen ist keine Seite parallel.',kite:true}];
+let M5=null,deck5=[];
+function newTask5(){
+  if(!deck5.length){deck5=shuffle(STM.filter(x=>!x.kite||S.kite));if(M5&&deck5[0]===M5.q)deck5.push(deck5.shift());}
+  const q=deck5.shift();M5={q,tries:0,figs:[]};
+  el('rect',{x:30,y:14,width:940,height:126,rx:22,fill:'#FFF6CC',stroke:'#E0B000','stroke-width':4},bgL);
+  const lines=wrap('„'+q.s+'“',34);lines.forEach((l,i)=>txt(bgL,500,77+(i-(lines.length-1)/2)*44,l,{'font-size':36,fill:'#1F2A37'}));
+  const n=q.f.length,U=n===1?56:48;
+  q.f.forEach((k,j)=>{const g=FIG[k],xs=g.map(p=>p[0]),ys=g.map(p=>p[1]),w=(Math.max(...xs)-Math.min(...xs))*U,h=(Math.max(...ys)-Math.min(...ys))*U;
+    const cx=n===1?500:j===0?280:720,cy=325,ox=cx-w/2-Math.min(...xs)*U,oy=cy-h/2-Math.min(...ys)*U;
+    const P=g.map(p=>[ox+p[0]*U,oy+p[1]*U]);M5.figs.push({P,inf:info(g),k});
+    el('polygon',{points:P.map(p=>p.join(',')).join(' '),fill:'rgba(42,157,75,.08)',stroke:'#2A9D4B','stroke-width':7,'stroke-linejoin':'round',id:'fig'+j},taskL);
+    txt(taskL,cx,472,NAMES[k==='trapR'?'trap':k],{'font-size':26,fill:'#1F2A37'});});
+  setInstr('Kann das stimmen? '+q.s);
+  setCtrl([{t:'✓ Das stimmt',cls:'yes',fn:()=>answer5(true)},{t:'✗ Das stimmt nicht',cls:'no',fn:()=>answer5(false)},{t:'📖 Merken',fn:()=>{buildMerk();$('#merkOv').classList.add('on');}}]);}
+function proof5(){markL.innerHTML='';const sh=M5.q.sh;
+  M5.figs.forEach((F,j)=>{const P=F.P,i=F.inf;
+    if(sh.includes('par')){let k=0;[0,1].forEach(m=>{if(!i.par[m])return;const c=PC[k++];[m,m+2].forEach(s=>{const a=P[s],b=P[(s+1)%4];el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:c,'stroke-width':9,'stroke-linecap':'round'},markL);});});}
+    if(sh.includes('ang'))P.forEach((Q,n)=>{const u=sub(P[(n+1)%4],Q),v=sub(P[(n+3)%4],Q);if(i.right[n])corner(Q,u,v,'#2A9D4B',20);else arcMark(Q,u,v,'#E63946',24);});
+    if(sh.includes('len')){const cls=[...new Set(i.L)].sort((a,b)=>a-b);for(let s=0;s<4;s++){const a=P[s],b=P[(s+1)%4],M=mul(add(a,b),.5),d=unit(sub(b,a)),nn=[-d[1],d[0]],c=cls.indexOf(i.L[s])+1;
+      for(let t=0;t<c;t++){const o=add(M,mul(d,(t-(c-1)/2)*9));el('line',{x1:o[0]-nn[0]*11,y1:o[1]-nn[1]*11,x2:o[0]+nn[0]*11,y2:o[1]+nn[1]*11,stroke:'#1F2A37','stroke-width':4},markL);}}}});
+  if(sh.includes('len'))txt(markL,500,168,'Gleich viele Striche = gleich lang',{'font-size':20,fill:'#6b7280','font-weight':400});}
+function answer5(yes){if(locked)return;const q=M5.q;proof5();
+  if(yes===q.v){win((q.v?'Richtig, das stimmt! ':'Richtig, das stimmt nicht! ')+q.w);return;}
+  M5.tries++;nope((q.v?'Doch, das stimmt! ':'Nein, das stimmt nicht! ')+q.w);}
+
+/* ================= Belohnung: Gummi-Schleuder (3 Runden) ================= */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['trap','para','raute','rect','sq','bal'],MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Vierecke!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Vierecke!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='bal'){el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);return;}
+  const k=s/40,pts=ICON[t.shape].split(' ').map(q=>q.split(',').map(Number)).map(([x,y])=>`${(x-30)*k*1.15},${(y-20)*k*1.15}`).join(' ');
+  el('polygon',{points:pts,fill:c,stroke:'#fff','stroke-width':4,'stroke-linejoin':'round'},g);}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
+</script>
+</body>
+</html>
