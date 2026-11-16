@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kreis-Profi – Kreise zeichnen mit dem Zirkel</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--teal);text-align:center}
+.sub{font-size:20px;margin:4px 0 16px;color:#4b5563;text-align:center}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:105px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--teal);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--teal);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.R{border-color:var(--blue);color:var(--blue)}
+.chip.D{border-color:var(--green);color:var(--green)}
+.chip.cur{background:#FFF6CC;border-color:#E0B000;color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.feedback{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:#fff;border-radius:18px;padding:10px 22px;font-size:23px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none;text-align:center;max-width:78%;pointer-events:none}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:21px;padding:14px 18px}
+.tool{background:#fff;color:var(--ink)}
+.word{background:#fff;color:var(--ink);border:3px solid var(--teal);font-size:24px;padding:14px 22px}
+.yes{background:var(--green)}.no{background:var(--red)}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:24px 30px;max-width:680px;width:92%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:32px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:12px 0;padding:10px;border:3px solid #E63946;border-radius:16px;font-size:20px}
+.merk svg{flex:none;width:120px;height:110px}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.blink{animation:blink .5s 4 alternate}
+@keyframes blink{from{opacity:1}to{opacity:.15}}
+.pulse{animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.35}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>⭕ Kreis-Profi</h1>
+  <div class="sub">Kreise zeichnen mit dem Zirkel – Schritt für Schritt</div>
+  <div class="modes">
+    <button class="mode" data-m="1">
+      <svg viewBox="0 0 170 105"><circle cx="85" cy="52" r="44" fill="none" stroke="#374151" stroke-width="4"/><line x1="41" y1="52" x2="129" y2="52" stroke="#2A9D4B" stroke-width="5"/><line x1="85" y1="52" x2="110" y2="16" stroke="#1D7FD8" stroke-width="5"/><circle cx="85" cy="52" r="6" fill="#E63946"/></svg>
+      <span><span class="num" style="background:#1D7FD8">1</span> Kreis-Wörter</span><small>Mittelpunkt, Radius, Durchmesser</small>
+    </button>
+    <button class="mode" data-m="2">
+      <svg viewBox="0 0 170 105"><rect x="10" y="74" width="150" height="24" rx="4" fill="#FFF3B0" stroke="#C9A400" stroke-width="2"/><g stroke="#1d3557" stroke-width="2"><line x1="20" y1="74" x2="20" y2="84"/><line x1="50" y1="74" x2="50" y2="84"/><line x1="80" y1="74" x2="80" y2="84"/><line x1="110" y1="74" x2="110" y2="84"/><line x1="140" y1="74" x2="140" y2="84"/></g><line x1="20" y1="74" x2="65" y2="18" stroke="#8a96a3" stroke-width="6"/><line x1="65" y1="18" x2="110" y2="74" stroke="#8a96a3" stroke-width="6"/><line x1="98" y1="59" x2="110" y2="74" stroke="#F2C14E" stroke-width="6"/><line x1="65" y1="18" x2="65" y2="4" stroke="#1F2A37" stroke-width="8" stroke-linecap="round"/></svg>
+      <span><span class="num" style="background:#8E44AD">2</span> Zirkel einstellen</span><small>Mit dem Lineal</small>
+    </button>
+    <button class="mode" data-m="3">
+      <svg viewBox="0 0 170 105"><circle cx="70" cy="55" r="38" fill="none" stroke="#374151" stroke-width="4"/><path d="M70 55 L50 12" stroke="#8a96a3" stroke-width="6"/><path d="M50 12 L108 55" stroke="#8a96a3" stroke-width="6"/><line x1="50" y1="12" x2="40" y2="2" stroke="#1F2A37" stroke-width="8" stroke-linecap="round"/><text x="140" y="62" font-size="34" text-anchor="middle">↻</text></svg>
+      <span><span class="num" style="background:#F28C28">3</span> Kreis zeichnen</span><small>Der Radius ist gegeben</small>
+    </button>
+    <button class="mode" data-m="4">
+      <svg viewBox="0 0 170 105"><circle cx="85" cy="52" r="44" fill="none" stroke="#374151" stroke-width="4"/><line x1="85" y1="52" x2="129" y2="52" stroke="#1D7FD8" stroke-width="5"/><line x1="54" y1="21" x2="116" y2="83" stroke="#2A9D4B" stroke-width="5"/><text x="108" y="44" font-size="18" font-weight="700" fill="#1D7FD8">r</text><text x="62" y="80" font-size="18" font-weight="700" fill="#2A9D4B">d</text></svg>
+      <span><span class="num" style="background:#2A9D4B">4</span> Radius &amp; Durchmesser</span><small>Einzeichnen und messen</small>
+    </button>
+    <button class="mode" data-m="5">
+      <svg viewBox="0 0 170 105"><line x1="25" y1="25" x2="145" y2="25" stroke="#2A9D4B" stroke-width="8"/><line x1="25" y1="55" x2="85" y2="55" stroke="#1D7FD8" stroke-width="8"/><line x1="85" y1="55" x2="145" y2="55" stroke="#1D7FD8" stroke-width="8" opacity=".35"/><text x="85" y="92" font-size="20" font-weight="700" text-anchor="middle" fill="#1F2A37">d : 2 = r</text></svg>
+      <span><span class="num" style="background:#D6338A">5</span> Durchmesser gegeben</span><small>Erst halbieren, dann zeichnen</small>
+    </button>
+    <button class="mode" data-m="6">
+      <svg viewBox="0 0 170 105"><g fill="#F7A8C4" fill-opacity=".55" stroke="#374151" stroke-width="2"><circle cx="85" cy="30" r="22"/><circle cx="85" cy="74" r="22"/><circle cx="63" cy="52" r="22"/><circle cx="107" cy="52" r="22"/></g><circle cx="85" cy="52" r="12" fill="#FFD43B" stroke="#374151" stroke-width="2"/></svg>
+      <span><span class="num" style="background:#0F8B8D">6</span> Kreisbilder</span><small>Figuren mit dem Zirkel</small>
+    </button>
+  </div>
+  <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 16.11.2026 · 1</div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="bgL"></g><g id="fillL"></g><g id="hlL" pointer-events="none"></g><g id="taskL"></g><g id="ghostL" pointer-events="none"></g>
+      <g id="strokeL" pointer-events="none"></g><g id="markL" pointer-events="none"></g><g id="compL"></g><g id="uiL" pointer-events="none"></g>
+    </svg>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div class="merk"><svg viewBox="0 0 120 110"><circle cx="60" cy="55" r="48" fill="none" stroke="#374151" stroke-width="3"/><line x1="12" y1="55" x2="108" y2="55" stroke="#2A9D4B" stroke-width="4"/><line x1="60" y1="55" x2="88" y2="16" stroke="#1D7FD8" stroke-width="4"/><circle cx="60" cy="55" r="5" fill="#E63946"/><text x="52" y="72" font-size="16" font-weight="700" fill="#E63946">M</text><text x="80" y="42" font-size="16" font-weight="700" fill="#1D7FD8">r</text><text x="24" y="50" font-size="16" font-weight="700" fill="#2A9D4B">d</text></svg>
+    <div><b style="color:#E63946">M</b> = der <b>Mittelpunkt</b><br><b style="color:#1D7FD8">r</b> = der <b>Radius</b>: vom Mittelpunkt bis zur Kreislinie<br><b style="color:#2A9D4B">d</b> = der <b>Durchmesser</b>: von Rand zu Rand. Er geht durch den Mittelpunkt.</div></div>
+  <div class="merk"><svg viewBox="0 0 120 110"><line x1="10" y1="35" x2="110" y2="35" stroke="#2A9D4B" stroke-width="8"/><line x1="10" y1="70" x2="60" y2="70" stroke="#1D7FD8" stroke-width="8"/><line x1="60" y1="70" x2="110" y2="70" stroke="#5aa9f0" stroke-width="8"/><text x="60" y="22" font-size="15" font-weight="700" text-anchor="middle" fill="#2A9D4B">d</text><text x="35" y="95" font-size="15" font-weight="700" text-anchor="middle" fill="#1D7FD8">r</text><text x="85" y="95" font-size="15" font-weight="700" text-anchor="middle" fill="#1D7FD8">r</text></svg>
+    <div>Der Durchmesser ist <b>doppelt so lang</b> wie der Radius.<br>Der Radius ist <b>halb so lang</b> wie der Durchmesser.<br><small>1 Radius – 2 Radien</small></div></div>
+  <div class="merk" style="border-color:#F28C28"><div style="font-size:44px">✏️</div>
+    <div><b>So zeichne ich einen Kreis:</b><br>1. Radius am Lineal einstellen.<br>2. Mittelpunkt M zeichnen. Zirkelspitze in M stechen.<br>3. Zirkel oben am Griff anfassen und einmal ganz herumdrehen.</div></div>
+  <div class="row"><button id="merkSpeak" class="light">🔊 Vorlesen</button><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Papier <div class="seg" id="karoSeg"><button data-v="1">kariert</button><button data-v="0">blanko</button></div></div>
+  <div class="setrow">Angaben auch in mm (40 mm …) <div class="seg" id="mmSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Auch halbe cm (2½ cm …) <div class="seg" id="halfSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Magnet beim Einstechen <div class="seg" id="magSeg"><button data-v="gross">großzügig</button><button data-v="genau">genau</button><button data-v="aus">aus</button></div></div>
+  <div class="setrow"><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI,norm=a=>((a%360)+360)%360;
+const adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d;};
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],mul=(a,k)=>[a[0]*k,a[1]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+const unit=v=>{const l=Math.hypot(v[0],v[1])||1;return[v[0]/l,v[1]/l];};
+const dir=a=>[Math.cos(rad(a)),Math.sin(rad(a))];
+const distSeg=(p,a,b)=>{const v=sub(b,a),l2=dot(v,v);let t=l2?dot(sub(p,a),v)/l2:0;t=Math.max(0,Math.min(1,t));return dist(p,add(a,mul(v,t)));};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return[q.x,q.y];}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+function cmT(c){c=Math.round(c*2)/2;const w=Math.floor(c),h=c-w>0.25;return(h?(w?w+'½':'½'):String(w))+' cm';}
+
+let S={goal:10,done:0,stars:0,shots:10,voice:true,mag:'gross',half:false,mm:false,karo:true,seen:{},n1:0,n2:0,n3:0,n4:0,n5:0,n6:0,fig:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem('kreisprofi')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('kreisprofi',JSON.stringify(S));}catch(e){}}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[✏️📐✓✗⭐➜📏💡↻👉]/gu,'').replace(/(\d)½ cm/g,'$1 einhalb Zentimeter').replace(/½ cm/g,'einen halben Zentimeter').replace(/(\d) cm/g,'$1 Zentimeter').replace(/(\d) mm/g,'$1 Millimeter').replace(/ : 2/g,' geteilt durch 2').replace(/ \+ /g,' plus ').replace(/ = /g,' gleich '));u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='snap')tone(1200,0,.08);else if(k==='pen')tone(500,0,.05,'triangle');else if(k==='tick')tone(900,0,.03);}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Startseite, Merken, Einstellungen ---------- */
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.m));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+const MERK='M ist der Mittelpunkt. r ist der Radius. Der Radius geht vom Mittelpunkt bis zur Kreislinie. d ist der Durchmesser. Er geht von Rand zu Rand, durch den Mittelpunkt. Der Durchmesser ist doppelt so lang wie der Radius. Der Radius ist halb so lang wie der Durchmesser. So zeichne ich einen Kreis: Radius am Lineal einstellen. Mittelpunkt zeichnen und die Zirkelspitze hineinstechen. Den Zirkel oben am Griff anfassen und einmal ganz herumdrehen.';
+$('#merkBtn').onclick=()=>{$('#merkOv').classList.add('on');say(MERK);};
+$('#merkSpeak').onclick=()=>say(MERK);
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');try{speechSynthesis.cancel();}catch(e){}};
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#karoSeg',()=>S.karo?1:0,v=>S.karo=v==='1'),segSet('#mmSeg',()=>S.mm?1:0,v=>S.mm=v==='1'),segSet('#halfSeg',()=>S.half?1:0,v=>S.half=v==='1'),segSet('#magSeg',()=>S.mag,v=>S.mag=v)];
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.n1=S.n2=S.n3=S.n4=S.n5=S.n6=0;S.fig=0;S.seen={};save();refreshStart();};
+refreshStart();
+
+/* ---------- Gemeinsames ---------- */
+const stage=$('#stage'),bgL=$('#bgL'),fillL=$('#fillL'),hlL=$('#hlL'),taskL=$('#taskL'),ghostL=$('#ghostL'),strokeL=$('#strokeL'),markL=$('#markL'),compL=$('#compL'),uiL=$('#uiL');
+let MODE=1,locked=false,instrText='';
+function clearStage(){[bgL,fillL,hlL,taskL,ghostL,strokeL,markL,compL,uiL].forEach(l=>l.innerHTML='');}
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function startMode(m){MODE=m;show('task');newTask();if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
+function newTask(){locked=false;drag=null;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask3,newTask6][MODE]();}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+  setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
+  $('#ctrl button').style.fontSize='26px';}
+function wrongShake(){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);}
+function blinkEl(node){if(!node)return;node.classList.remove('blink');void node.getBBox();node.classList.add('blink');setTimeout(()=>node.classList.remove('blink'),2100);}
+function measureBar(A,B,col,label,layer){layer=layer||markL;const v=unit(sub(B,A)),p=[-v[1],v[0]];
+  el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':5,'stroke-linecap':'round'},layer);
+  [A,B].forEach(Q=>el('line',{x1:Q[0]-p[0]*10,y1:Q[1]-p[1]*10,x2:Q[0]+p[0]*10,y2:Q[1]+p[1]*10,stroke:col,'stroke-width':4},layer));
+  if(label){const M=add(mul(add(A,B),.5),mul(p,-30));const w=label.length*13+24;el('rect',{x:M[0]-w/2,y:M[1]-19,width:w,height:38,rx:11,fill:'#fff',stroke:col,'stroke-width':3},layer);txt(layer,M[0],M[1]+1,label,{'font-size':22,fill:'#1F2A37'});}}
+function mCross(layer,P,col,label){const g=el('g',{},layer);const k=10;
+  el('line',{x1:P[0]-k,y1:P[1]-k,x2:P[0]+k,y2:P[1]+k,stroke:col,'stroke-width':4,'stroke-linecap':'round'},g);
+  el('line',{x1:P[0]-k,y1:P[1]+k,x2:P[0]+k,y2:P[1]-k,stroke:col,'stroke-width':4,'stroke-linecap':'round'},g);
+  if(label)txt(g,P[0]-20,P[1]+22,label,{'font-size':22,fill:col});return g;}
+
+/* ---------- Papier, Lineal, Zirkel ---------- */
+const CM=36,PAPER_H=540;
+const RUL={x:70,y:562,cm:CM,max:8},RUL2={x:110,y:440,cm:60,max:8};
+function paper(){el('rect',{x:0,y:0,width:1000,height:620,fill:'#fff'},bgL);
+  if(S.karo){const g=el('g',{stroke:'#DCE8F5','stroke-width':1.2},bgL);for(let x=0;x<=1000;x+=CM/2)el('line',{x1:x,y1:0,x2:x,y2:PAPER_H},g);for(let y=0;y<=PAPER_H;y+=CM/2)el('line',{x1:0,y1:y,x2:1000,y2:y},g);}
+  el('rect',{x:0,y:PAPER_H+6,width:1000,height:620-PAPER_H,fill:'#F1F3F6'},bgL);}
+function drawRuler(layer,R,hi){const W=R.max*R.cm;const big=R.cm>=50;
+  el('rect',{x:R.x-18,y:R.y,width:W+36,height:big?70:54,rx:6,fill:'#FFF3B0',stroke:'#C9A400','stroke-width':2},layer);
+  for(let k=0;k<=R.max*10;k++){const x=R.x+k*R.cm/10;const l=k%10===0?(big?26:20):k%5===0?(big?18:13):(big?10:7);
+    el('line',{x1:x,y1:R.y,x2:x,y2:R.y+l,stroke:'#1d3557','stroke-width':k%10===0?2.2:1},layer);
+    if(k%10===0)txt(layer,x,R.y+(big?44:34),String(k/10),{'font-size':big?24:17,fill:'#1d3557'});}
+  if(hi!==undefined&&hi!==null){const x=R.x+hi*R.cm;const g=el('g',{class:'pulse'},layer);el('polygon',{points:`${x},${R.y+2} ${x-14},${R.y-26} ${x+14},${R.y-26}`,fill:'#2A9D4B'},g);}}
+let CP={N:[0,0],a:0,s:CM,L:200};
+function compassPts(){const u=dir(CP.a),n=[u[1],-u[0]];const N=CP.N,P=add(N,mul(u,CP.s));const h=Math.sqrt(Math.max(CP.L*CP.L-CP.s*CP.s/4,900));const H=add(mul(add(N,P),.5),mul(n,h));const G=add(H,mul(n,48));return{N,P,H,G,u,n};}
+function drawCompass(layer,c,dim){const g=el('g',{opacity:dim?.35:1},layer);
+  const leg=(A,B,w,col)=>el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':w,'stroke-linecap':'round'},g);
+  const dN=unit(sub(c.N,c.H)),N1=sub(c.N,mul(dN,28));
+  leg(c.H,N1,13,'#8a96a3');leg(N1,c.N,4,'#1F2A37');
+  const dP=unit(sub(c.P,c.H)),P1=sub(c.P,mul(dP,44)),P2=sub(c.P,mul(dP,15));
+  leg(c.H,P1,13,'#8a96a3');leg(P1,P2,11,'#F2C14E');leg(P2,c.P,5,'#374151');
+  leg(c.H,c.G,18,'#1F2A37');el('circle',{cx:c.H[0],cy:c.H[1],r:14,fill:'#4b5563',stroke:'#fff','stroke-width':3},g);return g;}
+function onCompass(q,tol){const c=compassPts();return distSeg(q,c.N,c.H)<tol||distSeg(q,c.H,c.P)<tol||distSeg(q,c.H,c.G)<tol;}
+
+/* ---------- Hilfe-Texte ---------- */
+function helpData(){
+  if(MODE===1)return{t:'Kreis-Wörter',st:['Schau dir den Kreis und den Zirkel an.','Etwas leuchtet gelb? Tippe auf das richtige Wort.','Oder: Tippe auf das, was gesucht ist.','Im 📖 Merkbuch stehen alle Wörter.']};
+  if(MODE===2)return{t:'Zirkel einstellen',st:['Die Zirkelspitze steht auf der 0 vom Lineal.','Fass die Zirkelmine an. Das ist der gelbe Stift.','Zieh die Mine bis zur richtigen Zahl.','Manchmal fragt die App: Auf wie viel cm ist der Zirkel eingestellt? Lies am Lineal ab.']};
+  if(MODE===4)return{t:'Radius und Durchmesser',st:['Radius: Zieh mit dem Finger vom Mittelpunkt M bis zur Kreislinie.','Durchmesser: Fang an der Kreislinie an. Zieh durch M bis zur anderen Seite.','Dann sagst du, wie lang der Durchmesser ist.','Tipp: Der Durchmesser ist so lang wie 2 Radien. Du darfst den Taschenrechner benutzen.']};
+  if(MODE===6)return{t:'Kreisbilder',st:['Die roten Kreuze sind die Mittelpunkte.','Stelle den Zirkel am Lineal ein.','Stich die Zirkelspitze in den blinkenden Mittelpunkt.','Dreh den Zirkel einmal ganz herum. Dann kommt der nächste Kreis.']};
+  const st=['Zieh die Zirkelmine am Lineal bis zur richtigen Zahl.','Tippe aufs Blatt: Dort ist der Mittelpunkt M.','Zieh den Zirkel zu M. Die Spitze muss genau auf M.','Dreh den Zirkel einmal ganz herum.'];
+  if(MODE===5)st.unshift('Der Durchmesser ist gegeben. Teile ihn durch 2. Dann hast du den Radius.');
+  return{t:MODE===5?'Durchmesser gegeben':'Kreis zeichnen',st};}
+function openHelp(){const h=helpData();$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.st.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+
+/* ================= Modus 1: Kreis-Wörter ================= */
+const NAME={M:'Mittelpunkt',r:'Radius',d:'Durchmesser',k:'Kreislinie',spitze:'Zirkelspitze',mine:'Zirkelmine',griff:'Griff'};
+const ART={M:'den Mittelpunkt',r:'den Radius',d:'den Durchmesser',k:'die Kreislinie',spitze:'die Zirkelspitze',mine:'die Zirkelmine',griff:'den Griff'};
+const NOM={M:'der Mittelpunkt',r:'der Radius',d:'der Durchmesser',k:'die Kreislinie',spitze:'die Zirkelspitze',mine:'die Zirkelmine',griff:'der Griff'};
+const EXPL={M:'Der Mittelpunkt ist der Punkt genau in der Mitte.',r:'Der Radius geht vom Mittelpunkt bis zur Kreislinie.',d:'Der Durchmesser geht von Rand zu Rand – durch den Mittelpunkt.',k:'Die Kreislinie ist die runde Linie außen.',
+  spitze:'Die Zirkelspitze ist spitz. Sie kommt in den Mittelpunkt.',mine:'Mit der Zirkelmine zeichnest du die Kreislinie.',griff:'Am Griff fasst du den Zirkel oben an.'};
+const ZP=['spitze','mine','griff'];
+let T1=null,last1=null,lastType1=null;
+function newTask1(){const easy=(S.n1||0)<4;
+  const pool=easy?['M','r','d']:['M','r','d','k','r','d','spitze','mine','griff'];
+  const part=pick(pool.filter(x=>x!==last1));last1=part;
+  let type=Math.random()<.5?'name':'tap';if(type===lastType1&&Math.random()<.6)type=type==='name'?'tap':'name';lastType1=type;
+  const MC=[300,300],R=210;const ad=rnd(-20,20);let ar=ad+pick([1,-1])*rnd(65,115);
+  CP={N:[640,520],a:0,s:250,L:200};
+  T1={part,type,MC,R,dA:add(MC,mul(dir(ad),-R)),dB:add(MC,mul(dir(ad),R)),rE:add(MC,mul(dir(ar),R)),comp:compassPts(),tries:0};
+  draw1();
+  if(type==='name'){glow1(part,true);setInstr(ZP.includes(part)?'Was leuchtet am Zirkel? Wie heißt es?':'Was leuchtet? Wie heißt es?');
+    const group=ZP.includes(part)?ZP:(easy?['M','r','d']:['M','r','d','k']);
+    const opts=shuffle([part,...shuffle(group.filter(x=>x!==part)).slice(0,2)]);
+    setCtrl(opts.map(o=>({t:NAME[o],cls:'word',fn:()=>answer1(o)})));}
+  else{setInstr(`Tippe auf ${ART[part]}.`);setCtrl([{t:'📖 Merken',fn:()=>$('#merkBtn').onclick()}]);}}
+function draw1(){const{MC,R,dA,dB,rE,comp}=T1;
+  el('circle',{cx:MC[0],cy:MC[1],r:R,fill:'none',stroke:'#374151','stroke-width':5},taskL);
+  el('line',{x1:dA[0],y1:dA[1],x2:dB[0],y2:dB[1],stroke:'#2A9D4B','stroke-width':6,'stroke-linecap':'round'},taskL);
+  el('line',{x1:MC[0],y1:MC[1],x2:rE[0],y2:rE[1],stroke:'#1D7FD8','stroke-width':6,'stroke-linecap':'round'},taskL);
+  el('circle',{cx:MC[0],cy:MC[1],r:9,fill:'#E63946',stroke:'#fff','stroke-width':2},taskL);
+  el('rect',{x:600,y:530,width:330,height:16,rx:4,fill:'#E5E7EB'},taskL);
+  drawCompass(taskL,comp);}
+function partNode(p,layer,col,w){const{MC,R,dA,dB,rE,comp}=T1;const g=el('g',{},layer);const ln=(A,B)=>el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':w,'stroke-linecap':'round',opacity:.85},g);
+  if(p==='M')el('circle',{cx:MC[0],cy:MC[1],r:w*.9,fill:col,opacity:.85},g);
+  else if(p==='r')ln(MC,rE);else if(p==='d')ln(dA,dB);
+  else if(p==='k')el('circle',{cx:MC[0],cy:MC[1],r:R,fill:'none',stroke:col,'stroke-width':w,opacity:.85},g);
+  else if(p==='spitze')el('circle',{cx:comp.N[0],cy:comp.N[1],r:w,fill:col,opacity:.85},g);
+  else if(p==='mine')el('circle',{cx:comp.P[0]-6,cy:comp.P[1]-12,r:w*1.1,fill:col,opacity:.85},g);
+  else if(p==='griff')ln(comp.H,comp.G);return g;}
+function glow1(p,keep){hlL.innerHTML='';const g=partNode(p,hlL,'#FFD400',28);g.classList.add(keep?'pulse':'blink');}
+function label1(p){const{MC,R,dA,dB,rE,comp}=T1;let P;
+  if(p==='M')P=add(MC,[-28,30]);else if(p==='r')P=add(mul(add(MC,rE),.5),[26,-6]);else if(p==='d')P=add(mul(add(dA,dB),.5),[-60,-26]);
+  else if(p==='k')P=[MC[0]+R*.72+40,MC[1]+R*.72+20];
+  else if(p==='spitze')P=[comp.N[0]-70,comp.N[1]-40];else if(p==='mine')P=[comp.P[0]+20,comp.P[1]-60];else P=[comp.G[0]+90,comp.G[1]];
+  const t=NAME[p],w=t.length*13+24;el('rect',{x:P[0]-w/2,y:P[1]-19,width:w,height:38,rx:11,fill:'#fff',stroke:'#2A9D4B','stroke-width':3},markL);txt(markL,P[0],P[1]+1,t,{'font-size':22,fill:'#1F2A37'});}
+function answer1(w){if(locked)return;const p=T1.part;
+  if(w===p){label1(p);win(`Richtig! Das ist ${NOM[p]}.`);return;}
+  T1.tries++;wrongShake();let t=`Nein. ${EXPL[w]} Versuch es nochmal.`;
+  if(T1.tries>=2){t=`Schau genau: ${EXPL[p]}`;[...$('#ctrl').children].forEach(b=>{if(b.textContent===NAME[p])b.classList.add('pulse');});}
+  feedback(t,'try');say(t);}
+function tap1(q){const{MC,R,dA,dB,rE,comp}=T1;let hit=null;
+  if(dist(q,MC)<32)hit='M';else if(dist(q,comp.N)<42)hit='spitze';else if(dist(q,comp.P)<46)hit='mine';else if(distSeg(q,comp.H,comp.G)<34||dist(q,comp.H)<26)hit='griff';
+  else if(distSeg(q,MC,rE)<26)hit='r';else if(distSeg(q,dA,dB)<26)hit='d';else if(Math.abs(dist(q,MC)-R)<26)hit='k';
+  if(!hit){const t='Tippe genau auf einen Punkt oder eine Linie.';feedback(t,'try');say(t);return;}
+  const p=T1.part;
+  if(hit===p){glow1(p,true);label1(p);win(`Richtig! Das ist ${NOM[p]}.`);return;}
+  T1.tries++;sound('no');const g=partNode(hit,markL,'#E63946',20);setTimeout(()=>g.remove(),1500);
+  let t=`Das ist ${NOM[hit]}. Gesucht ist ${ART[p]}. ${EXPL[p]}`;
+  if(T1.tries>=2){glow1(p,false);t+=' Schau, es blinkt.';}
+  feedback(t,'try');say(t);}
+
+/* ================= Modus 2: Zirkel einstellen ================= */
+let T2=null,last2=null;
+function stepCm(){return S.half?0.5:1;}
+function newTask2(){const n=S.n2||0;const type=n<3?'set':(Math.random()<.5?'set':'read');
+  const vals=[];for(let v=1;v<=7;v+=stepCm())vals.push(v);let t=pick(vals.filter(v=>v!==last2));last2=t;
+  T2={type,t,tries:0,step:type==='set'?'set':'read'};
+  let s0=type==='set'?pick(vals.filter(v=>Math.abs(v-t)>=2)):t;
+  CP={N:[RUL2.x,RUL2.y+2],a:0,s:s0*RUL2.cm,L:RUL2.max*RUL2.cm*.5+70};hintOn=null;drawRulerOnce();
+  if(type==='set'){setInstr(`Stelle den Zirkel auf ${cmT(t)} ein. Zieh an der Mine.`);setStrip([{t:'Ziel: '+cmT(t),c:'R'}]);setCtrl([{t:'💡 Hilfe',fn:()=>hintSet()}]);}
+  else{setInstr('Auf wie viel cm ist der Zirkel eingestellt?');
+    let opts=[t,t+1,t-1];if(t-1<1)opts=[t,t+1,t+2];opts=shuffle(opts);
+    setCtrl([...opts.map(o=>({t:cmT(o),cls:'word',fn:()=>answer2(o)})),{t:'💡 Hilfe',fn:()=>{const t2='Schau, wo die Zirkelmine auf dem Lineal steht. Lies die Zahl ab.';feedback(t2,'sol');say(t2);mineLine();}}]);}
+  renderC();}
+function mineLine(){const P=compassPts().P;const g=el('line',{x1:P[0],y1:P[1],x2:P[0],y2:RUL2.y+30,stroke:'#E63946','stroke-width':4,'stroke-dasharray':'6 4'},markL);blinkEl(g);}
+function answer2(o){if(locked)return;
+  if(o===T2.t){mineLine();win(`Richtig! Der Zirkel ist auf ${cmT(o)} eingestellt.`);return;}
+  T2.tries++;wrongShake();mineLine();const t=`Nein, nicht ${cmT(o)}. Die Zirkelspitze steht auf 0. Schau, wo die Mine steht.`;feedback(t,'try');say(t);}
+
+/* ---------- Gemeinsame Zeichen-Schritte (Modus 2, 3, 5, 6) ---------- */
+let drag=null,strokes=[],bins=[],hintOn=null;
+function R_(){return MODE===2?RUL2:RUL;}
+function curStep(){if(MODE===2)return T2.step;if(MODE===3||MODE===5)return T3.step;if(MODE===6)return T6.step;return null;}
+function target(){if(MODE===2)return T2.t;if(MODE===6)return T6.cur().r;return T3.r;}
+function targetM(){return MODE===6?T6.cur().c:T3.M;}
+function renderC(){compL.innerHTML='';strokeL.innerHTML='';ghostL.innerHTML='';uiL.innerHTML='';
+  strokes.forEach(st=>{if(st.length>1)el('polyline',{points:st.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#374151','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'},strokeL);});
+  const step=curStep();
+  drawHint();
+  drawCompass(compL,compassPts());
+  if(step==='set'||MODE===2&&T2.type==='set'){const c=compassPts(),R=R_();const v=CP.s/R.cm;const B=add(c.P,[46,-58]);
+    el('rect',{x:B[0]-50,y:B[1]-22,width:100,height:44,rx:12,fill:'#fff',stroke:'#8E44AD','stroke-width':3},uiL);txt(uiL,B[0],B[1]+1,cmT(v),{'font-size':24,fill:'#1F2A37'});}}
+function drawRulerOnce(){if(MODE===2){bgL.innerHTML='';el('rect',{x:0,y:0,width:1000,height:620,fill:'#FBF7F0'},bgL);drawRuler(bgL,RUL2,hintOn==='set'?T2.t:null);}
+  else{const old=$('#rulerG');if(old)old.remove();const g=el('g',{id:'rulerG'},bgL);drawRuler(g,RUL,hintOn==='set'&&curStep()==='set'?target():null);}}
+function drawHint(){const step=curStep();if(!hintOn)return;
+  if(step==='M'&&hintOn==='M'){const r=T3.r*CM;el('rect',{x:r+12,y:r+12,width:Math.max(4,1000-2*r-24),height:Math.max(4,PAPER_H-2*r-24),rx:14,fill:'rgba(42,157,75,.12)',stroke:'#2A9D4B','stroke-width':3,'stroke-dasharray':'10 7'},ghostL);}
+  if(step==='stab'&&hintOn==='stab'){const M=targetM(),N=CP.N;el('line',{x1:N[0],y1:N[1],x2:M[0],y2:M[1],stroke:'#E63946','stroke-width':4,'stroke-dasharray':'10 8'},ghostL);el('circle',{cx:M[0],cy:M[1],r:24,fill:'none',stroke:'#E63946','stroke-width':5,class:'pulse'},ghostL);}
+  if(step==='turn'&&hintOn==='turn'){const M=CP.N;el('circle',{cx:M[0],cy:M[1],r:CP.s,fill:'none',stroke:'#9aa5b1','stroke-width':4,'stroke-dasharray':'10 8'},ghostL);}}
+function setHint(k){hintOn=k;drawRulerOnce();renderC();}
+function hintSet(){setHint('set');const t=`Zieh die gelbe Mine bis zur ${cmT(target())}. Der grüne Pfeil zeigt die Stelle.`;feedback(t,'sol');say(t);}
+function hintStep(){const st=curStep();
+  if(st==='set')return hintSet();
+  if(st==='M'){setHint('M');const t='Tippe in das grüne Feld. Dort passt der Kreis aufs Blatt.';feedback(t,'sol');say(t);return;}
+  if(st==='stab'){setHint('stab');const t='Fass den Zirkel an. Zieh die Spitze zum roten Kreis.';feedback(t,'sol');say(t);return;}
+  if(st==='turn'){setHint('turn');const t='Leg den Finger aufs Blatt und fahr im Kreis herum – einmal ganz rund.';feedback(t,'sol');say(t);return;}
+  if(st==='q'){const t=`Teile ${cmT(T3.d)} durch 2. Du darfst den Taschenrechner benutzen.`;feedback(t,'sol');say(t);}}
+
+function snapS(x){const R=R_(),st=stepCm();let v=Math.round((x-CP.N[0])/R.cm/st)*st;v=Math.max(st,Math.min(R.max,v));return v*R.cm;}
+stage.addEventListener('pointerdown',e=>{if(locked)return;if(drag&&!e.isPrimary)return;e.preventDefault();const q=svgPt(stage,e);
+  if(MODE===1)return tap1(q);
+  if(MODE===4)return down4(q,e.pointerId);
+  const st=curStep(),c=compassPts(),R=R_();
+  if(st==='set'){if(dist(q,c.P)<90||(q[1]>R.y-60&&q[1]<R.y+80&&q[0]>R.x)||distSeg(q,c.H,c.P)<40){drag={k:'set',id:e.pointerId};const s=snapS(q[0]);if(s!==CP.s){CP.s=s;sound('tick');}renderC();}
+    else{const t='Fass die gelbe Mine an und zieh am Lineal entlang.';feedback(t,'try');say(t);}return;}
+  if(st==='M')return placeM(q);
+  if(st==='stab'){if(onCompass(q,55)){drag={k:'stab',id:e.pointerId,off:sub(CP.N,q)};hideFb();}else{const t='Fass den Zirkel an und zieh ihn zum Mittelpunkt.';feedback(t,'try');say(t);}return;}
+  if(st==='turn'){drag={k:'turn',id:e.pointerId,pa:deg(Math.atan2(q[1]-CP.N[1],q[0]-CP.N[0]))};strokes.push([compassPts().P]);hideFb();}});
+window.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const q=svgPt(stage,e);
+  if(drag.k==='set'){const s=snapS(q[0]);if(s!==CP.s){CP.s=s;sound('tick');renderC();}}
+  else if(drag.k==='stab'){CP.N=add(q,drag.off);renderC();}
+  else if(drag.k==='turn'){const pa=deg(Math.atan2(q[1]-CP.N[1],q[0]-CP.N[0]));const dd=adiff(pa,drag.pa);drag.pa=pa;if(Math.abs(dd)>60)return;
+    const a0=CP.a,a1=a0+dd;const sg=a1>=a0?1:-1;for(let a=a0;sg>0?a<=a1:a>=a1;a+=sg)bins[Math.floor(norm(a)/5)%72]=true;bins[Math.floor(norm(a1)/5)%72]=true;
+    CP.a=a1;strokes[strokes.length-1].push(compassPts().P);renderC();if(bins.every(x=>x)){drag=null;circleDone();}}
+  else if(drag.k==='line')move4(q);});
+function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;
+  if(d.k==='set')releaseSet();else if(d.k==='stab')releaseStab();else if(d.k==='line')up4();}
+window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
+
+function releaseSet(){const R=R_(),v=CP.s/R.cm,t=target();
+  if(Math.abs(v-t)<0.01){sound('step');hintOn=null;drawRulerOnce();
+    if(MODE===2){renderC();win(`Richtig! Der Zirkel ist auf ${cmT(t)} eingestellt.`);return;}
+    setDoneNext();return;}
+  const tr=MODE===2?T2:MODE===6?T6:T3;tr.tries=(tr.tries||0)+1;
+  const t2=`Das sind ${cmT(v)}. Du brauchst ${cmT(t)}.`+(v<t?' Zieh weiter.':' Zieh ein Stück zurück.');feedback(t2,'try');say(t2);
+  if(tr.tries>=2&&hintOn!=='set'){hintOn='set';drawRulerOnce();renderC();}}
+function setDoneNext(){const w=pick(['Prima!','Super!','Genau!','Toll!']);
+  if(MODE===6){T6.step='stab';T6.tries=0;strip6();feedback(w+' Der Zirkel ist eingestellt. ✓','ok');setInstr(instr6());say(w+' '+instrText);renderC();return;}
+  T3.step='M';T3.tries=0;strip3();feedback(w+' Der Zirkel ist auf '+cmT(T3.r)+' eingestellt. ✓','ok');setInstr(instr3());say(w+' '+instrText);uiL.innerHTML='';renderC();}
+function placeM(q){const r=T3.r*CM;
+  if(q[1]>PAPER_H){const t='Tippe oben auf das Blatt.';feedback(t,'try');say(t);return;}
+  if(q[0]-r<10||q[0]+r>990||q[1]-r<10||q[1]+r>PAPER_H){T3.tries++;sound('no');
+    const pv=el('circle',{cx:q[0],cy:q[1],r,fill:'none',stroke:'#E63946','stroke-width':4,'stroke-dasharray':'10 8'},markL);setTimeout(()=>pv.remove(),1600);
+    const t='Hier passt der Kreis nicht ganz aufs Blatt. Tippe mehr in die Mitte.';feedback(t,'try');say(t);if(T3.tries>=2){hintOn='M';renderC();}return;}
+  T3.M=q;mCross(taskL,q,'#E63946','M');sound('pen');hintOn=null;
+  if(T3.dbar){T3.dbar.remove();T3.dbar=null;}
+  T3.step='stab';T3.tries=0;strip3();feedback('Prima! Das ist der Mittelpunkt M. ✓','ok');setInstr(instr3());say('Prima! '+instrText);renderC();}
+function releaseStab(){const M=targetM();const thr={gross:45,genau:14,aus:5}[S.mag]||45;const d=dist(CP.N,M);
+  if(d<thr){CP.N=M.slice();sound('snap');hintOn=null;strokes=[];bins=new Array(72).fill(false);
+    if(MODE===6){T6.step='turn';strip6();setInstr(instr6());}else{T3.step='turn';strip3();setInstr(instr3());}
+    feedback('Gut eingestochen! ✓','ok');say('Gut eingestochen! '+instrText);renderC();return;}
+  const tr=MODE===6?T6:T3;tr.tries=(tr.tries||0)+1;
+  const t=d<60?'Fast! Die Zirkelspitze muss genau auf den Mittelpunkt.':'Die Zirkelspitze muss auf den Mittelpunkt. Zieh den Zirkel dorthin.';feedback(t,'try');say(t);
+  if(tr.tries>=2){hintOn='stab';renderC();}}
+function circleDone(){const M=CP.N.slice(),s=CP.s;strokes=[];hintOn=null;
+  el('circle',{cx:M[0],cy:M[1],r:s,fill:'none',stroke:'#374151','stroke-width':4},taskL);sound('step');
+  if(MODE===6)return nextCircle6();
+  CP.N=[RUL.x,RUL.y+2];CP.a=0;renderC();
+  const u=dir(-40);measureBar(M,add(M,mul(u,s)),'#1D7FD8','r = '+cmT(T3.r),markL);
+  const below=M[1]+s+70<PAPER_H,y=below?M[1]+s+26:M[1]-s-26,A=[M[0]-s,y],B=[M[0]+s,y];
+  setTimeout(()=>{[[A,M[0]-s],[B,M[0]+s]].forEach(([Q,x])=>el('line',{x1:x,y1:M[1],x2:x,y2:y,stroke:'#2A9D4B','stroke-width':2,'stroke-dasharray':'5 5'},markL));
+    if(below)measureBar(B,A,'#2A9D4B','d = '+cmT(2*T3.r),markL);else measureBar(A,B,'#2A9D4B','d = '+cmT(2*T3.r),markL);
+    win(MODE===5?`Super! Der Durchmesser ist ${cmT(T3.d)}, der Radius ist ${cmT(T3.r)}. Dein Kreis ist fertig.`:`Super! Dein Kreis hat den Radius ${cmT(T3.r)}. Der Durchmesser ist ${cmT(2*T3.r)}.`,2);},500);}
+
+/* ================= Modus 3 und 5: Kreis zeichnen ================= */
+let T3=null,last3=null;
+function newTask3(){const n=S['n'+MODE]||0;strokes=[];hintOn=null;
+  let r,d;
+  if(MODE===5){let ds=S.half?[2,3,4,5,6,7,8,9,10,11,12]:[2,4,6,8,10,12];if(n<3)ds=[4,6,8,10];d=pick(ds.filter(x=>x!==last3));last3=d;r=d/2;}
+  else{let rs=n<3?[3,4,5]:[1,2,3,4,5,6];if(S.half&&n>=3)rs=rs.concat([1.5,2.5,3.5,4.5,5.5]);r=pick(rs.filter(x=>x!==last3));last3=r;d=2*r;}
+  const useMm=S.mm&&Number.isInteger(MODE===5?d:r)&&Math.random()<.45;
+  T3={r,d,useMm,step:MODE===5?'q':'set',M:null,tries:0,dbar:null};
+  paper();drawRulerOnce();
+  const s0=r<=4?7:2;
+  CP={N:[RUL.x,RUL.y+2],a:0,s:s0*CM,L:RUL.max*CM*.5+60};
+  setCtrl([{t:'💡 Hilfe',fn:hintStep},{t:'🔄 Neu anfangen',fn:()=>{newTask();sayInstr();}}]);
+  if(MODE===5)ask5();else{setInstr(instr3());}
+  strip3();renderC();}
+function lenTxt(c){return T3.useMm?(c*10)+' mm':cmT(c);}
+function instr3(){const s=T3.step;
+  if(s==='set')return T3.useMm&&MODE===3?`Radius ${lenTxt(T3.r)} – das sind ${cmT(T3.r)}. Stelle den Zirkel auf ${cmT(T3.r)} ein.`:`Stelle den Zirkel auf ${cmT(T3.r)} ein. Zieh an der gelben Mine.`;
+  if(s==='M')return'Zeichne den Mittelpunkt M: Tippe auf das Blatt.';
+  if(s==='stab')return'Stich die Zirkelspitze in den Mittelpunkt M. Zieh den Zirkel hin.';
+  if(s==='turn')return'Dreh den Zirkel einmal ganz herum. ↻';return'';}
+function strip3(){const order=['set','M','stab','turn'];const ci=order.indexOf(T3.step);const it=[];
+  if(MODE===5)it.push({t:'d = '+lenTxt(T3.d)+(T3.useMm?' = '+cmT(T3.d):''),c:'D'});
+  if(MODE===3||T3.step!=='q')it.push({t:'r = '+(MODE===3?lenTxt(T3.r)+(T3.useMm?' = '+cmT(T3.r):''):cmT(T3.r)),c:'R'});
+  it.push('|');['Zirkel einstellen','Mittelpunkt','Einstechen','Drehen'].forEach((t,i)=>it.push({t:(i+1)+' '+t+(ci>i||T3.step==='done'?' ✓':''),c:ci>i?'done':i===ci?'cur':''}));setStrip(it);}
+function ask5(){const d=T3.d,r=T3.r;const dPx=d*CM,x0=500-dPx/2,y=130;
+  const g=el('g',{},markL);T3.dbar=g;
+  measureBar([x0,y],[x0+dPx,y],'#2A9D4B','d = '+lenTxt(d),g);
+  setInstr(`Der Durchmesser ist ${lenTxt(d)}${T3.useMm?' = '+cmT(d):''}. Wie groß ist der Radius?`);
+  let opts=[r,d,d*2];opts=shuffle(opts);
+  setCtrl([...opts.map(o=>({t:cmT(o),cls:'word',fn:()=>answer5(o)})),{t:'💡 Hilfe',fn:hintStep}]);}
+function answer5(o){if(locked||T3.step!=='q')return;const d=T3.d,r=T3.r;
+  if(o===r){const dPx=d*CM,x0=500-dPx/2,y=130;const g=T3.dbar;
+    measureBar([x0,y+70],[x0+dPx/2,y+70],'#1D7FD8','r = '+cmT(r),g);measureBar([x0+dPx/2,y+70],[x0+dPx,y+70],'#5aa9f0','r = '+cmT(r),g);
+    sound('step');const t=`Richtig! ${cmT(d)} : 2 = ${cmT(r)}. Der Radius ist ${cmT(r)}.`;feedback(t+' ✓','ok');
+    T3.step='set';T3.tries=0;strip3();setCtrl([{t:'💡 Hilfe',fn:hintStep},{t:'🔄 Neu anfangen',fn:()=>{newTask();sayInstr();}}]);
+    setInstr(instr3());say(t+' '+instrText);renderC();return;}
+  T3.tries++;wrongShake();
+  const t=o===d?'Nein. Das ist der Durchmesser. Der Radius ist nur halb so lang.':'Nein, das ist doppelt so lang. Der Radius ist halb so lang wie der Durchmesser.';
+  feedback(t,'try');say(t+' Versuch es nochmal.');}
+
+/* ================= Modus 4: Radius und Durchmesser ================= */
+let T4=null,last4=null;
+function newTask4(){const n=S.n4||0;const rs=n<3?[3,4,5]:[2,3,4,5,6];const r=pick(rs.filter(x=>x!==last4));last4=r;
+  const M=[400,290];T4={r,M,R:r*CM,step:'radius',tries:0,cur:null};
+  paper();el('circle',{cx:M[0],cy:M[1],r:T4.R,fill:'none',stroke:'#374151','stroke-width':4},taskL);mCross(taskL,M,'#E63946','M');
+  setInstr('Zeichne den Radius: Zieh vom Mittelpunkt M bis zur Kreislinie.');setCtrl([{t:'💡 Hilfe',fn:hint4}]);strip4();}
+function strip4(){const order=['radius','durch','frage'];const ci=order.indexOf(T4.step);
+  setStrip(['|',...['Radius','Durchmesser','Wie lang?'].map((t,i)=>({t:(i+1)+' '+t+(i<ci?' ✓':''),c:i<ci?'done':i===ci?'cur':''}))]);}
+function down4(q,id){if(T4.step==='frage')return;const{M,R}=T4;
+  if(T4.step==='radius'){if(dist(q,M)<38){drag={k:'line',id};T4.cur={a:M.slice(),b:q};render4();sound('pen');}else{const t='Fang beim Mittelpunkt M an.';feedback(t,'try');say(t);blinkEl(taskL.lastChild);}return;}
+  if(Math.abs(dist(q,M)-R)<36){const a=add(M,mul(unit(sub(q,M)),R));drag={k:'line',id};T4.cur={a,b:q};render4();sound('pen');}
+  else{const t=dist(q,M)<38?'Der Durchmesser fängt an der Kreislinie an – nicht bei M.':'Fang genau an der Kreislinie an.';feedback(t,'try');say(t);}}
+function move4(q){T4.cur.b=q;render4();}
+function render4(){strokeL.innerHTML='';const c=T4.cur;if(!c)return;const col=T4.step==='radius'?'#1D7FD8':'#2A9D4B';
+  el('line',{x1:c.a[0],y1:c.a[1],x2:c.b[0],y2:c.b[1],stroke:col,'stroke-width':6,'stroke-linecap':'round'},strokeL);txt(strokeL,c.b[0]+22,c.b[1]-22,'✏️',{'font-size':26});}
+function up4(){const c=T4.cur;T4.cur=null;strokeL.innerHTML='';if(!c)return;const{M,R}=T4;
+  if(dist(c.a,c.b)<15)return;
+  if(T4.step==='radius'){const d=dist(c.b,M);
+    if(Math.abs(d-R)<26){const E=add(M,mul(unit(sub(c.b,M)),R));T4.rE=E;el('line',{x1:M[0],y1:M[1],x2:E[0],y2:E[1],stroke:'#1D7FD8','stroke-width':6,'stroke-linecap':'round'},taskL);
+      measureBar(M,E,'#1D7FD8','r = '+cmT(T4.r),markL);sound('step');T4.step='durch';T4.tries=0;ghostL.innerHTML='';strip4();
+      setInstr('Zeichne den Durchmesser: Fang an der Kreislinie an. Zieh durch M bis zur anderen Seite.');feedback('Prima! Das ist der Radius. ✓','ok');say('Prima! Das ist der Radius. Er ist '+cmT(T4.r)+' lang. '+instrText);return;}
+    return bad4(d<R?'Zu kurz. Zieh bis zur Kreislinie.':'Zu lang. Hör an der Kreislinie auf.');}
+  const through=distSeg(M,c.a,c.b)<18,onC=Math.abs(dist(c.b,M)-R)<30;
+  if(!through)return bad4('Der Durchmesser geht durch den Mittelpunkt M. Versuch es nochmal.');
+  if(!onC)return bad4(dist(c.b,M)<R?'Zieh weiter – bis zur Kreislinie auf der anderen Seite.':'Zu lang. Hör an der Kreislinie auf.');
+  const A=c.a,B=sub(mul(M,2),A);T4.dA=A;T4.dB=B;el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#2A9D4B','stroke-width':6,'stroke-linecap':'round'},taskL);
+  sound('step');T4.step='frage';T4.tries=0;ghostL.innerHTML='';strip4();
+  const v=unit(sub(B,A)),p=[-v[1],v[0]];const L=add(B,mul(v,66));el('rect',{x:L[0]-50,y:L[1]-19,width:100,height:38,rx:11,fill:'#fff',stroke:'#2A9D4B','stroke-width':3},markL);txt(markL,L[0],L[1]+1,'d = ?',{'font-size':22,fill:'#1F2A37'});
+  setInstr(`Der Radius ist ${cmT(T4.r)}. Wie lang ist der Durchmesser?`);
+  let o3=T4.r+1===2*T4.r?T4.r+2:T4.r+1;const opts=shuffle([T4.r,2*T4.r,o3]);
+  setCtrl([...opts.map(o=>({t:cmT(o),cls:'word',fn:()=>answer4(o)})),{t:'💡 Hilfe',fn:hint4}]);
+  feedback('Prima! Das ist der Durchmesser. ✓','ok');say('Prima! Das ist der Durchmesser. '+instrText);}
+function bad4(t){T4.tries++;sound('no');feedback(t,'try');say(t);if(T4.tries>=2)hint4(true);}
+function halves4(){const{M,dA,dB}=T4;const g=el('g',{},markL);measureBar(dA,M,'#1D7FD8',cmT(T4.r),g);measureBar(M,dB,'#5aa9f0',cmT(T4.r),g);return g;}
+function answer4(o){if(locked)return;const r=T4.r;
+  if(o===2*r){markL.innerHTML='';halves4();win(`Richtig! ${cmT(r)} + ${cmT(r)} = ${cmT(2*r)}. Der Durchmesser ist doppelt so lang wie der Radius.`,2);return;}
+  T4.tries++;wrongShake();if(!T4.halves){T4.halves=halves4();}
+  const t=o===r?'Nein. Schau: Der Durchmesser ist so lang wie 2 Radien.':'Nein. Schau genau: Der Durchmesser besteht aus 2 Radien.';feedback(t,'try');say(t+' Versuch es nochmal.');}
+function hint4(auto){ghostL.innerHTML='';const{M,R}=T4;
+  if(T4.step==='radius'){const E=add(M,[R*.7071,-R*.7071]);el('line',{x1:M[0],y1:M[1],x2:E[0],y2:E[1],stroke:'#9aa5b1','stroke-width':6,'stroke-dasharray':'10 8'},ghostL);el('circle',{cx:M[0],cy:M[1],r:22,fill:'none',stroke:'#E63946','stroke-width':4,class:'pulse'},ghostL);
+    if(auto!==true){const t='Leg den Finger auf M. Zieh bis zur Kreislinie.';feedback(t,'sol');say(t);}return;}
+  if(T4.step==='durch'){const A=add(M,[-R,0]),B=add(M,[R,0]);el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#9aa5b1','stroke-width':6,'stroke-dasharray':'10 8'},ghostL);
+    if(auto!==true){const t='Fang links an der Kreislinie an. Zieh durch M nach rechts.';feedback(t,'sol');say(t);}return;}
+  if(!T4.halves)T4.halves=halves4();const t=`Der Durchmesser ist so lang wie 2 Radien: ${cmT(T4.r)} + ${cmT(T4.r)}. Du darfst den Taschenrechner benutzen.`;feedback(t,'sol');say(t);}
+
+/* ================= Modus 6: Kreisbilder ================= */
+const PET=[0,60,120,180,240,300].map(a=>[500+108*Math.cos(rad(a-90)),275+108*Math.sin(rad(a-90)),3]);
+const FIGS=[
+  {name:'Zielscheibe',c:[[500,280,3],[500,280,2],[500,280,1]]},
+  {name:'Eulenaugen',c:[[370,280,2],[630,280,2],[370,280,1],[630,280,1]]},
+  {name:'Schneemann',c:[[500,374,3],[500,194,2],[500,86,1]]},
+  {name:'Raupe',c:[[284,300,2],[428,300,2],[572,300,2],[716,300,2]]},
+  {name:'Kreisblume',c:[[500,275,3],...PET]}];
+let T6=null;
+function newTask6(){strokes=[];hintOn=null;const f=FIGS[(S.fig||0)%FIGS.length];
+  T6={f,i:0,step:'set',tries:0,cur(){const c=this.f.c[this.i];return{c:[c[0],c[1]],r:c[2]};}};
+  paper();drawRulerOnce();
+  const tg=el('g',{id:'tpl'},taskL);f.c.forEach(c=>el('circle',{cx:c[0],cy:c[1],r:c[2]*CM,fill:'none',stroke:'#C3CBD5','stroke-width':3,'stroke-dasharray':'9 8'},tg));
+  CP={N:[RUL.x,RUL.y+2],a:0,s:CM,L:RUL.max*CM*.5+60};
+  setCtrl([{t:'💡 Hilfe',fn:hintStep},{t:'🔀 Anderes Bild',fn:()=>{S.fig=(S.fig||0)+1;save();newTask();sayInstr();}}]);
+  prep6();}
+function prep6(){const{c,r}=T6.cur();const old=$('#mk6');if(old)old.remove();const g=el('g',{id:'mk6'},taskL);
+  T6.f.c.forEach((cc,j)=>{if(j>T6.i&&!(cc[0]===c[0]&&cc[1]===c[1]))mCross(g,[cc[0],cc[1]],'#C3CBD5');});
+  const cur=mCross(g,c,'#E63946','M');cur.classList.add('pulse');
+  T6.kept=Math.abs(CP.s-r*CM)<0.5&&T6.i>0;if(T6.kept){T6.step='stab';}else{T6.step='set';CP.N=[RUL.x,RUL.y+2];CP.a=0;}
+  T6.tries=0;hintOn=null;drawRulerOnce();strip6();setInstr(instr6());renderC();}
+function instr6(){const n=T6.f.c.length,{r}=T6.cur(),k=`Kreis ${T6.i+1} von ${n}: `;
+  if(T6.step==='set')return k+`Stelle den Zirkel auf ${cmT(r)} ein.`;
+  if(T6.step==='stab')return k+(T6.kept?`Der Zirkel bleibt auf ${cmT(r)}. Stich in den roten Mittelpunkt.`:'Stich die Zirkelspitze in den roten Mittelpunkt.');
+  return k+'Dreh den Zirkel einmal ganz herum. ↻';}
+function strip6(){const n=T6.f.c.length,it=[{t:'r = '+cmT(T6.cur().r),c:'R'},'|'];for(let j=0;j<n;j++)it.push({t:'Kreis '+(j+1)+(j<T6.i?' ✓':''),c:j<T6.i?'done':j===T6.i?'cur':''});setStrip(it);}
+function nextCircle6(){T6.i++;if(T6.i<T6.f.c.length){const w=pick(['Prima!','Super!','Toll!']);feedback(w+' Kreis fertig. ✓','ok');prep6();say(w+' '+instrText);return;}
+  const mk=$('#mk6');if(mk)mk.remove();const tp=$('#tpl');if(tp)tp.remove();strokes=[];CP.N=[RUL.x,RUL.y+2];CP.a=0;renderC();color6();S.fig=(S.fig||0)+1;save();
+  setStrip([]);setInstr(`Fertig: ${T6.f.name}! ⭐`);win(`Wunderbar! Dein Kreisbild ${T6.f.name} ist fertig.`,3);}
+function color6(){const f=T6.f,c=f.c;const C=(x,y,r,fill,op)=>el('circle',{cx:x,cy:y,r:r*CM,fill,'fill-opacity':op||1},fillL);
+  if(f.name==='Zielscheibe'){C(500,280,3,'#E63946');C(500,280,2,'#fff');C(500,280,1,'#E63946');}
+  else if(f.name==='Eulenaugen'){[370,630].forEach(x=>{C(x,280,2,'#FFD43B');C(x,280,1,'#1F2A37');el('circle',{cx:x-10,cy:270,r:7,fill:'#fff'},fillL);});el('polygon',{points:'500,300 484,330 516,330',fill:'#F28C28'},fillL);}
+  else if(f.name==='Schneemann'){c.forEach(q=>C(q[0],q[1],q[2],'#EAF4FF'));[[486,80],[514,80]].forEach(p=>el('circle',{cx:p[0],cy:p[1],r:5,fill:'#1F2A37'},fillL));el('polygon',{points:'500,90 530,96 500,100',fill:'#F28C28'},fillL);[160,194,228].forEach(y=>el('circle',{cx:500,cy:y,r:7,fill:'#1F2A37'},fillL));}
+  else if(f.name==='Raupe'){c.forEach((q,j)=>C(q[0],q[1],q[2],j%2?'#8BD17C':'#5DAE52'));[[700,284],[732,284]].forEach(p=>{el('circle',{cx:p[0],cy:p[1],r:10,fill:'#fff'},fillL);el('circle',{cx:p[0],cy:p[1],r:5,fill:'#1F2A37'},fillL);});el('path',{d:'M700 318 Q716 334 732 318',fill:'none',stroke:'#1F2A37','stroke-width':4},fillL);}
+  else{PET.forEach((q,j)=>C(q[0],q[1],3,['#F7A8C4','#FFB86B','#F7A8C4','#FFB86B','#F7A8C4','#FFB86B'][j],.45));C(500,275,1,'#FFD43B');}
+  sound('ok');}
+
+/* ================= Belohnung: Gummi-Schleuder (3 Runden) ================= */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['ci','ci','ring','bal','ci','ring'],MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Kreise!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Kreise!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(42,56),hit:0,y:0};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p[0]>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p[0]-SANC.x,dy=p[1]-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='ci'){el('circle',{cx:0,cy:0,r:s/2,fill:c,stroke:'#fff','stroke-width':4},g);el('circle',{cx:0,cy:0,r:4,fill:'#fff'},g);el('line',{x1:0,y1:0,x2:s/2,y2:0,stroke:'#fff','stroke-width':3},g);}
+  else if(t.shape==='ring'){el('circle',{cx:0,cy:0,r:s/2,fill:c,stroke:'#fff','stroke-width':4},g);el('circle',{cx:0,cy:0,r:s/3,fill:'#fff'},g);el('circle',{cx:0,cy:0,r:s/6,fill:c},g);}
+  else{el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);}}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${GSL.t*60*t.sp})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
+</script>
+</body>
+</html>
