@@ -871,6 +871,7 @@
     t.tries++;
     if (given === want) {
       t.result = t.tries === 1 ? 'ok' : 'miss';
+      if (window.ZD_star) window.ZD_star();
       feedback('good', t.tries === 1 ? pick(PRAISE) : 'Jetzt stimmt es!', solvedText(t), false);
       endTask();
       return;
@@ -893,6 +894,7 @@
     if (t.type !== 'tf' || S.phase !== 'answer') return;
     var right = sayTrue === t.isTrue;
     t.result = right ? 'ok' : 'miss';
+    if (right && window.ZD_star) window.ZD_star();
     var bt = $('#btn-true'), bf = $('#btn-false');
     bt.disabled = bf.disabled = true;
     var chosen = sayTrue ? bt : bf, other = sayTrue ? bf : bt;
@@ -907,6 +909,7 @@
 
   function next() {
     if (S.phase !== 'done') return;
+    if (window.ZD_rewardCheck && window.ZD_rewardCheck(function () { S.phase = 'done'; next(); })) { S.phase = 'reward'; return; }
     if (S.i < S.tasks.length - 1) { S.i++; renderTask(); }
     else showEnd();
   }
@@ -992,5 +995,104 @@
   renderStart();
 })();
 </script>
+<!-- Belohnung: Gummi-Schleuder nach 10 richtigen Aufgaben (3 Runden) -->
+<style>
+  .zd-stars{font-family:var(--font-display);font-size:18px;font-weight:600;color:#b7791f;background:#FFF6D6;border-radius:12px;padding:4px 10px;white-space:nowrap;margin-left:auto}
+  .zd-ov{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(20,30,50,.5)}
+  .zd-ov.on{display:flex}
+  .zd-card{background:#fff;color:#1F2A37;border-radius:26px;padding:22px 28px;max-width:560px;width:92%;text-align:center;font-family:var(--font-body);font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .zd-card .big{font-size:76px;line-height:1}
+  .zd-card h2{font-family:var(--font-display);margin:8px 0;font-size:30px}
+  .zd-card button,.zd-bar button{font-family:var(--font-display);font-size:22px;font-weight:600;border:none;border-radius:16px;padding:12px 20px;margin:6px;color:#fff;background:#F28C28;box-shadow:0 4px 0 rgba(0,0,0,.2);cursor:pointer}
+  .zd-card button.light{background:#fff;color:#1F2A37;box-shadow:0 3px 0 rgba(0,0,0,.15);border:2px solid #d3dbea}
+  .zd-game{position:fixed;inset:0;z-index:90;background:#fff;display:none;flex-direction:column}
+  .zd-game.on{display:flex}
+  .zd-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);font-family:var(--font-display);font-size:22px;color:#1F2A37}
+  .zd-bar button{background:#fff;color:#1F2A37;box-shadow:0 3px 0 rgba(0,0,0,.15);border:2px solid #d3dbea;margin:0}
+  .zd-bar span{flex:1}
+  .zd-game svg{flex:1;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none}
+  .zd-conf{position:fixed;top:-20px;width:14px;height:20px;z-index:120;pointer-events:none;animation:zdfall linear forwards}
+  @keyframes zdfall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+<div class="zd-ov" id="zdRewardOv"><div class="zd-card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="zdRewardTxt"></p>
+  <button id="zdRewardGo">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="zd-ov" id="zdEndOv"><div class="zd-card">
+  <div class="big">🎉</div><h2 id="zdEndTxt"></h2>
+  <button class="light" id="zdBack">Zurück</button><button id="zdAgain">Nochmal schießen</button>
+</div></div>
+<div class="zd-game" id="zdGame">
+  <div class="zd-bar"><button id="zdHome">⬅</button><span>🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</span></div>
+  <svg id="zdSvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg',GOAL=10,SHOTS=10,MAXR=3,KEY='zahlendetektiv.belohnung';
+  var R={done:0};try{var x=JSON.parse(localStorage.getItem(KEY)||'null');if(x)R=x;}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(R));}catch(e){}}
+  var g=function(id){return document.getElementById(id);};
+  var badge=document.createElement('span');badge.className='zd-stars';var row=document.querySelector('.top-row');if(row)row.appendChild(badge);
+  function upd(){var r=Math.max(0,GOAL-R.done);badge.textContent=r?'⭐ noch '+r+' bis 🎯':'🎯 frei!';}
+  upd();
+  var pending=null;
+  window.ZD_star=function(){R.done++;save();upd();};
+  window.ZD_rewardCheck=function(cont){if(R.done<GOAL)return false;pending=cont;g('zdRewardTxt').textContent='Du hast '+GOAL+' Aufgaben richtig gelöst. Jetzt darfst du mit der Gummi-Schleuder schießen!';g('zdRewardOv').classList.add('on');confetti();sound('ok');return true;};
+  function el(tag,a,p){var e=document.createElementNS(NS,tag);for(var k in a)if(a[k]!=null)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+  function txt(p,x,y,t,a){var o={x:x,y:y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Fredoka, Trebuchet MS, sans-serif','font-weight':700};for(var k in a)o[k]=a[k];var e=el('text',o,p);e.textContent=t;return e;}
+  var rnd=function(a,b){return a+Math.random()*(b-a);},pick=function(a){return a[Math.floor(Math.random()*a.length)];};
+  var COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+  var AC=null;function tone(f,t0,d,type){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.value=f;gn.gain.setValueAtTime(0.0001,AC.currentTime+t0);gn.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);gn.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(gn);gn.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+  function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}}
+  function boing(){tone(380,0,.12);}
+  function confetti(){for(var i=0;i<45;i++){var c=document.createElement('div');c.className='zd-conf';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);(function(c){setTimeout(function(){c.remove();},4200);})(c);}}
+  function say(t){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u);}catch(e){}}
+  var svg=g('zdSvg'),SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900;
+  var G=null,raf=null,last=0,rounds=0;
+  function pt(e){var p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+  function newTgt(){return{shape:pick(['num','num','bal']),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(46,58),hit:0,y:0,lab:pick(['1','10','100','1000','10 000','100 000'])};}
+  function start(){G={shots:SHOTS,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};if(raf)cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);}
+  function open(){R.done=0;save();upd();rounds=0;g('zdGame').classList.add('on');start();say('Zieh den Gummi zurück und lass los. Triff die Zahlen!');}
+  function close(){if(raf)cancelAnimationFrame(raf);raf=null;g('zdGame').classList.remove('on');g('zdEndOv').classList.remove('on');var c=pending;pending=null;if(c)c();}
+  g('zdRewardGo').onclick=function(){g('zdRewardOv').classList.remove('on');open();};
+  g('zdHome').onclick=close;g('zdBack').onclick=close;
+  g('zdAgain').onclick=function(){if(rounds>=MAXR)return;g('zdEndOv').classList.remove('on');start();};
+  svg.addEventListener('pointerdown',function(e){if(G&&G.state==='aim'&&e.isPrimary)G.state='ready';if(!G||G.state!=='ready')return;var p=pt(e);if(p.x>480)return;e.preventDefault();G.state='aim';G.aim=e.pointerId;try{svg.setPointerCapture(e.pointerId);}catch(_){}aim(p);boing();});
+  window.addEventListener('pointermove',function(e){if(!G||G.state!=='aim'||e.pointerId!==G.aim)return;aim(pt(e));});
+  function aim(p){var dx=p.x-SANC.x,dy=p.y-SANC.y,d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}G.ball.x=SANC.x+dx;G.ball.y=SANC.y+dy;}
+  function rel(e){if(!G||G.state!=='aim'||e.pointerId!==G.aim)return;var dx=SANC.x-G.ball.x,dy=SANC.y-G.ball.y;if(Math.hypot(dx,dy)<20){G.ball.x=SANC.x;G.ball.y=SANC.y;G.state='ready';return;}G.ball.vx=dx*7.2;G.ball.vy=dy*7.2;G.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+  window.addEventListener('pointerup',rel);window.addEventListener('pointercancel',rel);
+  function shape(gg,t){var s=t.sz,c=t.c;if(t.shape==='bal'){el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},gg);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},gg);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},gg);return;}
+    var r=s*.62;el('circle',{cx:0,cy:0,r:r+5,fill:c},gg);el('circle',{cx:0,cy:0,r:r,fill:'#fff'},gg);txt(gg,0,1,t.lab,{'font-size':t.lab.length>4?r*.42:r*.62,fill:c});}
+  function loop(now){var dt=Math.min(.033,(now-last)/1000);last=now;G.t+=dt;G.targets.forEach(function(t){t.y=t.y0+Math.sin(G.t*t.sp+t.ph)*t.amp;});var b=G.ball;
+    if(G.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+      G.targets.forEach(function(t,i){if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;G.hits++;sound('ok');for(var k=0;k<14;k++)G.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(function(){G.targets[i]=newTgt();},500);}});
+      if(b.x>1040||b.y>660||b.x<-40){G.shots--;if(G.shots<=0){G.state='over';setTimeout(end,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;G.state='ready';}}}
+    G.pops.forEach(function(p){p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});G.pops=G.pops.filter(function(p){return p.life>0;});
+    draw();if(G.state!=='over'||G.pops.length)raf=requestAnimationFrame(loop);}
+  function draw(){var s=svg;s.innerHTML='';var d=el('defs',{},s),sky=el('linearGradient',{id:'zdsky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+    el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#zdsky)'},s);
+    [[220,90],[640,60],[850,150]].forEach(function(q){var c=el('g',{opacity:.9},s);[[0,0,34],[30,-12,40],[64,0,30]].forEach(function(w){el('circle',{cx:q[0]+w[0],cy:q[1]+w[1],r:w[2],fill:'#fff'},c);});});
+    el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},s);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},s);
+    G.targets.forEach(function(t){if(t.hit)return;shape(el('g',{transform:'translate('+t.x+','+t.y+') rotate('+Math.sin(G.t*t.sp)*8+')'},s),t);});
+    G.pops.forEach(function(p){el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},s);});
+    el('path',{d:'M'+SANC.x+',560 L'+SANC.x+',470 L'+SPL.x+','+SPL.y+' M'+SANC.x+',470 L'+SPR.x+','+SPR.y,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},s);
+    var b=G.ball,pulled=G.state==='aim'||G.state==='ready';
+    if(G.state==='aim'){var vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(var k=1;k<=14;k++){var tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},s);}}
+    if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},s);else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},s);
+    if(G.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},s);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},s);}
+    if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},s);
+    [SPL,SPR].forEach(function(p){el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},s);});
+    for(var i=0;i<G.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},s);
+    el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},s);txt(s,692,34,'Runde '+Math.min(rounds+1,MAXR)+' von '+MAXR,{'font-size':22,fill:'#1F2A37'});
+    el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},s);txt(s,892,34,'🎯 Treffer: '+G.hits,{'font-size':24,fill:'#1F2A37'});
+    if(G.state==='ready'&&G.shots===SHOTS&&G.t<6)txt(s,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+  function end(){rounds++;var lastR=rounds>=MAXR;g('zdEndTxt').textContent='Du hast '+G.hits+' Mal getroffen!'+(lastR?' Das waren 3 Runden.':'');
+    g('zdAgain').style.display=lastR?'none':'';g('zdAgain').textContent='Nochmal schießen (Runde '+(rounds+1)+' von '+MAXR+')';
+    g('zdBack').textContent=lastR?'Weiter üben ➜':'Zurück';g('zdEndOv').classList.add('on');confetti();sound('ok');
+    say('Toll! Du hast '+G.hits+' Mal getroffen.'+(lastR?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+})();
+</script>
+
 </body>
 </html>
