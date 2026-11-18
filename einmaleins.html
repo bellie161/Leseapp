@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Einmaleins-Profi – Mal und Geteilt Schritt für Schritt</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+button:disabled{opacity:.45}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--purple);text-align:center}
+.sub{font-size:20px;margin:4px 0 12px;color:#4b5563;text-align:center}
+.lbl{font-size:19px;font-weight:700;color:#4b5563;margin:6px 0}
+.stages{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.stg{width:150px;background:#fff;color:var(--ink);border-radius:20px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:18px;border:4px solid #fff}
+.stg.sel{border-color:var(--purple);background:#F5EDFB}
+.stg.lock{opacity:.5}
+.stg .rn{font-size:40px;line-height:1.1;color:var(--purple)}
+.stg small{font-weight:400;font-size:15px;color:#4b5563}
+.pbar{width:110px;height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--green)}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px;margin-top:10px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:105px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--purple);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--purple);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.cur{background:#F5EDFB;border-color:var(--purple);color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.feedback{background:#fff;border-radius:16px;padding:8px 20px;font-size:22px;font-weight:700;display:none;text-align:center;width:max-content;max-width:94%;margin:6px auto 0;line-height:1.3}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:22px;padding:14px 20px}
+.tool{background:#fff;color:var(--ink)}
+.yes{background:var(--green)}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:22px 28px;max-width:740px;width:94%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:94vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:30px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:10px 0;padding:10px;border:3px solid var(--purple);border-radius:16px;font-size:20px;cursor:pointer}
+.merk svg{flex:none;width:110px;height:100px}
+#inSvg{width:100%;height:auto;max-height:52vh}
+.intxt{font-size:22px;line-height:1.35;min-height:90px;margin:8px 0 4px;text-align:left}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.dots span{width:14px;height:14px;border-radius:50%;background:#d1d5db}
+.dots span.on{background:var(--purple)}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.blink{animation:blink .5s 4 alternate}
+@keyframes blink{from{opacity:1}to{opacity:.15}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>✖️ Einmaleins-Profi</h1>
+  <div class="sub">Malnehmen und Teilen – Reihe für Reihe</div>
+  <div class="lbl">Wähle deine Reihe:</div>
+  <div class="stages" id="stages"></div>
+  <div class="row" style="margin-top:10px"><button id="filmBtn" style="background:var(--purple)">🎬 Erklärfilm zu dieser Reihe</button></div>
+  <div class="modes">
+    <button class="mode" data-m="1"><svg viewBox="0 0 170 105" id="mi1"></svg>
+      <span><span class="num" style="background:#1D7FD8">1</span> Malnehmen</span><small>Wie viele Punkte sind es?</small></button>
+    <button class="mode" data-m="2"><svg viewBox="0 0 170 105" id="mi2"></svg>
+      <span><span class="num" style="background:#E63946">2</span> Die Reihe</span><small>Welche Zahl fehlt?</small></button>
+    <button class="mode" data-m="3"><svg viewBox="0 0 170 105" id="mi3"></svg>
+      <span><span class="num" style="background:#8E44AD">3</span> Teilen</span><small>Verteilen und Aufteilen</small></button>
+    <button class="mode" data-m="4"><svg viewBox="0 0 170 105" id="mi4"></svg>
+      <span><span class="num" style="background:#2A9D4B">4</span> Mal und geteilt</span><small>Die Umkehraufgabe</small></button>
+  </div>
+  <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="malFilm" style="background:#1D7FD8">🎬 Was ist Malnehmen?</button><button id="teilFilm" style="background:#0F8B8D">🍪 Was ist Teilen?</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 18.11.2026 · 1</div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="taskL"></g><g id="markL" pointer-events="none"></g><g id="uiL"></g><g id="hitL"></g><g id="btnL"></g>
+    </svg>
+  </div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="introOv"><div class="card">
+  <h2 id="inTitle"></h2>
+  <svg id="inSvg" viewBox="0 0 640 400"></svg>
+  <div class="intxt" id="inTxt"></div>
+  <div class="row" style="margin-top:6px"><button id="inBack" class="light">◀ Zurück</button><button id="inSpeak" class="light">🔊</button><button id="inAgain" class="light">↺ Nochmal</button><button id="inNext" style="background:var(--green)">Weiter ▶</button></div>
+  <div class="dots" id="inDots"></div>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div style="font-size:16px;color:#6b7280;margin-bottom:4px">Tippe auf ein Kärtchen. Dann wird es vorgelesen.</div>
+  <div id="merkList"></div>
+  <div class="row"><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="upOv"><div class="card">
+  <div class="big">🏅</div><h2 id="upTitle"></h2><p id="upTxt"></p>
+  <div class="row"><button id="upStay" class="light">Hier weiter üben</button><button id="upGo" style="background:var(--purple)">▶ Neue Reihe starten</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Antworten zur Auswahl <div class="seg" id="ansSeg"><button data-v="2">2</button><button data-v="3">3</button></div></div>
+  <div class="setrow"><span>Plus-Aufgabe dazuschreiben<br><small style="color:#6b7280;font-size:15px">z. B. 4 + 4 + 4 unter 3 · 4</small></span><div class="seg" id="plusSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Frühere Reihen mitüben<br><small style="color:#6b7280;font-size:15px">Jede 4. Aufgabe ist eine Wiederholung</small></span><div class="seg" id="repSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Sterne bis zur nächsten Reihe</span><div class="seg" id="stgSeg"><button data-v="15">15</button><button data-v="20">20</button><button data-v="30">30</button><button data-v="40">40</button></div></div>
+  <div class="setrow"><button id="unlockStages" style="background:var(--purple)">Alle Reihen freischalten</button><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))if(attrs[k]!==undefined&&attrs[k]!==null)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+
+/* ---------- Reihen (Reihenfolge wie in Rechenrakete / Denken und Rechnen / Klick! inklusiv) ---------- */
+const R=[null,2,10,5,4,8,3,6,9,7,0];
+const STAGES=[null,{n:'2er-Reihe',k:'Verdoppeln'},{n:'10er-Reihe',k:'Eine 0 anhängen'},{n:'5er-Reihe',k:'Die Hälfte von 10'},{n:'4er-Reihe',k:'Das Doppelte von 2'},{n:'8er-Reihe',k:'Das Doppelte von 4'},
+  {n:'3er-Reihe',k:'2er + 1er'},{n:'6er-Reihe',k:'Das Doppelte von 3'},{n:'9er-Reihe',k:'10er minus 1er'},{n:'7er-Reihe',k:'Mit 5 · 7 rechnen'},{n:'Alle Reihen',k:'Alles gemischt'}];
+const NST=10;
+let S={goal:10,done:0,stars:0,shots:10,voice:true,nAns:3,plus:true,rep:true,stg:20,maxStage:1,cur:1,sc:Array(NST+1).fill(0),seen:{},intro:{}};
+try{Object.assign(S,JSON.parse(localStorage.getItem('einmaleinsprofi')||'{}'));}catch(e){}
+while(S.sc.length<NST+1)S.sc.push(0);
+function save(){try{localStorage.setItem('einmaleinsprofi',JSON.stringify(S));}catch(e){}}
+const NW=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const ZW=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function numWord(n){if(n<20)return NW[n];if(n<100){const e=n%10,z=ZW[Math.floor(n/10)];return e?(e===1?'ein':NW[e])+'und'+z:z;}
+  if(n<1000){const h=Math.floor(n/100),r=n%100;return(h===1?'ein':NW[h])+'hundert'+(r?numWord(r):'');}
+  if(n<1000000){const t=Math.floor(n/1000),r=n%1000;return(t===1?'ein':numWord(t))+'tausend'+(r?numWord(r):'');}return String(n);}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();
+  t=t.replace(/= \?/g,'gleich wie viel?').replace(/ · /g,' mal ').replace(/·/g,' mal ').replace(/ : /g,' geteilt durch ').replace(/ − /g,' minus ').replace(/ \+ /g,' plus ').replace(/ = /g,' gleich ').replace(/\b([Ll])ies\b/g,'$1iehs').replace(/\b(\d+)\.(?!\d)/g,(x,n)=>numWord(+n)+'.')
+   .replace(/(\d+)er-Reihe/g,'$1er Reihe').replace(/[\p{Extended_Pictographic}️✓✗➜▶◀]/gu,'').replace(/–/g,',').replace(/…/g,',');
+  const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+function hush(){try{speechSynthesis.cancel();}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='tick')tone(1200,0,.025,'square');}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Punktefeld mit Fünferstruktur ---------- */
+/* k Reihen mit je n Punkten. Nach 5 Punkten und nach 5 Reihen eine Lücke. */
+const ROWCOL='#1D7FD8';
+function dotField(par,x,y,w,h,k,n,o){o=o||{};const L=Math.max(o.L||k,1),lab=o.rowNums?1.3:0,sums=o.sums?1.9:0;
+  const c=Math.min(w/(n+(n>5?.6:0)+lab+sums),h/(L+(L>5?.6:0)),o.max||56),gx=c*.6,gy=c*.6;
+  const fw=c*(n+lab+sums)+(n>5?gx:0),fh=c*L+(L>5?gy:0),x0=x+(w-fw)/2+c*lab,y0=y+(h-fh)/2;
+  const g=el('g',{},par),pos=(i,j)=>[x0+c*j+(j>=5?gx:0)+c/2,y0+c*i+(i>=5?gy:0)+c/2];
+  for(let i=0;i<k;i++){const col=o.rowCol?o.rowCol(i):ROWCOL,fade=o.fade&&o.fade(i);const p0=pos(i,0),p1=pos(i,n-1);
+    el('rect',{x:p0[0]-c*.48,y:p0[1]-c*.48,width:p1[0]-p0[0]+c*.96,height:c*.96,rx:c*.48,fill:col+'18',stroke:col+'55','stroke-width':Math.max(1.5,c*.05),opacity:fade?.35:1},g);
+    for(let j=0;j<n;j++){const p=pos(i,j);el('circle',{cx:p[0],cy:p[1],r:c*.36,fill:col,opacity:fade?.3:1},g);}
+    if(fade)el('line',{x1:p0[0]-c*.4,y1:p0[1],x2:p1[0]+c*.4,y2:p1[1],stroke:'#E63946','stroke-width':Math.max(3,c*.12),'stroke-linecap':'round'},g);
+    if(o.rowNums)txt(g,p0[0]-c*1.05,p0[1],String(i+1),{'font-size':c*.5,fill:'#9aa5b1'});
+    if(o.sums&&(!o.sumsTo||i<o.sumsTo))txt(g,p1[0]+c*1.3,p0[1],String((i+1)*n),{'font-size':c*.55,fill:col==='#1D7FD8'?'#1F2A37':col});}
+  return{c,x0,y0,pos,g};}
+/* Plättchen-Gruppe (Teller/Tüte): je 5 in einer Reihe */
+function chipGroup(par,cx,top,w,cnt,col,max){const per=5,c=Math.min(w/per,max||30);const g=el('g',{},par);
+  for(let i=0;i<cnt;i++){const r=Math.floor(i/per),j=i%per;const x=cx-c*per/2+c*j+c/2,y=top+c*r+c/2+(r>=5?6:0);el('circle',{cx:x,cy:y,r:c*.4,fill:col,stroke:'#00000033','stroke-width':1},g);}
+  return c;}
+
+/* ---------- Kernaufgaben-Trick ---------- */
+function split(k){return{3:[2,1,'+'],4:[2,2,'+'],6:[5,1,'+'],7:[5,2,'+'],8:[10,2,'−'],9:[10,1,'−']}[k];}
+function trickText(k,n){const v=k*n;
+  if(k===1)return`1 · ${n} ist einfach ${n}. Eine Reihe mit ${n} Punkten.`;
+  if(k===2)return`2 · ${n}: Verdopple! ${n} + ${n} = ${v}.`;
+  if(k===10)return`10 · ${n}: Hänge an die ${n} eine 0 an. Das sind ${v}.`;
+  if(k===5)return`5 · ${n} ist die Hälfte von 10 · ${n}. 10 · ${n} = ${10*n}. Die Hälfte ist ${v}.`;
+  const [a,b,op]=split(k);
+  if(op==='+')return`${k} · ${n}: Rechne erst ${a} · ${n} = ${a*n}. Dann noch ${b} · ${n} = ${b*n}. ${a*n} + ${b*n} = ${v}.`;
+  return`${k} · ${n}: Rechne erst 10 · ${n} = ${10*n}. Dann nimm ${b} Reihe${b>1?'n':''} weg: ${10*n} − ${b*n} = ${v}.`;}
+/* Feld mit Hilfe-Färbung */
+function helpField(par,x,y,w,h,k,n){const sp=split(k);
+  if(!sp)return dotField(par,x,y,w,h,k,n,{rowNums:true,sums:true});
+  const [a,b,op]=sp;
+  if(op==='+')return dotField(par,x,y,w,h,k,n,{rowNums:true,rowCol:i=>i<a?'#2A9D4B':'#F28C28'});
+  return dotField(par,x,y,w,h,10,n,{rowNums:true,L:10,rowCol:i=>i<k?'#2A9D4B':'#E63946',fade:i=>i>=k});}
+
+/* ---------- Startseite ---------- */
+function reiheTxt(n,cnt){const a=[];for(let i=1;i<=cnt;i++)a.push(i*n);return a.join(', ');}
+function renderStages(){const box=$('#stages');box.innerHTML='';
+  for(let s=1;s<=NST;s++){const b=document.createElement('button');const lock=s>S.maxStage;b.className='stg'+(s===S.cur?' sel':'')+(lock?' lock':'');
+    const n=R[s];b.innerHTML=`<span class="rn">${n?'· '+n:'🔀'}</span><span>${STAGES[s].n}</span>`;
+    const sm=document.createElement('small');const c=Math.min(S.sc[s]||0,S.stg);
+    sm.textContent=lock?'🔒 noch zu':s<S.maxStage?'✓ geschafft':`⭐ ${c} von ${S.stg}`;b.appendChild(sm);
+    if(!lock&&s===S.maxStage&&s<NST){const pb=document.createElement('div');pb.className='pbar';pb.innerHTML=`<i style="width:${100*c/S.stg}%"></i>`;b.appendChild(pb);}
+    b.onclick=()=>{if(lock){say(`Diese Reihe ist noch zu. Übe erst die ${STAGES[S.maxStage].n}.`);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);return;}
+      S.cur=s;save();renderStages();drawModeIcons();if(!S.intro[s])openIntro(s);else say(STAGES[s].n);};
+    box.appendChild(b);}}
+function drawModeIcons(){const n=R[S.cur]||4;['#mi1','#mi2','#mi3','#mi4'].forEach(id=>$(id).innerHTML='');
+  let g=$('#mi1');el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#EEF6FF'},g);dotField(g,8,10,100,85,3,n,{max:14});txt(g,140,52,'3 · '+n,{'font-size':20,fill:'#1F2A37'});
+  g=$('#mi2');el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#FDECEC'},g);[n,2*n,'?',4*n].forEach((v,i)=>{el('rect',{x:10+i*39,y:35,width:34,height:34,rx:8,fill:v==='?'?'#FFF6CC':'#fff',stroke:v==='?'?'#E0B000':'#cbd5e1','stroke-width':2},g);txt(g,27+i*39,52,String(v),{'font-size':15,fill:'#1F2A37'});});
+  g=$('#mi3');el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#F5EDFB'},g);for(let p=0;p<3;p++){el('ellipse',{cx:35+p*50,cy:80,rx:22,ry:8,fill:'#fff',stroke:'#8E44AD','stroke-width':2},g);for(let i=0;i<4;i++)el('circle',{cx:23+p*50+(i%2)*14,cy:58+Math.floor(i/2)*12,r:5,fill:'#C68642'},g);}txt(g,85,20,'12 : 3',{'font-size':18,fill:'#1F2A37'});
+  g=$('#mi4');el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#E7F6EC'},g);txt(g,85,30,'3 · 4 = 12',{'font-size':20,fill:'#2A9D4B'});txt(g,85,58,'12 : 4 = 3',{'font-size':20,fill:'#1F2A37'});txt(g,85,86,'12 : 3 = 4',{'font-size':20,fill:'#1F2A37'});}
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';renderStages();drawModeIcons();}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.m));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+$('#filmBtn').onclick=()=>openIntro(S.cur);
+$('#malFilm').onclick=()=>openIntro('mal');
+$('#teilFilm').onclick=()=>openIntro('teil');
+
+/* ---------- Erklärfilme ---------- */
+/* Jeder Schritt: x = Text, d(g,p) zeichnet (p läuft von 0 bis 1), q = Anzahl Klick-Schritte */
+const APPLE='#E63946',COOKIE='#C68642';
+function plate(g,cx,cy,w,lab){el('ellipse',{cx,cy,rx:w/2,ry:w*.14,fill:'#fff',stroke:'#8E44AD','stroke-width':3},g);if(lab)txt(g,cx,cy+w*.14+16,lab,{'font-size':16,fill:'#6b7280','font-weight':400});}
+function bag(g,cx,top,w,h){el('path',{d:`M${cx-w/2},${top} L${cx+w/2},${top} L${cx+w/2-6},${top+h} L${cx-w/2+6},${top+h} Z`,fill:'#F3E1C7',stroke:'#A0703C','stroke-width':3},g);}
+function bigLine(g,y,t,col,size){txt(g,320,y,t,{'font-size':size||36,fill:col||'#1F2A37'});}
+function reiheFilm(n){const st=[];
+  st.push({x:`Das ist die ${n}er-Reihe. Jede Reihe hat ${n} Punkte. Wir legen Reihe für Reihe dazu und zählen immer ${n} weiter.`,q:10,dur:9000,
+    d:(g,p)=>{const k=Math.max(1,Math.round(p*10));dotField(g,10,10,380,380,k,n,{L:10,rowNums:true});
+      for(let i=0;i<k;i++)txt(g,520,28+i*37,`${i+1} · ${n} = ${(i+1)*n}`,{'font-size':24,fill:[0,1,4,9].includes(i)?'#8E44AD':'#1F2A37'});}});
+  const T={2:[`Die 2er-Reihe heißt: Verdoppeln. 3 · 2 ist 3 + 3. Das sind 6.`,['3 · 2','3 + 3 = 6']],
+    10:[`Die 10er-Reihe ist leicht: Hänge an die Zahl eine 0 an. 4 · 10 = 40.`,['4 · 10','4 ➜ 40']],
+    5:[`Die 5er-Reihe ist die Hälfte der 10er-Reihe. 6 · 10 = 60. Die Hälfte von 60 ist 30. Also ist 6 · 5 = 30. Die Ergebnisse enden immer mit 0 oder 5.`,['6 · 10 = 60','Hälfte: 6 · 5 = 30']],
+    4:[`Die 4er-Reihe ist das Doppelte der 2er-Reihe. 3 · 2 = 6. Das Doppelte ist 12. Also ist 3 · 4 = 12.`,['3 · 2 = 6','doppelt: 3 · 4 = 12']],
+    8:[`Die 8er-Reihe ist das Doppelte der 4er-Reihe. 3 · 4 = 12. Das Doppelte ist 24. Also ist 3 · 8 = 24.`,['3 · 4 = 12','doppelt: 3 · 8 = 24']],
+    3:[`Bei der 3er-Reihe rechnest du die 2er-Reihe und noch einmal dazu. 4 · 2 = 8, dazu 4 sind 12. Also ist 4 · 3 = 12.`,['4 · 2 = 8','8 + 4 = 12 ➜ 4 · 3']],
+    6:[`Die 6er-Reihe ist das Doppelte der 3er-Reihe. 4 · 3 = 12. Das Doppelte ist 24. Also ist 4 · 6 = 24.`,['4 · 3 = 12','doppelt: 4 · 6 = 24']],
+    9:[`Bei der 9er-Reihe rechnest du mit der 10er-Reihe und nimmst einmal weg. 6 · 10 = 60. 60 − 6 = 54. Also ist 6 · 9 = 54.`,['6 · 10 = 60','60 − 6 = 54 ➜ 6 · 9']],
+    7:[`Die 7er-Reihe ist die schwerste. Merke dir gut: 5 · 7 = 35. Dann rechnest du weiter: 6 · 7 ist 35 + 7 = 42.`,['5 · 7 = 35','35 + 7 = 42 ➜ 6 · 7']]}[n];
+  st.push({x:T[0],d:(g,p)=>{el('rect',{x:60,y:60,width:520,height:260,rx:24,fill:'#F5EDFB',stroke:'#8E44AD','stroke-width':4},g);bigLine(g,140,T[1][0],'#1F2A37',44);if(p>.3)bigLine(g,240,T[1][1],'#2A9D4B',44);},dur:2500});
+  st.push({x:`Merke dir besonders gut die Kernaufgaben: 1 · ${n}, 2 · ${n}, 5 · ${n} und 10 · ${n}. Damit kannst du alle anderen Aufgaben ausrechnen.`,
+    d:(g)=>{[1,2,5,10].forEach((k,i)=>{el('rect',{x:150,y:30+i*88,width:340,height:72,rx:18,fill:'#fff',stroke:'#8E44AD','stroke-width':4},g);txt(g,320,66+i*88,`${k} · ${n} = ${k*n}`,{'font-size':38,fill:'#8E44AD'});});}});
+  return st;}
+const INTRO={
+ mal:{t:'Was ist Malnehmen?',st:[
+  {x:'Auf 3 Tellern liegen je 4 Äpfel. Wie viele Äpfel sind es zusammen? Wir rechnen: 4 + 4 + 4 = 12.',q:3,dur:3000,
+   d:(g,p)=>{const k=Math.max(1,Math.round(p*3));for(let t=0;t<3;t++){plate(g,110+t*210,250,170);if(t<k)chipGroup(g,110+t*210,175,150,4,APPLE,34);}
+     txt(g,320,40,['4','4 + 4','4 + 4 + 4 = 12'][k-1],{'font-size':38,fill:'#1F2A37'});}},
+  {x:'Das geht kürzer. Wir legen jeden Teller als eine Reihe. 3 Reihen mit je 4. Wir schreiben 3 · 4 = 12. Wir sagen: 3 mal 4 ist 12.',q:3,dur:3000,
+   d:(g,p)=>{const k=Math.max(1,Math.round(p*3));dotField(g,20,40,380,300,k,4,{L:3,rowNums:true,sums:true,max:70});if(k===3)txt(g,520,190,'3 · 4 = 12',{'font-size':46,fill:'#8E44AD'});}},
+  {x:'Die erste Zahl sagt: Wie viele Reihen? Die zweite Zahl sagt: Wie viele sind in jeder Reihe? Der Punkt ist das Malzeichen.',
+   d:(g)=>{txt(g,320,120,'3  ·  4  =  12',{'font-size':72,fill:'#1F2A37'});txt(g,200,230,'3 Reihen',{'font-size':28,fill:'#2A9D4B'});txt(g,330,230,'mal',{'font-size':28,fill:'#E63946'});txt(g,470,230,'je 4',{'font-size':28,fill:'#1D7FD8'});
+     el('line',{x1:215,y1:165,x2:205,y2:205,stroke:'#2A9D4B','stroke-width':4},g);el('line',{x1:300,y1:165,x2:325,y2:205,stroke:'#E63946','stroke-width':4},g);el('line',{x1:385,y1:165,x2:455,y2:205,stroke:'#1D7FD8','stroke-width':4},g);}},
+  {x:'Tauschaufgabe: 3 · 4 und 4 · 3 haben das gleiche Ergebnis. Drehe das Feld einfach um. Beide Male sind es 12 Punkte.',
+   d:(g)=>{dotField(g,10,60,280,260,3,4,{max:56});dotField(g,330,40,280,300,4,3,{max:56});txt(g,150,360,'3 · 4 = 12',{'font-size':30,fill:'#1F2A37'});txt(g,470,360,'4 · 3 = 12',{'font-size':30,fill:'#1F2A37'});}}]},
+ teil:{t:'Was ist Teilen?',st:[
+  {x:'Hier sind 12 Kekse. 3 Kinder wollen gleich viele bekommen. Das ist gerecht. Wir verteilen die Kekse.',
+   d:(g)=>{chipGroup(g,320,40,300,12,COOKIE,46);for(let t=0;t<3;t++){txt(g,110+t*210,230,'🙂',{'font-size':40});plate(g,110+t*210,330,170);}}},
+  {x:'Jedes Kind bekommt einen Keks. Dann bekommt wieder jedes Kind einen Keks. Immer reihum, bis alle Kekse weg sind.',q:12,dur:9000,
+   d:(g,p)=>{const m=Math.round(p*12);chipGroup(g,320,40,300,12-m,COOKIE,46);
+     for(let t=0;t<3;t++){txt(g,110+t*210,230,'🙂',{'font-size':40});plate(g,110+t*210,330,170);const c=Math.floor(m/3)+(m%3>t?1:0);chipGroup(g,110+t*210,268,150,c,COOKIE,30);}
+     if(m)txt(g,320,180,'Runde '+Math.ceil(m/3),{'font-size':24,fill:'#6b7280'});}},
+  {x:'Jedes Kind hat 4 Kekse. 12 geteilt durch 3 ist 4. Wir schreiben 12 : 3 = 4. Die zwei Punkte sind das Geteiltzeichen.',
+   d:(g)=>{txt(g,320,90,'12 : 3 = 4',{'font-size':64,fill:'#8E44AD'});for(let t=0;t<3;t++){txt(g,110+t*210,230,'😀',{'font-size':40});plate(g,110+t*210,330,170);chipGroup(g,110+t*210,268,150,4,COOKIE,30);}}},
+  {x:'Man kann auch anders teilen: Hier sind 12 Äpfel. Immer 4 Äpfel kommen in eine Tüte. Wie viele Tüten brauchen wir? 3 Tüten. 12 : 4 = 3.',q:3,dur:4500,
+   d:(g,p)=>{const k=Math.round(p*3);chipGroup(g,320,30,300,12-4*k,APPLE,46);for(let t=0;t<k;t++){bag(g,110+t*210,230,130,110);chipGroup(g,110+t*210,250,110,4,APPLE,24);txt(g,110+t*210,362,'Tüte '+(t+1),{'font-size':18,fill:'#6b7280'});}
+     if(k===3)txt(g,320,160,'12 : 4 = 3',{'font-size':48,fill:'#8E44AD'});}},
+  {x:'Malnehmen und Teilen gehören zusammen. 3 · 4 = 12. Dann ist 12 : 4 = 3 und 12 : 3 = 4. Das ist die Umkehraufgabe.',
+   d:(g)=>{dotField(g,10,40,300,300,3,4,{rowNums:true,max:60});[['3 · 4 = 12','#2A9D4B'],['12 : 4 = 3','#1F2A37'],['12 : 3 = 4','#1F2A37']].forEach(([t,c],i)=>{el('rect',{x:350,y:60+i*95,width:270,height:76,rx:16,fill:i?'#fff':'#E7F6EC',stroke:c,'stroke-width':3},g);txt(g,485,98+i*95,t,{'font-size':36,fill:c});});}}]},
+ mix:{t:'Alle Reihen gemischt',st:[
+  {x:'Jetzt kommen alle Reihen durcheinander. Denk an die Tricks: Verdoppeln, die Hälfte von 10, und die Kernaufgaben 1 mal, 2 mal, 5 mal und 10 mal.',
+   d:(g)=>{['2 · Zahl = verdoppeln','10 · Zahl = 0 anhängen','5 · Zahl = Hälfte von 10 ·','9 · Zahl = 10 · Zahl − Zahl'].forEach((t,i)=>{el('rect',{x:60,y:20+i*92,width:520,height:76,rx:16,fill:'#F5EDFB',stroke:'#8E44AD','stroke-width':3},g);txt(g,320,58+i*92,t,{'font-size':30,fill:'#1F2A37'});});}}]}};
+for(let s=1;s<NST;s++)INTRO[s]={t:STAGES[s].n,st:reiheFilm(R[s])};
+INTRO[NST]=INTRO.mix;
+let IN=null;
+function playStep(){const st=IN.st[IN.i];cancelAnimationFrame(IN.raf);clearTimeout(IN.to);$('#inTxt').textContent=st.x;say(st.x);
+  $('#inDots').innerHTML=IN.st.map((_,i)=>`<span class="${i===IN.i?'on':''}"></span>`).join('');
+  $('#inBack').style.visibility=IN.i?'visible':'hidden';$('#inNext').textContent=IN.i===IN.st.length-1?'Fertig ✓':'Weiter ▶';
+  const g=$('#inSvg'),draw=p=>{g.innerHTML='';st.d(g,p);};
+  if(!st.dur){draw(1);return;}draw(0);
+  let last=-1;const t0box={};
+  IN.to=setTimeout(()=>{t0box.t=performance.now();const fr=now=>{let p=Math.min(1,(now-t0box.t)/st.dur);if(st.q){const qq=Math.ceil(p*st.q);if(qq!==last){last=qq;sound('tick');}p=qq/st.q;}draw(p);if((now-t0box.t)<st.dur)IN.raf=requestAnimationFrame(fr);};IN.raf=requestAnimationFrame(fr);},900);}
+function openIntro(key,after){IN={key,st:INTRO[key].st,i:0,raf:0,to:0,after};$('#inTitle').textContent='🎬 '+INTRO[key].t;$('#introOv').classList.add('on');S.intro[key]=true;save();playStep();}
+function closeIntro(){if(!IN)return;cancelAnimationFrame(IN.raf);clearTimeout(IN.to);hush();$('#introOv').classList.remove('on');const f=IN.after;IN=null;if(f)f();}
+$('#inNext').onclick=()=>{if(IN.i<IN.st.length-1){IN.i++;playStep();}else closeIntro();};
+$('#inBack').onclick=()=>{if(IN.i>0){IN.i--;playStep();}};
+$('#inAgain').onclick=()=>playStep();
+$('#inSpeak').onclick=()=>say(IN.st[IN.i].x);
+
+/* ---------- Merken ---------- */
+function buildMerk(){const L=$('#merkList');L.innerHTML='';
+  const add=(draw,html,t)=>{const d=document.createElement('div');d.className='merk';if(draw){const sv=document.createElementNS(NS,'svg');sv.setAttribute('viewBox','0 0 110 100');draw(sv);d.appendChild(sv);}
+    const x=document.createElement('div');x.innerHTML=html;d.appendChild(x);d.onclick=()=>say(t);L.appendChild(d);};
+  add(sv=>dotField(sv,0,5,110,90,3,4,{max:24}),'<b>Malnehmen</b><br>3 Reihen mit je 4 Punkten<br>4 + 4 + 4 = 12<br><b>3 · 4 = 12</b>','Malnehmen: 3 Reihen mit je 4 Punkten. 4 plus 4 plus 4 gleich 12. 3 mal 4 gleich 12.');
+  add(sv=>{dotField(sv,0,5,52,90,3,4,{max:13});dotField(sv,58,5,52,90,4,3,{max:13});},'<b>Tauschaufgabe</b><br>3 · 4 = 4 · 3 = 12','Tauschaufgabe: 3 mal 4 ist genauso viel wie 4 mal 3. Beides ist 12.');
+  add(sv=>{for(let t=0;t<3;t++){el('ellipse',{cx:18+t*37,cy:82,rx:16,ry:5,fill:'#fff',stroke:'#8E44AD','stroke-width':2},sv);chipGroup(sv,18+t*37,50,30,4,COOKIE,13);}},'<b>Teilen: Verteilen</b><br>12 Kekse gerecht auf 3 Teller.<br>Jeder bekommt 4.<br><b>12 : 3 = 4</b>','Verteilen: 12 Kekse gerecht auf 3 Teller. Jeder bekommt 4. 12 geteilt durch 3 gleich 4.');
+  add(sv=>{for(let t=0;t<3;t++){bag(sv,18+t*37,40,32,48);chipGroup(sv,18+t*37,52,26,4,APPLE,11);}},'<b>Teilen: Aufteilen</b><br>12 Äpfel, immer 4 in eine Tüte.<br>Das sind 3 Tüten.<br><b>12 : 4 = 3</b>','Aufteilen: 12 Äpfel, immer 4 in eine Tüte. Das sind 3 Tüten. 12 geteilt durch 4 gleich 3.');
+  add(null,'<b>Umkehraufgabe</b><br>3 · 4 = 12<br>➜ 12 : 4 = 3<br>➜ 12 : 3 = 4<br>Frage dich beim Teilen: <i>Wie oft passt die 4 in die 12?</i>','Umkehraufgabe: 3 mal 4 gleich 12. Dann ist 12 geteilt durch 4 gleich 3, und 12 geteilt durch 3 gleich 4. Frage dich beim Teilen: Wie oft passt die 4 in die 12?');
+  for(let s=1;s<=Math.min(S.maxStage,NST-1);s++){const n=R[s];
+    add(null,`<b>${STAGES[s].n}</b> · Trick: ${STAGES[s].k}<br>${reiheTxt(n,10)}`,`${STAGES[s].n}. Trick: ${STAGES[s].k}. ${reiheTxt(n,10)}.`);}}
+function openMerk(){buildMerk();$('#merkOv').classList.add('on');say('Tippe auf ein Kärtchen. Dann wird es vorgelesen.');}
+$('#merkBtn').onclick=openMerk;
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');hush();};
+
+/* ---------- Einstellungen ---------- */
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#ansSeg',()=>S.nAns,v=>S.nAns=+v),segSet('#plusSeg',()=>S.plus?1:0,v=>S.plus=v==='1'),
+  segSet('#repSeg',()=>S.rep?1:0,v=>S.rep=v==='1'),segSet('#stgSeg',()=>S.stg,v=>S.stg=+v)];
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockStages').onclick=()=>{S.maxStage=NST;save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.sc=Array(NST+1).fill(0);S.maxStage=1;S.cur=1;S.seen={};S.intro={};save();refreshStart();};
+refreshStart();
+
+/* ---------- Gemeinsames ---------- */
+const stage=$('#stage'),taskL=$('#taskL'),markL=$('#markL'),uiL=$('#uiL'),hitL=$('#hitL'),btnL=$('#btnL');
+let MODE=1,M=null,locked=false,instrText='',lastKey='',pendingUp=0;
+function clearStage(){[taskL,markL,uiL,hitL,btnL].forEach(l=>l.innerHTML='');}
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function stageStrip(s){const it=[{t:STAGES[s].n,c:'cur'}];if(s<S.cur)it.push({t:'🔁 Wiederholung',c:'done'});
+  if(S.maxStage<NST){it.push('|');it.push({t:`${STAGES[S.maxStage].n}: ⭐ ${Math.min(S.sc[S.maxStage]||0,S.stg)} von ${S.stg}`});}setStrip(it);}
+function taskStage(){const c=S.cur;if(S.rep&&c>1&&Math.random()<.25)return rint(1,c-1);return c;}
+function nOf(s){return R[s]||rint(2,10);}
+/* Zuerst öfter Kernaufgaben (1, 2, 5, 10), dann alle */
+function genKN(s,minK){let k,n,g=0;do{n=nOf(s);const early=(S.sc[s]||0)<S.stg/2;k=(early&&Math.random()<.55)?pick([1,2,5,10]):rint(1,10);if(minK&&k<minK)k=rint(minK,10);}while(k+'·'+n===lastKey&&g++<20);lastKey=k+'·'+n;return[k,n];}
+function numOpts(v,cands){const c=[];cands.forEach(x=>{if(x>0&&x!==v&&!c.includes(x))c.push(x);});let g=0;while(c.length<3&&g++<50){const x=v+rint(-4,4);if(x>0&&x!==v&&!c.includes(x))c.push(x);}
+  return shuffle([v].concat(c.slice(0,S.nAns-1)));}
+function startMode(m){MODE=m;show('task');newTask();
+  const go=()=>{if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();};
+  if((m===3||m===4)&&!S.intro.teil)openIntro('teil',go);else if(!S.intro.mal)openIntro('mal',go);else if(!S.intro[S.cur])openIntro(S.cur,go);else go();}
+function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4][MODE]();}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();hush();};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t){locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
+  if(s===S.maxStage&&S.maxStage<NST&&S.sc[s]>=S.stg){S.maxStage++;pendingUp=S.maxStage;}
+  save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+  setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';}
+function next(){if(pendingUp){showUp();return;}if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}
+function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(fx)fx();}
+function showUp(){const n=pendingUp;$('#upTitle').textContent=`${STAGES[n-1].n} geschafft!`;$('#upTxt').textContent=`Neu für dich: ${STAGES[n].n}.`;$('#upOv').classList.add('on');confetti();sound('ok');
+  say(`Super! Du hast die ${STAGES[n-1].n} geschafft. Neu für dich: ${STAGES[n].n}.`);}
+$('#upStay').onclick=()=>{pendingUp=0;$('#upOv').classList.remove('on');next();};
+$('#upGo').onclick=()=>{const n=pendingUp;pendingUp=0;S.cur=n;save();$('#upOv').classList.remove('on');openIntro(n,()=>next());};
+function helpData(){
+  if(MODE===1)return{t:'Malnehmen',st:['Links siehst du Reihen mit Punkten.','Die erste Zahl sagt, wie viele Reihen. Die zweite Zahl sagt, wie viele Punkte in jeder Reihe sind.','Tippe rechts auf das richtige Ergebnis.','💡 Hilfe zeigt dir einen Trick.']};
+  if(MODE===2)return{t:'Die Reihe',st:['Oben steht die Einmaleins-Reihe.','Ein Kästchen ist leer. Welche Zahl fehlt?','Tipp: Von Kästchen zu Kästchen kommt immer die gleiche Zahl dazu.','Tippe unten auf die richtige Zahl.']};
+  if(MODE===3)return{t:'Teilen',st:['Oben liegen Kekse oder Äpfel.','Verteilen: Tippe auf „Jeder bekommt 1“. Jeder Teller bekommt einen. Immer reihum.','Aufteilen: Tippe auf „In eine Tüte“. Dann kommen gleich viele in eine Tüte.','Wenn alles verteilt ist, tippe auf die richtige Zahl.']};
+  return{t:'Mal und geteilt',st:['Links siehst du die Punkte.','Rechts stehen 3 Aufgaben, die zusammengehören.','Rechne zuerst die Mal-Aufgabe. Dann die Geteilt-Aufgaben.','Beim Teilen frage dich: Wie oft passt die Zahl hinein?']};}
+function openHelp(){const h=helpData();$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.st.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+function plusTxt(k,n){if(k>6)return'';return Array(k).fill(n).join(' + ');}
+function drawCards(opts,st,fmt,fn,area){btnL.innerHTML='';const n=opts.length,side=area.side;
+  const gap=side?20:(n===2?40:24),h=side?area.bot-area.top:Math.min(n===2?170:140,(area.bot-area.top-(n-1)*gap)/n),w=side?(area.w-(n-1)*gap)/n:area.w,y0=side?area.top:area.top+(area.bot-area.top-n*h-(n-1)*gap)/2;
+  opts.forEach((v,i)=>{const y=side?y0:y0+i*(h+gap),x=side?area.x+i*(w+gap):area.x,k=st[v];const g=el('g',{style:'cursor:pointer',id:'card'+i},btnL);
+    el('rect',{x,y,width:w,height:h,rx:22,fill:k==='ok'?'#C9F0D6':k==='no'?'#FDECEC':k==='sol'?'#E7F6EC':'#fff',stroke:k==='ok'||k==='sol'?'#2A9D4B':k==='no'?'#E63946':'#cbd5e1','stroke-width':k?6:3},g);
+    txt(g,x+w/2,y+h/2,fmt(v),{'font-size':Math.min(56,h*.45),fill:'#1F2A37'});
+    if(k==='ok'||k==='no')txt(g,x+w-24,y+26,k==='no'?'✗':'✓',{'font-size':28,fill:k==='no'?'#E63946':'#2A9D4B'});
+    g.addEventListener('pointerdown',e=>{e.preventDefault();fn(v);});});}
+function taskBox(x,y,w,h,main,sub,col){el('rect',{x,y,width:w,height:h,rx:22,fill:col||'#FFF6CC',stroke:'#E0B000','stroke-width':4},uiL);
+  txt(uiL,x+w/2,y+(sub?h*.4:h/2),main,{'font-size':Math.min(54,h*.42),fill:'#1F2A37'});if(sub)txt(uiL,x+w/2,y+h*.78,sub,{'font-size':22,fill:'#6b7280','font-weight':400});}
+
+/* ================= Modus 1: Malnehmen ================= */
+const F1={x:20,y:20,w:570,h:580};
+function newTask1(){const s=taskStage(),[k,n]=genKN(s);const v=k*n;
+  M={s,k,n,v,opts:numOpts(v,[v+n,v-n,v+1,v-1,k+n]),st:{},tries:0,help:false};
+  render1();setInstr(`Wie viel ist ${k} · ${n}? Tippe das Ergebnis an.`);stageStrip(s);
+  setCtrl([{t:'💡 Hilfe',fn:help1},{t:'🎬 Film',fn:()=>openIntro(M.s===NST?'mix':M.s)},{t:'📖 Merken',fn:openMerk}]);}
+function render1(){taskL.innerHTML='';uiL.innerHTML='';
+  if(M.help)helpField(taskL,F1.x,F1.y,F1.w,F1.h,M.k,M.n);else dotField(taskL,F1.x,F1.y,F1.w,F1.h,M.k,M.n,{rowNums:true,max:64});
+  taskBox(620,20,360,130,`${M.k} · ${M.n} = ?`,S.plus?plusTxt(M.k,M.n):'');
+  drawCards(M.opts,M.st,v=>String(v),answer1,{x:620,w:360,top:170,bot:600});}
+function why1(P){const k=M.k,n=M.n,v=M.v;
+  if(P===v+n)return`Das ist eine Reihe zu viel. Du hast ${k+1} · ${n} gerechnet.`;
+  if(P===v-n)return`Das ist eine Reihe zu wenig. Du hast ${k-1} · ${n} gerechnet.`;
+  if(P===k+n)return`Du hast plus gerechnet: ${k} + ${n}. Aber es heißt ${k} mal ${n}.`;
+  return'Das stimmt nicht.';}
+function answer1(P){if(locked)return;
+  if(P===M.v){M.st[P]='ok';render1();win(`Richtig! ${M.k} · ${M.n} = ${M.v}.`);return;}
+  if(M.st[P]==='no')return;M.st[P]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.v]='sol';render1();
+  nope(why1(P)+' '+trickText(M.k,M.n));}
+function help1(){if(locked)return;M.help=true;render1();const t=trickText(M.k,M.n);feedback(t,'sol');say(t);}
+
+/* ================= Modus 2: Die Reihe ================= */
+function newTask2(){const s=taskStage(),n=nOf(s);let miss=[];const cnt=(S.sc[s]||0)>=S.stg/2&&Math.random()<.5?2:1;
+  while(miss.length<cnt){const i=rint(1,10);if(!miss.includes(i))miss.push(i);}miss.sort((a,b)=>a-b);
+  M={s,n,miss,cur:0,st:{},tries:0,help:false};mk2();render2();setInstr(`Welche Zahl fehlt in der ${n}er-Reihe?`);stageStrip(s);
+  setCtrl([{t:'💡 Hilfe',fn:help2},{t:'📖 Merken',fn:openMerk}]);}
+function mk2(){const k=M.miss[M.cur],v=k*M.n;M.k=k;M.v=v;M.st={};M.tries=0;M.opts=numOpts(v,[v+M.n,v-M.n,v+1,v-1,v+2]);}
+function render2(){taskL.innerHTML='';uiL.innerHTML='';markL.innerHTML='';const n=M.n,bw=88,gap=8,x0=22,y=170;
+  txt(uiL,500,40,`Die ${n}er-Reihe`,{'font-size':34,fill:'#8E44AD'});
+  for(let k=1;k<=10;k++){const x=x0+(k-1)*(bw+gap),isM=M.miss.includes(k),done=isM&&M.miss.indexOf(k)<M.cur,cur=k===M.k;
+    el('rect',{x,y,width:bw,height:100,rx:16,fill:cur?'#FFF6CC':done?'#C9F0D6':isM?'#F3F4F6':'#fff',stroke:cur?'#E0B000':done?'#2A9D4B':'#cbd5e1','stroke-width':cur?5:3,id:'box'+k},taskL);
+    txt(taskL,x+bw/2,y+50,isM&&!done?'?':String(k*n),{'font-size':n*k>=100?32:38,fill:'#1F2A37'});
+    txt(taskL,x+bw/2,y+125,`${k} · ${n}`,{'font-size':19,fill:[1,2,5,10].includes(k)?'#8E44AD':'#9aa5b1'});
+    if(M.help&&k<10){const xa=x+bw/2,xb=x+bw+gap+bw/2;el('path',{d:`M${xa},${y-6} Q${(xa+xb)/2},${y-46} ${xb},${y-6}`,fill:'none',stroke:'#2A9D4B','stroke-width':3},markL);txt(markL,(xa+xb)/2,y-44,'+'+n,{'font-size':18,fill:'#2A9D4B'});}}
+  drawCards(M.opts,M.st,v=>String(v),answer2,{x:150,w:700,top:350,bot:520,side:true});}
+function answer2(P){if(locked)return;
+  if(P===M.v){M.st[P]='ok';sound('step');if(M.cur<M.miss.length-1){M.cur++;feedback(`Richtig! ${M.k} · ${M.n} = ${M.v}.`,'ok');say(`Richtig! ${M.k} · ${M.n} = ${M.v}. Und noch eine Zahl.`);mk2();render2();return;}
+    M.cur++;render2();btnL.innerHTML='';win(`Richtig! ${M.k} · ${M.n} = ${M.v}. Die ${M.n}er-Reihe: ${reiheTxt(M.n,10)}.`);return;}
+  if(M.st[P]==='no')return;M.st[P]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.v]='sol';render2();
+  const before=M.k>1?`Vor dem leeren Kästchen steht ${(M.k-1)*M.n}. ${(M.k-1)*M.n} + ${M.n} = ${M.v}.`:`Das erste Kästchen ist 1 · ${M.n} = ${M.n}.`;
+  nope(`In der ${M.n}er-Reihe kommt immer ${M.n} dazu. `+before);}
+function help2(){if(locked)return;M.help=true;render2();const t=`Von Kästchen zu Kästchen kommt immer ${M.n} dazu. `+(M.k>1?`Vor dem leeren Kästchen steht ${(M.k-1)*M.n}. Rechne ${(M.k-1)*M.n} + ${M.n}.`:'');feedback(t,'sol');say(t);}
+
+/* ================= Modus 3: Teilen (Verteilen / Aufteilen) ================= */
+let v3=0;
+function newTask3(){const s=taskStage(),[k,n]=genKN(s,2);v3++;const kind=v3%2?'ver':'auf';const T=k*n;
+  M={s,k,n,T,kind,pile:T,groups:kind==='ver'?Array(n).fill(0):[],asked:false,st:{},tries:0,anim:false};
+  M.opts=numOpts(k,[k+1,k-1,n!==k?n:k+2,k+2]);
+  render3();stageStrip(s);
+  if(kind==='ver')setInstr(`${T} Kekse werden gerecht auf ${n} Teller verteilt. Tippe auf „Jeder bekommt 1“.`);
+  else setInstr(`${T} Äpfel. Immer ${n} kommen in eine Tüte. Tippe auf „In eine Tüte“.`);
+  ctrl3();}
+function ctrl3(){const b=[];if(!M.asked){if(M.kind==='ver')b.push({t:'🔄 Jeder bekommt 1',cls:'',id:'goBtn',fn:round3});else b.push({t:`📦 ${M.n} in eine Tüte`,cls:'',id:'goBtn',fn:pack3});
+    b.push({t:'↺ Von vorn',fn:reset3});}
+  b.push({t:'💡 Hilfe',fn:help3},{t:'🍪 Film',fn:()=>openIntro('teil')});setCtrl(b);}
+function reset3(){if(locked||M.anim)return;M.pile=M.T;M.groups=M.kind==='ver'?Array(M.n).fill(0):[];hideFb();render3();}
+const ICOL=()=>M.kind==='ver'?COOKIE:APPLE;
+function render3(){taskL.innerHTML='';uiL.innerHTML='';hitL.innerHTML='';btnL.innerHTML='';const n=M.n;
+  taskBox(20,15,250,110,`${M.T} : ${n} = ?`,M.kind==='ver'?`auf ${n} Teller`:`je ${n} in eine Tüte`);
+  /* Haufen */
+  if(M.pile>0){const per=10,c=Math.min(22,212/(Math.ceil(M.T/per)+.6));const rows=Math.ceil(M.pile/per),gx=c*.6;
+    const w=per*c+gx,x0=300+(680-w)/2;
+    el('rect',{x:290,y:12,width:700,height:236,rx:20,fill:'#FAFBFE',stroke:'#e5e7eb','stroke-width':2},taskL);
+    for(let i=0;i<M.pile;i++){const r=Math.floor(i/per),j=i%per;el('circle',{cx:x0+c*j+(j>=5?gx:0)+c/2,cy:24+c*r+(r>=5?c*.6:0)+c/2,r:c*.4,fill:ICOL(),stroke:'#00000033'},taskL);}
+    txt(uiL,940,230,'noch '+M.pile,{'font-size':20,fill:'#6b7280'});
+    if(M.kind==='auf'){const h=el('rect',{x:290,y:12,width:700,height:236,fill:'rgba(0,0,0,0)','pointer-events':'all',style:'cursor:pointer'},hitL);h.addEventListener('pointerdown',e=>{e.preventDefault();pack3();});}}
+  /* Teller oder Tüten */
+  if(M.kind==='ver'){const pw=Math.min(190,(960-(n-1)*10)/n),x0=20+(960-(n*pw+(n-1)*10))/2;
+    for(let t=0;t<n;t++){const cx=x0+t*(pw+10)+pw/2;txt(taskL,cx,285,'🙂',{'font-size':Math.min(40,pw*.45)});
+      el('ellipse',{cx,cy:440,rx:pw/2-2,ry:Math.min(22,pw*.14),fill:'#fff',stroke:'#8E44AD','stroke-width':3},taskL);
+      chipGroup(taskL,cx,330,pw-14,M.groups[t],COOKIE,40);
+      if(M.groups[t])txt(taskL,cx,490,String(M.groups[t]),{'font-size':24,fill:'#8E44AD'});
+      if(!M.asked){const h=el('rect',{x:cx-pw/2,y:260,width:pw,height:345,fill:'rgba(0,0,0,0)','pointer-events':'all',style:'cursor:pointer'},hitL);h.addEventListener('pointerdown',e=>{e.preventDefault();give3(t);});}}}
+  else{const slots=10,bw=87,x0=20+(960-(slots*bw+(slots-1)*10))/2;
+    M.groups.forEach((cnt,t)=>{const cx=x0+t*(bw+10)+bw/2;bag(taskL,cx,320,bw,110);chipGroup(taskL,cx,345,bw-14,cnt,APPLE,30);txt(taskL,cx,455,'Tüte '+(t+1),{'font-size':16,fill:'#6b7280'});});}
+  if(M.asked)drawCards(M.opts,M.st,v=>String(v),answer3,{x:300,w:680,top:30,bot:225,side:true});}
+function done3(){if(M.pile>0)return;M.asked=true;ctrl3();render3();
+  if(M.kind==='ver')setInstr(`Alles verteilt! Wie viele Kekse bekommt jeder?`);else setInstr(`Alle Äpfel sind eingepackt! Wie viele Tüten sind es?`);sayInstr();}
+function give3(t){if(locked||M.anim||M.pile<=0)return;const mn=Math.min(...M.groups);
+  if(M.groups[t]>mn){sound('no');const tx='Das ist nicht gerecht! Erst bekommen die anderen Teller einen.';feedback(tx,'try');say(tx);return;}
+  M.groups[t]++;M.pile--;sound('tick');hideFb();render3();if(M.pile===0)setTimeout(done3,400);}
+function round3(){if(locked||M.anim||M.pile<=0)return;M.anim=true;hideFb();const mn=Math.min(...M.groups);let i=0;
+  const stepF=()=>{while(i<M.n&&M.groups[i]>mn)i++;if(i>=M.n||M.pile<=0){M.anim=false;if(M.pile===0)setTimeout(done3,300);else{const r=M.groups[0];say(`Jeder hat ${r}.`);}return;}
+    M.groups[i]++;M.pile--;i++;sound('tick');render3();setTimeout(stepF,Math.max(70,600/M.n));};stepF();}
+function pack3(){if(locked||M.anim||M.pile<M.n||M.asked)return;M.pile-=M.n;M.groups.push(M.n);sound('step');render3();say(`${M.groups.length} Tüte${M.groups.length>1?'n':''}.`);if(M.pile===0)setTimeout(done3,600);}
+function answer3(P){if(locked)return;const k=M.k,n=M.n,T=M.T;
+  const good=M.kind==='ver'?`Richtig! Jeder bekommt ${k}. ${T} : ${n} = ${k}.`:`Richtig! Es sind ${k} Tüten. ${T} : ${n} = ${k}.`;
+  if(P===k){M.st[P]='ok';render3();win(good+` Denn ${k} · ${n} = ${T}.`);return;}
+  if(M.st[P]==='no')return;M.st[P]='no';M.tries++;if(M.tries>=2)M.st[k]='sol';render3();
+  nope(M.kind==='ver'?`Zähle die Kekse auf einem Teller.`:`Zähle die Tüten.`);}
+function help3(){if(locked)return;let t;
+  if(!M.asked)t=M.kind==='ver'?`Tippe auf „Jeder bekommt 1“. Jeder Teller bekommt einen Keks. Mach das so lange, bis keine Kekse mehr da sind.`:`Tippe auf „In eine Tüte“. Dann kommen ${M.n} Äpfel in eine Tüte. Mach das so lange, bis keine Äpfel mehr da sind.`;
+  else t=M.kind==='ver'?`Zähle die Kekse auf einem Teller. Oder frage: ${M.n} mal wie viel ist ${M.T}?`:`Zähle die Tüten. Oder frage: Wie oft passt die ${M.n} in die ${M.T}?`;
+  feedback(t,'sol');say(t);}
+
+/* ================= Modus 4: Mal und geteilt ================= */
+function newTask4(){const s=taskStage(),[k,n]=genKN(s,2);const T=k*n;
+  const q=[{t:`${k} · ${n}`,v:T,c:[T+n,T-n,T+1,k+n]},{t:`${T} : ${n}`,v:k,c:[k+1,k-1,n,k+2]}];
+  if(k!==n)q.push({t:`${T} : ${k}`,v:n,c:[n+1,n-1,k,n+2]});
+  M={s,k,n,T,q,cur:0,st:{},tries:0,help:false};M.opts=numOpts(q[0].v,q[0].c);
+  render4();setInstr(`Rechne die Aufgaben, die zusammengehören.`);stageStrip(s);
+  setCtrl([{t:'💡 Hilfe',fn:help4},{t:'🍪 Film',fn:()=>openIntro('teil')},{t:'📖 Merken',fn:openMerk}]);}
+function render4(){taskL.innerHTML='';uiL.innerHTML='';markL.innerHTML='';
+  dotField(taskL,20,20,540,580,M.k,M.n,{rowNums:true,sums:M.help&&M.cur===1});
+  if(M.help&&M.cur===2){const f=dotField(markL,20,20,540,580,M.k,M.n,{rowNums:true});f.g.setAttribute('opacity',0);
+    for(let j=0;j<M.n;j++){const p0=f.pos(0,j),p1=f.pos(M.k-1,j);el('rect',{x:p0[0]-f.c*.46,y:p0[1]-f.c*.46,width:f.c*.92,height:p1[1]-p0[1]+f.c*.92,rx:f.c*.46,fill:'none',stroke:'#F28C28','stroke-width':3},markL);}
+    }
+  M.q.forEach((q,i)=>{const y=20+i*105,done=i<M.cur,cur=i===M.cur;
+    el('rect',{x:590,y,width:390,height:90,rx:18,fill:done?'#C9F0D6':cur?'#FFF6CC':'#F3F4F6',stroke:done?'#2A9D4B':cur?'#E0B000':'#e5e7eb','stroke-width':cur?5:3},uiL);
+    txt(uiL,785,y+45,`${q.t} = ${done?q.v:cur?'?':'…'}`,{'font-size':42,fill:done?'#2A9D4B':cur?'#1F2A37':'#9aa5b1'});});
+  if(M.cur<M.q.length)drawCards(M.opts,M.st,v=>String(v),answer4,{x:590,w:390,top:345,bot:600});else btnL.innerHTML='';}
+function answer4(P){if(locked)return;const q=M.q[M.cur];
+  if(P===q.v){M.st={};M.tries=0;M.help=false;M.cur++;sound('step');
+    if(M.cur>=M.q.length){render4();win(`Richtig! ${M.q.map(x=>x.t+' = '+x.v).join(', ')}.`);return;}
+    const nq=M.q[M.cur];M.opts=numOpts(nq.v,nq.c);render4();feedback(`Richtig! ${q.t} = ${q.v}.`,'ok');say(`Richtig! ${q.t} = ${q.v}. Jetzt: ${nq.t}?`);return;}
+  if(M.st[P]==='no')return;M.st[P]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[q.v]='sol';render4();nope(why4());}
+function why4(){const k=M.k,n=M.n,T=M.T;
+  if(M.cur===0)return trickText(k,n);
+  if(M.cur===1)return`Wie oft passt die ${n} in die ${T}? Schau: ${k} Reihen mit je ${n}. ${k} · ${n} = ${T}. Also ist ${T} : ${n} = ${k}.`;
+  return`Verteile ${T} auf ${k} Reihen. In jeder Reihe sind ${n}. ${k} · ${n} = ${T}. Also ist ${T} : ${k} = ${n}.`;}
+function help4(){if(locked)return;M.help=true;render4();const t=why4();feedback(t,'sol');say(t);}
+
+/* ================= Belohnung: Gummi-Schleuder (3 Runden) ================= */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['num','num','bal'],MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Zahlen!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Zahlen!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){const n=R[Math.min(S.maxStage,NST-1)]||2;return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(46,58),hit:0,y:0,lab:rint(1,10)+'·'+n};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='bal'){el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);return;}
+  const r=s*.58;el('circle',{cx:0,cy:0,r:r+5,fill:c},g);el('circle',{cx:0,cy:0,r,fill:'#fff'},g);txt(g,0,1,t.lab,{'font-size':r*.62,fill:c});}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
+</script>
+</body>
+</html>

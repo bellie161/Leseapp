@@ -1,6 +1,20 @@
 <!doctype html>
 <html lang="de">
 <head>
+<script>/* Vorlese-Korrektur: "12." wird als "zwölf." gesprochen, nicht als "zwölften" */
+(function(){var O=window.SpeechSynthesisUtterance;if(!O||O.__zf)return;
+var NW=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'],ZW=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function w(n){if(n<20)return NW[n];if(n<100){var e=n%10,z=ZW[Math.floor(n/10)];return e?(e===1?'ein':NW[e])+'und'+z:z;}
+ if(n<1000){var h=Math.floor(n/100),r=n%100;return(h===1?'ein':NW[h])+'hundert'+(r?w(r):'');}
+ if(n<1e6){var t=Math.floor(n/1000),r2=n%1000;return(t===1?'ein':w(t))+'tausend'+(r2?w(r2):'');}
+ if(n<1e9){var m=Math.floor(n/1e6),r3=n%1e6;return(m===1?'eine Million':w(m)+' Millionen')+(r3?' '+w(r3):'');}return String(n);}
+var ORD=/(?:^|\s)(am|im|zum|zur|beim|vom|der|die|das|den|dem|des)\s$/i;
+function fix(t){if(typeof t!=='string')return t;
+ return t.replace(/(?<![\d.,])(\d{1,3}(?:\.\d{3})+|\d+)\.(?!\d)/g,function(x,n,off,all){if(ORD.test(all.slice(Math.max(0,off-8),off)))return x;var v=parseInt(n.replace(/\./g,''),10);return isFinite(v)?w(v)+'.':x;});}
+function U(t){return arguments.length?new O(fix(t)):new O();}
+U.prototype=O.prototype;U.__zf=1;window.SpeechSynthesisUtterance=U;window.__sprechZahl=fix;})();
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Lernapp zum Apfel für Klasse 1 mit Vorlesefunktion">

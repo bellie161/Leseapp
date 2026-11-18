@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sachrechen-Profi – Sachaufgaben verstehen und lösen</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--purple);text-align:center}
+.sub{font-size:20px;margin:4px 0 12px;color:#4b5563;text-align:center}
+.lbl{font-size:19px;font-weight:700;color:#4b5563;margin:6px 0}
+.stages{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.stg{width:210px;background:#fff;color:var(--ink);border-radius:20px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:18px;border:4px solid #fff}
+.stg.sel{border-color:var(--purple);background:#F5EDFB}
+.stg.lock{opacity:.5}
+.stg .rn{font-size:38px;line-height:1.1;color:var(--purple)}
+.stg small{font-weight:400;font-size:15px;color:#4b5563}
+.pbar{width:130px;height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--green)}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px;margin-top:10px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode .ic{font-size:52px;line-height:1.2}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--purple);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--purple);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.cur{background:#F5EDFB;border-color:var(--purple);color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.feedback{background:#fff;border-radius:16px;padding:8px 20px;font-size:22px;font-weight:700;display:none;text-align:center;width:max-content;max-width:94%;margin:6px auto 0;line-height:1.3}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.work{flex:1;overflow-y:auto;padding:14px 16px;transition:margin-right .2s}
+body.calcOn .work{margin-right:340px}
+.storycard{max-width:940px;margin:0 auto;background:#fff;border-radius:24px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+.storycard .emo{font-size:84px;line-height:1;flex:none}
+.sens{flex:1;font-size:28px;line-height:1.55}
+.sen{display:block;width:fit-content;margin:4px 0;border-radius:10px;padding:2px 8px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.sen.q{display:block;margin-top:10px;color:#1D4ED8}
+.sen.tap{background:#F3F4F6}
+.sen.struck{text-decoration:line-through;text-decoration-thickness:4px;text-decoration-color:#E63946;color:#9aa5b1;background:#FDECEC}
+.sen.wrong{background:#FFE4C7;outline:3px solid var(--orange)}
+.sen.found{background:#DBEAFE;outline:3px solid var(--blue)}
+.sen.need{background:#E7F6EC}
+.numtok{display:inline-block;min-width:44px;text-align:center;border-radius:10px;padding:0 6px;font-weight:700}
+.numtok.tap{background:#FFF6CC;outline:3px dashed #E0B000;cursor:pointer}
+.numtok.got{background:#C9F0D6;outline:3px solid var(--green)}
+.numtok.bad{background:#FDECEC;outline:3px solid var(--red)}
+mark{background:#FFE79A;border-radius:6px;padding:0 3px}
+.qarea{max-width:940px;margin:14px auto 0;display:flex;flex-direction:column;gap:12px;align-items:center}
+.ops{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.op{width:150px;height:130px;background:#fff;color:var(--ink);font-size:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;border:4px solid #cbd5e1}
+.op small{font-size:18px;color:#6b7280;margin-top:6px}
+.op.ok{background:#C9F0D6;border-color:var(--green)}.op.no{background:#FDECEC;border-color:var(--red)}
+.calcline{font-size:40px;font-weight:700;background:#FFF6CC;border:4px solid #E0B000;border-radius:20px;padding:10px 26px}
+.qrow{width:100%;display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:10px 14px;border:3px solid #e5e7eb;font-size:24px;font-weight:700}
+.qrow .qt{flex:1;text-align:left}
+.qrow button{font-size:20px;padding:10px 14px;background:#fff;color:var(--ink);border:3px solid #cbd5e1;box-shadow:none}
+.qrow button.selY{background:#C9F0D6;border-color:var(--green)}
+.qrow button.selN{background:#FDECEC;border-color:var(--red)}
+.qrow.bad{border-color:var(--orange);background:#FFF7ED}
+.qrow.good{border-color:var(--green);background:#F0FBF3}
+.ans{width:100%;text-align:left;font-size:26px;background:#fff;color:var(--ink);border:4px solid #cbd5e1}
+.ans.ok{background:#C9F0D6;border-color:var(--green)}.ans.no{background:#FDECEC;border-color:var(--red)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:22px;padding:14px 20px}
+.tool{background:#fff;color:var(--ink)}
+.yes{background:var(--green)}
+/* Taschenrechner */
+.calc{position:fixed;right:10px;top:80px;width:320px;background:#2B3A4A;border-radius:24px;padding:12px;z-index:40;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+body.calcOn .calc{display:block}
+.calc .head{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:700;font-size:20px;margin-bottom:8px}
+.calc .head button{padding:4px 12px;font-size:20px;background:#fff;color:#333}
+.cdisp{background:#DDEBD5;border-radius:12px;padding:6px 12px;text-align:right;font-family:"Courier New",monospace;font-weight:700;margin-bottom:10px}
+.cdisp .ex{font-size:22px;color:#4b5563;min-height:28px}
+.cdisp .va{font-size:44px;color:#1F2A37;min-height:52px;overflow:hidden}
+.ckeys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ckeys button{height:62px;font-size:30px;padding:0;background:#F8FAFC;color:#1F2A37}
+.ckeys button.o{background:#F28C28;color:#fff}
+.ckeys button.c{background:#E63946;color:#fff}
+.ckeys button.e{background:#2A9D4B;color:#fff}
+#calcTake{width:100%;margin-top:10px;background:var(--green);display:none}
+body.takeOn #calcTake{display:block}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:22px 28px;max-width:740px;width:94%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:94vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:30px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:10px 0;padding:10px;border:3px solid var(--purple);border-radius:16px;font-size:20px;cursor:pointer}
+.merk .big2{flex:none;width:80px;height:80px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:700;color:#fff}
+.slide{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.slide .e{font-size:90px;line-height:1}
+.slide .ex{background:#F5EDFB;border-radius:18px;padding:10px 16px;font-size:24px;text-align:left;max-width:600px}
+.intxt{font-size:22px;line-height:1.35;min-height:70px;margin:8px 0 4px;text-align:left}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.dots span{width:14px;height:14px;border-radius:50%;background:#d1d5db}
+.dots span.on{background:var(--purple)}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>🕵️ Sachrechen-Profi</h1>
+  <div class="sub">Sachaufgaben verstehen und lösen</div>
+  <div class="lbl">Wähle deine Stufe:</div>
+  <div class="stages" id="stages"></div>
+  <div class="row" style="margin-top:10px"><button id="filmBtn" style="background:var(--purple)">🎬 So löse ich eine Sachaufgabe</button></div>
+  <div class="modes">
+    <button class="mode" data-m="1"><span class="ic">➕➗</span><span><span class="num" style="background:#1D7FD8">1</span> Welche Rechnung?</span><small>Signalwörter finden</small></button>
+    <button class="mode" data-m="2"><span class="ic">✂️</span><span><span class="num" style="background:#E63946">2</span> Was ist unwichtig?</span><small>Unwichtiges durchstreichen</small></button>
+    <button class="mode" data-m="3"><span class="ic">❓</span><span><span class="num" style="background:#8E44AD">3</span> Welche Fragen passen?</span><small>Kann man das ausrechnen?</small></button>
+    <button class="mode" data-m="4"><span class="ic">🧮</span><span><span class="num" style="background:#2A9D4B">4</span> Ganze Aufgabe lösen</span><small>Schritt für Schritt</small></button>
+  </div>
+  <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="calcStart" style="background:#2B3A4A">🧮 Taschenrechner</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 18.11.2026 · 1</div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <button class="light" id="calcBtn" aria-label="Taschenrechner">🧮</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="work" id="work"><div class="storycard" id="story"></div><div class="qarea" id="qarea"></div></div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="calc" id="calc">
+  <div class="head"><span>🧮 Taschenrechner</span><button id="calcClose">✕</button></div>
+  <div class="cdisp"><div class="ex" id="cEx"></div><div class="va" id="cVa">0</div></div>
+  <div class="ckeys" id="ckeys"></div>
+  <button id="calcTake">✓ Ergebnis nehmen</button>
+</div>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="introOv"><div class="card">
+  <h2 id="inTitle"></h2>
+  <div class="slide" id="inSlide"></div>
+  <div class="intxt" id="inTxt"></div>
+  <div class="row" style="margin-top:6px"><button id="inBack" class="light">◀ Zurück</button><button id="inSpeak" class="light">🔊</button><button id="inNext" style="background:var(--green)">Weiter ▶</button></div>
+  <div class="dots" id="inDots"></div>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div style="font-size:16px;color:#6b7280;margin-bottom:4px">Tippe auf ein Kärtchen. Dann wird es vorgelesen.</div>
+  <div id="merkList"></div>
+  <div class="row"><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="upOv"><div class="card">
+  <div class="big">🏅</div><h2 id="upTitle"></h2><p id="upTxt"></p>
+  <div class="row"><button id="upStay" class="light">Hier weiter üben</button><button id="upGo" style="background:var(--purple)">▶ Neue Stufe starten</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  <div class="setrow"><span>Zahlenraum für Plus und Minus<br><small style="color:#6b7280;font-size:15px">Mal und Geteilt bleiben im Einmaleins</small></span><div class="seg" id="zrSeg"><button data-v="20">20</button><button data-v="100">100</button><button data-v="1000">1000</button></div></div>
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Unwichtige Sätze<br><small style="color:#6b7280;font-size:15px">bei „Ganze Aufgabe lösen“</small></span><div class="seg" id="extSeg"><button data-v="0">keine</button><button data-v="1">1</button><button data-v="2">2</button></div></div>
+  <div class="setrow"><span>Frühere Stufen mitüben<br><small style="color:#6b7280;font-size:15px">Jede 4. Aufgabe ist eine Wiederholung</small></span><div class="seg" id="repSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Sterne bis zur nächsten Stufe</span><div class="seg" id="stgSeg"><button data-v="15">15</button><button data-v="20">20</button><button data-v="30">30</button></div></div>
+  <div class="setrow"><button id="unlockStages" style="background:var(--purple)">Alle Stufen freischalten</button><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))if(attrs[k]!==undefined&&attrs[k]!==null)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+const STAGES=[null,{n:'Plus und Minus',i:'+ −'},{n:'Mal und Geteilt',i:'· :'},{n:'Alles gemischt',i:'+ − · :'}];
+const NST=3;
+let S={goal:10,done:0,stars:0,shots:10,voice:true,zr:100,ext:1,rep:true,stg:15,maxStage:1,cur:1,sc:[0,0,0,0],seen:{},intro:false};
+try{Object.assign(S,JSON.parse(localStorage.getItem('sachrechenprofi')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('sachrechenprofi',JSON.stringify(S));}catch(e){}}
+const NW=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const ZW=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function numWord(n){if(n<20)return NW[n];if(n<100){const e=n%10,z=ZW[Math.floor(n/10)];return e?(e===1?'ein':NW[e])+'und'+z:z;}
+  if(n<1000){const h=Math.floor(n/100),r=n%100;return(h===1?'ein':NW[h])+'hundert'+(r?numWord(r):'');}
+  if(n<1000000){const t=Math.floor(n/1000),r=n%1000;return(t===1?'ein':numWord(t))+'tausend'+(r?numWord(r):'');}return String(n);}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();
+  t=t.replace(/= \?/g,'gleich wie viel?').replace(/ · /g,' mal ').replace(/ : /g,' geteilt durch ').replace(/ − /g,' minus ').replace(/ \+ /g,' plus ').replace(/ = /g,' gleich ').replace(/\b([Ll])ies\b/g,'$1iehs').replace(/\b(\d+)\.(?!\d)/g,(x,n)=>numWord(+n)+'.')
+   .replace(/[\p{Extended_Pictographic}️✓✗➜▶◀]/gu,'').replace(/–/g,',').replace(/…/g,',').replace(/„|“/g,'');
+  const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+function hush(){try{speechSynthesis.cancel();}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='tick')tone(1200,0,.025,'square');}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Rechenzeichen ---------- */
+const OPS={'+':{w:'plus',col:'#1D7FD8',why:'Es kommt etwas dazu. Es wird mehr. Dann rechnest du plus.',sig:'dazu, zusammen, insgesamt, mehr, kommen hinzu, steigen ein, bekommt'},
+  '−':{w:'minus',col:'#E63946',why:'Es geht etwas weg. Es wird weniger. Dann rechnest du minus.',sig:'weg, übrig, noch, weniger, essen auf, steigen aus, verliert, kauft für'},
+  '·':{w:'mal',col:'#2A9D4B',why:'Es gibt mehrere gleiche Gruppen. Jede Gruppe hat gleich viele. Dann rechnest du mal.',sig:'je, jeder, jede, in jedem, mehrere gleiche Packungen, eine kostet'},
+  ':':{w:'geteilt',col:'#8E44AD',why:'Es wird gerecht verteilt oder in gleiche Gruppen aufgeteilt. Dann rechnest du geteilt.',sig:'verteilen, gerecht, gleich viele, jeder bekommt, immer … in eine, passen in'}};
+const calcOp=(a,op,b)=>op==='+'?a+b:op==='−'?a-b:op==='·'?a*b:a/b;
+
+/* ---------- Geschichten ---------- */
+/* s: nötige Sätze · q: Frage · an: Antwortsatz · sig: Signalwörter · yes: Frage, die man aus dem Text beantworten kann · no: Fragen, die man nicht beantworten kann · ext: unwichtige Sätze [Text, x von, x bis] */
+const KIDS=['Jakob','Lena','Tim','Mia','Ben','Emma','Paul','Lea','Noah','Sophie'];
+const T=[
+ {op:'+',e:'⚽',s:P=>[`${P.N} hat ${P.a} Fußballkarten.`,`Zum Geburtstag bekommt ${P.N} ${P.b} Karten dazu.`],q:P=>`Wie viele Karten hat ${P.N} jetzt?`,an:(P,r)=>`${P.N} hat jetzt ${r} Karten.`,sig:['dazu','jetzt'],
+  yes:P=>`Wie viele Karten bekommt ${P.N} zum Geburtstag?`,no:P=>[`Wie viele Karten hat der Freund von ${P.N}?`,`Wie viel kostet eine Karte?`],ext:[['{N} spielt seit {x} Jahren Fußball.',2,6],['Im Verein sind {x} Kinder.',12,30]]},
+ {op:'+',e:'🚌',s:P=>[`Im Bus sitzen ${P.a} Kinder.`,`An der Haltestelle steigen ${P.b} Kinder ein.`],q:P=>`Wie viele Kinder sitzen jetzt im Bus?`,an:(P,r)=>`Jetzt sitzen ${r} Kinder im Bus.`,sig:['steigen','ein','jetzt'],
+  yes:P=>`Wie viele Kinder steigen ein?`,no:P=>[`Wie heißt der Busfahrer?`,`Wie viele Kinder steigen an der nächsten Haltestelle aus?`],ext:[['Der Bus hat die Nummer {x}.',3,19],['Die Fahrt dauert {x} Minuten.',5,25]]},
+ {op:'+',e:'🚒',s:P=>[`Bei der Feuerwehr sind am Morgen ${P.a} Feuerwehrleute.`,`Am Mittag kommen ${P.b} Feuerwehrleute dazu.`],q:P=>`Wie viele Feuerwehrleute sind es zusammen?`,an:(P,r)=>`Es sind zusammen ${r} Feuerwehrleute.`,sig:['kommen','dazu','zusammen'],
+  yes:P=>`Wie viele Feuerwehrleute sind am Morgen da?`,no:P=>[`Wie viele Feuerwehrautos hat die Feuerwehr?`,`Wie lang ist die Leiter?`],ext:[['Das Feuerwehrauto ist {x} Jahre alt.',3,15],['Die Wache hat {x} Tore.',2,6]]},
+ {op:'+',e:'🐕',s:P=>[`Im Tierheim sind ${P.a} Hunde.`,`Heute werden ${P.b} neue Hunde gebracht.`],q:P=>`Wie viele Hunde sind jetzt im Tierheim?`,an:(P,r)=>`Jetzt sind ${r} Hunde im Tierheim.`,sig:['neue','jetzt'],
+  yes:P=>`Wie viele neue Hunde werden gebracht?`,no:P=>[`Wie viele Katzen sind im Tierheim?`,`Wie heißt der größte Hund?`],ext:[['Der kleinste Hund wiegt {x} Kilo.',2,6],['Das Tierheim öffnet um {x} Uhr.',8,10]]},
+ {op:'+',e:'📚',s:P=>[`${P.N} liest am Montag ${P.a} Seiten.`,`Am Dienstag liest ${P.N} noch ${P.b} Seiten.`],q:P=>`Wie viele Seiten hat ${P.N} insgesamt gelesen?`,an:(P,r)=>`${P.N} hat insgesamt ${r} Seiten gelesen.`,sig:['noch','insgesamt'],
+  yes:P=>`Wie viele Seiten liest ${P.N} am Montag?`,no:P=>[`Wie viele Seiten hat das ganze Buch?`,`Wie heißt das Buch?`],ext:[['Das Buch kostet {x} Euro.',8,15],['{N} liest immer um {x} Uhr.',6,8]]},
+ {op:'+',e:'🍎',s:P=>[`Im Korb liegen ${P.a} rote Äpfel.`,`Oma legt noch ${P.b} grüne Äpfel hinein.`],q:P=>`Wie viele Äpfel sind es zusammen?`,an:(P,r)=>`Es sind zusammen ${r} Äpfel.`,sig:['noch','hinein','zusammen'],
+  yes:P=>`Wie viele grüne Äpfel legt Oma hinein?`,no:P=>[`Wie viele Birnen liegen im Korb?`,`Wie schwer ist ein Apfel?`],ext:[['Oma ist {x} Jahre alt.',62,79],['Der Apfelbaum ist {x} Meter hoch.',4,9]]},
+ {op:'−',e:'🎈',s:P=>[`${P.N} hat ${P.a} Luftballons.`,`${P.b} Luftballons platzen.`],q:P=>`Wie viele Luftballons hat ${P.N} noch?`,an:(P,r)=>`${P.N} hat noch ${r} Luftballons.`,sig:['platzen','noch'],
+  yes:P=>`Wie viele Luftballons platzen?`,no:P=>[`Welche Farbe haben die Luftballons?`,`Wie viele Gäste kommen zur Party?`],ext:[['Die Party beginnt um {x} Uhr.',2,4],['{N} wird {x} Jahre alt.',8,11]]},
+ {op:'−',e:'🚌',s:P=>[`Im Bus sitzen ${P.a} Leute.`,`An der Haltestelle steigen ${P.b} Leute aus.`],q:P=>`Wie viele Leute sitzen jetzt noch im Bus?`,an:(P,r)=>`Im Bus sitzen jetzt noch ${r} Leute.`,sig:['steigen','aus','noch'],
+  yes:P=>`Wie viele Leute steigen aus?`,no:P=>[`Wie viele Leute steigen ein?`,`Wohin fährt der Bus?`],ext:[['Der Bus hat die Nummer {x}.',3,19],['Der Busfahrer arbeitet seit {x} Jahren.',5,20]]},
+ {op:'−',e:'🍪',s:P=>[`Oma backt ${P.a} Kekse.`,`Die Kinder essen ${P.b} Kekse auf.`],q:P=>`Wie viele Kekse sind übrig?`,an:(P,r)=>`Es sind ${r} Kekse übrig.`,sig:['essen','auf','übrig'],
+  yes:P=>`Wie viele Kekse backt Oma?`,no:P=>[`Wie viele Kinder essen Kekse?`,`Wie lange backt Oma die Kekse?`],ext:[['Oma ist {x} Jahre alt.',62,79],['Der Ofen ist {x} Jahre alt.',3,12]]},
+ {op:'−',e:'💶',s:P=>[`${P.N} hat ${P.a} Euro gespart.`,`${P.N} kauft einen Ball für ${P.b} Euro.`],q:P=>`Wie viel Geld hat ${P.N} noch?`,an:(P,r)=>`${P.N} hat noch ${r} Euro.`,sig:['kauft','noch'],
+  yes:P=>`Wie viel kostet der Ball?`,no:P=>[`Wie viel kostet ein Fahrrad?`,`In welchem Laden kauft ${P.N} den Ball?`],ext:[['Im Laden gibt es {x} Bälle.',6,30],['Der Laden schließt um {x} Uhr.',6,8]]},
+ {op:'−',e:'🚗',s:P=>[`Auf dem Parkplatz stehen ${P.a} Autos.`,`${P.b} Autos fahren weg.`],q:P=>`Wie viele Autos stehen noch auf dem Parkplatz?`,an:(P,r)=>`Auf dem Parkplatz stehen noch ${r} Autos.`,sig:['fahren','weg','noch'],
+  yes:P=>`Wie viele Autos fahren weg?`,no:P=>[`Wie viele Autos sind rot?`,`Wie viel kostet das Parken?`],ext:[['Der Parkplatz ist {x} Jahre alt.',5,30],['Es ist {x} Uhr.',2,5]]},
+ {op:'−',e:'🔵',s:P=>[`${P.N} hat ${P.a} Murmeln.`,`${P.N2} hat ${P.b} Murmeln weniger als ${P.N}.`],q:P=>`Wie viele Murmeln hat ${P.N2}?`,an:(P,r)=>`${P.N2} hat ${r} Murmeln.`,sig:['weniger'],
+  yes:P=>`Wie viele Murmeln hat ${P.N}?`,no:P=>[`Wie viele Murmeln sind blau?`,`Wer gewinnt das Murmelspiel?`],ext:[['{N} ist {x} Jahre alt.',8,11],['Die Pause dauert {x} Minuten.',15,20]]},
+ {op:'·',e:'🥚',s:P=>[`Im Laden stehen ${P.a} Eierkartons.`,`In jedem Karton sind ${P.b} Eier.`],q:P=>`Wie viele Eier sind es insgesamt?`,an:(P,r)=>`Es sind insgesamt ${r} Eier.`,sig:['In jedem','insgesamt'],
+  yes:P=>`Wie viele Eier sind in einem Karton?`,no:P=>[`Wie viel kostet ein Ei?`,`Wie viele Hühner hat der Bauer?`],ext:[['Der Laden öffnet um {x} Uhr.',7,9],['Im Laden arbeiten {x} Leute.',3,9]]},
+ {op:'·',e:'🚗',fixB:4,s:P=>[`Auf dem Parkplatz stehen ${P.a} Autos.`,`Jedes Auto hat ${P.b} Räder.`],q:P=>`Wie viele Räder sind es zusammen?`,an:(P,r)=>`Es sind zusammen ${r} Räder.`,sig:['Jedes','zusammen'],
+  yes:P=>`Wie viele Autos stehen auf dem Parkplatz?`,no:P=>[`Wie viele Autos sind blau?`,`Wie schnell fährt ein Auto?`],ext:[['Der Parkplatz hat {x} Lampen.',3,9],['Es ist {x} Uhr.',2,5]]},
+ {op:'·',e:'🍬',s:P=>[`${P.N} kauft ${P.a} Tüten Bonbons.`,`In jeder Tüte sind ${P.b} Bonbons.`],q:P=>`Wie viele Bonbons sind es?`,an:(P,r)=>`Es sind ${r} Bonbons.`,sig:['In jeder'],
+  yes:P=>`Wie viele Tüten kauft ${P.N}?`,no:P=>[`Wie viel kostet eine Tüte?`,`Wie viele Bonbons sind rot?`],ext:[['{N} ist {x} Jahre alt.',8,11],['Der Laden hat {x} Regale.',12,30]]},
+ {op:'·',e:'🎟️',s:P=>[`Eine Kinokarte kostet ${P.b} Euro.`,`${P.N} kauft ${P.a} Kinokarten.`],q:P=>`Wie viel Euro muss ${P.N} bezahlen?`,an:(P,r)=>`${P.N} muss ${r} Euro bezahlen.`,sig:['Eine','kostet','kauft'],
+  yes:P=>`Wie viel kostet eine Kinokarte?`,no:P=>[`Wie heißt der Film?`,`Wie viel kostet das Popcorn?`],ext:[['Der Film dauert {x} Minuten.',80,110],['Der Film beginnt um {x} Uhr.',3,5]]},
+ {op:'·',e:'🐕',fixB:4,s:P=>[`${P.a} Hunde gehen spazieren.`,`Jeder Hund hat ${P.b} Beine.`],q:P=>`Wie viele Beine sind es zusammen?`,an:(P,r)=>`Es sind zusammen ${r} Beine.`,sig:['Jeder','zusammen'],
+  yes:P=>`Wie viele Hunde gehen spazieren?`,no:P=>[`Wie heißen die Hunde?`,`Wie lange gehen die Hunde spazieren?`],ext:[['Der Weg ist {x} Kilometer lang.',2,5],['Es ist {x} Uhr.',2,5]]},
+ {op:'·',e:'🧱',s:P=>[`${P.N} baut ${P.a} Türme.`,`Jeder Turm hat ${P.b} Steine.`],q:P=>`Wie viele Steine braucht ${P.N}?`,an:(P,r)=>`${P.N} braucht ${r} Steine.`,sig:['Jeder'],
+  yes:P=>`Wie viele Türme baut ${P.N}?`,no:P=>[`Welche Farbe haben die Steine?`,`Wie viele Steine hat ${P.N} in der Kiste?`],ext:[['{N} spielt {x} Minuten.',20,40],['{N} ist {x} Jahre alt.',8,11]]},
+ {op:':',e:'🍪',s:P=>[`${P.a} Kekse werden gerecht an ${P.b} Kinder verteilt.`],q:P=>`Wie viele Kekse bekommt jedes Kind?`,an:(P,r)=>`Jedes Kind bekommt ${r} Kekse.`,sig:['gerecht','verteilt','jedes Kind'],
+  yes:P=>`Wie viele Kinder bekommen Kekse?`,no:P=>[`Wie heißen die Kinder?`,`Wie schmecken die Kekse?`],ext:[['Die Kinder sind {x} Jahre alt.',6,10],['Die Kekse sind {x} Minuten im Ofen.',12,20]]},
+ {op:':',e:'🍎',s:P=>[`Der Bauer hat ${P.a} Äpfel.`,`Er packt immer ${P.b} Äpfel in eine Tüte.`],q:P=>`Wie viele Tüten braucht der Bauer?`,an:(P,r)=>`Der Bauer braucht ${r} Tüten.`,sig:['immer','in eine Tüte'],
+  yes:P=>`Wie viele Äpfel hat der Bauer?`,no:P=>[`Wie viel kostet eine Tüte Äpfel?`,`Wie viele Apfelbäume hat der Bauer?`],ext:[['Der Bauer hat {x} Kühe.',11,30],['Der Markt beginnt um {x} Uhr.',7,9]]},
+ {op:':',e:'⚽',s:P=>[`${P.a} Kinder spielen Fußball.`,`Sie bilden ${P.b} gleich große Mannschaften.`],q:P=>`Wie viele Kinder sind in einer Mannschaft?`,an:(P,r)=>`In einer Mannschaft sind ${r} Kinder.`,sig:['gleich große'],
+  yes:P=>`Wie viele Kinder spielen Fußball?`,no:P=>[`Welche Mannschaft gewinnt?`,`Wie viele Tore fallen?`],ext:[['Das Spiel dauert {x} Minuten.',20,45],['Der Ball ist {x} Jahre alt.',2,5]]},
+ {op:':',e:'🚣',s:P=>[`${P.a} Kinder wollen Boot fahren.`,`In ein Boot passen ${P.b} Kinder.`],q:P=>`Wie viele Boote brauchen die Kinder?`,an:(P,r)=>`Die Kinder brauchen ${r} Boote.`,sig:['passen'],
+  yes:P=>`Wie viele Kinder passen in ein Boot?`,no:P=>[`Welche Farbe haben die Boote?`,`Wie tief ist der See?`],ext:[['Eine Fahrt dauert {x} Minuten.',20,40],['Am See stehen {x} Bänke.',11,25]]},
+ {op:':',e:'💶',s:P=>[`${P.N} hat ${P.a} Euro.`,`Ein Buch kostet ${P.b} Euro.`],q:P=>`Wie viele Bücher kann ${P.N} kaufen?`,an:(P,r)=>`${P.N} kann ${r} Bücher kaufen.`,sig:['Ein Buch kostet','Wie viele Bücher'],
+  yes:P=>`Wie viel kostet ein Buch?`,no:P=>[`Wie heißen die Bücher?`,`Wie viele Seiten hat ein Buch?`],ext:[['Der Laden hat {x} Regale.',11,30],['{N} liest jeden Tag {x} Minuten.',11,30]]},
+ {op:':',e:'🖍️',s:P=>[`Die Lehrerin hat ${P.a} Stifte.`,`Sie verteilt die Stifte gerecht an ${P.b} Tische.`],q:P=>`Wie viele Stifte liegen auf jedem Tisch?`,an:(P,r)=>`Auf jedem Tisch liegen ${r} Stifte.`,sig:['verteilt','gerecht','jedem'],
+  yes:P=>`An wie viele Tische verteilt die Lehrerin die Stifte?`,no:P=>[`Wie heißt die Lehrerin?`,`Wie viele Kinder sind in der Klasse?`],ext:[['Die Klasse hat {x} Fenster.',3,6],['Die Stunde dauert {x} Minuten.',45,45]]}];
+function nums(op,zr,fixB){let a,b;
+  if(op==='+'){if(zr===20){a=rint(3,12);b=rint(2,20-a);}else if(zr===100){a=rint(12,70);b=rint(5,99-a);}else{a=rint(120,700);b=rint(30,990-a);}}
+  else if(op==='−'){if(zr===20){a=rint(9,20);b=rint(2,a-3);}else if(zr===100){a=rint(25,99);b=rint(5,a-6);}else{a=rint(200,990);b=rint(30,a-50);}}
+  else{const mx=zr===20?20:100;let k,n,g=0;do{k=rint(2,10);n=fixB||rint(2,10);g++;}while(k*n>mx&&g<100);
+    if(op==='·'){a=k;b=n;}else{a=k*n;b=fixB||k;}}
+  return[a,b];}
+function makeStory(op,opt){opt=opt||{};const tp=pick(T.filter(t=>t.op===op));const [a,b]=nums(op,S.zr,tp.fixB);
+  let N=pick(KIDS),N2=pick(KIDS.filter(k=>k!==N));const P={N,N2,a,b};const r=calcOp(a,op,b);
+  const need=tp.s(P),ex=[];const nx=opt.ext||0;const pool=shuffle(tp.ext);
+  for(let i=0;i<nx&&i<pool.length;i++){const [s,lo,hi]=pool[i];let x,g=0;do{x=rint(lo,hi);g++;}while((x===a||x===b||x===r)&&g<40);ex.push(s.replace('{N}',N).replace('{x}',x));}
+  /* Sätze mischen: unwichtige Sätze an zufällige Stellen, Frage am Ende */
+  let sens=need.map(t=>({t,role:'need'}));ex.forEach(t=>{sens.splice(rint(0,sens.length),0,{t,role:'extra'});});
+  return{tp,op,P,a,b,r,e:tp.e,sens,q:tp.q(P),an:tp.an,sig:tp.sig,yes:tp.yes(P),no:tp.no(P)};}
+
+/* ---------- Startseite ---------- */
+function renderStages(){const box=$('#stages');box.innerHTML='';
+  for(let s=1;s<=NST;s++){const b=document.createElement('button');const lock=s>S.maxStage;b.className='stg'+(s===S.cur?' sel':'')+(lock?' lock':'');
+    b.innerHTML=`<span class="rn">${STAGES[s].i}</span><span>${STAGES[s].n}</span>`;
+    const sm=document.createElement('small');const c=Math.min(S.sc[s]||0,S.stg);sm.textContent=lock?'🔒 noch zu':s<S.maxStage?'✓ geschafft':`⭐ ${c} von ${S.stg}`;b.appendChild(sm);
+    if(!lock&&s===S.maxStage&&s<NST){const pb=document.createElement('div');pb.className='pbar';pb.innerHTML=`<i style="width:${100*c/S.stg}%"></i>`;b.appendChild(pb);}
+    b.onclick=()=>{if(lock){say(`Diese Stufe ist noch zu. Übe erst Stufe ${S.maxStage}.`);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);return;}
+      S.cur=s;save();renderStages();say(`Stufe ${s}: ${STAGES[s].n}.`);};
+    box.appendChild(b);}}
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';renderStages();}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.m));
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+$('#filmBtn').onclick=()=>openIntro();
+
+/* ---------- Erklärung: So löse ich eine Sachaufgabe ---------- */
+const INTRO=[
+ {e:'🕵️',x:'Bei einer Sachaufgabe bist du ein Rechen-Detektiv. Du suchst Schritt für Schritt nach Hinweisen.'},
+ {e:'👀',ex:'Im Bus sitzen 12 Kinder.<br>Der Bus hat die Nummer 7.<br>An der Haltestelle steigen 5 Kinder ein.<br><b style="color:#1D4ED8">Wie viele Kinder sitzen jetzt im Bus?</b>',x:'Schritt 1: Lies die Aufgabe genau. Du kannst dir die Aufgabe auch vorlesen lassen.'},
+ {e:'❓',ex:'<b style="color:#1D4ED8">Wie viele Kinder sitzen jetzt im Bus?</b>',x:'Schritt 2: Suche die Frage. Die Frage endet mit einem Fragezeichen. Was sollst du herausfinden?'},
+ {e:'✂️',ex:'Im Bus sitzen <b>12</b> Kinder.<br><s style="color:#9aa5b1;text-decoration-color:#E63946;text-decoration-thickness:3px">Der Bus hat die Nummer 7.</s><br>An der Haltestelle steigen <b>5</b> Kinder ein.',x:'Schritt 3: Welche Zahlen brauchst du? Was ist unwichtig? Die Busnummer brauchst du nicht. Streiche sie durch.'},
+ {e:'➕',ex:'An der Haltestelle <mark>steigen</mark> 5 Kinder <mark>ein</mark>.<br>Es kommen Kinder dazu ➜ <b>plus</b>',x:'Schritt 4: Welche Rechnung? Achte auf die Signalwörter. Hier kommen Kinder dazu. Also rechnest du plus.'},
+ {e:'🧮',ex:'<b style="font-size:34px">12 + 5 = 17</b>',x:'Schritt 5: Rechne aus. Du darfst den Taschenrechner nehmen.'},
+ {e:'💬',ex:'<b>Jetzt sitzen 17 Kinder im Bus.</b>',x:'Schritt 6: Schreibe einen Antwortsatz. Der Antwortsatz passt zur Frage.'}];
+let INi=-1;
+function introStep(){const st=INTRO[INi];$('#inSlide').innerHTML=`<div class="e">${st.e}</div>`+(st.ex?`<div class="ex">${st.ex}</div>`:'');$('#inTxt').textContent=st.x;say(st.x);
+  $('#inDots').innerHTML=INTRO.map((_,i)=>`<span class="${i===INi?'on':''}"></span>`).join('');$('#inBack').style.visibility=INi?'visible':'hidden';$('#inNext').textContent=INi===INTRO.length-1?'Fertig ✓':'Weiter ▶';}
+let introAfter=null;
+function openIntro(after){INi=0;introAfter=after||null;$('#inTitle').textContent='🎬 So löse ich eine Sachaufgabe';$('#introOv').classList.add('on');S.intro=true;save();introStep();}
+$('#inNext').onclick=()=>{if(INi<INTRO.length-1){INi++;introStep();}else{$('#introOv').classList.remove('on');hush();const f=introAfter;introAfter=null;if(f)f();}};
+$('#inBack').onclick=()=>{if(INi>0){INi--;introStep();}};
+$('#inSpeak').onclick=()=>say(INTRO[INi].x);
+
+/* ---------- Merken ---------- */
+function buildMerk(){const L=$('#merkList');L.innerHTML='';
+  const add=(sym,col,html,t)=>{const d=document.createElement('div');d.className='merk';d.innerHTML=`<div class="big2" style="background:${col}">${sym}</div><div>${html}</div>`;d.onclick=()=>say(t);L.appendChild(d);};
+  add('🕵️','#0F8B8D','<b>So gehe ich vor</b><br>1. Lesen · 2. Frage suchen · 3. Wichtige Zahlen finden · 4. Rechenzeichen wählen · 5. Rechnen · 6. Antwortsatz','So gehe ich vor: Lesen. Frage suchen. Wichtige Zahlen finden. Rechenzeichen wählen. Rechnen. Antwortsatz.');
+  Object.keys(OPS).forEach(k=>{if(S.maxStage<2&&(k==='·'||k===':'))return;const o=OPS[k];
+    add(k,o.col,`<b>${o.w}</b><br>${o.why}<br><small style="color:#6b7280">Signalwörter: ${o.sig}</small>`,`${o.w}. ${o.why} Signalwörter: ${o.sig}.`);});
+  add('✂️','#E63946','<b>Unwichtig</b><br>Manche Sätze haben auch Zahlen. Die brauchst du aber nicht für die Frage. Streiche sie durch.','Unwichtig: Manche Sätze haben auch Zahlen. Die brauchst du aber nicht für die Frage. Streiche sie durch.');
+  add('❓','#1D7FD8','<b>Kann ich das ausrechnen?</b><br>Nur wenn die Zahlen dafür im Text stehen.','Kann ich das ausrechnen? Nur wenn die Zahlen dafür im Text stehen.');}
+function openMerk(){buildMerk();$('#merkOv').classList.add('on');say('Tippe auf ein Kärtchen. Dann wird es vorgelesen.');}
+$('#merkBtn').onclick=openMerk;
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');hush();};
+
+/* ---------- Einstellungen ---------- */
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#zrSeg',()=>S.zr,v=>S.zr=+v),segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#extSeg',()=>S.ext,v=>S.ext=+v),segSet('#repSeg',()=>S.rep?1:0,v=>S.rep=v==='1'),segSet('#stgSeg',()=>S.stg,v=>S.stg=+v)];
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockStages').onclick=()=>{S.maxStage=NST;save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.sc=[0,0,0,0];S.maxStage=1;S.cur=1;S.seen={};S.intro=false;save();refreshStart();};
+refreshStart();
+
+/* ---------- Taschenrechner ---------- */
+let CX={ex:'',va:'0',fresh:true,done:false};
+const CK=['7','8','9',':','4','5','6','·','1','2','3','−','C','0','=','+'];
+(function(){const k=$('#ckeys');CK.forEach(c=>{const b=document.createElement('button');b.textContent=c;if('+−·:'.includes(c))b.className='o';if(c==='C')b.className='c';if(c==='=')b.className='e';b.onclick=()=>cpress(c);k.appendChild(b);});})();
+function cshow(){$('#cEx').textContent=CX.ex;$('#cVa').textContent=CX.va;}
+function cfmt(v){if(!isFinite(v))return'Fehler';const r=Math.round(v*100)/100;return String(r).replace('.',',');}
+function ceval(ex){const js=ex.replace(/·/g,'*').replace(/:/g,'/').replace(/−/g,'-').replace(/,/g,'.');if(!/^[\d.\s+\-*/]+$/.test(js))return NaN;try{return Function('return ('+js+')')();}catch(e){return NaN;}}
+function cpress(c){sound('tick');
+  if(c==='C'){CX={ex:'',va:'0',fresh:true,done:false};}
+  else if(/\d/.test(c)){if(CX.done){CX.ex='';CX.done=false;CX.va='0';CX.fresh=true;}CX.va=(CX.fresh||CX.va==='0')?c:(CX.va.length<9?CX.va+c:CX.va);CX.fresh=false;}
+  else if(c==='='){if(CX.done||!CX.ex)return;const ex=CX.ex+' '+CX.va;const v=ceval(ex);CX.ex=ex+' =';CX.va=cfmt(v);CX.done=true;CX.fresh=true;say(ex+' = '+CX.va);}
+  else{if(CX.done){CX.ex='';CX.done=false;}if(CX.fresh&&CX.ex){CX.ex=CX.ex.replace(/ [+−·:]$/,' '+c);}else{CX.ex=(CX.ex?CX.ex+' ':'')+CX.va+' '+c;}CX.fresh=true;}
+  cshow();}
+function calcOpen(on){document.body.classList.toggle('calcOn',on);}
+$('#calcBtn').onclick=()=>calcOpen(!document.body.classList.contains('calcOn'));
+$('#calcClose').onclick=()=>calcOpen(false);
+$('#calcStart').onclick=()=>{MODE=0;show('task');setInstr('Taschenrechner – rechne, was du möchtest.');$('#story').style.display='none';$('#qarea').innerHTML='';setStrip([]);setCtrl([]);hideFb();updStars();calcOpen(true);};
+$('#calcTake').onclick=()=>{if(MODE===4&&M&&M.step===4)take4();};
+
+/* ---------- Gemeinsames ---------- */
+let MODE=1,M=null,locked=false,instrText='',pendingUp=0,lastTp=null;
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function stageStrip(s,extra){const it=[{t:`Stufe ${s}: ${STAGES[s].n}`,c:'cur'}];if(s<S.cur)it.push({t:'🔁 Wiederholung',c:'done'});(extra||[]).forEach(x=>it.push(x));
+  if(S.maxStage<NST){it.push('|');it.push({t:`Stufe ${S.maxStage}: ⭐ ${Math.min(S.sc[S.maxStage]||0,S.stg)} von ${S.stg}`});}setStrip(it);}
+function taskStage(){const c=S.cur;if(S.rep&&c>1&&Math.random()<.25)return rint(1,c-1);return c;}
+function opsOf(s){return s===1?['+','−']:s===2?['·',':']:['+','−','·',':'];}
+function story(s,ext){let st,g=0;do{st=makeStory(pick(opsOf(s)),{ext});}while(st.tp===lastTp&&g++<10);lastTp=st.tp;return st;}
+function startMode(m){MODE=m;show('task');$('#story').style.display='';newTask();
+  const go=()=>{if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();};
+  if(!S.intro)openIntro(go);else go();}
+function newTask(){locked=false;hideFb();setStrip([]);updStars();document.body.classList.remove('takeOn');$('#qarea').innerHTML='';[null,newTask1,newTask2,newTask3,newTask4][MODE]();$('#work').scrollTop=0;}
+$('#homeBtn').onclick=()=>{show('start');calcOpen(false);refreshStart();hush();};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t){locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
+  if(s===S.maxStage&&S.maxStage<NST&&S.sc[s]>=S.stg){S.maxStage++;pendingUp=S.maxStage;}
+  save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);document.body.classList.remove('takeOn');
+  setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';}
+function next(){if(pendingUp){showUp();return;}if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}
+function nope(t){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');}
+function showUp(){const n=pendingUp;$('#upTitle').textContent=`Stufe ${n-1} geschafft!`;$('#upTxt').textContent=`Neu für dich: Stufe ${n} – ${STAGES[n].n}.`;$('#upOv').classList.add('on');confetti();sound('ok');
+  say(`Super! Du hast Stufe ${n-1} geschafft. Neu für dich: Stufe ${n}, ${STAGES[n].n}.`);}
+$('#upStay').onclick=()=>{pendingUp=0;$('#upOv').classList.remove('on');next();};
+$('#upGo').onclick=()=>{const n=pendingUp;pendingUp=0;S.cur=n;save();$('#upOv').classList.remove('on');next();};
+function helpData(){
+  if(MODE===1)return{t:'Welche Rechnung?',st:['Lies die Aufgabe. Tippe auf einen Satz, dann wird er vorgelesen.','Achte auf die Signalwörter.','Tippe unten auf das richtige Rechenzeichen.']};
+  if(MODE===2)return{t:'Was ist unwichtig?',st:['Lies die Aufgabe und die Frage.','Welcher Satz hilft nicht bei der Frage?','Tippe auf den Satz. Dann wird er durchgestrichen.','Tippe auf ✓ Fertig.']};
+  if(MODE===3)return{t:'Welche Fragen passen?',st:['Lies die Geschichte.','Unten stehen Fragen.','Steht die Antwort im Text oder kann ich sie ausrechnen? Dann tippe 👍.','Fehlt etwas? Dann tippe 👎.','Tippe auf ✓ Fertig.']};
+  return{t:'Ganze Aufgabe lösen',st:['Tippe auf die Frage.','Tippe auf die Zahlen, die du brauchst.','Wähle das Rechenzeichen.','Rechne mit dem Taschenrechner. Tippe dann auf „Ergebnis nehmen“.','Wähle den richtigen Antwortsatz.']};}
+function openHelp(){const h=helpData();$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.st.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+
+/* Geschichte anzeigen: Sätze antippbar, Zahlen optional antippbar, Signalwörter markierbar */
+function markSig(h,sig){sig.forEach(w=>{const re=new RegExp('(^|[^\\wäöüÄÖÜß])('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')(?![\\wäöüÄÖÜß])','g');h=h.replace(re,'$1<mark>$2</mark>');});return h;}
+function renderStory(o){const box=$('#story');box.innerHTML='';const em=document.createElement('div');em.className='emo';em.textContent=M.st.e;box.appendChild(em);
+  const w=document.createElement('div');w.className='sens';box.appendChild(w);
+  const list=M.st.sens.map((x,i)=>Object.assign({i},x));if(o.q)list.push({i:'q',t:M.st.q,role:'q'});
+  list.forEach(x=>{const sp=document.createElement('span');sp.className='sen'+(x.role==='q'&&o.qBlock?' q':'')+(o.cls?' '+(o.cls(x)||''):'');
+    let h=esc(x.t);if(o.sig)h=markSig(h,M.st.sig);
+    if(o.nums&&x.role!=='q'){let j=0;h=h.replace(/\b\d+\b/g,m=>`<span class="numtok ${o.numCls?o.numCls(x,j):''}" data-s="${x.i}" data-j="${j++}">${m}</span>`);}
+    if(x.role==='q'&&o.qBlock)h='❓ '+h;
+    sp.innerHTML=h+' ';sp.onclick=e=>{if(o.nums&&e.target.classList.contains('numtok')){o.nums(x,+e.target.dataset.j,e.target);return;}(o.tap||(()=>say(x.t)))(x,sp);};w.appendChild(sp);});}
+function sayStory(withQ){say(M.st.sens.map(x=>x.t).join(' ')+(withQ?' '+M.st.q:''));}
+function rechnung(st){return`${st.a} ${st.op} ${st.b} = ${st.r}`;}
+
+/* ================= Modus 1: Welche Rechnung? ================= */
+function newTask1(){const s=taskStage();const st=story(s,0);M={s,st,tried:{},tries:0,sig:false};
+  render1();setInstr('Lies die Aufgabe. Welche Rechnung passt?');stageStrip(s);
+  setCtrl([{t:'🔊 Aufgabe vorlesen',fn:()=>sayStory(true)},{t:'💡 Hilfe',fn:help1},{t:'📖 Merken',fn:openMerk}]);}
+function render1(){renderStory({q:true,qBlock:true,sig:M.sig});const qa=$('#qarea');qa.innerHTML='';
+  const ops=M.s===1?['+','−']:['+','−','·',':'];const d=document.createElement('div');d.className='ops';
+  ops.forEach(k=>{const b=document.createElement('button');b.className='op'+(M.tried[k]?' '+M.tried[k]:'');b.innerHTML=`<span style="color:${OPS[k].col}">${k}</span><small>${OPS[k].w}</small>`;b.onclick=()=>answer1(k);d.appendChild(b);});qa.appendChild(d);
+  if(M.done){const c=document.createElement('div');c.className='calcline';c.textContent=rechnung(M.st);qa.appendChild(c);}}
+function answer1(k){if(locked)return;const st=M.st;
+  if(k===st.op){M.tried[k]='ok';M.sig=true;M.done=true;render1();win(`Richtig! Wir rechnen ${OPS[k].w}. ${rechnung(st)}.`);return;}
+  if(M.tried[k])return;M.tried[k]='no';M.tries++;M.sig=true;render1();
+  nope(`Schau auf die gelben Wörter. ${OPS[st.op].why}`);}
+function help1(){if(locked)return;M.sig=true;render1();const t=`Die gelben Wörter sind Signalwörter: ${M.st.sig.join(', ')}. Was passiert in der Geschichte? Wird es mehr oder weniger? Gibt es gleiche Gruppen? Wird verteilt?`;feedback(t,'sol');say(t);}
+
+/* ================= Modus 2: Was ist unwichtig? ================= */
+function newTask2(){const s=taskStage();const ne=Math.random()<.35?2:1;const st=story(s,ne);M={s,st,mark:{},bad:{},tries:0};
+  render2();setInstr('Welcher Satz ist unwichtig für die Frage? Tippe ihn an.');stageStrip(s);
+  setCtrl([{t:'🔊 Aufgabe vorlesen',fn:()=>sayStory(true)},{t:'✓ Fertig',cls:'yes',fn:check2},{t:'💡 Hilfe',fn:help2}]);}
+function render2(){renderStory({q:true,qBlock:true,cls:x=>x.role==='q'?'':(M.mark[x.i]?'struck':M.bad[x.i]?'wrong':'tap'),tap:(x)=>{if(locked||x.role==='q'){say(x.t);return;}M.mark[x.i]=!M.mark[x.i];M.bad={};hideFb();sound('tick');if(M.mark[x.i])say('Durchgestrichen.');render2();}});
+  const qa=$('#qarea');qa.innerHTML='';const n=Object.values(M.mark).filter(Boolean).length;const d=document.createElement('div');d.style.fontSize='20px';d.style.color='#6b7280';d.textContent=`Durchgestrichen: ${n} Satz${n===1?'':'e'}`;qa.appendChild(d);}
+function check2(){if(locked)return;const st=M.st;const ex=st.sens.map((x,i)=>x.role==='extra'?i:-1).filter(i=>i>=0);
+  const wrongNeed=st.sens.map((x,i)=>x.role==='need'&&M.mark[i]?i:-1).filter(i=>i>=0);const missed=ex.filter(i=>!M.mark[i]);
+  if(!wrongNeed.length&&!missed.length){render2();win(`Richtig! ${ex.length>1?'Diese Sätze brauchst':'Diesen Satz brauchst'} du nicht. Die Rechnung heißt ${rechnung(st)}.`);return;}
+  M.tries++;M.bad={};let t;
+  if(wrongNeed.length){wrongNeed.forEach(i=>{M.bad[i]=1;M.mark[i]=false;});t='Diesen Satz brauchst du! Da steht eine Zahl für die Frage.';}
+  else{if(M.tries>=2)missed.forEach(i=>M.bad[i]=1);t=missed.length>1?`Es gibt noch ${missed.length} unwichtige Sätze.`:'Es gibt noch einen unwichtigen Satz.';t+=' Frage dich bei jedem Satz: Brauche ich das für die Frage?';}
+  render2();nope(t);}
+function help2(){if(locked)return;const t=`Die Frage ist: ${M.st.q} Brauchst du jeden Satz dafür? Ein Satz mit einer Zahl kann trotzdem unwichtig sein.`;feedback(t,'sol');say(t);}
+
+/* ================= Modus 3: Welche Fragen passen? ================= */
+function newTask3(){const s=taskStage();const st=story(s,0);const qs=[{t:st.q,ok:true,calc:true}];if(Math.random()<.6)qs.push({t:st.yes,ok:true});st.no.forEach(t=>qs.push({t,ok:false}));
+  M={s,st,qs:shuffle(qs),sel:{},res:null,tries:0};render3();setInstr('Lies die Geschichte. Welche Fragen kann man damit beantworten?');stageStrip(s);
+  setCtrl([{t:'🔊 Geschichte vorlesen',fn:()=>sayStory(false)},{t:'✓ Fertig',cls:'yes',fn:check3},{t:'💡 Hilfe',fn:help3}]);}
+function render3(){renderStory({q:false});const qa=$('#qarea');qa.innerHTML='';
+  M.qs.forEach((q,i)=>{const r=document.createElement('div');r.className='qrow'+(M.res?(M.res[i]?' good':' bad'):'');
+    r.innerHTML=`<span class="qt">${esc(q.t)}</span>`;const sp=document.createElement('button');sp.textContent='🔊';sp.onclick=()=>say(q.t);
+    const y=document.createElement('button');y.textContent='👍 kann ich';y.className=M.sel[i]==='y'?'selY':'';y.onclick=()=>{if(locked)return;M.sel[i]='y';M.res=null;hideFb();sound('tick');render3();};
+    const n=document.createElement('button');n.textContent='👎 fehlt etwas';n.className=M.sel[i]==='n'?'selN':'';n.onclick=()=>{if(locked)return;M.sel[i]='n';M.res=null;hideFb();sound('tick');render3();};
+    r.prepend(sp);r.appendChild(y);r.appendChild(n);qa.appendChild(r);});}
+function check3(){if(locked)return;if(M.qs.some((q,i)=>!M.sel[i])){const t='Entscheide bei jeder Frage: 👍 oder 👎.';feedback(t,'try');say(t);return;}
+  M.res=M.qs.map((q,i)=>(M.sel[i]==='y')===q.ok);
+  if(M.res.every(Boolean)){render3();const c=M.qs.find(q=>q.calc);win(`Richtig! „${c.t}“ kannst du ausrechnen: ${rechnung(M.st)}.`);return;}
+  M.tries++;render3();const i=M.res.indexOf(false),q=M.qs[i];
+  nope(q.ok?`„${q.t}“ – das kann man herausfinden. Die Zahlen stehen im Text.`:`„${q.t}“ – das steht nicht im Text. Dafür fehlt etwas.`);}
+function help3(){if(locked)return;const t=`Lies jede Frage. Suche im Text: Steht dazu eine Zahl? Kann ich mit den Zahlen rechnen? Dann 👍. Sonst 👎.`;feedback(t,'sol');say(t);}
+
+/* ================= Modus 4: Ganze Aufgabe lösen ================= */
+const STEPS=['❓ Frage','🔢 Zahlen','➕ Rechnung','🧮 Rechnen','💬 Antwort'];
+function newTask4(){const s=taskStage();const st=story(s,S.ext);
+  const needTok=[];st.sens.forEach((x,i)=>{if(x.role==='need'){const m=x.t.match(/\b\d+\b/g)||[];m.forEach((_,j)=>needTok.push(i+':'+j));}});
+  M={s,st,step:1,got:{},bad:{},tries:0,needTok,opTried:{}};CX={ex:'',va:'0',fresh:true,done:false};cshow();
+  stage4();}
+function strip4(){stageStrip(M.s,STEPS.map((t,i)=>({t,c:i+1<M.step?'done':i+1===M.step?'cur':''})));}
+function stage4(){strip4();const st=M.st;
+  const tapQ=(x,sp)=>{if(locked)return;if(M.step!==1){say(x.t);return;}
+    if(x.role==='q'){sound('step');M.step=2;feedback('Richtig! Das ist die Frage.','ok');say('Richtig! Das ist die Frage. '+x.t);stage4();}
+    else{sound('no');sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);const t='Das ist keine Frage. Die Frage hat am Ende ein Fragezeichen.';feedback(t,'try');say(t);}};
+  const numCls=(x,j)=>{const k=x.i+':'+j;return M.got[k]?'got':M.bad[k]?'bad':M.step===2?'tap':'';};
+  const tapNum=(x,j,elx)=>{if(locked||M.step!==2)return;const k=x.i+':'+j;if(M.got[k])return;
+    if(M.needTok.includes(k)){M.got[k]=1;sound('step');hideFb();
+      if(M.needTok.every(t=>M.got[t])){M.step=3;feedback('Super! Das sind die wichtigen Zahlen.','ok');say('Super! Das sind die wichtigen Zahlen.');}else say('Ja, die brauchst du.');stage4();}
+    else{M.bad[k]=1;sound('no');const t=`Die ${elx.textContent} brauchst du nicht für die Frage. Dieser Satz ist unwichtig.`;feedback(t,'try');say(t);stage4();}};
+  renderStory({q:true,qBlock:M.step>1,sig:M.step>=4,cls:x=>x.role==='q'&&M.step>1?'found':(M.step>2&&x.role==='extra'?'struck':(M.step===1?'tap':'')),tap:tapQ,nums:tapNum,numCls});
+  const qa=$('#qarea');qa.innerHTML='';
+  if(M.step===1){setInstr('Schritt 1: Tippe auf die Frage.');}
+  if(M.step===2){setInstr('Schritt 2: Tippe auf die Zahlen, die du für die Frage brauchst.');}
+  if(M.step===3){setInstr('Schritt 3: Welche Rechnung passt?');const ops=M.s===1?['+','−']:['+','−','·',':'];const d=document.createElement('div');d.className='ops';
+    ops.forEach(k=>{const b=document.createElement('button');b.className='op'+(M.opTried[k]?' no':'');b.innerHTML=`<span style="color:${OPS[k].col}">${k}</span><small>${OPS[k].w}</small>`;b.onclick=()=>op4(k);d.appendChild(b);});qa.appendChild(d);}
+  if(M.step>=4){const c=document.createElement('div');c.className='calcline';c.textContent=M.step===4?`${st.a} ${st.op} ${st.b} = ?`:rechnung(st);qa.appendChild(c);}
+  if(M.step===4){setInstr(`Schritt 4: Rechne ${st.a} ${st.op} ${st.b} mit dem Taschenrechner. Tippe dann auf „Ergebnis nehmen“.`);calcOpen(true);document.body.classList.add('takeOn');}
+  else document.body.classList.remove('takeOn');
+  if(M.step===5){setInstr('Schritt 5: Welcher Antwortsatz ist richtig?');calcOpen(false);
+    const alt=[st.r,st.op==='−'?st.a+st.b:st.op==='+'?Math.abs(st.a-st.b):st.op==='·'?st.a+st.b:st.a-st.b,st.a].filter((v,i,a)=>v>0&&a.indexOf(v)===i).slice(0,3);
+    if(!M.ansOpts)M.ansOpts=shuffle(alt);
+    M.ansOpts.forEach(v=>{const b=document.createElement('button');b.className='ans'+(M.ansSt&&M.ansSt[v]?' '+M.ansSt[v]:'');b.textContent=st.an(st.P,v);b.onclick=()=>ans4(v);qa.appendChild(b);});}
+  const b=[{t:'🔊 Aufgabe vorlesen',fn:()=>sayStory(true)},{t:'💡 Hilfe',fn:help4}];if(M.step===4)b.splice(1,0,{t:'🧮 Taschenrechner',fn:()=>calcOpen(true)});setCtrl(b);}
+function op4(k){if(locked)return;const st=M.st;
+  if(k===st.op){sound('step');M.step=4;feedback(`Richtig! Wir rechnen ${OPS[k].w}.`,'ok');say(`Richtig! Wir rechnen ${OPS[k].w}: ${st.a} ${st.op} ${st.b}.`);stage4();return;}
+  if(M.opTried[k])return;M.opTried[k]=1;stage4();nope(`Schau auf die Signalwörter: ${st.sig.join(', ')}. ${OPS[st.op].why}`);}
+function take4(){const st=M.st;const v=Number(CX.va.replace(',','.'));
+  if(!CX.done&&CX.va==='0'){const t='Rechne zuerst mit dem Taschenrechner. Am Ende drückst du auf =.';feedback(t,'try');say(t);return;}
+  if(v===st.r){sound('step');M.step=5;feedback(`Richtig! ${rechnung(st)}.`,'ok');say(`Richtig! ${rechnung(st)}.`);stage4();return;}
+  let t=`Das stimmt noch nicht. Tippe genau ein: ${st.a}, dann ${OPS[st.op].w}, dann ${st.b}, dann =.`;
+  if(st.op==='−'&&v===st.b-st.a)t='Bei Minus kommt die große Zahl zuerst. '+t;
+  CX={ex:'',va:'0',fresh:true,done:false};cshow();nope(t);}
+function ans4(v){if(locked)return;M.ansSt=M.ansSt||{};const st=M.st;
+  if(v===st.r){M.ansSt[v]='ok';stage4();win(`Richtig! ${st.an(st.P,v)}`);return;}
+  if(M.ansSt[v])return;M.ansSt[v]='no';stage4();nope(`Dein Ergebnis ist ${st.r}. Welcher Satz hat die ${st.r}?`);}
+function help4(){if(locked)return;const st=M.st;let t;
+  if(M.step===1)t='Die Frage ist der Satz mit dem Fragezeichen am Ende. Meistens steht er ganz unten.';
+  else if(M.step===2)t=`Die Frage ist: ${st.q} Welche Zahlen brauchst du dafür? Eine Zahl kann auch unwichtig sein.`;
+  else if(M.step===3)t=`Schau auf die gelben Signalwörter. `+Object.keys(OPS).filter(k=>M.s!==1||k==='+'||k==='−').map(k=>OPS[k].why).join(' ');
+  else if(M.step===4)t=`Tippe im Taschenrechner: ${st.a}, dann ${OPS[st.op].w}, dann ${st.b}, dann =. Dann tippe auf Ergebnis nehmen.`;
+  else t=`Dein Ergebnis ist ${st.r}. Der Antwortsatz muss die ${st.r} haben.`;
+  feedback(t,'sol');say(t);}
+
+/* ================= Belohnung: Gummi-Schleuder (3 Runden) ================= */
+function showReward(){calcOpen(false);$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,SSHAPES=['num','num','bal'],MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Rechenzeichen!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Rechenzeichen!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(SSHAPES),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(46,58),hit:0,y:0,lab:pick(['+','−','·',':','?'])};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='bal'){el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);return;}
+  const r=s*.58;el('circle',{cx:0,cy:0,r:r+5,fill:c},g);el('circle',{cx:0,cy:0,r,fill:'#fff'},g);txt(g,0,2,t.lab,{'font-size':r*1.2,fill:c});}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
+</script>
+</body>
+</html>
