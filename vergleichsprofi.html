@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Vergleichs-Profi – größer, kleiner, gleich</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+button:disabled{opacity:.45}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--purple);text-align:center}
+.sub{font-size:20px;margin:4px 0 12px;color:#4b5563;text-align:center}
+.lbl{font-size:19px;font-weight:700;color:#4b5563;margin:6px 0}
+.stages{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.stg{width:150px;background:#fff;color:var(--ink);border-radius:20px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:18px;border:4px solid #fff}
+.stg.sel{border-color:var(--purple);background:#F5EDFB}
+.stg.lock{opacity:.5}
+.stg .rn{font-size:40px;line-height:1.1;color:var(--purple)}
+.stg small{font-weight:400;font-size:15px;color:#4b5563}
+.pbar{width:110px;height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--green)}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px;margin-top:10px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:105px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--purple);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--purple);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.cur{background:#F5EDFB;border-color:var(--purple);color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.feedback{background:#fff;border-radius:16px;padding:8px 20px;font-size:22px;font-weight:700;display:none;text-align:center;width:max-content;max-width:94%;margin:6px auto 0;line-height:1.3}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:22px;padding:14px 20px}
+.tool{background:#fff;color:var(--ink)}
+.yes{background:var(--green)}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:22px 28px;max-width:740px;width:94%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:94vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:30px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:10px 0;padding:10px;border:3px solid var(--purple);border-radius:16px;font-size:20px;cursor:pointer}
+.merk svg{flex:none;width:110px;height:100px}
+#inSvg{width:100%;height:auto;max-height:52vh}
+.intxt{font-size:22px;line-height:1.35;min-height:90px;margin:8px 0 4px;text-align:left}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.dots span{width:14px;height:14px;border-radius:50%;background:#d1d5db}
+.dots span.on{background:var(--purple)}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.blink{animation:blink .5s 4 alternate}
+@keyframes blink{from{opacity:1}to{opacity:.15}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.stg{width:170px}.stg .rn{font-size:34px;line-height:1.1;color:var(--purple);font-weight:700}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>🐊 Vergleichs-Profi</h1>
+  <div class="sub">Größer, kleiner oder gleich?</div>
+  <div class="lbl">Wähle deine Stufe:</div>
+  <div class="stages" id="stages"></div>
+  <div class="row" style="margin-top:10px"><button id="filmBtn" style="background:var(--purple)">🎬 Erklärfilm zu dieser Stufe</button></div>
+  <div class="modes" id="modes"></div>
+  <div class="row" id="startRow"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 18.11.2026 · 1</div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="taskL"></g><g id="markL" pointer-events="none"></g><g id="uiL"></g><g id="hitL"></g><g id="btnL"></g>
+    </svg>
+  </div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="introOv"><div class="card">
+  <h2 id="inTitle"></h2>
+  <svg id="inSvg" viewBox="0 0 640 400"></svg>
+  <div class="intxt" id="inTxt"></div>
+  <div class="row" style="margin-top:6px"><button id="inBack" class="light">◀ Zurück</button><button id="inSpeak" class="light">🔊</button><button id="inAgain" class="light">↺ Nochmal</button><button id="inNext" style="background:var(--green)">Weiter ▶</button></div>
+  <div class="dots" id="inDots"></div>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div style="font-size:16px;color:#6b7280;margin-bottom:4px">Tippe auf ein Kärtchen. Dann wird es vorgelesen.</div>
+  <div id="merkList"></div>
+  <div class="row"><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="upOv"><div class="card">
+  <div class="big">🏅</div><h2 id="upTitle"></h2><p id="upTxt"></p>
+  <div class="row"><button id="upStay" class="light">Hier weiter üben</button><button id="upGo" style="background:var(--purple)">▶ Neue Stufe starten</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Antworten zur Auswahl <div class="seg" id="ansSeg"><button data-v="2">2</button><button data-v="3">3</button></div></div>
+  <div class="setrow"><span>Frühere Stufen mitüben<br><small style="color:#6b7280;font-size:15px">Jede 4. Aufgabe ist eine Wiederholung</small></span><div class="seg" id="repSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Sterne bis zur nächsten Stufe</span><div class="seg" id="stgSeg"><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button><button data-v="30">30</button></div></div>
+  <div class="setrow"><button id="unlockStages" style="background:var(--purple)">Alle Stufen freischalten</button><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+/* ================= Vergleichs-Profi: größer, kleiner, gleich ================= */
+/* Hilfsbilder */
+function dotSet(par,x,y,w,h,n,col){const per=10,rows=Math.max(1,Math.ceil(n/per)),c=Math.min(w/11.4,h/(rows+.8),40),gx=c*.6;
+  const fw=c*Math.min(n,per)+(n>5?gx:0),x0=x+(w-fw)/2,y0=y+(h-c*rows-(rows>1?c*.25:0))/2;
+  for(let i=0;i<n;i++){const r=Math.floor(i/per),j=i%per;el('circle',{cx:x0+c*j+(j>=5?gx:0)+c/2,cy:y0+c*r+(r?c*.25:0)+c/2,r:c*.4,fill:col||'#1D7FD8'},par);}}
+/* Krokodil: Maul offen zur größeren Seite. openLeft = links ist größer (Zeichen >) */
+function croc(g,cx,cy,s,openLeft){const d=openLeft?-1:1,vx=cx-d*s*.45,ex=cx+d*s*.5,top=cy-s*.55,bot=cy+s*.55;
+  el('path',{d:`M${ex},${top} L${vx},${cy} L${ex},${bot}`,fill:'none',stroke:'#2A9D4B','stroke-width':s*.22,'stroke-linecap':'round','stroke-linejoin':'round'},g);
+  for(let k=1;k<=3;k++){const t=k/4,xa=vx+(ex-vx)*t,ya=cy+(top-cy)*t,yb=cy+(bot-cy)*t;
+    el('polygon',{points:`${xa-s*.05},${ya+s*.06} ${xa+s*.05},${ya+s*.06} ${xa},${ya+s*.17}`,fill:'#fff',stroke:'#2A9D4B','stroke-width':1.5},g);
+    el('polygon',{points:`${xa-s*.05},${yb-s*.06} ${xa+s*.05},${yb-s*.06} ${xa},${yb-s*.17}`,fill:'#fff',stroke:'#2A9D4B','stroke-width':1.5},g);}
+  const eyx=vx+(ex-vx)*.25,eyy=cy+(top-cy)*.25-s*.2;el('circle',{cx:eyx,cy:eyy,r:s*.11,fill:'#fff',stroke:'#2A9D4B','stroke-width':3},g);el('circle',{cx:eyx+d*s*.03,cy:eyy,r:s*.05,fill:'#1F2A37'},g);}
+function signOf(a,b){return a<b?'<':a>b?'>':'=';}
+const SIGNW={'<':'kleiner als','>':'größer als','=':'gleich'};
+function numLine(par,x,y,w,max,marks){const step=max<=20?1:10;el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:'#1F2A37','stroke-width':3},par);
+  for(let v=0;v<=max;v+=step){const xx=x+w*v/max,big=max<=20?v%5===0:v%50===0;el('line',{x1:xx,y1:y-(big?12:7),x2:xx,y2:y+(big?12:7),stroke:'#1F2A37','stroke-width':big?3:1.5},par);
+    if(max<=20||v%10===0)txt(par,xx,y+26,String(v),{'font-size':max<=20?16:15,fill:'#6b7280','font-weight':400});}
+  marks.forEach(([v,col])=>{const xx=x+w*v/max;el('polygon',{points:`${xx},${y-6} ${xx-11},${y-28} ${xx+11},${y-28}`,fill:col},par);txt(par,xx,y-42,String(v),{'font-size':20,fill:col});});}
+function digits(v){return String(v).split('').map(Number);}
+/* Zahl im Kasten. s: Stufe, side: 0 links / 1 rechts, help: Hilfe zeigen */
+function valueBox(par,x,y,w,h,P,s,o){o=o||{};el('rect',{x,y,width:w,height:h,rx:24,fill:o.fill||'#F8FAFC',stroke:o.stroke||'#cbd5e1','stroke-width':o.sw||3},par);
+  if(s===1){dotSet(par,x+10,y+10,w-20,h-(o.help?60:20),P.v,o.col);if(o.help)txt(par,x+w/2,y+h-28,P.v+' Punkte',{'font-size':24,fill:'#1F2A37'});return;}
+  if(s===4&&o.help){const d=digits(P.v),cw=Math.min(80,(w-30)/3),x0=x+(w-3*cw)/2,yy=y+h/2-55;['H','Z','E'].forEach((L,i)=>{const hi=o.col4===i;
+      el('rect',{x:x0+i*cw,y:yy,width:cw,height:36,fill:['#EEF6FF','#E7F6EC','#FDECEC'][i],stroke:'#cbd5e1'},par);txt(par,x0+i*cw+cw/2,yy+18,L,{'font-size':20,fill:['#1D7FD8','#2A9D4B','#E63946'][i]});
+      el('rect',{x:x0+i*cw,y:yy+36,width:cw,height:74,fill:hi?'#FFF6CC':'#fff',stroke:hi?'#E0B000':'#cbd5e1','stroke-width':hi?5:2},par);txt(par,x0+i*cw+cw/2,yy+73,String(d[i]),{'font-size':50,fill:'#1F2A37'});});return;}
+  if(s===3&&o.help&&P.v>=10){const d=digits(P.v);const t=txt(par,x+w/2,y+h/2-10,'',{'font-size':Math.min(96,h*.5)});
+    const a=document.createElementNS(NS,'tspan');a.textContent=d[0];a.setAttribute('fill','#2A9D4B');t.appendChild(a);const b=document.createElementNS(NS,'tspan');b.textContent=d.slice(1).join('');b.setAttribute('fill','#E63946');t.appendChild(b);
+    txt(par,x+w/2,y+h-30,`${d[0]} Zehner, ${d[1]} Einer`,{'font-size':22,fill:'#6b7280','font-weight':400});return;}
+  const fs=Math.min(s===5?66:100,h*.5,(w-30)/Math.max(1,P.l.length*.56));txt(par,x+w/2,y+h/2-(o.help&&s===5?22:0),P.l,{'font-size':fs,fill:'#1F2A37'});
+  if(o.help&&s===5&&P.l!==String(P.v))txt(par,x+w/2,y+h/2+40,'= '+P.v,{'font-size':40,fill:'#2A9D4B'});}
+
+/* Aufgaben erzeugen */
+function N(v){return{v,l:String(v)};}
+function exprs(v){const o=[];for(let a=1;a<v;a++)o.push({v,l:`${a} + ${v-a}`});for(let b=1;b<=20&&v+b<=100;b++)o.push({v,l:`${v+b} − ${b}`});
+  for(let a=2;a<=10;a++)if(v%a===0&&v/a<=10&&v/a>=2)o.push({v,l:`${a} · ${v/a}`});return o;}
+function genVal(s){if(s===1||s===2)return rint(s===1?1:0,20);if(s===3)return rint(10,99);if(s===4)return rint(100,999);return rint(5,60);}
+function genPair(s){let a,b;const r=Math.random();
+  if(s<=2){a=genVal(s);if(r<.2)b=a;else{do{b=a+pick([-1,1])*rint(1,s===1?5:7);}while(b<(s===1?1:0)||b>20);}}
+  else if(s===3){if(r<.3){let x,y;do{x=rint(1,9);y=rint(1,9);}while(x===y);a=10*x+y;b=10*y+x;}else if(r<.55){const t=rint(1,9);a=10*t+rint(0,9);do{b=10*t+rint(0,9);}while(b===a);}else if(r<.68){a=genVal(3);b=a;}else{a=genVal(3);do{b=genVal(3);}while(b===a);}}
+  else if(s===4){const h=rint(1,9);if(r<.3){let y,z;do{y=rint(0,9);z=rint(0,9);}while(y===z);a=100*h+10*y+z;b=100*h+10*z+y;}else if(r<.6){a=100*h+rint(0,99);do{b=100*h+rint(0,99);}while(b===a);}else if(r<.7){a=genVal(4);b=a;}else{a=genVal(4);do{b=genVal(4);}while(b===a);}}
+  else{const v=genVal(5),e=pick(exprs(v));const w=Math.max(1,v+pick([-2,-1,0,0,1,2]));let other=Math.random()<.3?pick(exprs(w).length?exprs(w):[N(w)]):N(w);
+    const L=e,Rr=other;if(Math.random()<.5)return[L,Rr];return[Rr,L];}
+  return[N(a),N(b)];}
+function genSet(s,k){const out=[],seen={};let g=0;
+  while(out.length<k&&g++<200){let P;if(s===5){P=pick(exprs(genVal(5)));}else{let v=genVal(s);if(out.length&&Math.random()<.6){const base=out[0].v;v=s<=2?base+rint(-6,6):s===3?(Math.random()<.5?Number(String(base).split('').reverse().join('')):Math.floor(base/10)*10+rint(0,9)):Math.floor(base/100)*100+rint(0,99);}
+      if(v<(s===1?1:0)||v>(s<=2?20:s===3?99:999)||(s>=3&&v<(s===3?10:100)))continue;P=N(v);}
+    if(seen[P.v])continue;seen[P.v]=1;out.push(P);}
+  return out;}
+/* Erklärung, warum a ○ b */
+function why(A,B,s){const a=A.v,b=B.v,sg=signOf(a,b),big=a>b?A:B,sm=a>b?B:A;
+  if(sg==='='){if(s===5)return`Rechne zuerst. Beide Seiten sind ${a}. Also ist es gleich: ${A.l} = ${B.l}.`;return`Beide sind gleich: ${a} = ${b}.`;}
+  if(s===1)return`Links sind ${a} Punkte. Rechts sind ${b} Punkte. ${big.v} ist mehr als ${sm.v}. Also ${a} ${sg} ${b}.`;
+  if(s===2)return`Auf dem Zahlenstrahl steht die ${big.v} weiter rechts. Also ist ${big.v} größer. ${a} ${sg} ${b}.`;
+  if(s===3){const da=digits(a),db=digits(b);if(da[0]!==db[0])return`Schau zuerst auf die Zehner: ${da[0]} Zehner und ${db[0]} Zehner. ${Math.max(da[0],db[0])} Zehner sind mehr. Also ${a} ${sg} ${b}.`;
+    return`Die Zehner sind gleich. Dann schau auf die Einer: ${da[1]} Einer und ${db[1]} Einer. Also ${a} ${sg} ${b}.`;}
+  if(s===4){const da=digits(a),db=digits(b),nm=['Hunderter','Zehner','Einer'];let i=0;while(da[i]===db[i])i++;
+    return(i?`Die ${nm.slice(0,i).join(' und die ')} sind gleich. `:'')+`Schau auf die ${nm[i]}: ${da[i]} und ${db[i]}. Also ${a} ${sg} ${b}.`;}
+  return`Rechne zuerst: ${A.l!==String(a)?A.l+' = '+a:a} und ${B.l!==String(b)?B.l+' = '+b:b}. Also ${a} ${sg} ${b}.`;}
+function firstDiff(a,b){const da=digits(a),db=digits(b);let i=0;while(i<2&&da[i]===db[i])i++;return i;}
+function helpLine(A,B,s){if(s===2||s===3)numLine(markL,70,350,860,s===2?20:100,[[A.v,'#1D7FD8'],[B.v,'#E63946']]);}
+
+/* ---------- Modus 1: Welches Zeichen? ---------- */
+const BX={l:{x:30,y:20,w:390,h:300},r:{x:580,y:20,w:390,h:300}};
+function newT1(){const s=taskStage();const [A,B]=genPair(s);M={s,A,B,sg:signOf(A.v,B.v),st:{},tries:0,help:false,chosen:null};
+  render1();setInstr('Welches Zeichen gehört in die Mitte?');stageStrip(s);stdCtrl(help1);}
+function render1(){taskL.innerHTML='';markL.innerHTML='';uiL.innerHTML='';const s=M.s,ho=M.help;
+  const c4=s===4&&ho?firstDiff(M.A.v,M.B.v):null;
+  valueBox(taskL,BX.l.x,BX.l.y,BX.l.w,BX.l.h,M.A,s,{help:ho,col:'#1D7FD8',col4:c4});valueBox(taskL,BX.r.x,BX.r.y,BX.r.w,BX.r.h,M.B,s,{help:ho,col:'#E63946',col4:c4});
+  el('circle',{cx:500,cy:170,r:68,fill:M.chosen?'#C9F0D6':'#FFF6CC',stroke:M.chosen?'#2A9D4B':'#E0B000','stroke-width':5,id:'slot'},uiL);
+  if(M.chosen)txt(uiL,500,172,M.chosen,{'font-size':90,fill:'#1F2A37'});else if(ho&&M.sg!=='=')croc(uiL,500,170,80,M.sg==='>');else txt(uiL,500,172,'?',{'font-size':70,fill:'#b7791f'});
+  if(ho)helpLine(M.A,M.B,s);
+  drawCards(['<','=','>'],M.st,v=>[v,SIGNW[v]],answer1,{x:110,w:780,top:420,bot:600,side:true,fs:80});}
+function answer1(v){if(locked)return;const t=`${M.A.l} ${M.sg} ${M.B.l}`;
+  if(v===M.sg){M.st[v]='ok';M.chosen=v;render1();win(`Richtig! ${t}. ${M.A.v} ist ${SIGNW[v]} ${M.B.v}.`);return;}
+  if(M.st[v])return;M.st[v]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.sg]='sol';render1();
+  nope(why(M.A,M.B,M.s)+(M.sg!=='='?' Das Krokodil frisst die größere Zahl.':''));}
+function help1(){if(locked)return;M.help=true;render1();const t=why(M.A,M.B,M.s).replace(/ Also .*$/,'')+(M.sg!=='='?' Das Krokodil macht sein Maul zur größeren Zahl auf.':'');feedback(t,'sol');say(t);}
+
+/* ---------- Modus 2: Was ist größer? ---------- */
+function newT2(){const s=taskStage(),k=s<=2?2:3;const set=genSet(s,k);const big=Math.random()<.5;
+  const tgt=set.reduce((m,p)=>(big?p.v>m.v:p.v<m.v)?p:m);const word=k===2?(big?'größere':'kleinere'):(big?'größte':'kleinste');
+  M={s,set,big,tgt,word,st:{},tries:0,help:false};render2();
+  setInstr(s===1?`Wo sind ${big?'mehr':'weniger'} Punkte? Tippe an.`:`Tippe die ${word} Zahl an.`);stageStrip(s);stdCtrl(help2);}
+function render2(){taskL.innerHTML='';markL.innerHTML='';const s=M.s;
+  txt(taskL,500,40,M.s===1?(M.big?'Wo sind mehr Punkte?':'Wo sind weniger Punkte?'):`Welche Zahl ist die ${M.word}?`,{'font-size':34,fill:'#8E44AD'});
+  const idx={};M.set.forEach((p,i)=>idx[p.l]=p);
+  drawCards(M.set.map(p=>p.l),M.st,l=>s===1?'':(M.help&&s===5?[l,'= '+idx[l].v]:l),answer2,{x:40,w:920,top:90,bot:M.help&&(s===2||s===3)?300:420,side:true,fs:s===5?44:80,
+    draw:s===1?(g,l,x,y,w,h)=>dotSet(g,x+12,y+12,w-24,h-(M.help?60:24),idx[l].v,'#1D7FD8')||(M.help&&txt(g,x+w/2,y+h-26,idx[l].v+' Punkte',{'font-size':24,fill:'#1F2A37'})):null});
+  if(M.help&&(s===2||s===3))numLine(markL,70,420,860,s===2?20:100,M.set.map((p,i)=>[p.v,COLORS[i]]));}
+function answer2(l){if(locked)return;const P=M.set.find(p=>p.l===l);
+  if(P===M.tgt){M.st[l]='ok';render2();win(`Richtig! ${M.s===1?`${P.v} Punkte sind ${M.big?'mehr':'weniger'}.`:`${P.l} ist die ${M.word} Zahl.`}`);return;}
+  if(M.st[l])return;M.st[l]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.tgt.l]='sol';render2();
+  nope(why(P,M.tgt,M.s).replace(/ Also .*$/,'')+` Gesucht ist die ${M.word}${M.s===1?' Menge':' Zahl'}.`);}
+function help2(){if(locked)return;M.help=true;render2();const t=M.s===4?'Vergleiche zuerst die Hunderter. Sind sie gleich, dann die Zehner, dann die Einer.':M.s===3?'Schau zuerst auf die Zehner. Sind sie gleich, dann auf die Einer.':M.s===5?'Rechne zuerst jede Aufgabe aus.':M.s===2?'Auf dem Zahlenstrahl: Je weiter rechts, desto größer.':'Zähle die Punkte.';feedback(t,'sol');say(t);}
+
+/* ---------- Modus 3: Ordnen ---------- */
+function newT3(){const s=taskStage(),k=s===1?3:4;const set=genSet(s,k);M={s,set,order:set.slice().sort((a,b)=>a.v-b.v),placed:[],st:{},tries:0,help:false};
+  render3();setInstr('Ordne von klein nach groß. Tippe zuerst die kleinste.');stageStrip(s);stdCtrl(help3);}
+function render3(){taskL.innerHTML='';markL.innerHTML='';const s=M.s,k=M.set.length;
+  const idx={};M.set.forEach(p=>idx[p.l]=p);const st={};M.placed.forEach(p=>st[p.l]='ok');Object.assign(st,M.st);
+  drawCards(M.set.map(p=>p.l),st,l=>s===1?'':(M.help&&s===5?[l,'= '+idx[l].v]:l),answer3,{x:40,w:920,top:20,bot:220,side:true,fs:s===5?40:70,
+    draw:s===1?(g,l,x,y,w,h)=>dotSet(g,x+12,y+12,w-24,h-24,idx[l].v,'#1D7FD8'):null});
+  const sw=(920-(k-1)*20)/k;txt(taskL,500,262,'kleinste  ➜  größte',{'font-size':26,fill:'#8E44AD'});
+  for(let i=0;i<k;i++){const x=40+i*(sw+20),P=M.placed[i];el('rect',{x,y:290,width:sw,height:170,rx:22,fill:P?'#E7F6EC':'#F3F4F6',stroke:P?'#2A9D4B':i===M.placed.length?'#E0B000':'#e5e7eb','stroke-width':i===M.placed.length?5:3,'stroke-dasharray':P?null:'10 8'},taskL);
+    if(P){if(s===1)dotSet(taskL,x+10,300,sw-20,150,P.v,'#2A9D4B');else txt(taskL,x+sw/2,375,P.l,{'font-size':Math.min(64,(sw-20)/Math.max(1,P.l.length*.56)),fill:'#1F2A37'});}
+    else txt(taskL,x+sw/2,375,String(i+1),{'font-size':40,fill:'#cbd5e1'});
+    if(i<k-1)txt(taskL,x+sw+10,375,'<',{'font-size':30,fill:'#9aa5b1'});}
+  if(M.help&&(s===2||s===3))numLine(markL,70,540,860,s===2?20:100,M.set.map((p,i)=>[p.v,COLORS[i]]));}
+function answer3(l){if(locked)return;const P=M.set.find(p=>p.l===l);if(M.placed.includes(P))return;const want=M.order[M.placed.length];
+  if(P.v===want.v){M.placed.push(P);M.st={};hideFb();sound('step');if(M.placed.length===M.set.length){render3();win(`Richtig! ${M.order.map(p=>p.l).join(' < ')}.`);return;}render3();return;}
+  M.st[l]='no';M.tries++;M.help=true;render3();setTimeout(()=>{if(M.st[l]==='no'){delete M.st[l];render3();}},1400);
+  nope(`${P.l} ist nicht die kleinste Zahl, die noch übrig ist. `+(M.s>=3?why(P,want,M.s).replace(/ Also .*$/,''):`${want.l} ist kleiner.`).replace('Links','Hier').replace('Rechts','Dort'));}
+function help3(){if(locked)return;M.help=true;render3();const t='Suche unter den übrigen Karten die kleinste. '+(M.s===5?'Rechne zuerst jede Aufgabe aus.':M.s>=3?'Schau zuerst auf die erste Ziffer.':'');feedback(t,'sol');say(t);}
+
+/* ---------- Modus 4: Stimmt das? ---------- */
+function newT4(){const s=taskStage();const [A,B]=genPair(s);const sg=signOf(A.v,B.v);const right=Math.random()<.5;const shown=right?sg:pick(['<','=','>'].filter(x=>x!==sg));
+  M={s,A,B,sg,shown,right,st:{},tries:0,help:false};render4();setInstr('Stimmt das? Schau genau hin.');stageStrip(s);stdCtrl(help4);}
+function render4(){taskL.innerHTML='';markL.innerHTML='';uiL.innerHTML='';const s=M.s,ho=M.help,c4=s===4&&ho?firstDiff(M.A.v,M.B.v):null;
+  valueBox(taskL,BX.l.x,BX.l.y,BX.l.w,BX.l.h,M.A,s,{help:ho,col:'#1D7FD8',col4:c4});valueBox(taskL,BX.r.x,BX.r.y,BX.r.w,BX.r.h,M.B,s,{help:ho,col:'#E63946',col4:c4});
+  el('circle',{cx:500,cy:170,r:68,fill:'#fff',stroke:'#8E44AD','stroke-width':5},uiL);txt(uiL,500,172,M.shown,{'font-size':90,fill:'#8E44AD'});
+  txt(uiL,500,262,SIGNW[M.shown],{'font-size':22,fill:'#6b7280','font-weight':400});
+  if(ho)helpLine(M.A,M.B,s);
+  drawCards(['ja','nein'],M.st,v=>v==='ja'?'✓ stimmt':'✗ stimmt nicht',answer4,{x:150,w:700,top:430,bot:590,side:true,fs:46});}
+function answer4(v){if(locked)return;const ok=(v==='ja')===M.right,t=`${M.A.l} ${M.sg} ${M.B.l}`;
+  if(ok){M.st[v]='ok';render4();win(M.right?`Richtig! Das stimmt: ${t}.`:`Richtig! Das stimmt nicht. Richtig ist: ${t}.`);return;}
+  if(M.st[v])return;M.st[v]='no';M.tries++;M.help=true;render4();nope(why(M.A,M.B,M.s)+` Da steht aber: ${SIGNW[M.shown]}.`);}
+function help4(){if(locked)return;M.help=true;render4();const t=`Da steht: ${M.A.l} ist ${SIGNW[M.shown]} ${M.B.l}. `+why(M.A,M.B,M.s).replace(/ Also .*$/,'');feedback(t,'sol');say(t);}
+
+/* ---------- Erklärfilme ---------- */
+function rods(par,x,y,v,c){const t=Math.floor(v/10),e=v%10;for(let i=0;i<t;i++){const xx=x+i*(c*1.3)+(i>=5?c*.6:0);for(let k=0;k<10;k++)el('rect',{x:xx,y:y+k*c,width:c,height:c,fill:'#7BC96F',stroke:'#2A9D4B','stroke-width':1},par);}
+  const xe=x+t*c*1.3+(t>5?c*.6:0)+c*.6;for(let i=0;i<e;i++)el('rect',{x:xe+(i%5)*c*1.1,y:y+(9-Math.floor(i/5))*c,width:c,height:c,fill:'#F9DC7C',stroke:'#b7791f','stroke-width':1},par);}
+const FILMS={
+ 1:{t:'Mehr, weniger, gleich',st:[
+  {x:'Links sind 7 Punkte. Rechts sind 4 Punkte. Wo sind mehr Punkte?',d:g=>{dotSet(g,10,120,290,120,7,'#1D7FD8');dotSet(g,340,120,290,120,4,'#E63946');}},
+  {x:'Wir verbinden immer einen Punkt links mit einem Punkt rechts. Links bleiben 3 Punkte übrig. Links sind mehr. 7 ist mehr als 4.',q:4,dur:3600,
+   d:(g,p)=>{const k=Math.round(p*4);for(let i=0;i<7;i++){const x=40+i*40;el('circle',{cx:x,cy:120,r:15,fill:i<k?'#2A9D4B':'#1D7FD8'},g);}
+     for(let i=0;i<4;i++){const x=40+i*40;el('circle',{cx:x,cy:290,r:15,fill:i<k?'#2A9D4B':'#E63946'},g);if(i<k)el('line',{x1:x,y1:137,x2:x,y2:273,stroke:'#2A9D4B','stroke-width':4},g);}
+     if(k===4)txt(g,480,120,'3 übrig!',{'font-size':30,fill:'#1D7FD8'});}},
+  {x:'Das Krokodil hat großen Hunger. Es frisst immer die größere Zahl. Sein Maul ist offen zur größeren Zahl. 7 ist größer als 4. Wir schreiben 7 > 4.',
+   d:g=>{txt(g,140,200,'7',{'font-size':150,fill:'#1D7FD8'});txt(g,500,200,'4',{'font-size':150,fill:'#E63946'});croc(g,320,200,150,true);txt(g,320,350,'7 > 4',{'font-size':44,fill:'#1F2A37'});}},
+  {x:'Andersherum: 4 ist kleiner als 7. Das Krokodil schaut wieder zur 7. Wir schreiben 4 < 7.',
+   d:g=>{txt(g,140,200,'4',{'font-size':150,fill:'#E63946'});txt(g,500,200,'7',{'font-size':150,fill:'#1D7FD8'});croc(g,320,200,150,false);txt(g,320,350,'4 < 7',{'font-size':44,fill:'#1F2A37'});}},
+  {x:'Wenn beide gleich sind, schreiben wir das Gleichzeichen. 5 = 5. Das heißt: gleich viel.',
+   d:g=>{dotSet(g,10,120,260,100,5,'#1D7FD8');dotSet(g,370,120,260,100,5,'#E63946');txt(g,320,170,'=',{'font-size':100,fill:'#8E44AD'});txt(g,320,330,'5 = 5',{'font-size':44,fill:'#1F2A37'});}}]},
+ 2:{t:'Zahlen bis 20',st:[
+  {x:'Auf dem Zahlenstrahl werden die Zahlen nach rechts immer größer.',q:20,dur:5000,d:(g,p)=>{numLine(g,20,220,600,20,[[Math.round(p*20),'#8E44AD']]);}},
+  {x:'Die 13 steht weiter rechts als die 8. Also ist 13 größer als 8. 13 > 8.',d:g=>{numLine(g,20,220,600,20,[[8,'#E63946'],[13,'#1D7FD8']]);txt(g,320,340,'13 > 8',{'font-size':50,fill:'#1F2A37'});}}]},
+ 3:{t:'Zahlen bis 100',st:[
+  {x:'Vergleiche 47 und 74. Schau zuerst auf die Zehner. 47 hat 4 Zehner. 74 hat 7 Zehner. 7 Zehner sind mehr. Also ist 74 > 47.',
+   d:g=>{rods(g,20,60,47,18);rods(g,340,60,74,18);txt(g,150,330,'47',{'font-size':48,fill:'#E63946'});txt(g,470,330,'74',{'font-size':48,fill:'#1D7FD8'});txt(g,320,385,'47 < 74',{'font-size':30,fill:'#1F2A37'});}},
+  {x:'Vergleiche 53 und 58. Die Zehner sind gleich: 5 Zehner. Dann schau auf die Einer. 8 Einer sind mehr als 3 Einer. Also ist 58 > 53.',
+   d:g=>{rods(g,20,60,53,18);rods(g,340,60,58,18);txt(g,150,330,'53',{'font-size':48,fill:'#E63946'});txt(g,470,330,'58',{'font-size':48,fill:'#1D7FD8'});txt(g,320,385,'53 < 58',{'font-size':30,fill:'#1F2A37'});}},
+  {x:'Achtung bei Zahlendrehern! 47 und 74 sehen ähnlich aus. Aber die Zehner sind ganz anders.',d:g=>{txt(g,200,200,'47',{'font-size':130,fill:'#E63946'});txt(g,440,200,'74',{'font-size':130,fill:'#1D7FD8'});}}]},
+ 4:{t:'Zahlen bis 1000',st:[
+  {x:'Bei großen Zahlen hilft die Stellentafel. Vergleiche zuerst die Hunderter. Bei 352 und 325 sind die Hunderter gleich: 3.',d:g=>{valueBox(g,10,40,300,300,N(352),4,{help:true,col4:0});valueBox(g,330,40,300,300,N(325),4,{help:true,col4:0});}},
+  {x:'Dann vergleichen wir die Zehner: 5 Zehner und 2 Zehner. 5 ist mehr. Also ist 352 > 325.',d:g=>{valueBox(g,10,40,300,300,N(352),4,{help:true,col4:1});valueBox(g,330,40,300,300,N(325),4,{help:true,col4:1});txt(g,320,375,'352 > 325',{'font-size':34,fill:'#1F2A37'});}},
+  {x:'Merke: Immer von links anfangen. Erst Hunderter, dann Zehner, dann Einer.',d:g=>{['1. Hunderter','2. Zehner','3. Einer'].forEach((t,i)=>{el('rect',{x:140,y:40+i*110,width:360,height:90,rx:18,fill:['#EEF6FF','#E7F6EC','#FDECEC'][i]},g);txt(g,320,85+i*110,t,{'font-size':40,fill:['#1D7FD8','#2A9D4B','#E63946'][i]});});}}]},
+ 5:{t:'Aufgaben vergleichen',st:[
+  {x:'Was ist mehr: 3 + 4 oder 8? Rechne zuerst die Aufgabe aus. 3 + 4 = 7.',d:g=>{valueBox(g,10,60,280,260,{v:7,l:'3 + 4'},5,{help:true});valueBox(g,350,60,280,260,N(8),5,{});}},
+  {x:'Jetzt vergleichst du 7 und 8. 7 ist kleiner als 8. Also ist 3 + 4 < 8.',d:g=>{valueBox(g,10,60,280,260,{v:7,l:'3 + 4'},5,{help:true});valueBox(g,350,60,280,260,N(8),5,{});croc(g,320,190,70,false);txt(g,320,365,'3 + 4 < 8',{'font-size':36,fill:'#1F2A37'});}}]}};
+
+const APP={key:'vergleichsprofi',stg:15,firstFilm:1,
+ stages:[null,{n:'Mengen bis 20',i:'●●'},{n:'Zahlen bis 20',i:'20'},{n:'Zahlen bis 100',i:'100'},{n:'Zahlen bis 1000',i:'1000'},{n:'Aufgaben vergleichen',i:'3+4'}],
+ modes:[
+  {t:'Welches Zeichen?',sub:'<  =  >',col:'#1D7FD8',newTask:newT1,help:['Schau dir beide Seiten an.','Welche Seite ist größer?','Tippe unten das richtige Zeichen: < kleiner als, = gleich, > größer als.','💡 Hilfe zeigt dir das Krokodil.'],
+   icon:g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#EEF6FF'},g);txt(g,35,52,'7',{'font-size':46,fill:'#1D7FD8'});txt(g,135,52,'4',{'font-size':46,fill:'#E63946'});croc(g,85,52,40,true);}},
+  {t:'Was ist größer?',sub:'Die größere Zahl antippen',col:'#E63946',newTask:newT2,help:['Oben steht, was du suchen sollst: die größere oder die kleinere Zahl.','Vergleiche die Zahlen.','Tippe die richtige Karte an.']},
+  {t:'Zahlen ordnen',sub:'Von klein nach groß',col:'#8E44AD',newTask:newT3,help:['Oben liegen Karten.','Tippe zuerst die kleinste Zahl an. Sie wandert nach unten.','Dann die nächste, bis alle in der Reihe liegen.']},
+  {t:'Stimmt das?',sub:'Das Zeichen prüfen',col:'#2A9D4B',newTask:newT4,help:['In der Mitte steht ein Zeichen.','Prüfe: Stimmt das Zeichen?','Tippe ✓ stimmt oder ✗ stimmt nicht.']}],
+ films:FILMS,sling:['<','>','=','<','>'],
+ merk:()=>[
+  {draw:g=>{txt(g,25,50,'7',{'font-size':44,fill:'#1D7FD8'});txt(g,90,50,'4',{'font-size':44,fill:'#E63946'});croc(g,57,50,40,true);},html:'<b>Das Krokodil</b><br>Es frisst immer die größere Zahl.<br>Das Maul ist offen zur größeren Zahl.','t':'Das Krokodil frisst immer die größere Zahl. Das Maul ist offen zur größeren Zahl.'},
+  {html:'<b>Die Zeichen</b><br><b style="font-size:28px">&lt;</b> kleiner als: 4 &lt; 7<br><b style="font-size:28px">&gt;</b> größer als: 7 &gt; 4<br><b style="font-size:28px">=</b> gleich: 5 = 5',t:'Kleiner als: 4 ist kleiner als 7. Größer als: 7 ist größer als 4. Gleich: 5 ist gleich 5.'},
+  {draw:g=>numLine(g,5,60,100,20,[[13,'#1D7FD8']]),html:'<b>Zahlenstrahl</b><br>Je weiter rechts, desto größer.','t':'Auf dem Zahlenstrahl: Je weiter rechts, desto größer.'},
+  {html:'<b>Große Zahlen</b><br>Fang links an:<br>1. Hunderter · 2. Zehner · 3. Einer<br>352 &gt; 325, weil 5 Zehner mehr sind als 2 Zehner.',t:'Große Zahlen: Fang links an. Erst die Hunderter, dann die Zehner, dann die Einer.'},
+  {html:'<b>Achtung, Zahlendreher!</b><br>47 und 74 sehen ähnlich aus.<br>Schau genau auf die erste Ziffer.',t:'Achtung, Zahlendreher! 47 und 74 sehen ähnlich aus. Schau genau auf die erste Ziffer.'},
+  {html:'<b>Aufgaben vergleichen</b><br>Erst rechnen, dann vergleichen.<br>3 + 4 = 7 · 7 &lt; 8',t:'Aufgaben vergleichen: Erst rechnen, dann vergleichen.'}]};
+APP.modes[1].icon=g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#FDECEC'},g);[['35',30],['53',120]].forEach(([t,x],i)=>{el('rect',{x:x-24,y:28,width:64,height:52,rx:10,fill:i?'#C9F0D6':'#fff',stroke:i?'#2A9D4B':'#cbd5e1','stroke-width':2},g);txt(g,x+8,54,t,{'font-size':26,fill:'#1F2A37'});});};
+APP.modes[2].icon=g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#F5EDFB'},g);['8','15','27'].forEach((t,i)=>{el('rect',{x:12+i*52,y:30,width:44,height:44,rx:8,fill:'#fff',stroke:'#8E44AD','stroke-width':2},g);txt(g,34+i*52,52,t,{'font-size':20,fill:'#1F2A37'});if(i<2)txt(g,59+i*52,52,'<',{'font-size':16,fill:'#8E44AD'});});};
+APP.modes[3].icon=g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#E7F6EC'},g);txt(g,85,40,'35 > 53',{'font-size':28,fill:'#1F2A37'});txt(g,55,80,'✓',{'font-size':26,fill:'#2A9D4B'});txt(g,115,80,'✗',{'font-size':26,fill:'#E63946'});};
+
+/* ================= Gemeinsames Grundgerüst (wie Uhren-Profi / Einmaleins-Profi) ================= */
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))if(attrs[k]!==undefined&&attrs[k]!==null)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+function wrap(s,n){const w=s.split(' '),out=[];let c='';w.forEach(x=>{if((c+' '+x).trim().length>n){out.push(c);c=x;}else c=(c+' '+x).trim();});if(c)out.push(c);return out;}
+const C=APP,NST=C.stages.length-1;
+let S=Object.assign({goal:10,done:0,stars:0,shots:10,voice:true,nAns:3,rep:true,stg:C.stg||15,maxStage:1,cur:1,sc:[],seen:{},intro:{}},C.state||{});
+try{Object.assign(S,JSON.parse(localStorage.getItem(C.key)||'{}'));}catch(e){}
+while(S.sc.length<NST+1)S.sc.push(0);
+function save(){try{localStorage.setItem(C.key,JSON.stringify(S));}catch(e){}}
+const NW=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const ZW=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function numWord(n){if(n<20)return NW[n];if(n<100){const e=n%10,z=ZW[Math.floor(n/10)];return e?(e===1?'ein':NW[e])+'und'+z:z;}
+  if(n<1000){const h=Math.floor(n/100),r=n%100;return(h===1?'ein':NW[h])+'hundert'+(r?numWord(r):'');}
+  if(n<1000000){const t=Math.floor(n/1000),r=n%1000;return(t===1?'ein':numWord(t))+'tausend'+(r?numWord(r):'');}return String(n);}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();
+  if(C.sayFix)t=C.sayFix(t);
+  t=t.replace(/= \?/g,'gleich wie viel?').replace(/ · /g,' mal ').replace(/ : /g,' geteilt durch ').replace(/ − /g,' minus ').replace(/ \+ /g,' plus ').replace(/ = /g,' gleich ')
+   .replace(/ < /g,' ist kleiner als ').replace(/ > /g,' ist größer als ').replace(/\b([Ll])ies\b/g,'$1iehs')
+   .replace(/(?<![\d.,])(\d+)\.(?!\d)/g,(x,n)=>numWord(+n)+'.')
+   .replace(/[\p{Extended_Pictographic}️✓✗➜▶◀]/gu,'').replace(/–/g,',').replace(/…/g,',').replace(/„|“/g,'');
+  const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+function hush(){try{speechSynthesis.cancel();}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='tick')tone(1200,0,.025,'square');}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Startseite ---------- */
+(function(){const box=$('#modes');C.modes.forEach((m,i)=>{const b=document.createElement('button');b.className='mode';b.dataset.m=i+1;
+  b.innerHTML=`<svg viewBox="0 0 170 105" id="mi${i+1}"></svg><span><span class="num" style="background:${m.col}">${i+1}</span> ${m.t}</span><small>${m.sub}</small>`;b.onclick=()=>startMode(i+1);box.appendChild(b);});
+  const row=$('#startRow');(C.extraBtns||[]).forEach(x=>{const b=document.createElement('button');b.textContent=x.t;b.style.background=x.col;b.onclick=x.fn;row.insertBefore(b,$('#gameBtn'));});})();
+function renderStages(){const box=$('#stages');box.innerHTML='';
+  for(let s=1;s<=NST;s++){const b=document.createElement('button');const lock=s>S.maxStage;b.className='stg'+(s===S.cur?' sel':'')+(lock?' lock':'');
+    b.innerHTML=`<span class="rn">${C.stages[s].i}</span><span><span class="num" style="background:${lock?'#9aa5b1':'#8E44AD'};width:26px;height:26px;font-size:15px">${s}</span> ${C.stages[s].n}</span>`;
+    const sm=document.createElement('small');const c=Math.min(S.sc[s]||0,S.stg);
+    sm.textContent=lock?'🔒 noch zu':s<S.maxStage?'✓ geschafft':`⭐ ${c} von ${S.stg}`;b.appendChild(sm);
+    if(!lock&&s===S.maxStage&&s<NST){const pb=document.createElement('div');pb.className='pbar';pb.innerHTML=`<i style="width:${100*c/S.stg}%"></i>`;b.appendChild(pb);}
+    b.onclick=()=>{if(lock){say(`Diese Stufe ist noch zu. Übe erst Stufe ${S.maxStage}.`);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);return;}
+      S.cur=s;save();renderStages();drawModeIcons();if(!S.intro[s])openIntro(s);else say(`Stufe ${s}: ${C.stages[s].n}.`);};
+    box.appendChild(b);}}
+function drawModeIcons(){C.modes.forEach((m,i)=>{const g=$('#mi'+(i+1));g.innerHTML='';m.icon(g,S.cur);});}
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';renderStages();drawModeIcons();}
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+$('#filmBtn').onclick=()=>openIntro(S.cur);
+
+/* ---------- Erklärfilme ---------- */
+const INTRO=C.films;
+let IN=null;
+function playStep(){const st=IN.st[IN.i];cancelAnimationFrame(IN.raf);clearTimeout(IN.to);$('#inTxt').textContent=st.x;say(st.x);
+  $('#inDots').innerHTML=IN.st.map((_,i)=>`<span class="${i===IN.i?'on':''}"></span>`).join('');
+  $('#inBack').style.visibility=IN.i?'visible':'hidden';$('#inNext').textContent=IN.i===IN.st.length-1?'Fertig ✓':'Weiter ▶';
+  const g=$('#inSvg'),draw=p=>{g.innerHTML='';st.d(g,p);};
+  if(!st.dur){draw(1);return;}draw(0);
+  let last=-1;const box={};
+  IN.to=setTimeout(()=>{box.t=performance.now();const fr=now=>{let p=Math.min(1,(now-box.t)/st.dur);if(st.q){const qq=Math.ceil(p*st.q);if(qq!==last){last=qq;sound('tick');}p=qq/st.q;}draw(p);if((now-box.t)<st.dur)IN.raf=requestAnimationFrame(fr);};IN.raf=requestAnimationFrame(fr);},900);}
+function openIntro(key,after){if(!INTRO[key]){if(after)after();return;}IN={key,st:INTRO[key].st,i:0,raf:0,to:0,after};$('#inTitle').textContent='🎬 '+INTRO[key].t;$('#introOv').classList.add('on');S.intro[key]=true;save();playStep();}
+function closeIntro(){if(!IN)return;cancelAnimationFrame(IN.raf);clearTimeout(IN.to);hush();$('#introOv').classList.remove('on');const f=IN.after;IN=null;if(f)f();}
+$('#inNext').onclick=()=>{if(IN.i<IN.st.length-1){IN.i++;playStep();}else closeIntro();};
+$('#inBack').onclick=()=>{if(IN.i>0){IN.i--;playStep();}};
+$('#inAgain').onclick=()=>playStep();
+$('#inSpeak').onclick=()=>say(IN.st[IN.i].x);
+
+/* ---------- Merken ---------- */
+function buildMerk(){const L=$('#merkList');L.innerHTML='';
+  C.merk().forEach(m=>{const d=document.createElement('div');d.className='merk';if(m.draw){const sv=document.createElementNS(NS,'svg');sv.setAttribute('viewBox',m.vb||'0 0 110 100');m.draw(sv);d.appendChild(sv);}
+    const x=document.createElement('div');x.innerHTML=m.html;d.appendChild(x);d.onclick=()=>say(m.t);L.appendChild(d);});}
+function openMerk(){buildMerk();$('#merkOv').classList.add('on');say('Tippe auf ein Kärtchen. Dann wird es vorgelesen.');}
+$('#merkBtn').onclick=openMerk;
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');hush();};
+
+/* ---------- Einstellungen ---------- */
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#ansSeg',()=>S.nAns,v=>S.nAns=+v),segSet('#repSeg',()=>S.rep?1:0,v=>S.rep=v==='1'),segSet('#stgSeg',()=>S.stg,v=>S.stg=+v)].concat(C.setBind?C.setBind(segSet):[]);
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockStages').onclick=()=>{S.maxStage=NST;save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.sc=Array(NST+1).fill(0);S.maxStage=1;S.cur=1;S.seen={};S.intro={};save();refreshStart();};
+
+/* ---------- Aufgaben-Rahmen ---------- */
+const stage=$('#stage'),taskL=$('#taskL'),markL=$('#markL'),uiL=$('#uiL'),hitL=$('#hitL'),btnL=$('#btnL');
+let MODE=1,M=null,locked=false,instrText='',pendingUp=0;
+function clearStage(){[taskL,markL,uiL,hitL,btnL].forEach(l=>l.innerHTML='');}
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function stdCtrl(help,extra){setCtrl([{t:'💡 Hilfe',fn:help}].concat(extra||[]).concat([{t:'🎬 Film',fn:()=>openIntro(M.s)},{t:'📖 Merken',fn:openMerk}]));}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function stageStrip(s){const it=[{t:`Stufe ${s}: ${C.stages[s].n}`,c:'cur'}];if(s<S.cur)it.push({t:'🔁 Wiederholung',c:'done'});
+  if(S.maxStage<NST){it.push('|');it.push({t:`Stufe ${S.maxStage}: ⭐ ${Math.min(S.sc[S.maxStage]||0,S.stg)} von ${S.stg}`});}setStrip(it);}
+function taskStage(){const c=S.cur;if(S.rep&&c>1&&Math.random()<.25)return rint(1,c-1);return c;}
+function startMode(m){MODE=m;show('task');newTask();
+  const go=()=>{if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();};
+  if(C.firstFilm&&!S.intro[C.firstFilm])openIntro(C.firstFilm,()=>{if(!S.intro[S.cur])openIntro(S.cur,go);else go();});
+  else if(!S.intro[S.cur])openIntro(S.cur,go);else go();}
+function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();C.modes[MODE-1].newTask();}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();hush();};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t){locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
+  if(s===S.maxStage&&S.maxStage<NST&&S.sc[s]>=S.stg){S.maxStage++;pendingUp=S.maxStage;}
+  save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+  setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';}
+function next(){if(pendingUp){showUp();return;}if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}
+function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(fx)fx();}
+function blinkEl(node){if(!node)return;node.classList.remove('blink');void node.getBBox();node.classList.add('blink');setTimeout(()=>node.classList.remove('blink'),2100);}
+function showUp(){const n=pendingUp;$('#upTitle').textContent=`Stufe ${n-1} geschafft!`;$('#upTxt').textContent=`Neu für dich: Stufe ${n} – ${C.stages[n].n}.`;$('#upOv').classList.add('on');confetti();sound('ok');
+  say(`Super! Du hast Stufe ${n-1} geschafft. Neu für dich: Stufe ${n}, ${C.stages[n].n}.`);}
+$('#upStay').onclick=()=>{pendingUp=0;$('#upOv').classList.remove('on');next();};
+$('#upGo').onclick=()=>{const n=pendingUp;pendingUp=0;S.cur=n;save();$('#upOv').classList.remove('on');openIntro(n,()=>next());};
+function openHelp(){const h=C.modes[MODE-1].help;$('#helpTitle').textContent='So geht es: '+C.modes[MODE-1].t;const ol=$('#helpSteps');ol.innerHTML='';h.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+/* Antwortkarten: fmt(v) gibt Text oder [Haupttext, Untertext] */
+function drawCards(opts,st,fmt,fn,area){btnL.innerHTML='';const n=opts.length,side=area.side;
+  const gap=side?20:(n===2?40:24),h=side?area.bot-area.top:Math.min(n===2?170:140,(area.bot-area.top-(n-1)*gap)/n),w=side?(area.w-(n-1)*gap)/n:area.w,y0=side?area.top:area.top+(area.bot-area.top-n*h-(n-1)*gap)/2;
+  opts.forEach((v,i)=>{const y=side?y0:y0+i*(h+gap),x=side?area.x+i*(w+gap):area.x,k=st[v];const g=el('g',{style:'cursor:pointer',id:'card'+i},btnL);
+    el('rect',{x,y,width:w,height:h,rx:22,fill:k==='ok'?'#C9F0D6':k==='no'?'#FDECEC':k==='sol'?'#E7F6EC':'#fff',stroke:k==='ok'||k==='sol'?'#2A9D4B':k==='no'?'#E63946':'#cbd5e1','stroke-width':k?6:3},g);
+    let f=fmt(v);if(!Array.isArray(f))f=[f,''];
+    const fs=Math.min(area.fs||52,h*.42,(w-20)/Math.max(2,f[0].length*.58));
+    txt(g,x+w/2,y+h/2-(f[1]?h*.13:0),f[0],{'font-size':fs,fill:'#1F2A37'});
+    if(f[1])txt(g,x+w/2,y+h/2+h*.22,f[1],{'font-size':Math.min(24,fs*.6),fill:'#6b7280','font-weight':400});
+    if(k==='ok'||k==='no')txt(g,x+w-24,y+26,k==='no'?'✗':'✓',{'font-size':28,fill:k==='no'?'#E63946':'#2A9D4B'});
+    if(area.draw)area.draw(g,v,x,y,w,h);
+    g.addEventListener('pointerdown',e=>{e.preventDefault();fn(v,i);});});}
+function taskBox(x,y,w,h,main,sub,col,stroke){el('rect',{x,y,width:w,height:h,rx:22,fill:col||'#FFF6CC',stroke:stroke||'#E0B000','stroke-width':4},uiL);
+  txt(uiL,x+w/2,y+(sub?h*.4:h/2),main,{'font-size':Math.min(54,h*.42,(w-20)/Math.max(2,main.length*.56)),fill:'#1F2A37'});if(sub)txt(uiL,x+w/2,y+h*.78,sub,{'font-size':22,fill:'#6b7280','font-weight':400});}
+/* Zahl-Antworten: richtige Zahl + typische Fehler */
+function numOpts(v,cands){const c=[];cands.forEach(x=>{if(x!==v&&x>=0&&!c.includes(x))c.push(x);});let g=0;while(c.length<3&&g++<50){const x=v+rint(-4,4);if(x>0&&x!==v&&!c.includes(x))c.push(x);}
+  return shuffle([v].concat(c.slice(0,S.nAns-1)));}
+
+/* ---------- Belohnung: Gummi-Schleuder (3 Runden) ---------- */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Ziele!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Ziele!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(['num','num','bal']),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(46,58),hit:0,y:0,lab:pick(C.sling)};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='bal'){el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);return;}
+  const r=s*.58;el('circle',{cx:0,cy:0,r:r+5,fill:c},g);el('circle',{cx:0,cy:0,r,fill:'#fff'},g);txt(g,0,2,t.lab,{'font-size':r*(t.lab.length>2?.6:t.lab.length>1?.8:1.1),fill:c});}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
+if(C.init)C.init();
+refreshStart();
+
+</script>
+</body>
+</html>

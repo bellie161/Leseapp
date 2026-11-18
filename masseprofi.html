@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Maße-Profi – Längen, Gewichte, Hohlmaße</title>
+<style>
+:root{--blue:#1D7FD8;--red:#E63946;--green:#2A9D4B;--orange:#F28C28;--purple:#8E44AD;--teal:#0F8B8D;--bg:#F4F7FB;--ink:#1F2A37}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;overscroll-behavior:none;overflow:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:16px;font-size:20px;font-weight:700;padding:12px 18px;color:#fff;background:var(--blue);box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+button.light{background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+button:disabled{opacity:.45}
+#start{align-items:center;overflow-y:auto;padding:18px}
+h1{font-size:44px;margin:46px 0 0;color:var(--purple);text-align:center}
+.sub{font-size:20px;margin:4px 0 12px;color:#4b5563;text-align:center}
+.lbl{font-size:19px;font-weight:700;color:#4b5563;margin:6px 0}
+.stages{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:1120px}
+.stg{width:150px;background:#fff;color:var(--ink);border-radius:20px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:18px;border:4px solid #fff}
+.stg.sel{border-color:var(--purple);background:#F5EDFB}
+.stg.lock{opacity:.5}
+.stg .rn{font-size:40px;line-height:1.1;color:var(--purple)}
+.stg small{font-weight:400;font-size:15px;color:#4b5563}
+.pbar{width:110px;height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--green)}
+.modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1120px;margin-top:10px}
+.mode{width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:19px}
+.mode svg{width:170px;height:105px}
+.mode small{font-weight:400;color:#4b5563;font-size:16px}
+.num{display:inline-flex;width:34px;height:34px;border-radius:50%;color:#fff;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:20px}
+.seg button{border-radius:0;background:#fff;color:var(--ink);box-shadow:none;border:3px solid var(--purple);padding:10px 18px}
+.seg button:first-child{border-radius:14px 0 0 14px}.seg button:last-child{border-radius:0 14px 14px 0}
+.seg button+button{border-left:none}
+.seg button.sel{background:var(--purple);color:#fff}
+.gamebtn{background:var(--orange);font-size:22px;padding:14px 24px}
+.gamebtn.locked{background:#9aa5b1}
+.progress{font-size:19px;color:#4b5563;margin-top:8px;text-align:center}
+#setBtn{position:fixed;top:12px;right:12px;background:#fff;color:#333;padding:8px 12px;font-size:24px}
+#appsLink{position:fixed;top:12px;left:12px;background:#fff;color:#2e2a24;padding:9px 14px;border-radius:14px;font-weight:700;font-size:18px;text-decoration:none;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);min-height:68px}
+.bar button{padding:8px 14px;font-size:24px}
+.instr{flex:1;font-size:22px;font-weight:700;line-height:1.2}
+.starcount{font-size:22px;font-weight:700;color:#b7791f;white-space:nowrap}
+.strip{display:flex;gap:8px;align-items:center;padding:6px 12px;background:#FAFBFE;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:50px}
+.strip:empty{display:none}
+.chip{border-radius:12px;padding:6px 12px;font-size:18px;font-weight:700;background:#fff;border:3px solid #d1d5db;color:#6b7280;white-space:nowrap}
+.chip.cur{background:#F5EDFB;border-color:var(--purple);color:var(--ink)}
+.chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
+.sp{flex:1}
+.stagewrap{flex:1;position:relative;min-height:0}
+svg.stage{width:100%;height:100%;display:block;touch-action:none}
+.feedback{background:#fff;border-radius:16px;padding:8px 20px;font-size:22px;font-weight:700;display:none;text-align:center;width:max-content;max-width:94%;margin:6px auto 0;line-height:1.3}
+.feedback.ok{display:block;color:var(--green);border:4px solid var(--green)}
+.feedback.try{display:block;color:#b45309;border:4px solid var(--orange)}
+.feedback.sol{display:block;color:var(--blue);border:4px solid var(--blue)}
+.ctrl{display:flex;gap:12px;justify-content:center;align-items:center;padding:10px;background:#fff;min-height:92px;flex-wrap:wrap}
+.ctrl button{font-size:22px;padding:14px 20px}
+.tool{background:#fff;color:var(--ink)}
+.yes{background:var(--green)}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.card{background:#fff;border-radius:26px;padding:22px 28px;max-width:740px;width:94%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:94vh;overflow-y:auto}
+.card h2{margin:0 0 10px;font-size:30px}
+.steps{text-align:left;margin:10px 0 16px;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:21px}
+.steps .n{flex:none;width:40px;height:40px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.merk{display:flex;gap:14px;align-items:center;text-align:left;margin:10px 0;padding:10px;border:3px solid var(--purple);border-radius:16px;font-size:20px;cursor:pointer}
+.merk svg{flex:none;width:110px;height:100px}
+#inSvg{width:100%;height:auto;max-height:52vh}
+.intxt{font-size:22px;line-height:1.35;min-height:90px;margin:8px 0 4px;text-align:left}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.dots span{width:14px;height:14px;border-radius:50%;background:#d1d5db}
+.dots span.on{background:var(--purple)}
+.big{font-size:80px;line-height:1}
+.setrow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px;flex-wrap:wrap;text-align:left}
+.setrow .seg button{padding:8px 14px;font-size:18px}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.blink{animation:blink .5s 4 alternate}
+@keyframes blink{from{opacity:1}to{opacity:.15}}
+.confetti{position:fixed;top:-20px;width:14px;height:20px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.stg{width:170px}.stg .rn{font-size:34px;line-height:1.1;color:var(--purple);font-weight:700}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen on">
+  <a id="appsLink" href="https://bellie161.github.io/Leseapp/" target="_top">🎒 Alle Lern-Apps</a>
+  <button id="setBtn" aria-label="Einstellungen">⚙️</button>
+  <h1>📏 Maße-Profi</h1>
+  <div class="sub">Längen, Gewichte und Hohlmaße</div>
+  <div class="lbl">Wähle deine Stufe:</div>
+  <div class="stages" id="stages"></div>
+  <div class="row" style="margin-top:10px"><button id="filmBtn" style="background:var(--purple)">🎬 Erklärfilm zu dieser Stufe</button></div>
+  <div class="modes" id="modes"></div>
+  <div class="row" id="startRow"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
+  <div class="progress" id="startProgress"></div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 18.11.2026 · 1</div>
+</section>
+
+<section id="task" class="screen">
+  <div class="bar">
+    <button class="light" id="homeBtn" aria-label="Start">🏠</button>
+    <button class="light" id="helpBtn" aria-label="Hilfe">❓</button>
+    <div class="instr" id="instr"></div>
+    <button class="light" id="speakBtn" aria-label="Vorlesen">🔊</button>
+    <div class="starcount" id="stars"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="stagewrap">
+    <svg class="stage" id="stage" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="1000" height="620" fill="#fff"/>
+      <g id="taskL"></g><g id="markL" pointer-events="none"></g><g id="uiL"></g><g id="hitL"></g><g id="btnL"></g>
+    </svg>
+  </div>
+  <div class="ctrl" id="ctrl"></div>
+</section>
+<section id="sling" class="screen">
+  <div class="bar">
+    <button class="light" id="sHome">⬅</button>
+    <div class="instr">🎯 Gummi-Schleuder – Zieh den Gummi zurück und lass los!</div>
+    <button class="light" id="sSpeak">🔊</button>
+  </div>
+  <div class="stagewrap"><svg class="stage" id="ssvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg></div>
+</section>
+
+<div class="overlay" id="helpOv"><div class="card">
+  <h2 id="helpTitle">So geht es</h2>
+  <ol class="steps" id="helpSteps"></ol>
+  <button id="helpClose" style="background:var(--green)">Los geht's!</button>
+</div></div>
+<div class="overlay" id="introOv"><div class="card">
+  <h2 id="inTitle"></h2>
+  <svg id="inSvg" viewBox="0 0 640 400"></svg>
+  <div class="intxt" id="inTxt"></div>
+  <div class="row" style="margin-top:6px"><button id="inBack" class="light">◀ Zurück</button><button id="inSpeak" class="light">🔊</button><button id="inAgain" class="light">↺ Nochmal</button><button id="inNext" style="background:var(--green)">Weiter ▶</button></div>
+  <div class="dots" id="inDots"></div>
+</div></div>
+<div class="overlay" id="merkOv"><div class="card">
+  <h2>📖 Das merke ich mir</h2>
+  <div style="font-size:16px;color:#6b7280;margin-bottom:4px">Tippe auf ein Kärtchen. Dann wird es vorgelesen.</div>
+  <div id="merkList"></div>
+  <div class="row"><button id="merkClose" style="background:var(--green)">Fertig</button></div>
+</div></div>
+<div class="overlay" id="upOv"><div class="card">
+  <div class="big">🏅</div><h2 id="upTitle"></h2><p id="upTxt"></p>
+  <div class="row"><button id="upStay" class="light">Hier weiter üben</button><button id="upGo" style="background:var(--purple)">▶ Neue Stufe starten</button></div>
+</div></div>
+<div class="overlay" id="rewardOv"><div class="card">
+  <div class="big">🏆</div><h2>Super gemacht!</h2><p id="rewardTxt"></p>
+  <button id="rewardGo" style="background:var(--orange);font-size:26px">🎯 Zur Gummi-Schleuder</button>
+</div></div>
+<div class="overlay" id="slingEndOv"><div class="card">
+  <div class="big">🎉</div><h2 id="slingEndTxt"></h2>
+  <div class="row" style="margin-top:6px"><button id="slingBack" class="light">Zurück</button><button id="slingAgain" style="background:var(--orange)">Nochmal schießen</button></div>
+</div></div>
+<div class="overlay" id="setOv"><div class="card">
+  <h2>⚙️ Einstellungen</h2>
+  
+  <div class="setrow">Belohnung nach
+    <div class="seg" id="goalSeg"><button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button><button data-v="15">15</button></div> Sternen</div>
+  <div class="setrow">Schüsse pro Runde
+    <div class="seg" id="shotSeg"><button data-v="5">5</button><button data-v="10">10</button><button data-v="15">15</button></div></div>
+  <div class="setrow">Vorlesen <div class="seg" id="voiceSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow">Antworten zur Auswahl <div class="seg" id="ansSeg"><button data-v="2">2</button><button data-v="3">3</button></div></div>
+  <div class="setrow"><span>Frühere Stufen mitüben<br><small style="color:#6b7280;font-size:15px">Jede 4. Aufgabe ist eine Wiederholung</small></span><div class="seg" id="repSeg"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+  <div class="setrow"><span>Sterne bis zur nächsten Stufe</span><div class="seg" id="stgSeg"><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button><button data-v="30">30</button></div></div>
+  <div class="setrow"><button id="unlockStages" style="background:var(--purple)">Alle Stufen freischalten</button><button id="unlockBtn" style="background:var(--orange)">Spiel jetzt freischalten</button><button id="resetDone" class="light">Fortschritt zurücksetzen</button></div>
+  <div class="setrow" id="updRow"><span>Neueste Version laden<br><small style="color:#6b7280;font-size:15px">Sterne und Einstellungen bleiben erhalten</small></span><button id="updBtn" style="background:#0F8B8D">🔄 Neu laden</button></div>
+  <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
+</div></div>
+
+<script>
+/* ================= Maße-Profi: Längen, Gewichte, Hohlmaße ================= */
+/* Gegenstände für Größenvorstellungen (Stützpunkte) */
+const OBJ={
+ L:[['✏️','Ein Bleistift ist etwa 15 __ lang.',15,'cm'],['📏','Ein Lineal ist 30 __ lang.',30,'cm'],['📱','Ein Handy ist etwa 15 __ lang.',15,'cm'],['🥄','Ein Löffel ist etwa 15 __ lang.',15,'cm'],
+  ['📕','Ein Schulbuch ist etwa 25 __ lang.',25,'cm'],['🍌','Eine Banane ist etwa 20 __ lang.',20,'cm'],['☝️','Ein Zeigefinger ist etwa 6 __ lang.',6,'cm'],['🖍️','Ein Wachsmalstift ist etwa 8 __ lang.',8,'cm'],
+  ['🚪','Eine Tür ist etwa 2 __ hoch.',2,'m'],['🛏️','Ein Bett ist etwa 2 __ lang.',2,'m'],['🚌','Ein Bus ist etwa 12 __ lang.',12,'m'],['🌳','Ein Baum ist etwa 10 __ hoch.',10,'m'],
+  ['🏫','Ein Klassenzimmer ist etwa 8 __ lang.',8,'m'],['🦒','Eine Giraffe ist etwa 5 __ groß.',5,'m'],['🏊','Ein Schwimmbecken ist 25 __ lang.',25,'m'],['🚗','Ein Auto ist etwa 4 __ lang.',4,'m']],
+ L5:[['🐜','Eine Ameise ist etwa 5 __ lang.',5,'mm'],['🚶','Ein Schulweg ist etwa 2 __ lang.',2,'km'],['🐞','Ein Marienkäfer ist etwa 7 __ lang.',7,'mm'],['🛣️','Bis zur nächsten Stadt sind es etwa 15 __.',15,'km']],
+ G:[['🍎','Ein Apfel wiegt etwa 150 __.',150,'g'],['🍫','Eine Tafel Schokolade wiegt 100 __.',100,'g'],['🧈','Ein Stück Butter wiegt 250 __.',250,'g'],['🍬','Eine Tüte Gummibärchen wiegt etwa 200 __.',200,'g'],
+  ['🥚','Ein Ei wiegt etwa 60 __.',60,'g'],['🍞','Ein Brot wiegt etwa 1 __.',1,'kg'],['🎒','Eine Schultasche wiegt etwa 5 __.',5,'kg'],['🐕','Ein großer Hund wiegt etwa 30 __.',30,'kg'],
+  ['🚲','Ein Fahrrad wiegt etwa 12 __.',12,'kg'],['🍉','Eine Melone wiegt etwa 3 __.',3,'kg'],['🧒','Ein Kind wiegt etwa 35 __.',35,'kg'],['🥔','Ein Sack Kartoffeln wiegt 5 __.',5,'kg']],
+ V:[['🥛','In eine Milchtüte passt 1 __.',1,'l'],['🛁','In eine Badewanne passen etwa 150 __.',150,'l'],['🪣','In einen Eimer passen etwa 10 __.',10,'l'],['🌱','In eine Gießkanne passen etwa 5 __.',5,'l'],
+  ['🐠','In ein Aquarium passen etwa 60 __.',60,'l'],['🥤','In ein Glas passen etwa 200 __.',200,'ml'],['☕','In eine Tasse passen etwa 250 __.',250,'ml'],['🥄','In einen Teelöffel passen etwa 5 __.',5,'ml'],
+  ['🍦','In einen Joghurtbecher passen etwa 150 __.',150,'ml'],['🧃','In ein Trinkpäckchen passen 200 __.',200,'ml'],['💧','In eine Trinkflasche passen etwa 500 __.',500,'ml'],['🍼','In ein Babyfläschchen passen etwa 250 __.',250,'ml']]};
+const UNITS={L:['cm','m'],G:['g','kg'],V:['ml','l']};
+const UNITW={mm:'Millimeter',cm:'Zentimeter',m:'Meter',km:'Kilometer',g:'Gramm',kg:'Kilogramm',ml:'Milliliter',l:'Liter'};
+const DIMW={L:'lang',G:'schwer',V:'viel'};
+function dimOf(s){return s<=2?'L':s===3?'G':s===4?'V':pick(['L','L','G','V']);}
+
+/* ---------- Messgeräte zeichnen ---------- */
+function ruler(par,x,y,w,max,o){o=o||{};const pc=w/max,h=o.h||70;el('rect',{x:x-14,y,width:w+28,height:h,rx:8,fill:'#FFE89A',stroke:'#b7791f','stroke-width':2},par);
+  for(let i=0;i<=max*2;i++){const xx=x+i*pc/2,big=i%2===0;el('line',{x1:xx,y1:y,x2:xx,y2:y+(big?h*.42:h*.24),stroke:'#1F2A37','stroke-width':big?2:1},par);
+    if(big&&(max<=20||(i/2)%5===0))txt(par,xx,y+h*.68,String(i/2),{'font-size':Math.min(22,pc*.55+8),fill:i===0?'#E63946':'#1F2A37'});}
+  if(!o.noUnit)txt(par,x+w+2,y+h*.68,'cm',{'font-size':15,fill:'#6b7280','text-anchor':'end'});return pc;}
+function pencil(par,x0,y,len,h,col){el('rect',{x:x0,y,width:Math.max(0,len-h*1.1),height:h,fill:col||'#F28C28',stroke:'#7A2E00','stroke-width':1.5},par);
+  el('rect',{x:x0,y,width:h*.5,height:h,fill:'#F4A6B8',stroke:'#7A2E00','stroke-width':1.5},par);
+  const tx=x0+len-h*1.1;el('polygon',{points:`${tx},${y} ${x0+len},${y+h/2} ${tx},${y+h}`,fill:'#F3D9B1',stroke:'#7A2E00','stroke-width':1.5},par);
+  el('polygon',{points:`${x0+len-h*.35},${y+h*.34} ${x0+len},${y+h/2} ${x0+len-h*.35},${y+h*.66}`,fill:'#1F2A37'},par);}
+function tape(par,x,y,w,max){const pc=w/max;for(let i=0;i<max/20;i++)el('rect',{x:x+i*20*pc,y,width:20*pc,height:62,fill:i%2?'#FFE89A':'#FFF3C4',stroke:'#b7791f','stroke-width':1.5},par);
+  for(let v=0;v<=max;v+=5){const xx=x+v*pc,big=v%10===0;el('line',{x1:xx,y1:y,x2:xx,y2:y+(big?22:12),stroke:'#1F2A37','stroke-width':big?2:1},par);
+    if(big)txt(par,xx,y+40,v%100===0&&v?(v/100)+' m':String(v),{'font-size':v%100===0&&v?17:14,fill:v%100===0?'#E63946':'#1F2A37'});}}
+function dial(par,cx,cy,r,v,max,unit,o){o=o||{};el('rect',{x:cx-r*1.1,y:cy+r*.55,width:r*2.2,height:r*.55,rx:16,fill:'#8E9AAF'},par);
+  el('circle',{cx,cy,r,fill:'#fff',stroke:'#1F2A37','stroke-width':6},par);const A0=-135,A1=135,ang=v=>A0+(A1-A0)*v/max;
+  const minor=max<=1000?50:max/20;for(let k=0;k<=max;k+=minor){const a=ang(k)*Math.PI/180,big=k%(max/10)===0,r1=r*(big?.78:.85);
+    el('line',{x1:cx+r1*Math.sin(a),y1:cy-r1*Math.cos(a),x2:cx+r*.93*Math.sin(a),y2:cy-r*.93*Math.cos(a),stroke:'#1F2A37','stroke-width':big?3:1.5},par);
+    if(big)txt(par,cx+r*.64*Math.sin(a),cy-r*.64*Math.cos(a),k===max&&max===1000?'1 kg':String(k),{'font-size':r*(k===max?.1:.1),fill:k===max?'#E63946':'#1F2A37'});}
+  txt(par,cx,cy+r*.35,unit,{'font-size':r*.14,fill:'#6b7280'});
+  const a=ang(v)*Math.PI/180;el('line',{x1:cx,y1:cy,x2:cx+r*.82*Math.sin(a),y2:cy-r*.82*Math.cos(a),stroke:'#E63946','stroke-width':6,'stroke-linecap':'round'},par);el('circle',{cx,cy,r:10,fill:'#E63946'},par);
+  if(o.obj)txt(par,cx,cy-r-34,o.obj,{'font-size':58});}
+function cup(par,x,y,w,h,v,max,o){o=o||{};const lv=h*v/max;if(v>0)el('rect',{x:x+4,y:y+h-lv,width:w-8,height:lv,fill:o.col||'#7CC4FF',opacity:.85},par);
+  el('path',{d:`M${x},${y-20} L${x},${y+h} Q${x},${y+h+12} ${x+12},${y+h+12} L${x+w-12},${y+h+12} Q${x+w},${y+h+12} ${x+w},${y+h} L${x+w},${y-20}`,fill:'none',stroke:'#1F2A37','stroke-width':5},par);
+  el('path',{d:`M${x+w},${y+10} q40,10 40,60 q0,50 -40,60`,fill:'none',stroke:'#1F2A37','stroke-width':5},par);
+  for(let k=50;k<=max;k+=50){const yy=y+h-h*k/max,big=k%100===0;el('line',{x1:x,y1:yy,x2:x+(big?44:24),y2:yy,stroke:'#1F2A37','stroke-width':big?3:1.5},par);
+    if(big)txt(par,x+52,yy,k===1000?'1 l':String(k),{'font-size':18,fill:k===1000?'#E63946':'#1F2A37','text-anchor':'start'});}
+  txt(par,x+w-30,y+h-14,'ml',{'font-size':18,fill:'#6b7280'});}
+function folding(par,x,y,w){for(let i=0;i<5;i++)el('rect',{x:x+i*w/5,y,width:w/5,height:w*.12,fill:i%2?'#FFE89A':'#FFF3C4',stroke:'#b7791f','stroke-width':1.5},par);for(let i=1;i<5;i++)el('circle',{cx:x+i*w/5,cy:y+w*.06,r:w*.02,fill:'#b7791f'},par);}
+function toolIcon(g,k,cx,cy,s){if(k==='lineal'){ruler(g,cx-s*.45,cy-s*.15,s*.9,10,{h:s*.3,noUnit:true});}
+  else if(k==='zollstock')folding(g,cx-s*.5,cy-s*.06,s);
+  else if(k==='waage')dial(g,cx,cy-s*.08,s*.32,300,1000,'');
+  else cup(g,cx-s*.2,cy-s*.3,s*.4,s*.55,600,1000,{});}
+const TOOLS={lineal:'Lineal',zollstock:'Zollstock',waage:'Waage',messbecher:'Messbecher'};
+
+/* ---------- Mengen in kleiner Einheit (cm, g, ml) mit Schreibweisen ---------- */
+const SMALL={L:'cm',G:'g',V:'ml'},BIG={L:'m',G:'kg',V:'l'},F={L:100,G:1000,V:1000};
+function qLabel(d,b,style){const f=F[d],sm=SMALL[d],bg=BIG[d];
+  if(style==='small'||b<f&&style!=='half'&&style!=='quarter')return`${b} ${sm}`;
+  if(b===f/2)return`½ ${bg}`;if(b===f/4)return`¼ ${bg}`;
+  if(b%f===0)return`${b/f} ${bg}`;return`${Math.floor(b/f)} ${bg} ${b%f} ${sm}`;}
+function anyLabel(d,b){const st=pick(['small','big']);return qLabel(d,b,st);}
+
+/* ---------- Modus 1: Welche Einheit? / Womit misst du? ---------- */
+function newT1(){const s=taskStage(),d=dimOf(s);M={s,d,st:{},tries:0};
+  M.tool=(S.seen.t1n=(S.seen.t1n||0)+1)%3===0;
+  let pool=OBJ[d];if(s===5&&d==='L')pool=pool.concat(OBJ.L5);
+  M.o=pick(pool);
+  if(M.tool){const want=d==='G'?'waage':d==='V'?'messbecher':(M.o[3]==='cm'||M.o[3]==='mm'?'lineal':'zollstock');M.ans=want;
+    M.opts=shuffle(Object.keys(TOOLS)).slice(0,4);setInstr(`Womit misst du das?`);}
+  else{M.ans=M.o[3];let u=UNITS[d].slice();if(s===5&&d==='L')u=['mm','cm','m','km'];M.opts=u;setInstr('Welche Einheit passt? Tippe an.');}
+  render1();stageStrip(s);stdCtrl(help1);}
+function sentence(){return M.o[1].replace('__',M.done1?M.o[3]:'___');}
+function render1(){taskL.innerHTML='';uiL.innerHTML='';const o=M.o;
+  el('rect',{x:20,y:20,width:380,height:380,rx:26,fill:'#F8FAFC',stroke:'#cbd5e1','stroke-width':3},taskL);txt(taskL,210,200,o[0],{'font-size':190});
+  el('rect',{x:430,y:20,width:550,height:150,rx:22,fill:'#FFF6CC',stroke:'#E0B000','stroke-width':4},uiL);
+  const q=M.tool?`Womit misst du, wie ${DIMW[M.d]} das ist?`:sentence();wrap(q,26).forEach((l,i,a)=>txt(uiL,705,95+(i-(a.length-1)/2)*42,l,{'font-size':34,fill:'#1F2A37'}));
+  if(M.tool)drawCards(M.opts,M.st,k=>['',TOOLS[k]],answer1,{x:20,w:960,top:420,bot:600,side:true,fs:30,draw:(g,k,x,y,w,h)=>toolIcon(g,k,x+w/2,y+h*.42,Math.min(w*.8,h*1.1))});
+  else drawCards(M.opts,M.st,u=>[u,UNITW[u]],answer1,{x:430,w:550,top:200,bot:600,side:M.opts.length>2,fs:70});}
+function why1(){const d=M.d,o=M.o;
+  if(M.tool)return d==='G'?'Wie schwer etwas ist, misst du mit der Waage.':d==='V'?'Wie viel hineinpasst, misst du mit dem Messbecher.':M.ans==='lineal'?'Kurze Sachen misst du mit dem Lineal.':'Lange Sachen misst du mit dem Zollstock oder dem Maßband.';
+  const u=o[3];return{cm:'Kurze Sachen messen wir in Zentimetern. 1 cm ist so breit wie ein kleiner Finger.',m:'Lange Sachen messen wir in Metern. 1 m ist ein großer Schritt.',mm:'Ganz kleine Sachen messen wir in Millimetern.',km:'Lange Wege messen wir in Kilometern. 1 km sind 1000 m.',
+    g:'Leichte Sachen wiegen wir in Gramm. Eine Tafel Schokolade wiegt 100 g.',kg:'Schwere Sachen wiegen wir in Kilogramm. Eine Packung Mehl wiegt 1 kg.',ml:'Kleine Mengen messen wir in Millilitern. In ein Glas passen etwa 200 ml.',l:'Große Mengen messen wir in Litern. In eine Milchtüte passt 1 l.'}[u];}
+function answer1(v){if(locked)return;
+  if(v===M.ans){M.st[v]='ok';M.done1=true;render1();win(M.tool?`Richtig! Mit ${v==='waage'?'der Waage':v==='messbecher'?'dem Messbecher':v==='lineal'?'dem Lineal':'dem Zollstock'}.`:`Richtig! ${sentence()}`);return;}
+  if(M.st[v])return;M.st[v]='no';M.tries++;if(M.tries>=2)M.st[M.ans]='sol';render1();nope(why1());}
+function help1(){if(locked)return;const t=why1();feedback(t,'sol');say(t);}
+
+/* ---------- Modus 2: Messen ---------- */
+const GOBJ=['🍎','🧀','🍌','🍇','🥕','🍐','🧈'],VCOL=['#7CC4FF','#F7C948','#F28C28','#E63946','#B5E48C'];
+function newT2(){const s=taskStage(),d=dimOf(s);M={s,d,st:{},tries:0,help:false};const late=(S.sc[s]||0)>=S.stg/2;
+  if(d==='L'&&s===1||d==='L'&&s===5&&Math.random()<.5){M.kind='ruler';M.v=rint(3,19);M.col=pick(COLORS);M.opts=numOpts(M.v,[M.v+1,M.v-1,M.v+2]);setInstr('Wie lang ist der Stift?');}
+  else if(d==='L'){M.kind='tape';M.v=rint(3,19)*10;M.opts=numOpts(M.v,[M.v+10,M.v-10,M.v>=100?M.v-100+M.v%100/10:M.v+5]);setInstr('Wie lang ist die Schlange?');}
+  else if(d==='G'){M.kind='dial';M.v=late?rint(1,19)*50:rint(1,9)*100;M.obj=pick(GOBJ);M.opts=numOpts(M.v,[M.v+100,M.v-100,M.v+50,M.v-50]);setInstr('Was zeigt die Waage?');}
+  else{M.kind='cup';M.v=late?rint(1,19)*50:rint(1,9)*100;M.col=pick(VCOL);M.opts=numOpts(M.v,[M.v+100,M.v-100,M.v+50,M.v-50]);setInstr('Wie viel ist im Messbecher?');}
+  M.opts=M.opts.filter(x=>x>0);render2();stageStrip(s);stdCtrl(help2);}
+function fmt2(v){if(M.kind==='ruler')return`${v} cm`;if(M.kind==='tape')return v>=100?[qLabel('L',v,'big'),`${v} cm`]:`${v} cm`;
+  if(M.kind==='dial')return v===500?[`${v} g`,'½ kg']:v===1000?[`${v} g`,'1 kg']:v>1000?[`${v} g`,qLabel('G',v,'big')]:`${v} g`;
+  return v===500?[`${v} ml`,'½ l']:v===250?[`${v} ml`,'¼ l']:v>=1000?[`${v} ml`,qLabel('V',v,'big')]:`${v} ml`;}
+function render2(){taskL.innerHTML='';markL.innerHTML='';const v=M.v;
+  if(M.kind==='ruler'){const pc=ruler(taskL,50,220,900,20);pencil(taskL,50,150,v*pc,44,M.col);
+    if(M.help){el('line',{x1:50,y1:120,x2:50,y2:300,stroke:'#E63946','stroke-width':3,'stroke-dasharray':'8 6'},markL);el('line',{x1:50+v*pc,y1:120,x2:50+v*pc,y2:300,stroke:'#2A9D4B','stroke-width':3,'stroke-dasharray':'8 6'},markL);
+      txt(markL,50,100,'Start: 0',{'font-size':20,fill:'#E63946'});txt(markL,50+v*pc,100,'Ende: '+v,{'font-size':20,fill:'#2A9D4B'});}}
+  else if(M.kind==='tape'){const max=200,pc=900/max;tape(taskL,50,240,900,max);
+    el('rect',{x:50,y:182,width:v*pc,height:30,rx:15,fill:'#7BC96F',stroke:'#2A9D4B','stroke-width':2},taskL);for(let k=20;k<v*pc-20;k+=36)el('circle',{cx:50+k,cy:197,r:5,fill:'#2A9D4B'},taskL);
+    txt(taskL,50+v*pc+6,190,'🐍',{'font-size':48,'text-anchor':'start'});
+    if(M.help){el('line',{x1:50+v*pc,y1:170,x2:50+v*pc,y2:320,stroke:'#2A9D4B','stroke-width':3,'stroke-dasharray':'8 6'},markL);if(v>=100)el('line',{x1:50+100*pc,y1:170,x2:50+100*pc,y2:320,stroke:'#E63946','stroke-width':3,'stroke-dasharray':'8 6'},markL);
+      txt(markL,50+v*pc,345,v>=100?`1 m und ${v-100} cm`:`${v} cm`,{'font-size':22,fill:'#2A9D4B'});}}
+  else if(M.kind==='dial'){dial(taskL,500,230,150,v,1000,'g',{obj:M.obj});if(M.help)txt(markL,800,230,'1 Strich = 50 g',{'font-size':22,fill:'#8E44AD'});}
+  else{cup(taskL,410,60,180,300,v,1000,{col:M.col});if(M.help){const yy=60+300-300*v/1000;el('line',{x1:380,y1:yy,x2:720,y2:yy,stroke:'#E63946','stroke-width':3,'stroke-dasharray':'8 6'},markL);txt(markL,760,yy,'⬅ hier',{'font-size':24,fill:'#E63946'});txt(markL,800,330,'1 Strich = 50 ml',{'font-size':22,fill:'#8E44AD'});}}
+  drawCards(M.opts,M.st,fmt2,answer2,{x:40,w:920,top:400,bot:590,side:true,fs:54});}
+function why2(){const v=M.v;if(M.kind==='ruler')return`Der Stift fängt bei der 0 an. Er hört bei der ${v} auf. Er ist ${v} cm lang.`;
+  if(M.kind==='tape')return v>=100?`Bei 1 m sind es 100 cm. Die Schlange geht noch weiter bis ${v}. Sie ist ${v} cm lang. Das sind 1 m und ${v-100} cm.`:`Die Schlange hört bei ${v} auf. Sie ist ${v} cm lang.`;
+  if(M.kind==='dial')return`Der Zeiger zeigt auf ${v}. Die Waage zeigt ${v} g.`+(v%100?' Ein kleiner Strich sind 50 g.':'');
+  return`Der Saft geht bis ${v}. Im Messbecher sind ${v} ml.`+(v%100?' Ein kleiner Strich sind 50 ml.':'');}
+function answer2(v){if(locked)return;
+  if(v===M.v){M.st[v]='ok';render2();win('Richtig! '+why2());return;}
+  if(M.st[v])return;M.st[v]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.v]='sol';render2();
+  nope(M.kind==='ruler'?'Fang bei der 0 an. Schau genau, wo die Spitze vom Stift aufhört.':M.kind==='tape'?'Schau, wo die Schlange aufhört. Lies die Zahl darunter.':'Schau genau, wo der Zeiger oder der Saft ist. Lies die Zahl daneben.');}
+function help2(){if(locked)return;M.help=true;render2();const t=M.kind==='ruler'?'Der Stift liegt genau an der 0. Schau, bei welcher Zahl die Spitze ist.':M.kind==='tape'?'Schau, wo die Schlange aufhört. Die rote Linie ist 1 m. Das sind 100 cm.':M.kind==='dial'?'Lies die Zahl, auf die der rote Zeiger zeigt. Ein kleiner Strich sind 50 g.':'Schau, wie hoch der Saft steht. Ein kleiner Strich sind 50 ml.';feedback(t,'sol');say(t);}
+
+/* ---------- Modus 3: Umrechnen (Stufe 1: Strecken zusammen) ---------- */
+function convTask(d){const f=F[d],sm=SMALL[d],bg=BIG[d],r=Math.random();let q,ans,c,unit,hint;
+  const big=d==='L'?[1,2,3,4,5]:[1,2,3];
+  if(r<.3){const k=pick(big);q=`${k} ${bg} = ? ${sm}`;ans=k*f;unit=sm;c=[k*f/10,k*f*10,k*10,k*f+f];hint=k===1?`1 ${bg} sind ${f} ${sm}.`:`1 ${bg} sind ${f} ${sm}. ${k} ${bg} sind ${k} mal so viel.`;}
+  else if(r<.45){const fr=d==='L'?2:pick([2,4]);q=`${fr===2?'½':'¼'} ${bg} = ? ${sm}`;ans=f/fr;unit=sm;c=[f/fr/10,fr===2?f/4:f/2,f];hint=fr===2?`½ ${bg} ist die Hälfte von ${f} ${sm}.`:`¼ ${bg} ist die Hälfte von der Hälfte: ${f} ➜ ${f/2} ➜ ${f/4}.`;}
+  else if(r<.75){const k=pick(big.slice(0,3)),rest=d==='L'?rint(1,9)*10:pick([100,200,250,500,750]);q=`${k} ${bg} ${rest} ${sm} = ? ${sm}`;ans=k*f+rest;unit=sm;c=[k+rest,k*f,k*10+rest,ans+f];hint=`${k} ${bg} sind ${k*f} ${sm}. Dazu kommen noch ${rest} ${sm}.`;}
+  else{const k=pick(big);q=`${k*f} ${sm} = ? ${bg}`;ans=k;unit=bg;c=[k*10,k*f/10,k+1,k-1];hint=`${f} ${sm} sind 1 ${bg}. Wie oft passt ${f} in ${k*f}?`;}
+  return{q,ans,c,unit,d,hint};}
+function newT3(){const s=taskStage();M={s,st:{},tries:0,help:false};
+  if(s===1){M.kind='add';const a=rint(2,10),b=rint(2,Math.min(9,19-a));M.a=a;M.b=b;M.ans=a+b;M.unit='cm';M.c=[a+b+1,a+b-1,a+b+2];M.q=`${a} cm + ${b} cm = ? cm`;M.hint=`Der blaue Stift hört bei ${a} auf. Der rote Stift fängt dort an. Wo hört er auf?`;setInstr('Wie lang sind beide Stifte zusammen?');}
+  else{const d=s===5?pick(['L','G','V']):dimOf(s);Object.assign(M,convTask(d));M.kind='conv';setInstr('Rechne um.');}
+  M.opts=numOpts(M.ans,M.c).filter(x=>x>0);render3();stageStrip(s);stdCtrl(help3);}
+function barBig(par,x,y,w,d,k){const f=F[d],sm=SMALL[d],bg=BIG[d],parts=10,pw=w/parts;
+  for(let i=0;i<parts;i++){el('rect',{x:x+i*pw,y,width:pw,height:56,fill:i%2?'#EEF6FF':'#DCEBFF',stroke:'#1D7FD8','stroke-width':1.5},par);txt(par,x+i*pw+pw/2,y+28,`${f/10}`,{'font-size':Math.min(20,pw*.32),fill:'#1D7FD8'});}
+  txt(par,x+w/2,y-20,`1 ${bg} = 10 × ${f/10} ${sm} = ${f} ${sm}`,{'font-size':22,fill:'#1F2A37'});}
+function render3(){taskL.innerHTML='';uiL.innerHTML='';markL.innerHTML='';
+  taskBox(150,20,700,110,M.q,'');
+  if(M.kind==='add'){const pc=ruler(taskL,50,300,900,20);pencil(taskL,50,175,M.a*pc,40,'#1D7FD8');pencil(taskL,50+M.a*pc,225,M.b*pc,40,'#E63946');
+    if(M.help){el('line',{x1:50+(M.a+M.b)*pc,y1:160,x2:50+(M.a+M.b)*pc,y2:380,stroke:'#2A9D4B','stroke-width':3,'stroke-dasharray':'8 6'},markL);}}
+  else if(M.help)barBig(markL,150,220,700,M.d);
+  else{const ic={L:'📏',G:'⚖️',V:'🥛'}[M.d];txt(taskL,500,250,ic,{'font-size':110});}
+  drawCards(M.opts,M.st,v=>`${v} ${M.unit}`,answer3,{x:40,w:920,top:400,bot:590,side:true,fs:50});}
+function answer3(v){if(locked)return;
+  if(v===M.ans){M.st[v]='ok';render3();win('Richtig! '+M.q.replace('?',M.ans)+'.');return;}
+  if(M.st[v])return;M.st[v]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.ans]='sol';render3();nope(M.hint);}
+function help3(){if(locked)return;M.help=true;render3();feedback(M.hint,'sol');say(M.hint);}
+
+/* ---------- Modus 4: Vergleichen ---------- */
+function newT4(){const s=taskStage(),d=dimOf(s);M={s,d,st:{},tries:0,help:false};const f=F[d],r=Math.random();let a,b;
+  if(s===1){a=rint(3,19);b=Math.random()<.2?a:rint(3,19);M.A={v:a,l:a+' cm'};M.B={v:b,l:b+' cm'};}
+  else{const unitStep=d==='L'?10:50;
+    if(r<.3){a=f;b=f-pick([1,2])*unitStep*(d==='L'?1:2);}else if(r<.5){a=f*pick([1,2]);b=a;}else if(r<.75){a=f/2;b=pick([f/2,f/2-unitStep*2,f/2+unitStep*2]);}else{a=rint(1,2)*f+pick([0,f/2]);b=a+pick([-1,1])*f/2;}
+    let la,lb;if(a===b){la=qLabel(d,a,'big');lb=qLabel(d,b,'small');}else{la=qLabel(d,a,pick(['big','big','small']));lb=qLabel(d,b,pick(['small','big']));}
+    M.A={v:a,l:la};M.B={v:b,l:lb};if(Math.random()<.5)[M.A,M.B]=[M.B,M.A];}
+  M.word=d==='L'?'länger':d==='G'?'schwerer':'mehr';M.ans=M.A.v>M.B.v?'A':M.B.v>M.A.v?'B':'=';
+  render4();setInstr(`Was ist ${M.word}? Oder ist es gleich?`);stageStrip(s);stdCtrl(help4);}
+function render4(){taskL.innerHTML='';markL.innerHTML='';const sm=SMALL[M.d];
+  txt(taskL,500,40,`Was ist ${M.word}?`,{'font-size':34,fill:'#8E44AD'});
+  drawCards(['A','B','='],M.st,k=>k==='='?['=','gleich']:(M.help?[M[k].l,`= ${M[k].v} ${sm}`]:M[k].l),answer4,{x:40,w:920,top:90,bot:330,side:true,fs:60});
+  if(M.help&&M.s>1)barBig(markL,150,420,700,M.d);}
+function why4(){const sm=SMALL[M.d],A=M.A,B=M.B;const conv=x=>x.l===`${x.v} ${sm}`?x.l:`${x.l} sind ${x.v} ${sm}`;
+  return(M.s>1?`${conv(A)}. ${conv(B)}. `:'')+(M.ans==='='?`Beides ist gleich ${M.word==='mehr'?'viel':M.word==='länger'?'lang':'schwer'}.`:`${M.ans==='A'?A.l:B.l} ist ${M.word}.`);}
+function answer4(k){if(locked)return;
+  if(k===M.ans){M.st[k]='ok';M.help=true;render4();win('Richtig! '+why4());return;}
+  if(M.st[k])return;M.st[k]='no';M.tries++;M.help=true;if(M.tries>=2)M.st[M.ans]='sol';render4();nope(M.s>1?`Rechne beides in ${UNITW[SMALL[M.d]]} um. Merke: 1 ${BIG[M.d]} = ${F[M.d]} ${SMALL[M.d]}.`:'Vergleiche die Zahlen. Die größere Zahl ist länger.');}
+function help4(){if(locked)return;M.help=true;render4();const t=M.s>1?`Rechne beides in ${UNITW[SMALL[M.d]]} um. Merke: 1 ${BIG[M.d]} = ${F[M.d]} ${SMALL[M.d]}.`:'Vergleiche die Zahlen. Die größere Zahl ist länger.';feedback(t,'sol');say(t);}
+
+/* ---------- Erklärfilme ---------- */
+const FILMS={
+ 1:{t:'Zentimeter',st:[
+  {x:'Das ist ein Lineal. Damit messen wir, wie lang etwas ist. Die Zahlen auf dem Lineal sind Zentimeter. Wir schreiben cm.',d:g=>{ruler(g,30,230,580,12);pencil(g,180,140,280,40,'#1D7FD8');}},
+  {x:'Leg den Stift genau an die 0. Wie beim Geodreieck: Immer bei der 0 anfangen!',dur:2500,d:(g,p)=>{const pc=ruler(g,30,230,580,12);pencil(g,30+150*(1-p),140,9*pc,40,'#1D7FD8');el('line',{x1:30,y1:120,x2:30,y2:310,stroke:'#E63946','stroke-width':3,'stroke-dasharray':'8 6'},g);}},
+  {x:'Jetzt schau, wo die Spitze aufhört. Wir zählen: 1, 2, 3 … bis 9. Der Stift ist 9 cm lang.',q:9,dur:4500,d:(g,p)=>{const pc=ruler(g,30,230,580,12);pencil(g,30,140,9*pc,40,'#1D7FD8');const k=Math.round(p*9);for(let i=1;i<=k;i++)el('circle',{cx:30+i*pc,cy:215,r:7,fill:'#2A9D4B'},g);if(k===9)txt(g,320,350,'9 cm',{'font-size':46,fill:'#2A9D4B'});}},
+  {x:'1 cm ist ungefähr so breit wie dein kleiner Finger. Ein Bleistift ist etwa 15 cm lang.',d:g=>{ruler(g,30,230,580,12);el('rect',{x:30,y:150,width:580/12,height:70,fill:'#FFE79A',stroke:'#E0B000','stroke-width':3},g);txt(g,54,110,'☝️',{'font-size':60});txt(g,330,120,'1 cm',{'font-size':44,fill:'#1F2A37'});}}]},
+ 2:{t:'Meter und Zentimeter',st:[
+  {x:'Lange Sachen messen wir in Metern. 1 Meter hat 100 Zentimeter. Wir zählen in 10er-Schritten: 10, 20, 30 … bis 100.',q:10,dur:7000,d:(g,p)=>{const k=Math.round(p*10);for(let i=0;i<10;i++){el('rect',{x:20+i*60,y:160,width:60,height:60,fill:i<k?(i%2?'#7BC96F':'#B5E48C'):'#F3F4F6',stroke:'#2A9D4B','stroke-width':1.5},g);if(i<k)txt(g,50+i*60,190,String((i+1)*10),{'font-size':20,fill:'#1F2A37'});}
+     if(k===10)txt(g,320,290,'1 m = 100 cm',{'font-size':50,fill:'#2A9D4B'});}},
+  {x:'Ein großer Schritt ist ungefähr 1 m. Eine Tür ist ungefähr 2 m hoch.',d:g=>{txt(g,180,200,'🚶',{'font-size':150});txt(g,460,200,'🚪',{'font-size':170});txt(g,180,350,'1 Schritt ≈ 1 m',{'font-size':28,fill:'#1F2A37'});txt(g,460,350,'Tür ≈ 2 m',{'font-size':28,fill:'#1F2A37'});}},
+  {x:'Diese Schlange ist 130 cm lang. Das sind 1 m und 30 cm. 100 cm sind 1 m, dazu kommen noch 30 cm.',d:g=>{tape(g,20,230,600,200);el('rect',{x:20,y:172,width:130*3,height:30,rx:15,fill:'#7BC96F'},g);txt(g,20+390,180,'🐍',{'font-size':44,'text-anchor':'start'});
+     el('line',{x1:320,y1:150,x2:320,y2:300,stroke:'#E63946','stroke-width':3,'stroke-dasharray':'8 6'},g);txt(g,320,350,'130 cm = 1 m 30 cm',{'font-size':34,fill:'#1F2A37'});}}]},
+ 3:{t:'Kilogramm und Gramm',st:[
+  {x:'Mit der Waage messen wir, wie schwer etwas ist. Eine Packung Mehl wiegt 1 Kilogramm. Wir schreiben 1 kg.',dur:3500,d:(g,p)=>{dial(g,320,210,140,Math.round(p*1000),1000,'g',{obj:'🛍️'});}},
+  {x:'1 kg sind 1000 Gramm. Wir schreiben 1 kg = 1000 g.',d:g=>{dial(g,200,210,130,1000,1000,'g');txt(g,500,200,'1 kg',{'font-size':50,fill:'#E63946'});txt(g,500,260,'= 1000 g',{'font-size':40,fill:'#1F2A37'});}},
+  {x:'Leichte Sachen wiegen wir in Gramm. Eine Tafel Schokolade wiegt 100 g. Ein Apfel wiegt ungefähr 150 g.',d:g=>{dial(g,320,210,140,150,1000,'g',{obj:'🍎'});}},
+  {x:'Die Hälfte von 1 kg ist ½ kg. Das sind 500 g.',d:g=>{dial(g,200,210,130,500,1000,'g');txt(g,500,200,'½ kg',{'font-size':50,fill:'#E63946'});txt(g,500,260,'= 500 g',{'font-size':40,fill:'#1F2A37'});}}]},
+ 4:{t:'Liter und Milliliter',st:[
+  {x:'Mit dem Messbecher messen wir, wie viel Flüssigkeit es ist. In eine Milchtüte passt 1 Liter. Wir schreiben 1 l.',dur:4000,d:(g,p)=>{cup(g,230,60,180,300,Math.round(p*1000),1000,{});txt(g,540,220,'🥛',{'font-size':100});}},
+  {x:'1 Liter sind 1000 Milliliter. Wir schreiben 1 l = 1000 ml.',d:g=>{cup(g,120,60,180,300,1000,1000,{});txt(g,480,200,'1 l',{'font-size':54,fill:'#E63946'});txt(g,480,260,'= 1000 ml',{'font-size':40,fill:'#1F2A37'});}},
+  {x:'Die Hälfte von 1 l ist ½ l. Das sind 500 ml. In ein Glas passen ungefähr 200 ml.',d:g=>{cup(g,120,60,180,300,500,1000,{});txt(g,480,170,'½ l = 500 ml',{'font-size':40,fill:'#1F2A37'});txt(g,480,280,'🥤 ≈ 200 ml',{'font-size':40,fill:'#1F2A37'});}}]},
+ 5:{t:'Alles gemischt',st:[
+  {x:'Längen messen wir mit Lineal oder Zollstock: cm und m. Gewichte mit der Waage: g und kg. Flüssigkeiten mit dem Messbecher: ml und l.',
+   d:g=>{toolIcon(g,'lineal',110,140,190);toolIcon(g,'zollstock',320,140,190);toolIcon(g,'waage',530,150,190);txt(g,110,240,'cm',{'font-size':30,fill:'#1D7FD8'});txt(g,320,240,'m',{'font-size':30,fill:'#1D7FD8'});txt(g,530,250,'g · kg',{'font-size':30,fill:'#2A9D4B'});
+     toolIcon(g,'messbecher',320,350,160);txt(g,470,350,'ml · l',{'font-size':30,fill:'#8E44AD'});}},
+  {x:'Neu dabei: Ganz kleine Sachen messen wir in Millimetern, mm. Lange Wege in Kilometern, km. 1 km sind 1000 m.',d:g=>{txt(g,170,170,'🐜',{'font-size':110});txt(g,470,170,'🚶',{'font-size':110});txt(g,170,300,'5 mm',{'font-size':40,fill:'#1F2A37'});txt(g,470,300,'2 km',{'font-size':40,fill:'#1F2A37'});}}]}};
+
+const APP={key:'masseprofi',stg:15,
+ stages:[null,{n:'Zentimeter',i:'cm'},{n:'Meter und Zentimeter',i:'m'},{n:'Kilogramm und Gramm',i:'kg'},{n:'Liter und Milliliter',i:'l'},{n:'Alles gemischt',i:'🔀'}],
+ sayFix:t=>t.replace(/_+/g,' was? ').replace(/½ l\b/g,'ein halber Liter').replace(/¼ l\b/g,'ein viertel Liter').replace(/½ kg\b/g,'ein halbes Kilogramm').replace(/¼ kg\b/g,'ein viertel Kilogramm').replace(/½ m\b/g,'ein halber Meter')
+   .replace(/(\d|\?) (mm|cm|km|m|kg|g|ml|l)\b/g,(x,n,u)=>n+' '+UNITW[u]).replace(/≈/g,' ungefähr ').replace(/ × /g,' mal '),
+ modes:[
+  {t:'Welche Einheit?',sub:'cm oder m? g oder kg?',col:'#1D7FD8',newTask:newT1,help:['Schau dir das Bild an. Lies den Satz.','Welche Einheit passt? Ist es klein oder groß, leicht oder schwer?','Tippe die richtige Einheit an.','Manchmal fragen wir: Womit misst du das?'],
+   icon:g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#EEF6FF'},g);txt(g,40,52,'✏️',{'font-size':46});txt(g,118,36,'15 cm',{'font-size':22,fill:'#2A9D4B'});txt(g,118,72,'15 m',{'font-size':22,fill:'#E63946'});}},
+  {t:'Messen',sub:'Lineal, Waage, Messbecher',col:'#E63946',newTask:newT2,help:['Schau genau auf das Messgerät.','Beim Lineal: Der Stift fängt bei der 0 an. Wo hört er auf?','Bei Waage und Messbecher: Lies die Zahl am Zeiger oder am Saft.','Tippe die richtige Zahl an.'],
+   icon:g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#FDECEC'},g);ruler(g,15,58,140,10,{h:28,noUnit:true});pencil(g,15,30,9*14,18,'#1D7FD8');}},
+  {t:'Umrechnen',sub:'1 m = 100 cm',col:'#8E44AD',newTask:newT3,help:['Oben steht eine Aufgabe.','Merke: 1 m = 100 cm. 1 kg = 1000 g. 1 l = 1000 ml.','Tippe das richtige Ergebnis an.','💡 Hilfe zeigt dir den Streifen mit 10 Teilen.'],
+   icon:g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#F5EDFB'},g);txt(g,85,38,'1 m',{'font-size':26,fill:'#8E44AD'});txt(g,85,74,'= 100 cm',{'font-size':24,fill:'#1F2A37'});}},
+  {t:'Vergleichen',sub:'Was ist länger, schwerer, mehr?',col:'#2A9D4B',newTask:newT4,help:['Lies beide Karten.','Rechne beides in die kleine Einheit um: cm, g oder ml.','Tippe an, was länger, schwerer oder mehr ist. Oder tippe auf gleich.'],
+   icon:g=>{el('rect',{x:3,y:3,width:164,height:99,rx:12,fill:'#E7F6EC'},g);txt(g,45,52,'1 kg',{'font-size':24,fill:'#1F2A37'});txt(g,85,52,'>',{'font-size':26,fill:'#2A9D4B'});txt(g,128,52,'900 g',{'font-size':22,fill:'#1F2A37'});}}],
+ films:FILMS,sling:['cm','m','kg','g','l','ml'],
+ merk:()=>{const L=[
+  {draw:g=>{ruler(g,8,50,94,5,{h:30,noUnit:true});pencil(g,8,22,4*94/5,18,'#1D7FD8');},html:'<b>Messen mit dem Lineal</b><br>Immer bei der <b style="color:#E63946">0</b> anfangen!<br>Dann schauen, wo es aufhört.',t:'Messen mit dem Lineal: Immer bei der 0 anfangen. Dann schauen, wo es aufhört.'},
+  {html:'<b>Längen</b><br>1 m = 100 cm<br>1 cm ≈ so breit wie ein kleiner Finger<br>1 m ≈ ein großer Schritt',t:'Längen: 1 m = 100 cm. 1 cm ist ungefähr so breit wie ein kleiner Finger. 1 m ist ungefähr ein großer Schritt.'}];
+  if(S.maxStage>=3)L.push({draw:g=>dial(g,55,52,38,1000,1000,''),html:'<b>Gewichte</b><br>1 kg = 1000 g<br>½ kg = 500 g<br>1 Packung Mehl ≈ 1 kg · 1 Tafel Schokolade = 100 g',t:'Gewichte: 1 kg = 1000 g. ½ kg = 500 g. Eine Packung Mehl wiegt 1 kg. Eine Tafel Schokolade wiegt 100 g.'});
+  if(S.maxStage>=4)L.push({draw:g=>cup(g,30,25,50,60,500,1000,{}),html:'<b>Hohlmaße</b><br>1 l = 1000 ml<br>½ l = 500 ml<br>1 Milchtüte = 1 l · 1 Glas ≈ 200 ml',t:'Hohlmaße: 1 l = 1000 ml. ½ l = 500 ml. In eine Milchtüte passt 1 l. In ein Glas passen etwa 200 ml.'});
+  if(S.maxStage>=5)L.push({html:'<b>Neu</b><br>1 cm = 10 mm · 1 km = 1000 m',t:'1 cm = 10 mm. 1 km = 1000 m.'});
+  L.push({html:'<b>Womit messe ich?</b><br>📏 Lineal oder Zollstock: wie lang<br>⚖️ Waage: wie schwer<br>🥛 Messbecher: wie viel Flüssigkeit',t:'Womit messe ich? Lineal oder Zollstock: wie lang. Waage: wie schwer. Messbecher: wie viel Flüssigkeit.'});return L;}};
+
+/* ================= Gemeinsames Grundgerüst (wie Uhren-Profi / Einmaleins-Profi) ================= */
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))if(attrs[k]!==undefined&&attrs[k]!==null)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(parent,x,y,t,attrs){const e=el('text',Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Trebuchet MS, sans-serif','font-weight':700},attrs||{}),parent);e.textContent=t;return e;}
+const COLORS=['#E63946','#1D7FD8','#2A9D4B','#F28C28','#8E44AD','#D6338A','#0FA3A3'];
+const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+function svgPt(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+function wrap(s,n){const w=s.split(' '),out=[];let c='';w.forEach(x=>{if((c+' '+x).trim().length>n){out.push(c);c=x;}else c=(c+' '+x).trim();});if(c)out.push(c);return out;}
+const C=APP,NST=C.stages.length-1;
+let S=Object.assign({goal:10,done:0,stars:0,shots:10,voice:true,nAns:3,rep:true,stg:C.stg||15,maxStage:1,cur:1,sc:[],seen:{},intro:{}},C.state||{});
+try{Object.assign(S,JSON.parse(localStorage.getItem(C.key)||'{}'));}catch(e){}
+while(S.sc.length<NST+1)S.sc.push(0);
+function save(){try{localStorage.setItem(C.key,JSON.stringify(S));}catch(e){}}
+const NW=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const ZW=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function numWord(n){if(n<20)return NW[n];if(n<100){const e=n%10,z=ZW[Math.floor(n/10)];return e?(e===1?'ein':NW[e])+'und'+z:z;}
+  if(n<1000){const h=Math.floor(n/100),r=n%100;return(h===1?'ein':NW[h])+'hundert'+(r?numWord(r):'');}
+  if(n<1000000){const t=Math.floor(n/1000),r=n%1000;return(t===1?'ein':numWord(t))+'tausend'+(r?numWord(r):'');}return String(n);}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();
+  if(C.sayFix)t=C.sayFix(t);
+  t=t.replace(/= \?/g,'gleich wie viel?').replace(/ · /g,' mal ').replace(/ : /g,' geteilt durch ').replace(/ − /g,' minus ').replace(/ \+ /g,' plus ').replace(/ = /g,' gleich ')
+   .replace(/ < /g,' ist kleiner als ').replace(/ > /g,' ist größer als ').replace(/\b([Ll])ies\b/g,'$1iehs')
+   .replace(/(?<![\d.,])(\d+)\.(?!\d)/g,(x,n)=>numWord(+n)+'.')
+   .replace(/[\p{Extended_Pictographic}️✓✗➜▶◀]/gu,'').replace(/–/g,',').replace(/…/g,',').replace(/„|“/g,'');
+  const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+function hush(){try{speechSynthesis.cancel();}catch(e){}}
+let AC=null;
+function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
+function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
+function sound(k){if(k==='ok'){tone(660,0,.18);tone(880,.15,.25);tone(1100,.3,.35);}else if(k==='step'){tone(700,0,.12);tone(950,.1,.18);}else if(k==='no')tone(220,0,.35,'triangle');else if(k==='tick')tone(1200,0,.025,'square');}
+function confetti(){for(let i=0;i<45;i++){const c=document.createElement('div');c.className='confetti';c.style.left=rnd(0,100)+'vw';c.style.background=pick(COLORS);c.style.animationDuration=rnd(1.8,3.2)+'s';c.style.animationDelay=rnd(0,.6)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4200);}}
+
+/* ---------- Startseite ---------- */
+(function(){const box=$('#modes');C.modes.forEach((m,i)=>{const b=document.createElement('button');b.className='mode';b.dataset.m=i+1;
+  b.innerHTML=`<svg viewBox="0 0 170 105" id="mi${i+1}"></svg><span><span class="num" style="background:${m.col}">${i+1}</span> ${m.t}</span><small>${m.sub}</small>`;b.onclick=()=>startMode(i+1);box.appendChild(b);});
+  const row=$('#startRow');(C.extraBtns||[]).forEach(x=>{const b=document.createElement('button');b.textContent=x.t;b.style.background=x.col;b.onclick=x.fn;row.insertBefore(b,$('#gameBtn'));});})();
+function renderStages(){const box=$('#stages');box.innerHTML='';
+  for(let s=1;s<=NST;s++){const b=document.createElement('button');const lock=s>S.maxStage;b.className='stg'+(s===S.cur?' sel':'')+(lock?' lock':'');
+    b.innerHTML=`<span class="rn">${C.stages[s].i}</span><span><span class="num" style="background:${lock?'#9aa5b1':'#8E44AD'};width:26px;height:26px;font-size:15px">${s}</span> ${C.stages[s].n}</span>`;
+    const sm=document.createElement('small');const c=Math.min(S.sc[s]||0,S.stg);
+    sm.textContent=lock?'🔒 noch zu':s<S.maxStage?'✓ geschafft':`⭐ ${c} von ${S.stg}`;b.appendChild(sm);
+    if(!lock&&s===S.maxStage&&s<NST){const pb=document.createElement('div');pb.className='pbar';pb.innerHTML=`<i style="width:${100*c/S.stg}%"></i>`;b.appendChild(pb);}
+    b.onclick=()=>{if(lock){say(`Diese Stufe ist noch zu. Übe erst Stufe ${S.maxStage}.`);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);return;}
+      S.cur=s;save();renderStages();drawModeIcons();if(!S.intro[s])openIntro(s);else say(`Stufe ${s}: ${C.stages[s].n}.`);};
+    box.appendChild(b);}}
+function drawModeIcons(){C.modes.forEach((m,i)=>{const g=$('#mi'+(i+1));g.innerHTML='';m.icon(g,S.cur);});}
+function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn');g.classList.toggle('locked',rest>0);g.textContent=(rest>0?'🔒':'🎯')+' Gummi-Schleuder';
+  $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';renderStages();drawModeIcons();}
+$('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
+$('#filmBtn').onclick=()=>openIntro(S.cur);
+
+/* ---------- Erklärfilme ---------- */
+const INTRO=C.films;
+let IN=null;
+function playStep(){const st=IN.st[IN.i];cancelAnimationFrame(IN.raf);clearTimeout(IN.to);$('#inTxt').textContent=st.x;say(st.x);
+  $('#inDots').innerHTML=IN.st.map((_,i)=>`<span class="${i===IN.i?'on':''}"></span>`).join('');
+  $('#inBack').style.visibility=IN.i?'visible':'hidden';$('#inNext').textContent=IN.i===IN.st.length-1?'Fertig ✓':'Weiter ▶';
+  const g=$('#inSvg'),draw=p=>{g.innerHTML='';st.d(g,p);};
+  if(!st.dur){draw(1);return;}draw(0);
+  let last=-1;const box={};
+  IN.to=setTimeout(()=>{box.t=performance.now();const fr=now=>{let p=Math.min(1,(now-box.t)/st.dur);if(st.q){const qq=Math.ceil(p*st.q);if(qq!==last){last=qq;sound('tick');}p=qq/st.q;}draw(p);if((now-box.t)<st.dur)IN.raf=requestAnimationFrame(fr);};IN.raf=requestAnimationFrame(fr);},900);}
+function openIntro(key,after){if(!INTRO[key]){if(after)after();return;}IN={key,st:INTRO[key].st,i:0,raf:0,to:0,after};$('#inTitle').textContent='🎬 '+INTRO[key].t;$('#introOv').classList.add('on');S.intro[key]=true;save();playStep();}
+function closeIntro(){if(!IN)return;cancelAnimationFrame(IN.raf);clearTimeout(IN.to);hush();$('#introOv').classList.remove('on');const f=IN.after;IN=null;if(f)f();}
+$('#inNext').onclick=()=>{if(IN.i<IN.st.length-1){IN.i++;playStep();}else closeIntro();};
+$('#inBack').onclick=()=>{if(IN.i>0){IN.i--;playStep();}};
+$('#inAgain').onclick=()=>playStep();
+$('#inSpeak').onclick=()=>say(IN.st[IN.i].x);
+
+/* ---------- Merken ---------- */
+function buildMerk(){const L=$('#merkList');L.innerHTML='';
+  C.merk().forEach(m=>{const d=document.createElement('div');d.className='merk';if(m.draw){const sv=document.createElementNS(NS,'svg');sv.setAttribute('viewBox',m.vb||'0 0 110 100');m.draw(sv);d.appendChild(sv);}
+    const x=document.createElement('div');x.innerHTML=m.html;d.appendChild(x);d.onclick=()=>say(m.t);L.appendChild(d);});}
+function openMerk(){buildMerk();$('#merkOv').classList.add('on');say('Tippe auf ein Kärtchen. Dann wird es vorgelesen.');}
+$('#merkBtn').onclick=openMerk;
+$('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');hush();};
+
+/* ---------- Einstellungen ---------- */
+function segSet(id,get,set){const upd=()=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(get())));document.querySelectorAll(id+' button').forEach(b=>b.onclick=()=>{set(b.dataset.v);save();upd();});return upd;}
+const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.shots,v=>S.shots=+v),segSet('#voiceSeg',()=>S.voice?1:0,v=>S.voice=v==='1'),
+  segSet('#ansSeg',()=>S.nAns,v=>S.nAns=+v),segSet('#repSeg',()=>S.rep?1:0,v=>S.rep=v==='1'),segSet('#stgSeg',()=>S.stg,v=>S.stg=+v)].concat(C.setBind?C.setBind(segSet):[]);
+$('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
+$('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
+$('#unlockStages').onclick=()=>{S.maxStage=NST;save();$('#setOv').classList.remove('on');refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.sc=Array(NST+1).fill(0);S.maxStage=1;S.cur=1;S.seen={};S.intro={};save();refreshStart();};
+
+/* ---------- Aufgaben-Rahmen ---------- */
+const stage=$('#stage'),taskL=$('#taskL'),markL=$('#markL'),uiL=$('#uiL'),hitL=$('#hitL'),btnL=$('#btnL');
+let MODE=1,M=null,locked=false,instrText='',pendingUp=0;
+function clearStage(){[taskL,markL,uiL,hitL,btnL].forEach(l=>l.innerHTML='');}
+function setInstr(t){instrText=t;$('#instr').textContent=t;}
+function sayInstr(){say(instrText);}
+function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+(cls||'');}
+function hideFb(){$('#feedback').className='feedback';}
+function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
+function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
+function stdCtrl(help,extra){setCtrl([{t:'💡 Hilfe',fn:help}].concat(extra||[]).concat([{t:'🎬 Film',fn:()=>openIntro(M.s)},{t:'📖 Merken',fn:openMerk}]));}
+function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
+function stageStrip(s){const it=[{t:`Stufe ${s}: ${C.stages[s].n}`,c:'cur'}];if(s<S.cur)it.push({t:'🔁 Wiederholung',c:'done'});
+  if(S.maxStage<NST){it.push('|');it.push({t:`Stufe ${S.maxStage}: ⭐ ${Math.min(S.sc[S.maxStage]||0,S.stg)} von ${S.stg}`});}setStrip(it);}
+function taskStage(){const c=S.cur;if(S.rep&&c>1&&Math.random()<.25)return rint(1,c-1);return c;}
+function startMode(m){MODE=m;show('task');newTask();
+  const go=()=>{if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();};
+  if(C.firstFilm&&!S.intro[C.firstFilm])openIntro(C.firstFilm,()=>{if(!S.intro[S.cur])openIntro(S.cur,go);else go();});
+  else if(!S.intro[S.cur])openIntro(S.cur,go);else go();}
+function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();C.modes[MODE-1].newTask();}
+$('#homeBtn').onclick=()=>{show('start');refreshStart();hush();};
+$('#speakBtn').onclick=()=>sayInstr();
+function win(t){locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
+  if(s===S.maxStage&&S.maxStage<NST&&S.sc[s]>=S.stg){S.maxStage++;pendingUp=S.maxStage;}
+  save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+  setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';}
+function next(){if(pendingUp){showUp();return;}if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}
+function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(fx)fx();}
+function blinkEl(node){if(!node)return;node.classList.remove('blink');void node.getBBox();node.classList.add('blink');setTimeout(()=>node.classList.remove('blink'),2100);}
+function showUp(){const n=pendingUp;$('#upTitle').textContent=`Stufe ${n-1} geschafft!`;$('#upTxt').textContent=`Neu für dich: Stufe ${n} – ${C.stages[n].n}.`;$('#upOv').classList.add('on');confetti();sound('ok');
+  say(`Super! Du hast Stufe ${n-1} geschafft. Neu für dich: Stufe ${n}, ${C.stages[n].n}.`);}
+$('#upStay').onclick=()=>{pendingUp=0;$('#upOv').classList.remove('on');next();};
+$('#upGo').onclick=()=>{const n=pendingUp;pendingUp=0;S.cur=n;save();$('#upOv').classList.remove('on');openIntro(n,()=>next());};
+function openHelp(){const h=C.modes[MODE-1].help;$('#helpTitle').textContent='So geht es: '+C.modes[MODE-1].t;const ol=$('#helpSteps');ol.innerHTML='';h.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
+  $('#helpOv').classList.add('on');say(h.join(' '));}
+$('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
+/* Antwortkarten: fmt(v) gibt Text oder [Haupttext, Untertext] */
+function drawCards(opts,st,fmt,fn,area){btnL.innerHTML='';const n=opts.length,side=area.side;
+  const gap=side?20:(n===2?40:24),h=side?area.bot-area.top:Math.min(n===2?170:140,(area.bot-area.top-(n-1)*gap)/n),w=side?(area.w-(n-1)*gap)/n:area.w,y0=side?area.top:area.top+(area.bot-area.top-n*h-(n-1)*gap)/2;
+  opts.forEach((v,i)=>{const y=side?y0:y0+i*(h+gap),x=side?area.x+i*(w+gap):area.x,k=st[v];const g=el('g',{style:'cursor:pointer',id:'card'+i},btnL);
+    el('rect',{x,y,width:w,height:h,rx:22,fill:k==='ok'?'#C9F0D6':k==='no'?'#FDECEC':k==='sol'?'#E7F6EC':'#fff',stroke:k==='ok'||k==='sol'?'#2A9D4B':k==='no'?'#E63946':'#cbd5e1','stroke-width':k?6:3},g);
+    let f=fmt(v);if(!Array.isArray(f))f=[f,''];
+    const fs=Math.min(area.fs||52,h*.42,(w-20)/Math.max(2,f[0].length*.58));
+    txt(g,x+w/2,y+h/2-(f[1]?h*.13:0),f[0],{'font-size':fs,fill:'#1F2A37'});
+    if(f[1])txt(g,x+w/2,y+h/2+h*.22,f[1],{'font-size':Math.min(24,fs*.6),fill:'#6b7280','font-weight':400});
+    if(k==='ok'||k==='no')txt(g,x+w-24,y+26,k==='no'?'✗':'✓',{'font-size':28,fill:k==='no'?'#E63946':'#2A9D4B'});
+    if(area.draw)area.draw(g,v,x,y,w,h);
+    g.addEventListener('pointerdown',e=>{e.preventDefault();fn(v,i);});});}
+function taskBox(x,y,w,h,main,sub,col,stroke){el('rect',{x,y,width:w,height:h,rx:22,fill:col||'#FFF6CC',stroke:stroke||'#E0B000','stroke-width':4},uiL);
+  txt(uiL,x+w/2,y+(sub?h*.4:h/2),main,{'font-size':Math.min(54,h*.42,(w-20)/Math.max(2,main.length*.56)),fill:'#1F2A37'});if(sub)txt(uiL,x+w/2,y+h*.78,sub,{'font-size':22,fill:'#6b7280','font-weight':400});}
+/* Zahl-Antworten: richtige Zahl + typische Fehler */
+function numOpts(v,cands){const c=[];cands.forEach(x=>{if(x!==v&&x>=0&&!c.includes(x))c.push(x);});let g=0;while(c.length<3&&g++<50){const x=v+rint(-4,4);if(x>0&&x!==v&&!c.includes(x))c.push(x);}
+  return shuffle([v].concat(c.slice(0,S.nAns-1)));}
+
+/* ---------- Belohnung: Gummi-Schleuder (3 Runden) ---------- */
+function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
+$('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
+const ssvg=$('#ssvg');const SANC={x:160,y:430},SPL={x:126,y:400},SPR={x:194,y:400},SBR=17,SGRAV=900,MAXR=3;
+let GSL=null,sraf=null,slast=0,slingRounds=0;
+function openSling(reward){if(reward){S.done=0;save();}slingRounds=0;show('sling');startSling();say('Zieh den Gummi zurück und lass los. Triff die Ziele!');}
+function stopSling(){if(sraf)cancelAnimationFrame(sraf);sraf=null;}
+$('#sHome').onclick=()=>{stopSling();show('start');refreshStart();};
+$('#sSpeak').onclick=()=>say('Zieh den Gummi zurück und lass los. Triff die Ziele!');
+$('#slingBack').onclick=()=>{$('#slingEndOv').classList.remove('on');show('start');refreshStart();};
+$('#slingAgain').onclick=()=>{if(slingRounds>=MAXR)return;$('#slingEndOv').classList.remove('on');startSling();};
+function newTgt(){return{shape:pick(['num','num','bal']),c:pick(COLORS),x:rnd(560,920),y0:rnd(130,430),amp:rnd(20,60),sp:rnd(.6,1.4),ph:rnd(0,6.28),sz:rnd(46,58),hit:0,y:0,lab:pick(C.sling)};}
+function startSling(){GSL={shots:S.shots,hits:0,ball:{x:SANC.x,y:SANC.y,vx:0,vy:0},state:'ready',targets:[newTgt(),newTgt(),newTgt()],pops:[],t:0,aim:null};stopSling();slast=performance.now();sraf=requestAnimationFrame(sloop);}
+ssvg.addEventListener('pointerdown',e=>{if(GSL&&GSL.state==='aim'&&e.isPrimary)GSL.state='ready';if(!GSL||GSL.state!=='ready')return;const p=svgPt(ssvg,e);if(p.x>480)return;e.preventDefault();GSL.state='aim';GSL.aim=e.pointerId;try{ssvg.setPointerCapture(e.pointerId);}catch(_){}saim(p);boing();});
+window.addEventListener('pointermove',e=>{if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;saim(svgPt(ssvg,e));});
+function saim(p){let dx=p.x-SANC.x,dy=p.y-SANC.y;const d=Math.hypot(dx,dy),mx=150;if(d>mx){dx*=mx/d;dy*=mx/d;}GSL.ball.x=SANC.x+dx;GSL.ball.y=SANC.y+dy;}
+function srelease(e){if(!GSL||GSL.state!=='aim'||e.pointerId!==GSL.aim)return;const dx=SANC.x-GSL.ball.x,dy=SANC.y-GSL.ball.y;
+  if(Math.hypot(dx,dy)<20){GSL.ball.x=SANC.x;GSL.ball.y=SANC.y;GSL.state='ready';return;}
+  GSL.ball.vx=dx*7.2;GSL.ball.vy=dy*7.2;GSL.state='fly';tone(500,0,.08);tone(300,.05,.12);}
+window.addEventListener('pointerup',srelease);window.addEventListener('pointercancel',srelease);
+function sshape(g,t){const s=t.sz,c=t.c;
+  if(t.shape==='bal'){el('line',{x1:0,y1:s*.55,x2:4,y2:s*1.3,stroke:'#666','stroke-width':2},g);el('ellipse',{cx:0,cy:0,rx:s*.45,ry:s*.56,fill:c},g);el('ellipse',{cx:-s*.15,cy:-s*.2,rx:s*.1,ry:s*.16,fill:'#fff',opacity:.5},g);return;}
+  const r=s*.58;el('circle',{cx:0,cy:0,r:r+5,fill:c},g);el('circle',{cx:0,cy:0,r,fill:'#fff'},g);txt(g,0,2,t.lab,{'font-size':r*(t.lab.length>2?.6:t.lab.length>1?.8:1.1),fill:c});}
+function sloop(now){const dt=Math.min(.033,(now-slast)/1000);slast=now;GSL.t+=dt;
+  GSL.targets.forEach(t=>{t.y=t.y0+Math.sin(GSL.t*t.sp+t.ph)*t.amp;});const b=GSL.ball;
+  if(GSL.state==='fly'){b.vy+=SGRAV*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    GSL.targets.forEach((t,i)=>{if(!t.hit&&Math.hypot(b.x-t.x,b.y-t.y)<t.sz*.62+SBR){t.hit=1;GSL.hits++;sound('ok');for(let k=0;k<14;k++)GSL.pops.push({x:t.x,y:t.y,vx:rnd(-260,260),vy:rnd(-300,120),c:t.c,life:.8});setTimeout(()=>{GSL.targets[i]=newTgt();},500);}});
+    if(b.x>1040||b.y>660||b.x<-40){GSL.shots--;if(GSL.shots<=0){GSL.state='over';setTimeout(endSling,500);}else{b.x=SANC.x;b.y=SANC.y;b.vx=b.vy=0;GSL.state='ready';}}}
+  GSL.pops.forEach(p=>{p.vy+=SGRAV*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});GSL.pops=GSL.pops.filter(p=>p.life>0);
+  drawSling();if(GSL.state!=='over'||GSL.pops.length)sraf=requestAnimationFrame(sloop);}
+function drawSling(){const g=ssvg;g.innerHTML='';
+  const d=el('defs',{},g);const sky=el('linearGradient',{id:'ssky',x1:0,y1:0,x2:0,y2:1},d);el('stop',{offset:0,'stop-color':'#BFE3FF'},sky);el('stop',{offset:1,'stop-color':'#EAF6FF'},sky);
+  el('rect',{x:0,y:0,width:1000,height:620,fill:'url(#ssky)'},g);
+  [[220,90],[640,60],[850,150]].forEach(([x,y])=>{const c=el('g',{opacity:.9},g);[[0,0,34],[30,-12,40],[64,0,30]].forEach(([a,bb,r])=>el('circle',{cx:x+a,cy:y+bb,r,fill:'#fff'},c));});
+  el('rect',{x:0,y:540,width:1000,height:80,fill:'#7BC96F'},g);el('rect',{x:0,y:540,width:1000,height:10,fill:'#5DAE52'},g);
+  GSL.targets.forEach(t=>{if(t.hit)return;const tg=el('g',{transform:`translate(${t.x},${t.y}) rotate(${Math.sin(GSL.t*t.sp)*8})`},g);sshape(tg,t);});
+  GSL.pops.forEach(p=>el('circle',{cx:p.x,cy:p.y,r:7*p.life+2,fill:p.c},g));
+  el('path',{d:`M${SANC.x},560 L${SANC.x},470 L${SPL.x},${SPL.y} M${SANC.x},470 L${SPR.x},${SPR.y}`,stroke:'#8B5A2B','stroke-width':16,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},g);
+  const b=GSL.ball,pulled=GSL.state==='aim'||GSL.state==='ready';
+  if(GSL.state==='aim'){const vx=(SANC.x-b.x)*7.2,vy=(SANC.y-b.y)*7.2;for(let k=1;k<=14;k++){const tt=k*.06;el('circle',{cx:b.x+vx*tt,cy:b.y+vy*tt+SGRAV*tt*tt/2,r:9-k*.25,fill:'#F28C28',stroke:'#7A2E00','stroke-width':3,opacity:1-k*.02},g);}}
+  if(pulled)el('line',{x1:SPL.x,y1:SPL.y,x2:b.x,y2:b.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  else el('line',{x1:SPL.x,y1:SPL.y,x2:SPR.x,y2:SPR.y,stroke:'#E63946','stroke-width':8,'stroke-linecap':'round'},g);
+  if(GSL.state!=='over'){el('circle',{cx:b.x,cy:b.y,r:SBR,fill:'#444'},g);el('circle',{cx:b.x-5,cy:b.y-5,r:5,fill:'#999'},g);}
+  if(pulled)el('line',{x1:SPR.x,y1:SPR.y,x2:b.x,y2:b.y,stroke:'#C1121F','stroke-width':8,'stroke-linecap':'round'},g);
+  [SPL,SPR].forEach(p=>el('circle',{cx:p.x,cy:p.y,r:10,fill:'#eef0f3',stroke:'#7a5a30','stroke-width':2},g));
+  for(let i=0;i<GSL.shots;i++)el('circle',{cx:30+i*30,cy:30,r:11,fill:'#444'},g);
+  el('rect',{x:600,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,692,34,`Runde ${Math.min(slingRounds+1,MAXR)} von ${MAXR}`,{'font-size':22,fill:'#1F2A37'});
+  el('rect',{x:800,y:10,width:185,height:46,rx:14,fill:'#fff',opacity:.9},g);txt(g,892,34,'🎯 Treffer: '+GSL.hits,{'font-size':24,fill:'#1F2A37'});
+  if(GSL.state==='ready'&&GSL.shots===S.shots&&GSL.t<6)txt(g,330,520,'👆 Ball festhalten, zurückziehen, loslassen!',{'font-size':22,fill:'#1F2A37'});}
+function endSling(){slingRounds++;const last=slingRounds>=MAXR;
+  $('#slingEndTxt').textContent=`Du hast ${GSL.hits} Mal getroffen!`+(last?' Das waren 3 Runden.':'');
+  $('#slingAgain').style.display=last?'none':'';$('#slingAgain').textContent=`Nochmal schießen (Runde ${slingRounds+1} von ${MAXR})`;
+  $('#slingBack').textContent=last?'Weiter üben ➜':'Zurück';$('#slingBack').style.background=last?'var(--green)':'';$('#slingBack').style.color=last?'#fff':'';
+  $('#slingEndOv').classList.add('on');confetti();sound('ok');
+  say(`Toll! Du hast ${GSL.hits} Mal getroffen.`+(last?' Das waren drei Runden. Jetzt geht es weiter mit dem Üben.':''));}
+
+/* ---------- Neueste Version laden (nur auf GitHub Pages) ---------- */
+(function(){const b=document.getElementById('updBtn'),r=document.getElementById('updRow');if(!b)return;
+  if(!/github\.io$/.test(location.hostname)){r.style.display='none';return;}
+  b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
+    fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
+if(C.init)C.init();
+refreshStart();
+
+</script>
+</body>
+</html>
