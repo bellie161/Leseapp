@@ -567,5 +567,8 @@ if(C.init)C.init();
 refreshStart();
 
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>if(window.LernLog)LernLog.geo({app:'Vergleichs-Profi',uebung:()=>MODE+' '+C.modes[MODE-1].t+' · Stufe '+M.s+' '+C.stages[M.s].n,aufgabe:()=>instrText+' | '+(M.A?M.A.l+' '+(M.shown||'?')+' '+M.B.l+' (richtig: '+M.sg+')':(M.set||[]).map(x=>x.l).join(', ')+(M.word?' ('+M.word+')':'')),gesperrt:()=>locked});</script>
 </body>
 </html>

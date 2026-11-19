@@ -130,7 +130,10 @@ th{color:var(--muted);font-weight:700}
 <body>
 <div id="app"></div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
+const LL = window.LernLog || null; if (LL) LL.init('Lese-Tresor');
 /*DATA_START*/
 const STORIES = [
 {
@@ -1491,6 +1494,7 @@ function setColor(c){ document.body.style.setProperty("--c", c||"var(--accent)")
 
 /* ---------- Übersicht ---------- */
 function home(){
+  if(LL) LL.abbruch();
   clearTimers(); setColor(null); window.scrollTo(0,0);
   const totalStars = STORIES.reduce((n,s)=>n+sum(ss(s.id).sterne),0);
   const maxStars = STORIES.reduce((n,s)=>n+s.teile.length*4,0);
@@ -1569,7 +1573,8 @@ function read(id, freeIdx){
     if(fi) fi.onclick=home;
     return;
   }
-  const older=document.getElementById("older"); if(older) older.onclick=()=>textOverlay(s, idx-1);
+  if(LL) LL.start('Teil lesen', s.titel+' · Teil '+(idx+1)+' ('+words(teil.text)+' Wörter)');
+  const older=document.getElementById("older"); if(older) older.onclick=()=>{ if(LL) LL.hilfe(); textOverlay(s, idx-1); };
   const go = document.getElementById("go"), fill=document.getElementById("fill"), lbl=document.getElementById("golbl");
   const need = st.set.lesezeit ? Math.round(words(teil.text)*0.3) : 0; // Sekunden
   const t0 = Date.now();
@@ -1605,6 +1610,7 @@ function textOverlay(s, upto){
 /* ---------- Fragen ---------- */
 let Q = null;
 function quiz(id){
+  if(LL) LL.fertig(true); // Lesezeit für den Teil
   clearTimers(); window.scrollTo(0,0);
   const s = byId(id), p = ss(id); setColor(s.farbe);
   const teil = s.teile[p.teil];
@@ -1626,6 +1632,7 @@ function prepare(it){
 }
 function renderQ(){
   const {s,p,list,cur} = Q; const it = list[cur], f = it.f;
+  if(LL) LL.start('Fragen zum Teil', s.titel+' · Teil '+(p.teil+1)+': '+f.q+(f.t==='mc'?' (richtig: '+f.a[0]+')':f.t==='wort'?' (Wort: '+f.l[0]+')':' (Reihenfolge)'));
   Q.sel = null; Q.seq = [];
   const locks = list.map((_,i)=>`<span class="${i<Q.opened?'':''}">${i<Q.opened?"🔓":"🔒"}</span>`).join("");
   let body = "";
@@ -1642,7 +1649,7 @@ function renderQ(){
     <button class="btn primary" id="check" disabled>Prüfen</button>
     <button class="link" id="peek">📖 Im Text nachsehen</button></div>`;
   document.getElementById("back").onclick = home;
-  document.getElementById("peek").onclick = ()=>textOverlay(s, p.teil);
+  document.getElementById("peek").onclick = ()=>{ if(LL) LL.hilfe(); textOverlay(s, p.teil); };
   const btn = document.getElementById("check");
   if(f.t==="mc"){
     $app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>{
@@ -1699,6 +1706,10 @@ function check(){
     }
   }
   btn.disabled = true;
+  if(LL){
+    if(ok) LL.fertig(true);
+    else LL.fehler(f.t==="mc" ? (Q.sel!=null ? f.a[Q.sel] : "") : f.t==="wort" ? document.getElementById("w").value : Q.seq.map(i=>i+1).join("-"), f.t==="folge" ? "falsche Reihenfolge" : "");
+  }
   if(ok){
     if(it.tries===0) Q.stars++;
     Q.opened++;
@@ -1749,7 +1760,7 @@ function pauseOverlay(it){
     ${f.t==="folge"?`<button class="btn ghost" id="look">📖 Text ansehen</button>`:""}
     <button class="btn primary" id="again" disabled>⏳ Bitte warten …</button></div>`;
   document.body.appendChild(ov);
-  const look = ov.querySelector("#look"); if(look) look.onclick=()=>textOverlay(s,p.teil);
+  const look = ov.querySelector("#look"); if(look) look.onclick=()=>{ if(LL) LL.hilfe(); textOverlay(s,p.teil); };
   const again = ov.querySelector("#again"), rc=ov.querySelector("#rc"), rs=ov.querySelector("#rs");
   const t0 = Date.now();
   const iv = setInterval(()=>{

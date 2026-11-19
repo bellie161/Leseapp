@@ -115,7 +115,10 @@ section.area{display:flex;flex-direction:column;gap:12px}
 <body>
 <div class="wrap" id="app"></div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
+const LL=window.LernLog||null;if(LL)LL.init('Fehlerdetektiv');let llItem=null;
 const AREAS={rs:{name:"Rechtschreibung",c:"var(--rs)"},gr:{name:"Grammatik",c:"var(--gr)"},tx:{name:"Fehlertexte",c:"var(--tx)"}};
 const TOPICS=[
 {id:"dk",area:"rs",kl:[3,4],name:"Doppelkonsonanten",ex:["Sone","Sonne"],
@@ -200,7 +203,7 @@ const starStr=n=>n?"★".repeat(n)+"☆".repeat(3-n):"";
 const app=document.getElementById("app");
 const LOGO=`<svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true"><circle cx="24" cy="24" r="16" fill="var(--paper)" stroke="var(--ink)" stroke-width="5"/><path d="M36 36 L52 52" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/><path d="M15 25 l6 6 l11-13" fill="none" stroke="var(--pen)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-function home(){
+function home(){if(LL)LL.abbruch();llItem=null;
   let h=`<header class="top">${LOGO}<div><h1>Fehler<span>detektiv</span></h1><p class="sub">Finde die Fehler und verbessere sie wie ein Profi.</p></div></header>
   <div class="klasse" role="group" aria-label="Klasse wählen"><b>Klasse</b>${["3","4","beide"].map(k=>`<button class="pill" data-kl="${k}" aria-pressed="${store.kl===k}">${k==="beide"?"3 und 4":k}</button>`).join("")}</div>`;
   for(const a of ["rs","gr"]){
@@ -248,6 +251,11 @@ function item(){
   });
   const foundList=errs.filter(e=>e.state!=="open").map(e=>`<li><span class="wd"><s>${esc(e.wrong)}</s> → <b>${esc(e.right)}</b></span>${topicChip(e.topic)}</li>`).join("");
   const allDone=done===errs.length;
+  if(LL){
+    if(llItem!==it){llItem=it;LL.start((single?TOPIC[R.id].name:R.id==="texte"?"Fehlertext":"Gemischt")+" · Klasse "+(store.kl==="beide"?"3 und 4":store.kl),
+      (it.title?it.title+": ":"")+it.tokens.map(t=>t.type==="err"?t.wrong:t.text).join(" ").replace(/ ([.,!?;:])/g,"$1")+" (Fehler: "+errs.map(e=>e.wrong+" → "+e.right).join(", ")+")");}
+    if(allDone)LL.fertig(!errs.some(e=>e.state==="shown"));
+  }
   app.innerHTML=`<div class="bar"><button class="back" id="back">← Übersicht</button>${headChip}<div class="dots">${R.items.map((_,k)=>`<i class="${k<R.i?"done":k===R.i?"now":""}"></i>`).join("")}</div></div>
   <div class="sheet">
     <div class="task"><p>${it.title?`<span class="ttl">${esc(it.title)}</span><br>`:""}${allDone?"Alle Fehler verbessert!":`Finde ${errs.length} ${errs.length===1?"Fehler":"Fehler"} und tippe ${errs.length===1?"ihn":"sie"} an.`}</p><span class="count">${done} von ${errs.length}</span></div>
@@ -265,8 +273,8 @@ function item(){
   </div>`;
   document.getElementById("back").onclick=home;
   app.querySelectorAll(".w").forEach(b=>b.onclick=()=>tap(+b.dataset.k,b));
-  const rb=document.getElementById("rule"); if(rb)rb.onclick=()=>{R.showRule=!R.showRule;item();};
-  const hb=document.getElementById("hint"); if(hb)hb.onclick=()=>{it.hint=true;R.pen+=1;item();msg("Die gestrichelten Wörter sind falsch.","");};
+  const rb=document.getElementById("rule"); if(rb)rb.onclick=()=>{if(LL&&!R.showRule)LL.hilfe();R.showRule=!R.showRule;item();};
+  const hb=document.getElementById("hint"); if(hb)hb.onclick=()=>{if(LL)LL.hilfe();it.hint=true;R.pen+=1;item();msg("Die gestrichelten Wörter sind falsch.","");};
   document.getElementById("next").onclick=()=>{R.sel=null;R.showRule=false;R.i++;R.i<R.items.length?item():end();};
   const inp=document.getElementById("inp");
   if(inp){inp.focus();const c=document.getElementById("chk");c.onclick=check;inp.onkeydown=e=>{if(e.key==="Enter")check();};}
@@ -274,13 +282,14 @@ function item(){
 function msg(t,cls){const f=document.getElementById("fb");if(f){f.textContent=t;f.className="fb "+cls;}}
 function tap(k,b){
   const t=R.items[R.i].tokens[k];
-  if(t.type==="word"){R.pen+=1;b.classList.remove("nope");void b.offsetWidth;b.classList.add("nope");msg(`„${t.text}“ ist richtig geschrieben. Such weiter!`,"bad");return;}
+  if(t.type==="word"){if(LL)LL.fehler(t.text,"richtiges Wort als Fehler angetippt");R.pen+=1;b.classList.remove("nope");void b.offsetWidth;b.classList.add("nope");msg(`„${t.text}“ ist richtig geschrieben. Such weiter!`,"bad");return;}
   R.sel=k;item();msg("Gut gesehen! Dieses Wort ist falsch.","good");
 }
 function check(){
   const it=R.items[R.i],t=it.tokens[R.sel],v=document.getElementById("inp").value.trim();
   if(v===t.right){t.state="ok";R.fixed++;R.sel=null;item();msg(`Richtig: „${t.right}“`,"good");return;}
   t.tries++;R.pen+=1;
+  if(LL)LL.fehler(v,"statt „"+t.right+"“");
   if(t.tries>=2){t.state="shown";R.fixed++;R.sel=null;item();msg(`Richtig wäre: „${t.right}“. Schau es dir gut an.`,"bad");return;}
   const hintCase=v.toLowerCase()===t.right.toLowerCase()?" Achte auf groß und klein.":"";
   msg(v===t.wrong?"Du hast noch nichts verändert. Was muss anders sein?":"Noch nicht ganz. Schau genau hin!"+hintCase,"bad");

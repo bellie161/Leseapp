@@ -353,7 +353,11 @@ button:disabled{opacity:.4;cursor:default}
   </div>
 </div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
+const LL = window.LernLog || null; if (LL) LL.init('HörAbenteuer');
+document.addEventListener('click', e => { if (LL && e.target.closest && e.target.closest('#mini button')) LL.hilfe(); }, true); // nochmal anhören
 /* ---------- Geschichten ---------- */
 const STORIES = [
  {id:"bauernhof", icon:"🐄", title:"Ausflug zum Bauernhof", text:[
@@ -657,7 +661,7 @@ let story = null, session = null, qi = 0, order = [], tries = 0, answered = fals
 const SCREENS = ["scrStart","scrListen","scrQuiz","scrResult","scrRecList","scrRecStory"];
 
 function show(id){ SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); }
-function home(){ stopAll(); buildGrid(); show("scrStart"); }
+function home(){ if (LL) LL.abbruch(); stopAll(); buildGrid(); show("scrStart"); }
 
 function buildGrid(){
   const g = $("storyGrid"); g.innerHTML = "";
@@ -685,6 +689,7 @@ async function startStory(s){
     }
   }
   $("lTitle").textContent = s.icon + " " + s.title;
+  if (LL) LL.start("Geschichte anhören", s.title + " (" + s.text.join(" ").split(/\s+/).length + " Wörter, Tempo " + store.rate + ")");
   $("btnToQuiz").disabled = true;
   $("lDots").innerHTML = player.sents.map(() => "<i></i>").join("");
   $("lDots").hidden = player.mode === "audio";
@@ -740,6 +745,7 @@ function buildSpeed(){
 function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 function startQuiz(){
+  if (LL) LL.fertig(true); // Zuhörzeit
   stopAll();
   player.idx = 0; player.done = false;
   if (player.mode === "audio") audio.currentTime = 0;
@@ -754,6 +760,7 @@ function showQuestion(){
   $("qCount").textContent = `Frage ${qi + 1} von ${story.q.length}`;
   $("qDots").innerHTML = story.q.map((_, i) => `<i class="${i < qi ? (session.results[i] ? "ok" : "miss") : i === qi ? "now" : ""}"></i>`).join("");
   $("qText").textContent = q;
+  if (LL) LL.start("Fragen zur Geschichte", story.title + ": " + q + " (richtig: " + opts[0] + ")");
   $("feedback").textContent = ""; $("feedback").className = "feedback";
   $("btnNext").hidden = true;
   const box = $("answers"); box.innerHTML = "";
@@ -781,12 +788,14 @@ function choose(btn, o){
     btn.classList.add("right");
     session.results[qi] = tries === 1;
     if (tries === 1) session.firstTry++;
+    if (LL) LL.fertig(true);
     $("feedback").textContent = tries === 1 ? "Richtig! Super zugehört! ⭐" : "Richtig! Gut gemacht!";
     $("feedback").className = "feedback ok";
     tone(true); feedbackSay(["Richtig!"]);
     lockAnswers(); $("btnNext").hidden = false;
   } else {
     btn.classList.add("wrong", "shake"); btn.disabled = true;
+    if (LL) { LL.fehler(o.t); if (tries >= 2) LL.fertig(false); }
     tone(false);
     if (tries >= 2){
       answered = true; session.results[qi] = false;

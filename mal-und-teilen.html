@@ -274,9 +274,12 @@ button.vorrat:active{transform:scale(.98)}
   </section>
 </div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
 (() => {
 "use strict";
+const LL = window.LernLog || null; if (LL) LL.init("Mal & Teilen");
 const $ = s => document.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -311,7 +314,7 @@ const stageTitle = (s, st) => s === 0 ? "Alle Reihen gemischt" : STAGE[st].t;
 
 /* ---------- screens ---------- */
 const screens = ["home", "stagesScreen", "play", "doneScreen", "settings"];
-function show(id) { screens.forEach(s => $("#" + s).hidden = s !== id); window.scrollTo(0, 0); if (id !== "play") stopCount(); }
+function show(id) { if (LL && id !== "play") LL.abbruch(); screens.forEach(s => $("#" + s).hidden = s !== id); window.scrollTo(0, 0); if (id !== "play") stopCount(); }
 function tint(k) { const s = SER[k]; document.documentElement.style.setProperty("--c", s.c); document.documentElement.style.setProperty("--cl", s.cl); }
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "home") renderHome(); show(b.dataset.go); });
 
@@ -448,6 +451,8 @@ function renderTask() {
   area.innerHTML = ""; $("#eqs").innerHTML = ""; $("#choices").innerHTML = ""; tools.innerHTML = "";
   $("#fb").textContent = ""; $("#fb").className = "fb"; $("#next").hidden = true; S.q = null;
   updateDots();
+  if (LL) LL.start(SER[S.series].name + " · " + stageTitle(S.series, S.stage), (() => { const m = n + " · " + k + " = " + (n * k), d = (n * k) + " : " + k + " = " + n;
+    return S.stage === "A" ? m : S.stage === "B" || S.stage === "C" ? d : S.stage === "D" ? m + " und " + d : (t.op === "mul" ? m : d); })());
 
   if (S.stage === "A") {
     prompt.textContent = k === 10 ? "Wie viele sind es? Zähle in Zehner-Schritten." : `Wie viele sind es? Zähle in ${k}er-Schritten.`;
@@ -535,7 +540,7 @@ function renderTask() {
     ask(q, () => { picBtn.remove(); finish(); });
   }
 }
-function toolBtn(label, fn) { const b = el("button", "soft", label); b.type = "button"; b.onclick = fn; $("#tools").appendChild(b); return b; }
+function toolBtn(label, fn) { const b = el("button", "soft", label); b.type = "button"; b.onclick = (e) => { if (LL) LL.hilfe(); return fn(e); }; $("#tools").appendChild(b); return b; }
 
 function eqLine(q) {
   return el("div", "eq" + (q.op === ":" ? " div" : ""),
@@ -569,6 +574,7 @@ function ask(q, onDone, keep) {
         setTimeout(() => { ch.innerHTML = ""; onDone(); }, 900);
       } else {
         S.mistakes++; b.classList.add("wrong"); b.disabled = true;
+        if (LL) LL.fehler(String(v), "Aufgabe: " + q.a + " " + q.op + " " + q.b + " = " + q.ans);
         const fb = $("#fb"); fb.textContent = "Lass uns nachzählen."; fb.className = "fb";
         if (q.help) q.help();
       }
@@ -576,7 +582,7 @@ function ask(q, onDone, keep) {
     ch.appendChild(b);
   });
 }
-function finish() { $("#tools").innerHTML = ""; const nx = $("#next"); nx.hidden = false; nx.focus({ preventScroll: true }); }
+function finish() { if (LL) LL.fertig(true); $("#tools").innerHTML = ""; const nx = $("#next"); nx.hidden = false; nx.focus({ preventScroll: true }); }
 $("#next").onclick = () => { S.i++; if (S.i >= S.tasks.length) done(); else renderTask(); };
 
 /* ---------- done ---------- */

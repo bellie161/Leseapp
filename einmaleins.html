@@ -616,5 +616,8 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
   b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
     fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>if(window.LernLog)LernLog.geo({app:'Einmaleins-Profi',uebung:()=>LernLog.text('.mode[data-m="'+MODE+'"]')+' · Stufe '+M.s+' '+STAGES[M.s].n,aufgabe:()=>instrText+' | '+(MODE==1?M.k+' · '+M.n+' = '+M.v:MODE==2?M.n+'er-Reihe, gesucht '+M.v:MODE==3?M.T+' : '+M.n+' = '+M.k+' ('+(M.kind==='ver'?'verteilen':'aufteilen')+')':(M.q||[]).map(q=>q.t+' = '+q.v).join(', ')),gesperrt:()=>locked});</script>
 </body>
 </html>

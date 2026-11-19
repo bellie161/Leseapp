@@ -251,9 +251,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <div class="wrap" id="app"></div>
 <div id="overlay" class="overlay" hidden></div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
 (function(){
 "use strict";
+const LL=window.LernLog||null;if(LL)LL.init('Geldladen');
 const $=(s,el=document)=>el.querySelector(s);
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -426,6 +429,7 @@ function showHome(){
 }
 
 function showStages(zr){
+  if(LL)LL.abbruch();
   sess=null;
   const firstOpen=STAGES.findIndex((s,i)=>unlocked(zr,i)&&!getP(zr,i).done);
   const rows=STAGES.map((s,i)=>{const p=getP(zr,i);const open=unlocked(zr,i);
@@ -462,7 +466,7 @@ function startStage(zr,si){sess={zr,si,queue:[],last:null};
   bindTop();
   $('#btn-back').onclick=()=>showStages(zr);
   $('#btn-speak').onclick=()=>speak(sess.speakText||$('#prompt').textContent);
-  $('#btn-tip').onclick=()=>{if(sess.onTip)sess.onTip()};
+  $('#btn-tip').onclick=()=>{if(LL)LL.hilfe();if(sess.onTip)sess.onTip()};
   $('#btn-calc').onclick=openCalc;
   $('#btn-check').onclick=()=>{if(sess.onCheck&&!sess.locked)sess.onCheck()};
   nextTask();
@@ -486,6 +490,7 @@ function nextTask(){
   $('#repeat').innerHTML=rep?'<span class="repeat-tag">Diese Aufgabe kennst du schon. Probier es noch einmal!</span>':'';
   resetStep();
   RENDER[t.type](t);
+  if(LL)LL.start('Zahlenraum '+sess.zr+' · '+STAGES[sess.si].name+(rep?' (Wiederholung)':''),$('#prompt').textContent);
 }
 function resetStep(){
   sess.locked=false;sess.onCheck=null;sess.onTip=null;sess.numpad=null;sess.tries=0;
@@ -503,6 +508,7 @@ function answer(ok,wrongMsg,solution,onOk,onSolution){
   if(sess.locked)return;
   if(ok){sess.tries=0;if(onOk){onOk()}else finishTask();return}
   sess.firstTry=false;sess.tries++;getP(sess.zr,sess.si).err++;save();
+  if(LL){const sl=$('#slot');LL.fehler(sl&&!sl.classList.contains('empty')?sl.textContent:'',wrongMsg);if(sess.tries>=2)sess.llSol=true;}
   if(sess.tries<2){setFeedback('bad',wrongMsg+' Versuch es noch einmal.');if(sess.onTip)sess.onTip(true)}
   else{sess.locked=true;if(onSolution)onSolution();
     setFeedback('bad',wrongMsg+` Richtig ist: <b>${solution}</b>.`);
@@ -510,6 +516,7 @@ function answer(ok,wrongMsg,solution,onOk,onSolution){
 }
 function resetStepKeep(){sess.locked=false;sess.tries=0;$('#feedback').hidden=true;$('#btn-next').hidden=true;$('#btn-check').hidden=false;$('#btn-tip').hidden=false}
 function finishTask(silent){
+  if(LL){LL.fertig(!sess.llSol);sess.llSol=false;}
   const p=getP(sess.zr,sess.si);
   if(sess.firstTry){p.ok++}else{sess.queue.push({task:sess.task,due:3})}
   save();sess.locked=true;

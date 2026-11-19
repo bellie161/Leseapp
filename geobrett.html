@@ -526,5 +526,8 @@ function endRound(){slingRounds++;const last=slingRounds>=MAXR;
   b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
     fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>if(window.LernLog)LernLog.geo({app:'Geobrett',uebung:()=>LernLog.text('.mode[data-mode="'+MODE+'"]')+' · '+N+'x'+N+' · '+S.level,gesperrt:()=>locked,done:['success'],skip:()=>MODE==='free'});</script>
 </body>
 </html>

@@ -454,5 +454,8 @@ strokeLayer.setAttribute('pointer-events','none');stage.appendChild(strokeLayer)
   b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
     fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>if(window.LernLog)LernLog.geo({app:'Winkel-Zeichner',uebung:()=>LernLog.text('.mode[data-l="'+LVL+'"]'),gesperrt:()=>locked,done:['success']});</script>
 </body>
 </html>

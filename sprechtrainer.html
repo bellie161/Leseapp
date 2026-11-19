@@ -200,7 +200,10 @@ dialog small{color:var(--muted);display:block}
   </form>
 </dialog>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
+const LL = window.LernLog || null; if (LL) LL.init('Sprechtrainer');
 const SAETZE = {
   1: ["Ich bin froh.","Die Sonne scheint.","Der Hund bellt.","Mama kocht Suppe.","Ich mag Eis.","Das Auto ist rot.","Wir spielen Ball.","Die Katze schläft.","Der Baum ist groß.","Ich male ein Bild."],
   2: ["Ich gehe heute in die Schule.","Mein Freund heißt Paul.","Der Ball rollt unter den Tisch.","Am Morgen trinke ich Milch.","Im Winter fällt weißer Schnee.","Der Vogel sitzt auf dem Dach.","Wir lesen ein lustiges Buch.","Oma backt einen leckeren Kuchen.","Ich putze mir die Zähne.","Der Bus kommt um acht Uhr."],
@@ -271,11 +274,12 @@ function zeigeSatz(){
   const el = $("satz"); el.innerHTML="";
   satz.split(/\s+/).forEach((w,k)=>{
     const s=document.createElement("span"); s.className="wort"; s.textContent=w; s.dataset.k=k;
-    s.addEventListener("click",()=>sprich(w.replace(/[.,!?;:]/g,""), 0.7));
+    s.addEventListener("click",()=>{ if(LL) LL.hilfe(); sprich(w.replace(/[.,!?;:]/g,""), 0.7); });
     el.appendChild(s); el.appendChild(document.createTextNode(" "));
   });
   $("zaehler").textContent = "Satz "+(index+1)+" von "+liste.length;
   zuruecksetzenErgebnis();
+  if(LL){ const c=document.querySelector('.chip[data-stufe="'+stufe+'"]'); LL.start("Vorlesen · "+(c?c.textContent.trim():stufe), satz); }
 }
 function zuruecksetzenErgebnis(){
   const e=$("erkannt"); e.textContent="Drücke auf den roten Knopf und lies den Satz laut vor."; e.classList.add("leer");
@@ -448,6 +452,10 @@ function auswerten(){
   const st = vergleichen(worte, transkript.split(/\s+/));
   document.querySelectorAll(".wort").forEach((w,k)=>{ w.classList.remove("ok","fast","fehlt"); w.classList.add(st[k]); });
   const ok = st.filter(s=>s==="ok").length, fast = st.filter(s=>s==="fast").length, n = st.length;
+  if(LL){
+    if(ok===n) LL.fertig(true);
+    else LL.fehler(transkript, "undeutlich: "+worte.filter((w,k)=>st[k]!=="ok").join(" "));
+  }
   let text;
   if(ok===n){ text="Super! Alle "+n+" Wörter waren deutlich. ★"; sterne++; speichern("sterne",sterne); zeigeSterne(); }
   else if(ok+fast===n){ text="Toll! Alle Wörter erkannt, "+ok+" ganz deutlich. Übe die gelben Wörter noch einmal."; }
@@ -463,7 +471,7 @@ $("btnRec").addEventListener("click",()=>{
   return laeuft ? stopp() : start();
 });
 $("btnStimme").addEventListener("click",stimmeUmschalten);
-$("btnVorlesen").addEventListener("click",()=>sprich(liste[index]));
+$("btnVorlesen").addEventListener("click",()=>{ if(LL) LL.hilfe(); sprich(liste[index]); });
 $("btnWeiter").addEventListener("click",()=>{ if(laeuft) return; if(aufnahmeURL){URL.revokeObjectURL(aufnahmeURL);aufnahmeURL=null;} index=(index+1)%liste.length; if(index===0) liste=mischen(aktuelleListe()); zeigeSatz(); });
 $("btnMeine").addEventListener("click",()=>{ const p=$("player"); p.currentTime=0; p.play().catch(()=>{}); });
 $("btnNochmal").addEventListener("click",()=>{ zuruecksetzenErgebnis(); });

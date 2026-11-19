@@ -231,8 +231,11 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
   </section>
 </div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
 (function(){
+const LL=window.LernLog||null;if(LL)LL.init('Blitzblick');
 const NS='http://www.w3.org/2000/svg';
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem('blitzblick_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
@@ -394,7 +397,7 @@ const G={level:null,i:0,total:10,stars:[],task:null,tries:0,last:'',to:0,step:0,
 const el={home:$('home'),play:$('play'),end:$('end'),q:$('q'),pic:$('pic'),cover:$('cover'),look:$('look'),coverMsg:$('coverMsg'),
   timer:$('timerbar'),fb:$('fb'),answers:$('answers'),again:$('again'),next:$('nextBtn'),track:$('track')};
 
-function show(sec){['home','play','end'].forEach(s=>el[s].hidden=s!==sec);window.scrollTo(0,0)}
+function show(sec){if(LL&&sec!=='play')LL.abbruch();['home','play','end'].forEach(s=>el[s].hidden=s!==sec);window.scrollTo(0,0)}
 function starSvg(kind){return `<svg viewBox="0 0 24 24" aria-hidden="true"><path class="star-${kind}" d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.3l-5.8 3.1 1.2-6.5L2.6 9.4l6.5-.8z"/></svg>`}
 function drawTrack(target){let h='';for(let i=0;i<G.total;i++)h+=starSvg(G.stars[i]||'empty');target.innerHTML=h}
 
@@ -407,6 +410,9 @@ function nextTask(){
   el.fb.hidden=true;el.next.hidden=true;el.again.hidden=true;el.answers.innerHTML='';
   renderPic('plain');
   setQ(t.q);
+  if(LL){const lv=LEVELS.find(x=>x.id===G.level)||{};const nm={h:'H',z:'Z',e:'E'};
+    LL.start((lv.lv||'')+' '+(lv.title||G.level)+' · Zeigezeit '+(G.level==='z1000'?10:S.time)+' s'+(S.step?' · stellenweise':''),
+      t.type==='dots'?t.q+' | '+t.n+' Punkte':t.q+' | '+t.show.map(k=>t.counts[k]+nm[k]).join(' ')+' (Antwort '+t.answer+')');}
   if(S.time===0){el.cover.hidden=true;startAsk()}
   else{el.cover.hidden=false;el.look.hidden=false;el.coverMsg.hidden=true;el.look.focus({preventScroll:true})}
 }
@@ -442,6 +448,7 @@ function renderStep(){
   setQ('Wie viele '+NAMES[k].sg+'?');
 }
 function help(btn){
+  if(LL)LL.fehler(btn.textContent,G.task.type==='place'&&S.step?'Stelle '+G.task.show[G.step]:'');
   G.tries++;hmm();btn.classList.add('wrong');
   const box=btn.parentElement;box.classList.remove('shake');void box.offsetWidth;box.classList.add('shake');
   clearTimeout(G.to);el.cover.hidden=true;el.again.hidden=true;
@@ -466,6 +473,7 @@ function chooseDigit(d,btn){
 }
 const PRAISE=['Super!','Richtig!','Toll gemacht!','Prima!','Klasse!'];
 function done(){
+  if(LL)LL.fertig(true);
   clearTimeout(G.to);
   const t=G.task;G.stars[G.i]=G.tries===0?'gold':'silver';
   drawTrack(el.track);
@@ -511,7 +519,7 @@ function chips(id,opts,key,after){
 }
 $('nameIn').addEventListener('input',e=>{S.name=e.target.value.trim()||'Jakob';store.set('name',S.name);$('nm').textContent=S.name});
 el.look.addEventListener('click',()=>{tone(520,.08);flash()});
-el.again.addEventListener('click',flash);
+el.again.addEventListener('click',()=>{if(LL)LL.hilfe();flash()});
 el.next.addEventListener('click',()=>{G.i++;nextTask()});
 $('sayq').addEventListener('click',()=>{const s=S.sound;S.sound=true;say(el.q.textContent);S.sound=s});
 $('back').addEventListener('click',()=>{clearTimeout(G.to);try{speechSynthesis.cancel()}catch(e){}show('home')});

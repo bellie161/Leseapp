@@ -71,6 +71,7 @@
     var t = task; task = null;
     if (t.test) return; // Testmodus
     if (r === 'abbr' && t.f === 0 && t.h === 0 && t.ms < 5000) return; // nur kurz angesehen → nicht zählen
+    if (r === 'abbr' && t.f > 0) r = 'nein'; // nach Fehlern verlassen oder Lösung gezeigt → nicht gelöst
     upsert(rec(t, r)); saveSess();
   }
 
@@ -108,27 +109,52 @@
     fertig: function (geloest) { if (task) close(geloest === false ? 'nein' : task.f ? 'spaet' : 'ok'); },
     abbruch: function () { close('abbr'); },
     aktiv: function () { return !!task; },
+    aktuell: function () { return task ? { ue: task.ue, au: task.au, f: task.f, h: task.h } : null; },
     testmodus: isTest,
 
-    /* Automatisches Einhängen in die Geometrie-Apps (newTask / win / sound / feedback) */
+    /* Globale Funktion einer App umhüllen: vorher/nachher eigene Schritte */
+    wrap: function (name, before, after) {
+      var W = window, f = W[name]; if (typeof f !== 'function') return false;
+      W[name] = function () {
+        var ctx = {};
+        try { before && before.apply(ctx, arguments); } catch (e) {}
+        var r = f.apply(this, arguments);
+        try { after && after.apply(ctx, arguments); } catch (e) {}
+        return r;
+      };
+      return true;
+    },
+
+    /* Text eines Knopfs/Elements, Bruchstücke mit „ · “ verbunden */
+    text: function (sel) {
+      var b = typeof sel === 'string' ? document.querySelector(sel) : sel;
+      var parts = [], wk = b ? document.createTreeWalker(b, NodeFilter.SHOW_TEXT) : null, n;
+      while (wk && (n = wk.nextNode())) {
+        if (n.parentNode && n.parentNode.closest && n.parentNode.closest('svg')) continue; // Bildtexte überspringen
+        var x = n.nodeValue.replace(/[^\wäöüÄÖÜß?&:=+,.\- ]+/g, ' ').replace(/\s+/g, ' ').trim();
+        if (/[A-Za-zäöüÄÖÜß]{2}/.test(x) || /^\d+$/.test(x)) parts.push(x);
+      }
+      return parts.join(' · ').replace(/^(\d+) · /, '$1 ');
+    },
+
+    /* Automatisches Einhängen in Apps mit newTask / win / sound / feedback.
+       Optionen: app, modus() oder uebung(), aufgabe(), gesperrt(), hints[], start ('newTask'),
+       done (['win']), okSound (Erfolgston sound('ok') = gelöst) */
     geo: function (o) {
       L.init(o.app);
       var W = window;
       function modeName() {
+        if (o.uebung) { try { return o.uebung() || 'Übung'; } catch (e) { return 'Übung'; } }
         try {
-          var m = o.modus(), b = document.querySelector('.mode[data-m="' + m + '"]');
-          var parts = [], wk = b ? document.createTreeWalker(b, NodeFilter.SHOW_TEXT) : null, n;
-          while (wk && (n = wk.nextNode())) {
-            var x = n.nodeValue.replace(/[^\wäöüÄÖÜß?&:=+,.\- ]+/g, ' ').replace(/\s+/g, ' ').trim();
-            if (/[A-Za-zäöüÄÖÜß]{2}/.test(x) || /^\d+$/.test(x)) parts.push(x);
-          }
-          var t = parts.join(' · ').replace(/^(\d+) · /, '$1 ');
-          return t || ('Übung ' + m);
+          var m = o.modus(); return L.text('.mode[data-m="' + m + '"]') || ('Übung ' + m);
         } catch (e) { return 'Übung'; }
       }
       function taskText() {
-        var a = ''; try { a = o.aufgabe() || ''; } catch (e) {}
-        var st = document.getElementById('strip'); var s = st ? (st.innerText || st.textContent || '').replace(/\s+/g, ' ').trim() : '';
+        var a = '';
+        try { a = o.aufgabe ? o.aufgabe() || '' : ((document.getElementById('instr') || {}).textContent || ''); } catch (e) {}
+        var st = document.getElementById('strip'), s = '';
+        if (st) s = [].map.call(st.children, function (c) { return (c.textContent || '').replace(/\s+/g, ' ').trim(); })
+          .filter(function (t) { return t && !/⭐|🎯|^Stufe \d/.test(t); }).join(' · ');
         return s ? a + ' [' + s + ']' : a;
       }
       function wrap(name, before, after) {
@@ -140,15 +166,23 @@
           return r;
         };
       }
-      wrap('newTask', null, function () { L.start(modeName(), taskText()); });
-      wrap('win', function () { L.fertig(true); });
+      wrap(o.start || 'newTask', null, function () {
+        if (o.skip && o.skip()) { L.abbruch(); return; } // z. B. freies Spannen: keine Aufgabe
+        L.start(modeName(), taskText());
+      });
+      (o.done || ['win']).forEach(function (d) { wrap(d, function () { L.fertig(true); }); });
       wrap('sound', function (k) { // Fehlerton = falscher Versuch (nicht bei Animationen nach richtiger Antwort)
         if (k === 'no' && !(o.gesperrt && o.gesperrt())) L.fehler('', '');
+        if (k === 'ok' && o.okSound) L.fertig(true);
       });
       wrap('feedback', function (t, cls) { if (cls === 'try') L.notiz(t); });
       var lastHelp = 0; // Tipp-Knopf; automatische Tipps (Aufruf mit true) und Doppelzählungen ignorieren
-      (o.hints || []).forEach(function (h) { wrap(h, function (auto) {
-        if (auto === true || Date.now() - lastHelp < 1500) return; lastHelp = Date.now(); L.hilfe(); }); });
+      function help() { if (Date.now() - lastHelp < 1500) return; lastHelp = Date.now(); L.hilfe(); }
+      (o.hints || []).forEach(function (h) { wrap(h, function (auto) { if (auto !== true) help(); }); });
+      document.addEventListener('click', function (e) { // alle Knöpfe mit 💡
+        var b = e.target && e.target.closest && e.target.closest('button');
+        if (b && b.textContent.indexOf('\uD83D\uDCA1') >= 0) help();
+      }, true);
       var hb = document.getElementById('helpBtn'); if (hb) hb.addEventListener('click', function () { L.hilfe(); });
       var home = document.getElementById('homeBtn'); if (home) home.addEventListener('click', function () { L.abbruch(); });
     }

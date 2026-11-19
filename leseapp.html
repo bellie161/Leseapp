@@ -535,7 +535,10 @@
   </div>
 </div>
 
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
 <script>
+const LL = window.LernLog || null; if (LL) LL.init('LeseAbenteuer');
 const TEXTS = [
   {
     title: "Die schlaue Krähe",
@@ -1810,6 +1813,7 @@ function openText(index) {
   document.getElementById('readingTitle').textContent = t.title;
   document.getElementById('readingContent').textContent = t.text;
   showScreen('screen-reading');
+  if (LL) LL.start('Text lesen', t.title + ' (' + t.text.trim().split(/\s+/).length + ' Wörter)');
 }
 
 function startRandom() {
@@ -1826,14 +1830,15 @@ function startRandom() {
 }
 
 function startQuestions() {
+  if (LL) LL.fertig(true); // Lesezeit
   state.qIndex = 0;
   state.score = 0;
   showQuestion();
   showScreen('screen-question');
 }
 
-function rereadText() { showScreen('screen-reading'); }
-function goHome() { showScreen('screen-start'); }
+function rereadText() { if (LL) LL.hilfe(); showScreen('screen-reading'); }
+function goHome() { if (LL) LL.abbruch(); showScreen('screen-start'); }
 
 function showQuestion() {
   const t = TEXTS[state.currentText];
@@ -1844,6 +1849,7 @@ function showQuestion() {
   document.getElementById('progressFill').style.width = filled + '%';
   document.getElementById('progressLabel').textContent = `Frage ${state.qIndex + 1} von ${total}`;
   document.getElementById('questionText').textContent = q.q;
+  if (LL) LL.start('Fragen zum Text', t.title + ': ' + q.q + ' (richtig: ' + q.options[q.correct] + ')');
   const optsDiv = document.getElementById('options');
   optsDiv.innerHTML = '';
   q.options.forEach((opt, i) => {
@@ -1870,6 +1876,7 @@ function answer(chosen, btn) {
     if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
   });
   const fb = document.getElementById('feedback');
+  if (LL) { if (chosen !== q.correct) LL.fehler(q.options[chosen]); LL.fertig(chosen === q.correct); }
   if (chosen === q.correct) {
     state.score++;
     fb.className = 'feedback right';

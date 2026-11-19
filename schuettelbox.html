@@ -383,6 +383,24 @@ function showEnd(){
 }
 startRound();
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>
+if(window.LernLog){(function(L){
+  L.init('Schüttelbox');
+  const ue=()=>{const m=MODES.find(x=>x.id===S.mode);return (m?m.name:S.mode)+' · '+(typeof S.nset==='number'?'Zahl '+S.nset:S.nset)+' · '+(S.order==='five'?'Fünferreihen':'durcheinander');};
+  const au=()=>{const t=S.task;return S.mode==='D'?'Zahlenhaus '+t.n+': '+t.n+' = '+t.l+' + '+t.r:t.n+' = '+t.l+' + '+t.r;};
+  L.wrap('newTask',null,()=>{if(S.phase==='answer')L.start(ue(),au());else L.abbruch();});
+  L.wrap('doShake',null,()=>L.start(ue(),au()));
+  L.wrap('check',function(){this.tries=S.tries;},function(){
+    const t=S.task;
+    if(S.phase==='solved')L.fertig(true);
+    else if(S.tries>this.tries)L.fehler(t.fields.map(f=>f.val).join(' / '),document.getElementById('feedback').textContent);
+  });
+  document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#bPeek'))L.hilfe();},true);
+  if(S.task&&S.phase==='answer')L.start(ue(),au()); // erste Aufgabe läuft schon beim Laden
+})(window.LernLog);}
+</script>
 <script src="https://bellie161.github.io/Leseapp/appsnav.js" defer></script>
 </body>
 </html>

@@ -701,5 +701,8 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
   b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
     fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>if(window.LernLog)LernLog.geo({app:'Uhren-Profi',uebung:()=>LernLog.text('.mode[data-m="'+MODE+'"]')+' · Stufe '+M.s+' '+STAGES[M.s].n,aufgabe:()=>{const f=t=>Math.floor(t/60)+':'+String(t%60).padStart(2,'0');return instrText+' | Uhrzeit '+f(M.T)+(MODE==3?' → richtig '+M.h24+':'+String(M.m).padStart(2,'0')+' Uhr ('+M.p.t+')':'');},gesperrt:()=>locked});</script>
 </body>
 </html>
