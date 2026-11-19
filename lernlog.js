@@ -33,6 +33,25 @@
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function clip(s, n) { s = s == null ? '' : String(s).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
+  /* Testmodus: Erwachsene testen die Apps, ohne dass etwas aufgezeichnet wird.
+     Einschalten auf lernstand.html (PIN), endet von selbst nach 4 Stunden. */
+  var TKEY = 'lernlog.test';
+  function isTest() { try { return Date.now() < +(localStorage.getItem(TKEY) || 0); } catch (e) { return false; } }
+  function testBanner() {
+    var on = isTest(), b = document.getElementById('lernlogTest');
+    if (!on) { if (b) b.remove(); return; }
+    if (b || !document.body) return;
+    b = document.createElement('div'); b.id = 'lernlogTest';
+    b.style.cssText = 'position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:99999;background:#5b3fa8;color:#fff;' +
+      'font:600 15px/1.2 system-ui,sans-serif;padding:8px 8px 8px 14px;border-radius:14px;box-shadow:0 3px 10px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;white-space:nowrap';
+    b.innerHTML = '🧪 Testmodus – wird nicht aufgezeichnet <button type="button" style="font:inherit;border:none;border-radius:10px;padding:6px 10px;background:#fff;color:#5b3fa8;cursor:pointer">Beenden</button>';
+    b.querySelector('button').onclick = function (e) { e.stopPropagation(); try { localStorage.removeItem(TKEY); } catch (_) {} testBanner(); };
+    document.body.appendChild(b);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', testBanner); else testBanner();
+  window.addEventListener('pageshow', testBanner);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) testBanner(); });
+
   var app = null, sess = null, task = null, lastAct = Date.now(), visible = !document.hidden, lastErr = 0, noted = true;
 
   function tick() {
@@ -41,7 +60,7 @@
     if (sess) sess.ms += add;
     if (task) task.ms += add;
   }
-  function saveSess() { if (sess && sess.ms > 0) upsert({ id: sess.id, typ: 's', app: app, t0: sess.t0, s: Math.round(sess.ms / 1000) }); }
+  function saveSess() { if (sess && sess.ms > 0 && !sess.test) upsert({ id: sess.id, typ: 's', app: app, t0: sess.t0, s: Math.round(sess.ms / 1000) }); }
   function rec(t, r) {
     return { id: t.id, typ: 'a', app: app, ue: t.ue, au: t.au, t0: t.t0, s: Math.round(t.ms / 1000),
              f: t.f, fa: t.fa, h: t.h, r: r };
@@ -50,6 +69,7 @@
     if (!task) return;
     tick();
     var t = task; task = null;
+    if (t.test) return; // Testmodus
     if (r === 'abbr' && t.f === 0 && t.h === 0 && t.ms < 5000) return; // nur kurz angesehen → nicht zählen
     upsert(rec(t, r)); saveSess();
   }
@@ -65,13 +85,14 @@
     init: function (name) {
       if (app) return;
       app = name; lastAct = Date.now();
-      sess = { id: uid(), t0: Date.now(), ms: 0 };
+      sess = { id: uid(), t0: Date.now(), ms: 0, test: isTest() };
     },
     start: function (ue, au) {
       if (!app) return;
       if (task) close('abbr');
       tick();
-      task = { id: uid(), ue: clip(ue, 70), au: clip(au, 160), t0: Date.now(), ms: 0, f: 0, fa: [], h: 0 };
+      if (sess && isTest()) sess.test = true;
+      task = { test: isTest(), id: uid(), ue: clip(ue, 70), au: clip(au, 160), t0: Date.now(), ms: 0, f: 0, fa: [], h: 0 };
     },
     fehler: function (antwort, info) {
       if (!task) return;
@@ -87,6 +108,7 @@
     fertig: function (geloest) { if (task) close(geloest === false ? 'nein' : task.f ? 'spaet' : 'ok'); },
     abbruch: function () { close('abbr'); },
     aktiv: function () { return !!task; },
+    testmodus: isTest,
 
     /* Automatisches Einhängen in die Geometrie-Apps (newTask / win / sound / feedback) */
     geo: function (o) {

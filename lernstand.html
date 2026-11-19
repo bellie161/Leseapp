@@ -49,6 +49,7 @@
   .trend{font-size:.85rem;white-space:nowrap}
   .up{color:var(--ok)}.down{color:var(--no)}
   details{margin-top:10px}
+  .guide details{margin-top:0}.guide h4{font-family:Fredoka,sans-serif;margin:14px 0 4px;font-size:1.02rem}.guide ol{margin:0;padding-left:22px}.guide li{margin:5px 0}
   summary{cursor:pointer;color:var(--acc);font-weight:700}
   .err{border-left:4px solid var(--no);padding:6px 10px;margin:8px 0;background:#fdf3f0;border-radius:0 10px 10px 0;font-size:.93rem}
   .err .when{color:var(--soft);font-size:.82rem}
@@ -94,6 +95,13 @@
     <div class="row"><a href="./"><button class="light">← Lern-Apps</button></a><button class="light" id="lockBtn">🔒 Sperren</button></div>
   </div>
 
+  <div class="card" id="testCard" style="margin:0 0 16px">
+    <div class="row" style="justify-content:space-between">
+      <div><h3>🧪 Testmodus</h3><p class="meta" id="testInfo" style="margin:4px 0 0"></p></div>
+      <button id="testBtn"></button>
+    </div>
+  </div>
+
   <div class="row"><span class="lbl">Zeitraum:</span><span class="row" id="rangeSel"></span></div>
   <div class="row" style="margin-top:8px" id="devRow"><span class="lbl">Gerät:</span><span class="row" id="devSel"></span></div>
 
@@ -109,6 +117,26 @@
   <div id="apps"></div>
 
   <h2>Bericht und Austausch</h2>
+  <div class="card guide">
+    <details>
+      <summary>📲 Anleitung: Jakobs Daten auf mein iPad holen und auswerten lassen</summary>
+      <h4>Auf Jakobs iPad</h4>
+      <ol>
+        <li>Die Startseite <b>„Meine Lern-Apps“</b> öffnen, ganz nach unten scrollen und auf <b>„🔒 Lernstand“</b> tippen. PIN eingeben.</li>
+        <li>Nach unten scrollen bis <b>„Daten zum anderen iPad schicken“</b> und auf <b>„📤 Alle Daten teilen“</b> tippen.</li>
+        <li>Im Teilen-Fenster <b>AirDrop</b> antippen und dann Ihr iPad auswählen.</li>
+      </ol>
+      <h4>Auf Ihrem iPad</h4>
+      <ol start="4">
+        <li>AirDrop <b>annehmen</b>. Die Datei landet in der App <b>„Dateien“</b> im Ordner <b>„Downloads“</b>. Fragt das iPad nach, <b>„In Dateien sichern“</b> wählen.</li>
+        <li>Hier im Lernstand nach unten zu <b>„Daten übernehmen“</b>: auf <b>„Datei auswählen“</b> tippen, im Ordner „Downloads“ die Datei <b>„Lernstand-Daten-…“</b> antippen und dann auf <b>„⬇️ Übernehmen“</b> tippen.</li>
+        <li>Oben bei „Gerät“ <b>„alle Geräte“</b> wählen. Jetzt sehen Sie alles zusammen.</li>
+        <li>Für die Auswertung auf <b>„📋 Bericht kopieren“</b> tippen und den Text im Chat mit Claude einfügen.</li>
+      </ol>
+      <p class="meta"><b>Ohne AirDrop:</b> Auf Jakobs iPad „📋 Alle Daten kopieren“ antippen, den Text z. B. per Nachricht an sich selbst schicken, auf Ihrem iPad kopieren und unten ins Textfeld bei „Daten übernehmen“ einfügen.<br>
+      <b>Keine Sorge wegen doppelter Daten:</b> Bereits übernommene Einträge werden erkannt. Sie können also einfach jede Woche alle Daten schicken.</p>
+    </details>
+  </div>
   <div class="card">
     <h3>Bericht für Claude</h3>
     <p class="meta">Kopieren und im Chat einfügen. Claude wertet aus, was gut klappt, wo es hakt und was als Nächstes dran ist. Es gilt der oben gewählte Zeitraum.</p>
@@ -391,6 +419,26 @@
     else if ($('#impText').value.trim()) doImport($('#impText').value);
     else toast('Bitte eine Datei wählen oder Text einfügen.');
   };
+
+  /* ---------------- Testmodus ---------------- */
+  var TKEY = 'lernlog.test', THOURS = 4;
+  function testUntil() { return +(ls(TKEY) || 0); }
+  function testUI() {
+    var u = testUntil(), on = Date.now() < u, d = new Date(u);
+    $('#testCard').style.background = on ? '#efe9fb' : '';
+    $('#testInfo').textContent = on
+      ? 'Eingeschaltet bis ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ' Uhr. In den Apps wird jetzt nichts aufgezeichnet. Danach schaltet er sich von selbst aus.'
+      : 'Zum Ausprobieren der Apps durch Erwachsene: Solange er an ist, wird auf diesem Gerät nichts aufgezeichnet (für ' + THOURS + ' Stunden).';
+    $('#testBtn').textContent = on ? 'Testmodus beenden' : '🧪 Testmodus einschalten';
+    $('#testBtn').className = on ? 'light' : '';
+    $('#testBtn').style.background = on ? '' : '#5b3fa8';
+  }
+  $('#testBtn').onclick = function () {
+    if (Date.now() < testUntil()) { ls(TKEY, null); toast('Testmodus beendet – es wird wieder aufgezeichnet.'); }
+    else { ls(TKEY, String(Date.now() + THOURS * 3600e3)); toast('Testmodus an – viel Spaß beim Testen!'); }
+    testUI();
+  };
+  testUI(); setInterval(testUI, 60000);
 
   /* ---------------- Löschen ---------------- */
   $('#wipeBtn').onclick = function () { $('#wipeBox').hidden = !$('#wipeBox').hidden; };
