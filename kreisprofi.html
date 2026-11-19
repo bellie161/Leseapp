@@ -264,7 +264,7 @@ function startMode(m){MODE=m;show('task');newTask();if(!S.seen[m]){S.seen[m]=tru
 function newTask(){locked=false;drag=null;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask3,newTask6,newTask7][MODE]();}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>sayInstr();
-function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+function win(t,n){locked=true;n=n||1;const _st=!window.DP||DP.right();if(!_st){n=0;t+=DP.NOSTAR;}S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+(_st?' ⭐':''),'ok');say(t);
   setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
   $('#ctrl button').style.fontSize='26px';}
 function wrongShake(){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);}
@@ -720,6 +720,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Kreis-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint7','hintSet','hintStep','hint4']});</script>
 </body>
 </html>

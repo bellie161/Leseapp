@@ -270,7 +270,7 @@ function startMode(m){MODE=m;show('task');$('#geotools').style.display=isGeo()?'
 function newTask(){if(anim){cancelAnimationFrame(anim);anim=null;}locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5][MODE]();}
 $('#homeBtn').onclick=()=>{if(anim){cancelAnimationFrame(anim);anim=null;}show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>sayInstr();
-function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
+function win(t,n){locked=true;n=n||1;const _st=!window.DP||DP.right();if(!_st){n=0;t+=DP.NOSTAR;}S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+(_st?' ⭐':''),'ok');say(t);
   if(isGeo()){geoG.style.transition='opacity .8s';geoG.style.opacity='.1';geoG.style.pointerEvents='none';}
   setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
   $('#ctrl button').style.fontSize='26px';}
@@ -759,6 +759,7 @@ drawGeo();
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Parallel-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint3','hint4']});</script>
 </body>
 </html>

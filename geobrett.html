@@ -398,8 +398,8 @@ function check(){
     feedback(t,'try');say(t);
   }
 }
-function success(){S.done++;locked=true;done=true;countPhase=false;if(MODE==='find'){marks=new Set(rightCorners(bands[0].pins).map(c=>key(c.v)));solShown=true;}S.stars++;save();updStars();sound('ok');if(Math.random()<.5||MODE!=='find')confetti();
-  const w=pick(['Super!','Toll gespannt!','Richtig!','Klasse!','Prima!']);feedback(w+' ⭐','ok');say(w);render();showNext();}
+function success(){const _st=!window.DP||DP.right();if(_st)S.done++;locked=true;done=true;countPhase=false;if(MODE==='find'){marks=new Set(rightCorners(bands[0].pins).map(c=>key(c.v)));solShown=true;}if(_st)S.stars++;save();updStars();sound('ok');if(Math.random()<.5||MODE!=='find')confetti();
+  const w=pick(['Super!','Toll gespannt!','Richtig!','Klasse!','Prima!']);feedback(w+(_st?' ⭐':DP.NOSTAR),'ok');say(w+(_st?'':DP.NOSTAR));render();showNext();}
 function showNext(){const c=$('#ctrl');c.innerHTML='';const b=document.createElement('button');b.textContent='Weiter ➜';b.style.background='var(--blue)';b.style.fontSize='26px';b.onclick=()=>{if(S.done>=S.goal)showReward();else newTask();};c.appendChild(b);}
 function startCount(){countPhase=true;tries=0;const t='Richtig gespannt! Wie viele rechte Winkel hat die Form?';feedback(t,'ok');tone(880,0,.15);say(t);$('#instr').textContent='Wie viele rechte Winkel hat die Form?';buildCtrl();}
 function answerCount(v,b){
@@ -528,6 +528,7 @@ function endRound(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Geobrett',uebung:()=>LernLog.text('.mode[data-mode="'+MODE+'"]')+' · '+N+'x'+N+' · '+S.level,gesperrt:()=>locked,done:['success'],skip:()=>MODE==='free'});</script>
 </body>
 </html>

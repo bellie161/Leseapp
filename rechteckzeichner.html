@@ -427,14 +427,14 @@ function stepDone(){const st=steps[si];
   feedback(w+extra+' ✓','ok');$('#instr').textContent=stepInstr();setTool('move');
   locked=true;say(w+extra+' '+stepInstr());setTimeout(()=>{locked=false;setTool('move');},600);}
 function success(){locked=true;setTool('move');geoG.style.transition='opacity .8s';geoG.style.opacity='.1';geoG.style.pointerEvents='none';
-  S.done++;S.stars++;save();updStars();sound('ok');confetti();
+  const _st=!window.DP||DP.right();if(_st){S.done++;S.stars++;}save();updStars();sound('ok');confetti();
   const{A,B,C,D}=T;el('polygon',{points:[A,B,C,D].map(p=>p.join(',')).join(' '),fill:'rgba(255,230,120,.35)'},fillLayer);
   corner(D,[1,0],[0,1]);corner(C,[-1,0],[0,1]);
   txt(markLayer,(A[0]+B[0])/2,A[1]+30,T.L+' cm',{'font-size':26,fill:COL.L});
   txt(markLayer,A[0]-45,(A[1]+D[1])/2,T.W+' cm',{'font-size':26,fill:'#c2610f'});
   const q=T.L===T.W;
   const t=q?'Super! Das ist ein Quadrat. Alle Seiten sind gleich lang. Es hat vier rechte Winkel.':'Super! Dein Rechteck ist fertig. Es hat vier rechte Winkel.';
-  feedback(t+' ⭐','ok');say(t);$('#instr').textContent=q?'Fertig – ein Quadrat! ⭐':'Fertig – ein Rechteck! ⭐';
+  feedback(t+(_st?' ⭐':DP.NOSTAR),'ok');say(t+(_st?'':DP.NOSTAR));$('#instr').textContent=q?'Fertig – ein Quadrat! ⭐':'Fertig – ein Rechteck! ⭐';
   const c=$('#ctrl');[...c.children].forEach(b=>b.style.display='none');
   const nb=document.createElement('button');nb.id='nextBtn';nb.textContent='Weiter ➜';nb.style.fontSize='26px';
   nb.onclick=()=>{nb.remove();[...c.children].forEach(b=>b.style.display='');if(S.done>=S.goal)showReward();else{newTask();sayStep();}};c.appendChild(nb);}
@@ -509,6 +509,7 @@ stage.appendChild(strokeLayer);stage.appendChild(markLayer);
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Rechteck-Zeichner',uebung:()=>LernLog.text('.mode[data-l="'+LVL+'"]'),gesperrt:()=>locked,done:['success']});</script>
 </body>
 </html>

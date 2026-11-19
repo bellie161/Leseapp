@@ -95,6 +95,13 @@
     <div class="row"><a href="./"><button class="light">← Lern-Apps</button></a><button class="light" id="lockBtn">🔒 Sperren</button></div>
   </div>
 
+  <div class="card" id="dpCard" style="margin:0 0 16px">
+    <div class="row" style="justify-content:space-between">
+      <div><h3>⏳ Denkpause bei falschen Antworten</h3><p class="meta" id="dpInfo" style="margin:4px 0 0"></p></div>
+      <button id="dpBtn"></button>
+    </div>
+  </div>
+
   <div class="card" id="testCard" style="margin:0 0 16px">
     <div class="row" style="justify-content:space-between">
       <div><h3>🧪 Testmodus</h3><p class="meta" id="testInfo" style="margin:4px 0 0"></p></div>
@@ -419,6 +426,24 @@
     else if ($('#impText').value.trim()) doImport($('#impText').value);
     else toast('Bitte eine Datei wählen oder Text einfügen.');
   };
+
+  /* ---------------- Denkpause ---------------- */
+  var DPKEY = 'denkpause.aus';
+  function dpUI() {
+    var on = ls(DPKEY) !== '1';
+    $('#dpInfo').textContent = on
+      ? 'An (auf diesem Gerät). Gilt in allen Mathe- und Deutsch-Apps: Beim 1. Fehler 5 Sekunden Pause, ab dem 2. Fehler muss der Hinweis 10 Sekunden gelesen werden. Einen Stern gibt es nur beim 1. oder 2. Versuch.'
+      : 'Aus (auf diesem Gerät). Die Apps reagieren auf Fehler wie früher, ohne Wartezeit.';
+    $('#dpBtn').textContent = on ? 'Denkpause ausschalten' : '⏳ Denkpause einschalten';
+    $('#dpBtn').className = on ? 'light' : '';
+    $('#dpCard').style.background = on ? '#fff4e0' : '';
+  }
+  $('#dpBtn').onclick = function () {
+    if (ls(DPKEY) === '1') { ls(DPKEY, null); toast('Denkpause ist an.'); }
+    else { ls(DPKEY, '1'); toast('Denkpause ist aus.'); }
+    dpUI();
+  };
+  dpUI();
 
   /* ---------------- Testmodus ---------------- */
   var TKEY = 'lernlog.test', THOURS = 4;

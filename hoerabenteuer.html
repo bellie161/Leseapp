@@ -355,6 +355,7 @@ button:disabled{opacity:.4;cursor:default}
 
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>
 const LL = window.LernLog || null; if (LL) LL.init('HörAbenteuer');
 document.addEventListener('click', e => { if (LL && e.target.closest && e.target.closest('#mini button')) LL.hilfe(); }, true); // nochmal anhören
