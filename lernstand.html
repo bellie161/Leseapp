@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lernstand – Meine Lern-Apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fdf8ef;--card:#fff;--ink:#2e2a24;--soft:#6b6257;--line:#e8dfd0;
+    --ok:#2a9d4b;--late:#e9a23b;--no:#d9573b;--abbr:#b9b0a3;--acc:#3b82c4;--acc-bg:#e3effa}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Andika,system-ui,sans-serif;font-size:17px;line-height:1.4}
+  h1,h2,h3,button,.chip{font-family:Fredoka,system-ui,sans-serif}
+  .wrap{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+  h1{font-size:1.8rem;margin:4px 0 2px}
+  h2{font-size:1.3rem;margin:26px 0 10px}
+  h3{font-size:1.1rem;margin:0}
+  .sub{color:var(--soft);margin:0 0 14px}
+  button{font-size:1rem;font-weight:600;border:none;border-radius:12px;padding:10px 16px;cursor:pointer;background:var(--acc);color:#fff}
+  button.light{background:#ece6db;color:var(--ink)}
+  button.danger{background:var(--no)}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .chip{background:#ece6db;color:var(--ink);border-radius:999px;padding:7px 14px;font-weight:600;font-size:.95rem}
+  .chip[aria-pressed="true"]{background:var(--acc);color:#fff}
+  .lbl{color:var(--soft);font-size:.95rem;margin-right:4px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:14px}
+  .tile{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .tile b{display:block;font-family:Fredoka,sans-serif;font-size:1.7rem}
+  .tile span{color:var(--soft);font-size:.92rem}
+  .card{background:var(--card);border-radius:18px;padding:16px;margin-top:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card .head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+  .card .meta{color:var(--soft);font-size:.92rem}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.95rem}
+  th{text-align:left;color:var(--soft);font-weight:400;font-size:.85rem;border-bottom:1px solid var(--line);padding:6px 6px}
+  td{border-bottom:1px solid var(--line);padding:8px 6px;vertical-align:top}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  .bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#f1ece3;min-width:80px}
+  .bar i{display:block;height:100%}
+  .ok{background:var(--ok)}.late{background:var(--late)}.no{background:var(--no)}.ab{background:var(--abbr)}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;color:var(--soft);font-size:.88rem;margin-top:8px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .days{display:flex;gap:6px;align-items:flex-end;height:150px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
+  .day{flex:1 0 34px;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+  .day .stack{width:24px;display:flex;flex-direction:column-reverse;border-radius:6px;overflow:hidden;background:#f1ece3}
+  .days.many{gap:2px}.days.many .day{flex:1 1 0;min-width:0}.days.many .day .stack{width:70%;max-width:16px}.days.many .day small{font-size:.62rem;overflow:visible}
+  .day small{font-size:.72rem;color:var(--soft);white-space:nowrap}
+  .trend{font-size:.85rem;white-space:nowrap}
+  .up{color:var(--ok)}.down{color:var(--no)}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--acc);font-weight:700}
+  .err{border-left:4px solid var(--no);padding:6px 10px;margin:8px 0;background:#fdf3f0;border-radius:0 10px 10px 0;font-size:.93rem}
+  .err .when{color:var(--soft);font-size:.82rem}
+  .empty{color:var(--soft);font-style:italic}
+  textarea,input[type=text]{width:100%;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line)}
+  textarea{height:110px}
+  .note{background:#fff8e6;border-radius:14px;padding:12px 14px;font-size:.93rem;margin-top:12px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e2a24;color:#fff;padding:12px 18px;border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90%;text-align:center}
+  .toast.on{opacity:1}
+  /* PIN */
+  #lock{min-height:100vh;display:flex;align-items:center;justify-content:center}
+  .pinbox{background:var(--card);border-radius:22px;padding:24px;text-align:center;width:min(360px,92vw);box-shadow:0 4px 18px rgba(0,0,0,.08)}
+  .dots{display:flex;justify-content:center;gap:12px;margin:16px 0}
+  .dots span{width:18px;height:18px;border-radius:50%;border:2px solid var(--soft)}
+  .dots span.f{background:var(--ink);border-color:var(--ink)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pad button{font-size:1.5rem;padding:14px 0;background:#ece6db;color:var(--ink)}
+  .pinmsg{min-height:1.4em;color:var(--no);font-size:.95rem}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="pinbox">
+    <div style="font-size:2.4rem">🔒</div>
+    <h1 style="font-size:1.4rem" id="pinTitle">Lernstand</h1>
+    <p class="sub" id="pinSub" style="margin:4px 0 0">PIN eingeben</p>
+    <div class="dots" id="pinDots"><span></span><span></span><span></span><span></span></div>
+    <div class="pinmsg" id="pinMsg"></div>
+    <div class="pad" id="pad"></div>
+    <p style="margin:16px 0 0"><a href="./" style="color:var(--soft)">← Zurück zu den Lern-Apps</a></p>
+  </div>
+</div>
+
+<div id="main" hidden>
+<div class="wrap">
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <h1>📈 Lernstand</h1>
+      <p class="sub">Was in den Lern-Apps geübt wurde. Alle Daten bleiben auf diesem Gerät.</p>
+    </div>
+    <div class="row"><a href="./"><button class="light">← Lern-Apps</button></a><button class="light" id="lockBtn">🔒 Sperren</button></div>
+  </div>
+
+  <div class="row"><span class="lbl">Zeitraum:</span><span class="row" id="rangeSel"></span></div>
+  <div class="row" style="margin-top:8px" id="devRow"><span class="lbl">Gerät:</span><span class="row" id="devSel"></span></div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Verlauf pro Tag</h2>
+  <div class="card">
+    <div class="days" id="days"></div>
+    <div class="legend"><span><i class="ok"></i>beim 1. Versuch richtig</span><span><i class="late"></i>nach Fehler gelöst</span><span><i class="no"></i>nicht gelöst</span><span><i class="ab"></i>abgebrochen</span></div>
+  </div>
+
+  <h2>Apps und Übungen</h2>
+  <div id="apps"></div>
+
+  <h2>Bericht und Austausch</h2>
+  <div class="card">
+    <h3>Bericht für Claude</h3>
+    <p class="meta">Kopieren und im Chat einfügen. Claude wertet aus, was gut klappt, wo es hakt und was als Nächstes dran ist. Es gilt der oben gewählte Zeitraum.</p>
+    <div class="row"><button id="copyRep">📋 Bericht kopieren</button><button class="light" id="shareRep">📤 Bericht teilen</button></div>
+  </div>
+  <div class="card">
+    <h3>Daten zum anderen iPad schicken</h3>
+    <p class="meta">Schickt alle Einträge dieses Geräts als Datei (z. B. per AirDrop). Auf dem anderen iPad unten bei „Daten übernehmen“ einlesen.</p>
+    <div class="row"><button id="shareAll">📤 Alle Daten teilen</button><button class="light" id="copyAll">📋 Alle Daten kopieren</button></div>
+  </div>
+  <div class="card">
+    <h3>Daten übernehmen</h3>
+    <p class="meta">Datei vom anderen iPad auswählen oder kopierten Text einfügen. Doppelte Einträge werden erkannt.</p>
+    <div class="row"><input type="file" id="impFile" accept=".txt,.json,text/plain,application/json"></div>
+    <textarea id="impText" placeholder="… oder hier den kopierten Text einfügen" style="margin-top:8px"></textarea>
+    <div class="row" style="margin-top:8px"><button id="impBtn">⬇️ Übernehmen</button></div>
+  </div>
+
+  <h2>Einstellungen</h2>
+  <div class="card">
+    <h3>Name dieses Geräts</h3>
+    <p class="meta">Damit man im Bericht sieht, auf welchem iPad geübt wurde.</p>
+    <div class="row"><input type="text" id="devName" style="max-width:300px" placeholder="z. B. Jakob-iPad"><button id="devSave">Speichern</button></div>
+  </div>
+  <div class="card">
+    <div class="row"><button class="light" id="pinChange">🔑 PIN ändern</button><button class="danger" id="wipeBtn">🗑️ Alle Daten auf diesem Gerät löschen</button></div>
+    <div id="wipeBox" hidden style="margin-top:10px">
+      <p class="meta">Zum Bestätigen <b>LÖSCHEN</b> eintippen. Das lässt sich nicht rückgängig machen. Vorher am besten „Alle Daten teilen“.</p>
+      <div class="row"><input type="text" id="wipeTxt" style="max-width:200px"><button class="danger" id="wipeGo">Endgültig löschen</button></div>
+    </div>
+  </div>
+  <div class="note">
+    <b>Damit nichts verloren geht:</b> Die Lern-Apps auf jedem iPad immer auf die gleiche Weise öffnen (am besten über das Symbol auf dem Home-Bildschirm) und diese Seite über den Link unten auf der Startseite. Ungefähr einmal pro Woche den Bericht kopieren oder die Daten teilen.
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'lernlog.v1', DKEY = 'lernlog.geraet', PKEY = 'lernlog.pin', UKEY = 'lernlog.offen';
+  var $ = function (s) { return document.querySelector(s); };
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function toast(t) { var e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
+
+  /* ---------------- PIN ---------------- */
+  var pin = '', mode = ls(PKEY) ? 'check' : 'new', first = '';
+  function pinUI() {
+    $('#pinSub').textContent = mode === 'check' ? 'PIN eingeben' : mode === 'new' ? 'Neue PIN festlegen (4 Ziffern)' : 'PIN noch einmal eingeben';
+    $('#pinTitle').textContent = mode === 'check' ? 'Lernstand' : 'PIN für den Lernstand';
+    [].forEach.call($('#pinDots').children, function (d, i) { d.className = i < pin.length ? 'f' : ''; });
+  }
+  $('#pad').innerHTML = ['1','2','3','4','5','6','7','8','9','','0','⌫'].map(function (k) {
+    return k ? '<button data-k="' + k + '">' + k + '</button>' : '<span></span>';
+  }).join('');
+  $('#pad').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var k = b.dataset.k; $('#pinMsg').textContent = '';
+    if (k === '⌫') pin = pin.slice(0, -1); else if (pin.length < 4) pin += k;
+    pinUI();
+    if (pin.length === 4) setTimeout(pinDone, 120);
+  });
+  function pinDone() {
+    if (mode === 'check') {
+      if (pin === ls(PKEY)) { unlock(); } else { $('#pinMsg').textContent = 'Falsche PIN.'; }
+    } else if (mode === 'new') { first = pin; mode = 'repeat'; }
+    else if (mode === 'repeat') {
+      if (pin === first) { ls(PKEY, pin); toast('PIN gespeichert.'); unlock(); }
+      else { $('#pinMsg').textContent = 'Die PINs waren verschieden. Bitte neu festlegen.'; mode = 'new'; }
+    }
+    pin = ''; pinUI();
+  }
+  function unlock() { try { sessionStorage.setItem(UKEY, '1'); } catch (e) {} $('#lock').hidden = true; $('#main').hidden = false; render(); }
+  $('#lockBtn').onclick = function () { try { sessionStorage.removeItem(UKEY); } catch (e) {} mode = 'check'; pinUI(); $('#main').hidden = true; $('#lock').hidden = false; };
+  $('#pinChange').onclick = function () { mode = 'new'; pin = ''; pinUI(); $('#main').hidden = true; $('#lock').hidden = false; };
+  var open = false; try { open = sessionStorage.getItem(UKEY) === '1'; } catch (e) {}
+  pinUI(); if (open && ls(PKEY)) unlock();
+
+  /* ---------------- Daten ---------------- */
+  function load() { try { var d = JSON.parse(ls(KEY) || 'null'); if (d && Array.isArray(d.e)) return d; } catch (e) {} return { v: 1, e: [] }; }
+  function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); return true; } catch (e) { toast('Speichern nicht möglich (Speicher voll?).'); return false; } }
+  function myDev() { return ls(DKEY) || 'dieses Gerät'; }
+  function withDev(list) { var me = myDev(); return list.map(function (x) { if (x.dev) return x; var y = {}; for (var k in x) y[k] = x[k]; y.dev = me; return y; }); }
+
+  var RANGES = [['7', 'letzte 7 Tage'], ['14', '14 Tage'], ['30', '30 Tage'], ['alle', 'alles']];
+  var range = ls('lernlog.zeitraum') || '30', devF = 'alle';
+
+  function filtered() {
+    var all = withDev(load().e), from = range === 'alle' ? 0 : startOfDay(Date.now()) - (+range - 1) * 864e5;
+    return all.filter(function (x) { return x.t0 >= from && (devF === 'alle' || x.dev === devF); });
+  }
+  function startOfDay(t) { var d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  function dstr(t, withTime) {
+    var d = new Date(t), s = ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+    return withTime ? s + ', ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) : s;
+  }
+  function mins(sec) { var m = Math.round(sec / 60); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  function secT(s) { return s < 60 ? Math.round(s) + ' s' : Math.floor(s / 60) + ' min ' + Math.round(s % 60) + ' s'; }
+  function pct(a, b) { return b ? Math.round(100 * a / b) + ' %' : '–'; }
+
+  function stats(tasks) {
+    var s = { n: 0, ok: 0, late: 0, no: 0, ab: 0, f: 0, h: 0, sec: 0, done: 0 };
+    tasks.forEach(function (x) {
+      if (x.r === 'abbr') { s.ab++; return; }
+      s.n++; s.f += x.f || 0; s.h += x.h || 0;
+      if (x.r === 'ok') s.ok++; else if (x.r === 'spaet') s.late++; else s.no++;
+      s.sec += x.s || 0; s.done++;
+    });
+    return s;
+  }
+  function barHTML(s) {
+    var tot = s.n + s.ab; if (!tot) return '';
+    function w(v) { return (100 * v / tot).toFixed(1) + '%'; }
+    return '<div class="bar"><i class="ok" style="width:' + w(s.ok) + '"></i><i class="late" style="width:' + w(s.late) + '"></i><i class="no" style="width:' + w(s.no) + '"></i><i class="ab" style="width:' + w(s.ab) + '"></i></div>';
+  }
+  function trend(tasks) {
+    var t = tasks.filter(function (x) { return x.r !== 'abbr'; }).sort(function (a, b) { return a.t0 - b.t0; });
+    if (t.length < 8) return '';
+    var h = Math.floor(t.length / 2), a = t.slice(0, h), b = t.slice(h);
+    var ra = a.filter(function (x) { return x.r === 'ok'; }).length / a.length, rb = b.filter(function (x) { return x.r === 'ok'; }).length / b.length;
+    var d = Math.round(100 * (rb - ra));
+    if (d >= 15) return '<span class="trend up">↗ besser (+' + d + ')</span>';
+    if (d <= -15) return '<span class="trend down">↘ schwächer (' + d + ')</span>';
+    return '<span class="trend">→ gleichbleibend</span>';
+  }
+  function groupBy(list, key) { var m = {}; list.forEach(function (x) { var k = x[key] || '–'; (m[k] = m[k] || []).push(x); }); return m; }
+  function topErrors(tasks) {
+    var c = {};
+    tasks.forEach(function (x) { (x.fa || []).forEach(function (f) {
+      var i = f.indexOf(' – '), txt = (i >= 0 ? f.slice(i + 3) : f).trim(); if (!txt || txt === '?') return;
+      var k = txt.replace(/\d[\d ½,.]*/g, '#'); (c[k] = c[k] || { n: 0, ex: txt }).n++; }); });
+    return Object.keys(c).map(function (k) { return c[k]; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 5);
+  }
+
+  /* ---------------- Anzeige ---------------- */
+  function render() {
+    var all = withDev(load().e), devs = {};
+    all.forEach(function (x) { devs[x.dev] = 1; });
+    var dl = Object.keys(devs);
+    if (devF !== 'alle' && !devs[devF]) devF = 'alle';
+    $('#rangeSel').innerHTML = RANGES.map(function (r) { return '<button class="chip" data-r="' + r[0] + '" aria-pressed="' + (r[0] === range) + '">' + r[1] + '</button>'; }).join('');
+    $('#devRow').hidden = dl.length < 2;
+    $('#devSel').innerHTML = ['alle'].concat(dl).map(function (d) { return '<button class="chip" data-d="' + esc(d) + '" aria-pressed="' + (d === devF) + '">' + (d === 'alle' ? 'alle Geräte' : esc(d)) + '</button>'; }).join('');
+    $('#devName').value = ls(DKEY) || '';
+
+    var list = filtered(), tasks = list.filter(function (x) { return x.typ === 'a'; }), sess = list.filter(function (x) { return x.typ === 's'; });
+    var s = stats(tasks), sessSec = sess.reduce(function (a, x) { return a + (x.s || 0); }, 0);
+    var dayset = {}; list.forEach(function (x) { dayset[startOfDay(x.t0)] = 1; });
+    $('#tiles').innerHTML =
+      '<div class="tile"><b>' + mins(Math.max(sessSec, s.sec)) + '</b><span>Zeit in den Apps (davon ' + mins(s.sec) + ' an Aufgaben)</span></div>' +
+      '<div class="tile"><b>' + s.n + '</b><span>bearbeitete Aufgaben' + (s.ab ? ' (+' + s.ab + ' abgebrochen)' : '') + '</span></div>' +
+      '<div class="tile"><b>' + pct(s.ok, s.n) + '</b><span>beim 1. Versuch richtig</span></div>' +
+      '<div class="tile"><b>' + pct(s.ok + s.late, s.n) + '</b><span>am Ende gelöst</span></div>' +
+      '<div class="tile"><b>' + Object.keys(dayset).length + '</b><span>Übungstage</span></div>';
+
+    // Tage
+    var nd = range === 'alle' ? Math.min(60, Math.max(7, Math.ceil((Date.now() - (list.length ? Math.min.apply(null, list.map(function (x) { return x.t0; })) : Date.now())) / 864e5) + 1)) : +range;
+    var today = startOfDay(Date.now()), days = [], maxN = 1;
+    for (var i = nd - 1; i >= 0; i--) {
+      var d0 = today - i * 864e5, d1 = d0 + 864e5;
+      var dt = tasks.filter(function (x) { return x.t0 >= d0 && x.t0 < d1; }), ds = stats(dt);
+      var dsec = sess.filter(function (x) { return x.t0 >= d0 && x.t0 < d1; }).reduce(function (a, x) { return a + (x.s || 0); }, 0);
+      days.push({ d: d0, s: ds, sec: Math.max(dsec, ds.sec) }); maxN = Math.max(maxN, ds.n + ds.ab);
+    }
+    var WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    $('#days').innerHTML = days.map(function (x) {
+      var h = function (v) { return (110 * v / maxN).toFixed(1) + 'px'; }, dd = new Date(x.d);
+      return '<div class="day" title="' + dstr(x.d) + ': ' + (x.s.n + x.s.ab) + ' Aufgaben, ' + mins(x.sec) + '">' +
+        (x.sec ? '<small>' + Math.round(x.sec / 60) + "'</small>" : '') +
+        '<div class="stack"><i class="ok" style="height:' + h(x.s.ok) + '"></i><i class="late" style="height:' + h(x.s.late) + '"></i><i class="no" style="height:' + h(x.s.no) + '"></i><i class="ab" style="height:' + h(x.s.ab) + '"></i></div>' +
+        '<small>' + (nd <= 14 || dd.getDay() === 1 || x.d === today ? WD[dd.getDay()] + ' ' + dd.getDate() + '.' + (dd.getMonth() + 1) + '.' : '&nbsp;') + '</small></div>';
+    }).join('');
+    $('#days').className = 'days' + (nd > 14 ? ' many' : '');
+    $('#days').scrollLeft = $('#days').scrollWidth;
+
+    // Apps
+    var byApp = groupBy(tasks, 'app'), sessByApp = groupBy(sess, 'app');
+    var apps = Object.keys(byApp).sort(function (a, b) { return byApp[b].length - byApp[a].length; });
+    if (!apps.length) { $('#apps').innerHTML = '<div class="card empty">Im gewählten Zeitraum wurde noch nichts aufgezeichnet.</div>'; return; }
+    $('#apps').innerHTML = apps.map(function (a) {
+      var at = byApp[a], as = stats(at), asec = (sessByApp[a] || []).reduce(function (x, y) { return x + (y.s || 0); }, 0);
+      var last = Math.max.apply(null, at.map(function (x) { return x.t0; }));
+      var byUe = groupBy(at, 'ue'), ues = Object.keys(byUe).sort();
+      var rows = ues.map(function (u) {
+        var ut = byUe[u], us = stats(ut);
+        return '<tr><td>' + esc(u) + '<br>' + trend(ut) + '</td><td class="num">' + us.n + (us.ab ? '<br><small style="color:var(--soft)">+' + us.ab + ' abgebr.</small>' : '') + '</td><td>' + barHTML(us) +
+          '<small>' + pct(us.ok, us.n) + ' beim 1. Versuch</small></td><td class="num">' + (us.done ? secT(us.sec / us.done) : '–') + '</td><td class="num">' + us.h + '</td></tr>';
+      }).join('');
+      var errs = at.filter(function (x) { return (x.f || 0) > 0 || x.r === 'nein'; }).sort(function (x, y) { return y.t0 - x.t0; });
+      var tops = topErrors(at);
+      return '<div class="card"><div class="head"><h3>' + esc(a) + '</h3><span class="meta">' + as.n + ' Aufgaben · ' + pct(as.ok, as.n) + ' beim 1. Versuch · ' +
+        mins(Math.max(asec, as.sec)) + ' · zuletzt ' + dstr(last, true) + '</span></div>' +
+        '<table><thead><tr><th>Übung</th><th class="num">Aufgaben</th><th>Ergebnis</th><th class="num">Ø Zeit</th><th class="num">Hilfen</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        (tops.length ? '<details><summary>Häufigste Stolpersteine</summary>' + tops.map(function (t) { return '<div class="err">' + t.n + '× ' + esc(t.ex) + '</div>'; }).join('') + '</details>' : '') +
+        (errs.length ? '<details><summary>Aufgaben mit Fehlern (' + errs.length + ')</summary>' + errs.slice(0, 25).map(function (x) {
+          return '<div class="err"><div class="when">' + dstr(x.t0, true) + ' · ' + esc(x.ue) + (x.r === 'nein' ? ' · nicht gelöst' : ' · danach gelöst') + '</div>' +
+            esc(x.au) + (x.fa && x.fa.length ? '<br>Falsch: ' + x.fa.map(esc).join(' | ') : '') + '</div>';
+        }).join('') + '</details>' : '') + '</div>';
+    }).join('');
+  }
+
+  $('#rangeSel').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; range = b.dataset.r; ls('lernlog.zeitraum', range); render(); });
+  $('#devSel').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; devF = b.dataset.d; render(); });
+  $('#devSave').onclick = function () { var v = $('#devName').value.trim(); if (!v) return; ls(DKEY, v); toast('Gerätename gespeichert.'); render(); };
+
+  /* ---------------- Bericht / Export ---------------- */
+  function compact(x) { var y = {}; for (var k in x) if (x[k] !== undefined && !(Array.isArray(x[k]) && !x[k].length) && !(k === 'h' && !x[k]) && !(k === 'f' && !x[k] && x.typ === 'a')) y[k] = x[k]; return y; }
+  function dataBlock(list, hint) {
+    return '---DATEN-ANFANG---\n' + JSON.stringify({ format: 'lernlog', v: 1, hinweis: hint, geraet: myDev(), erstellt: new Date().toISOString(),
+      e: list.map(compact) }) + '\n---DATEN-ENDE---';
+  }
+  function report() {
+    var list = filtered(), tasks = list.filter(function (x) { return x.typ === 'a'; }), sess = list.filter(function (x) { return x.typ === 's'; });
+    var s = stats(tasks), lines = [];
+    var t0 = list.length ? Math.min.apply(null, list.map(function (x) { return x.t0; })) : Date.now();
+    var devs = {}; list.forEach(function (x) { devs[x.dev] = 1; });
+    lines.push('LERNSTAND-BERICHT – Lern-Apps');
+    lines.push('Zeitraum: ' + dstr(t0) + ' bis ' + dstr(Date.now()) + ' (' + (range === 'alle' ? 'alles' : 'letzte ' + range + ' Tage') + ')');
+    lines.push('Geräte: ' + (Object.keys(devs).join(', ') || myDev()));
+    lines.push('Gesamt: ' + s.n + ' Aufgaben (+' + s.ab + ' abgebrochen), ' + pct(s.ok, s.n) + ' beim 1. Versuch richtig, ' + pct(s.ok + s.late, s.n) + ' am Ende gelöst, Zeit in den Apps ' +
+      mins(Math.max(sess.reduce(function (a, x) { return a + (x.s || 0); }, 0), s.sec)));
+    lines.push('');
+    var byApp = groupBy(tasks, 'app');
+    Object.keys(byApp).forEach(function (a) {
+      var as = stats(byApp[a]); lines.push(a + ': ' + as.n + ' Aufgaben, ' + pct(as.ok, as.n) + ' beim 1. Versuch, Ø ' + (as.done ? secT(as.sec / as.done) : '–') + ' pro Aufgabe');
+      var byUe = groupBy(byApp[a], 'ue');
+      Object.keys(byUe).sort().forEach(function (u) {
+        var us = stats(byUe[u]);
+        lines.push('  - ' + u + ': ' + us.n + ' Aufg., 1. Versuch ' + pct(us.ok, us.n) + ', nach Fehler gelöst ' + us.late + ', nicht gelöst ' + us.no + ', abgebrochen ' + us.ab + ', Ø ' + (us.done ? secT(us.sec / us.done) : '–') + ', Hilfen ' + us.h);
+      });
+    });
+    lines.push('');
+    lines.push('Legende Daten: typ a = Aufgabe, s = Sitzung (Zeit in der App); t0 = Startzeit (ms); s = aktive Sekunden; f = Fehlversuche; fa = falsche Antworten/Hinweise; h = Hilfen; r = ok (1. Versuch richtig), spaet (nach Fehler gelöst), nein (nicht gelöst, Lösung gezeigt), abbr (abgebrochen); ue = Übung; au = Aufgabe; dev = Gerät.');
+    lines.push(dataBlock(list, 'Bericht für Claude'));
+    return lines.join('\n');
+  }
+  function allData() { return 'LERNSTAND-DATEN von ' + myDev() + ' (zum Übernehmen auf einem anderen Gerät)\n' + dataBlock(withDev(load().e), 'alle Daten'); }
+  function copy(txt) {
+    function fb() { var t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} t.remove(); toast(ok ? 'Kopiert ✓' : 'Kopieren hat nicht geklappt.'); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast('Kopiert ✓ – jetzt im Chat einfügen.'); }, fb); else fb();
+  }
+  function shareFile(txt, name) {
+    var file; try { file = new File([txt], name, { type: 'text/plain' }); } catch (e) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: name }).catch(function () {}); return; }
+    if (navigator.share) { navigator.share({ title: name, text: txt }).catch(function () {}); return; }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function fname(kind) { var d = new Date(); return kind + '-' + myDev().replace(/[^\wäöüÄÖÜß-]+/g, '_') + '-' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '.txt'; }
+  $('#copyRep').onclick = function () { copy(report()); };
+  $('#shareRep').onclick = function () { shareFile(report(), fname('Lernstand-Bericht')); };
+  $('#copyAll').onclick = function () { copy(allData()); };
+  $('#shareAll').onclick = function () { shareFile(allData(), fname('Lernstand-Daten')); };
+
+  /* ---------------- Import ---------------- */
+  function parseImport(txt) {
+    var a = txt.indexOf('---DATEN-ANFANG---'), b = txt.indexOf('---DATEN-ENDE---');
+    var j = a >= 0 ? txt.slice(a + 18, b > a ? b : undefined) : txt;
+    var o = JSON.parse(j.trim());
+    if (!o || o.format !== 'lernlog' || !Array.isArray(o.e)) throw new Error('kein Lernstand');
+    return o;
+  }
+  function doImport(txt) {
+    var o; try { o = parseImport(txt); } catch (e) { toast('Das sind keine Lernstand-Daten.'); return; }
+    var d = load(), have = {}, added = 0;
+    d.e.forEach(function (x) { have[x.id] = 1; });
+    o.e.forEach(function (x) {
+      if (!x || !x.id || have[x.id] || !x.t0) return;
+      if (!x.dev) x.dev = o.geraet || 'anderes Gerät';
+      d.e.push(x); have[x.id] = 1; added++;
+    });
+    d.e.sort(function (a, b) { return a.t0 - b.t0; });
+    if (save(d)) { toast(added ? added + ' Einträge übernommen ✓' : 'Nichts Neues – alles schon vorhanden.'); $('#impText').value = ''; $('#impFile').value = ''; render(); }
+  }
+  $('#impBtn').onclick = function () {
+    var f = $('#impFile').files && $('#impFile').files[0];
+    if (f) { var r = new FileReader(); r.onload = function () { doImport(String(r.result)); }; r.readAsText(f); }
+    else if ($('#impText').value.trim()) doImport($('#impText').value);
+    else toast('Bitte eine Datei wählen oder Text einfügen.');
+  };
+
+  /* ---------------- Löschen ---------------- */
+  $('#wipeBtn').onclick = function () { $('#wipeBox').hidden = !$('#wipeBox').hidden; };
+  $('#wipeGo').onclick = function () {
+    if ($('#wipeTxt').value.trim().toUpperCase() !== 'LÖSCHEN') { toast('Bitte LÖSCHEN eintippen.'); return; }
+    ls(KEY, null); $('#wipeTxt').value = ''; $('#wipeBox').hidden = true; toast('Alle Lernstand-Daten auf diesem Gerät gelöscht.'); render();
+  };
+})();
+</script>
+</body>
+</html>

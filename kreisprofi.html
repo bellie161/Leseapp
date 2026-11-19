@@ -718,5 +718,8 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
   b.onclick=()=>{const u=location.origin+location.pathname;b.textContent='⏳ Lädt …';
     fetch(u,{cache:'reload'}).catch(()=>{}).finally(()=>location.replace(u+'?v='+Date.now()));};})();
 </script>
+<!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
+<script src="lernlog.js"></script>
+<script>if(window.LernLog)LernLog.geo({app:'Kreis-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint7','hintSet','hintStep','hint4']});</script>
 </body>
 </html>

@@ -306,6 +306,7 @@
   </section>
 </div>
 
+<script src="lernlog.js"></script>
 <script>
 (function () {
   'use strict';
@@ -690,6 +691,8 @@
 
   /* ---------- Zustand ---------- */
   var $ = function (s) { return document.querySelector(s); };
+  var LL = window.LernLog || null; // Lernstand-Aufzeichnung (Auswertung: lernstand.html)
+  if (LL) LL.init('Zahlendetektiv bis 1 Million');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SEL_KEY = 'zahlendetektiv.auswahl';
   var sel = { mode: '1000', step: 3 };
@@ -765,6 +768,7 @@
   function showScreen(name) {
     ['start', 'task', 'end'].forEach(function (n) { $('#screen-' + n).hidden = n !== name; });
     var inRound = name === 'task';
+    if (!inRound && LL) LL.abbruch();
     $('#progress').hidden = !inRound;
     $('#count').hidden = !inRound;
     if (name === 'start') renderStart();
@@ -819,6 +823,13 @@
     updateAnswer();
     updateProgress();
     window.scrollTo(0, 0);
+    if (LL) {
+      var mm = MODES.filter(function (x) { return x.top === S.top; })[0];
+      var au = t.type === 'count' ? 'Wie viele ' + PL[t.p].items + ' für ' + fmt(t.n) + '? (richtig: ' + t.k + ')'
+        : t.type === 'tf' ? 'Gezeigt: ' + fmt(t.n) + ', dort steht ' + fmt(t.label) + ' (passt: ' + (t.isTrue ? 'ja' : 'nein') + ')'
+        : (t.bundle ? 'Bündeln: ' : 'Gezeigt: ') + fmt(t.n);
+      LL.start(mm.label + ' · Stufe ' + S.step + ' ' + stepInfo(S.top, S.step).title + (S.practice ? ' (Wiederholung)' : ''), au);
+    }
   }
 
   function updateAnswer() {
@@ -871,6 +882,7 @@
     t.tries++;
     if (given === want) {
       t.result = t.tries === 1 ? 'ok' : 'miss';
+      if (LL) LL.fertig(true);
       if (window.ZD_star) window.ZD_star();
       feedback('good', t.tries === 1 ? pick(PRAISE) : 'Jetzt stimmt es!', solvedText(t), false);
       endTask();
@@ -878,8 +890,10 @@
     }
     t.wrong.push(given);
     var tip = hintFor(t, given);
+    if (LL) LL.fehler(t.type === 'count' ? given : fmt(given), tip);
     if (t.tries >= 2) {
       t.result = 'miss';
+      if (LL) LL.fertig(false);
       feedback('miss', 'Das war knifflig.', tip + ' ' + solvedText(t), t.type !== 'count', true);
       endTask();
     } else {
@@ -895,6 +909,7 @@
     var right = sayTrue === t.isTrue;
     t.result = right ? 'ok' : 'miss';
     if (right && window.ZD_star) window.ZD_star();
+    if (LL) { if (!right) LL.fehler(sayTrue ? 'passt' : 'passt nicht'); LL.fertig(right); }
     var bt = $('#btn-true'), bf = $('#btn-false');
     bt.disabled = bf.disabled = true;
     var chosen = sayTrue ? bt : bf, other = sayTrue ? bf : bt;
