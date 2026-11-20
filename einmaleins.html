@@ -403,12 +403,14 @@ function startMode(m){MODE=m;show('task');newTask();
 function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4][MODE]();}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();hush();};
 $('#speakBtn').onclick=()=>sayInstr();
-function win(t){locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
+function win(t){if(window.Denkpause&&Denkpause.ersterVersuch()&&M&&M.tries>0){locked=true;save();sound('ok');feedback(t+' Beim nächsten Mal gleich beim 1. Versuch – dann gibt es einen Stern ⭐','ok');
+    say(t+' Beim nächsten Mal gleich beim ersten Versuch. Dann gibt es einen Stern.');setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';return;}
+  locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
   if(s===S.maxStage&&S.maxStage<NST&&S.sc[s]>=S.stg){S.maxStage++;pendingUp=S.maxStage;}
   save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
   setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';}
 function next(){if(pendingUp){showUp();return;}if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}
-function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(fx)fx();}
+function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,(M&&M.tries)||1);else say(t+' Versuch es nochmal.');if(fx)fx();}
 function showUp(){const n=pendingUp;$('#upTitle').textContent=`${STAGES[n-1].n} geschafft!`;$('#upTxt').textContent=`Neu für dich: ${STAGES[n].n}.`;$('#upOv').classList.add('on');confetti();sound('ok');
   say(`Super! Du hast die ${STAGES[n-1].n} geschafft. Neu für dich: ${STAGES[n].n}.`);}
 $('#upStay').onclick=()=>{pendingUp=0;$('#upOv').classList.remove('on');next();};
@@ -618,6 +620,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Einmaleins-Profi',uebung:()=>LernLog.text('.mode[data-m="'+MODE+'"]')+' · Stufe '+M.s+' '+STAGES[M.s].n,aufgabe:()=>instrText+' | '+(MODE==1?M.k+' · '+M.n+' = '+M.v:MODE==2?M.n+'er-Reihe, gesucht '+M.v:MODE==3?M.T+' : '+M.n+' = '+M.k+' ('+(M.kind==='ver'?'verteilen':'aufteilen')+')':(M.q||[]).map(q=>q.t+' = '+q.v).join(', ')),gesperrt:()=>locked});</script>
 </body>
 </html>

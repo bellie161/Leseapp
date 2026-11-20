@@ -276,6 +276,7 @@ button.vorrat:active{transform:scale(.98)}
 
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>
 (() => {
 "use strict";
@@ -577,6 +578,8 @@ function ask(q, onDone, keep) {
         if (LL) LL.fehler(String(v), "Aufgabe: " + q.a + " " + q.op + " " + q.b + " = " + q.ans);
         const fb = $("#fb"); fb.textContent = "Lass uns nachzählen."; fb.className = "fb";
         if (q.help) q.help();
+        q._w = (q._w || 0) + 1;
+        if (window.Denkpause) Denkpause.falsch("Lass uns nachzählen. Hör gut zu und schau auf das Bild.", q._w, { stumm: !!q.help && settings.speak });
       }
     };
     ch.appendChild(b);

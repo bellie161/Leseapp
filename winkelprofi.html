@@ -443,13 +443,13 @@ function answer(val,btn){
     setTimeout(()=>{if(S.done>=S.goal&&S.marks.length>=S.goal)showReward();else newTask();},2300);
   }else{
     tries++;sound('no');btn.classList.add('shake','dim');setTimeout(()=>btn.classList.remove('shake'),400);
-    if(tries<2){feedback('Schau noch einmal genau. Prüfe mit dem Geodreieck!','try');say('Schau noch einmal genau. Prüfe mit dem Geodreieck.');}
+    if(tries<2){feedback('Schau noch einmal genau. Prüfe mit dem Geodreieck!','try');if(window.Denkpause)Denkpause.falsch('Schau noch einmal genau. Prüfe mit dem Geodreieck.',tries);else say('Schau noch einmal genau. Prüfe mit dem Geodreieck.');}
     else{
       locked=true;showSolution();let t;
       if(TM===1)t=task.answer?'Das ist ein rechter Winkel. Siehst du das Zeichen?':'Das ist kein rechter Winkel. Es bleibt eine Lücke.';
       else if(TM===2)t=`Winkel ${task.answer+1} ist der rechte Winkel.`;
       else t=`Die Form hat ${task.answer} rechte Winkel.`;
-      feedback(t,'sol');say(t);
+      feedback(t,'sol');if(window.Denkpause)Denkpause.falsch(t,tries,{loesung:true});else say(t);
       const ans=$('#answers');ans.innerHTML='';const b=document.createElement('button');b.textContent='Weiter ➜';b.style.background='var(--blue)';
       b.onclick=()=>{if(S.done>=S.goal)showReward();else newTask();};ans.appendChild(b);
     }
@@ -649,6 +649,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Winkel-Profi',uebung:()=>LernLog.text('.mode[data-mode="'+TM+'"]')+' · '+S.level,gesperrt:()=>locked,okSound:true});</script>
 </body>
 </html>

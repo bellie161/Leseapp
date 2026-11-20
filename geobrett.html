@@ -406,8 +406,8 @@ function answerCount(v,b){
   if(locked)return;const rk=rightCorners(bands[0].pins).length;
   if(v===rk)return success();
   tries++;sound('no');b.classList.add('shake');b.style.opacity=.35;setTimeout(()=>b.classList.remove('shake'),400);
-  if(tries<2){const t='Noch nicht. Prüfe jede Ecke mit dem Geodreieck.';feedback(t,'try');say(t);if(!geoOn){geoOn=true;resetGeo();buildCtrl();}}
-  else{locked=true;done=true;countPhase=false;if(MODE==='find')solShown=true;const t=rk===0?'Diese Form hat keinen rechten Winkel.':`Die Form hat ${rk} rechte${rk===1?'n':''} Winkel. Schau dir die Zeichen an.`;feedback(t,'sol');say(t);render();showNext();}
+  if(tries<2){const t='Noch nicht. Prüfe jede Ecke mit dem Geodreieck.';feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,tries);else say(t);if(!geoOn){geoOn=true;resetGeo();buildCtrl();}}
+  else{locked=true;done=true;countPhase=false;if(MODE==='find')solShown=true;const t=rk===0?'Diese Form hat keinen rechten Winkel.':`Die Form hat ${rk} rechte${rk===1?'n':''} Winkel. Schau dir die Zeichen an.`;feedback(t,'sol');if(window.Denkpause)Denkpause.falsch(t,tries,{loesung:true});else say(t);render();showNext();}
 }
 /* ---------- Bedienleiste ---------- */
 function btn(parent,label,cls,fn){const b=document.createElement('button');b.className=cls||'';b.innerHTML=label;b.onclick=fn;parent.appendChild(b);return b;}
@@ -528,6 +528,7 @@ function endRound(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Geobrett',uebung:()=>LernLog.text('.mode[data-mode="'+MODE+'"]')+' · '+N+'x'+N+' · '+S.level,gesperrt:()=>locked,done:['success'],skip:()=>MODE==='free'});</script>
 </body>
 </html>

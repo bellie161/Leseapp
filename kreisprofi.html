@@ -365,12 +365,12 @@ function tap7(q){const k=hit7(q);
   if(!k){const t='Tippe genau auf ein Teil vom Zirkel.';feedback(t,'try');say(t);return;}
   const p=T7.part;if(k===p){hlL.innerHTML='';glow7(p,true);label7(p);win(`Richtig! Das ist ${ZNOM[p]}.`);return;}
   T7.tries++;sound('no');const g=part7(k,markL,'#E63946',22);setTimeout(()=>g.remove(),1500);
-  let t=`Das ist ${ZNOM[k]}. Gesucht ist ${ZART[p]}. ${ZEX[p]}`;if(T7.tries>=2){glow7(p,false);t+=' Schau, es blinkt.';}feedback(t,'try');say(t);}
+  let t=`Das ist ${ZNOM[k]}. Gesucht ist ${ZART[p]}. ${ZEX[p]}`;if(T7.tries>=2){glow7(p,false);t+=' Schau, es blinkt.';}feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,T7.tries);else say(t);}
 function answer7(o){if(locked)return;const p=T7.part;
   if(o===p){hlL.innerHTML='';glow7(p,true);label7(p);win(`Richtig! Das ist ${ZNOM[p]}. ${ZEX[p]}`);return;}
   T7.tries++;wrongShake();let t=`Nein. ${ZEX[o]} Versuch es nochmal.`;
   if(T7.tries>=2){t=`Schau genau: ${ZEX[p]}`;glow7(p,false);[...$('#ctrl').children].forEach(b=>{if(b.textContent===ZN[p])b.classList.add('pulse');});}
-  feedback(t,'try');say(t);}
+  feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,T7.tries);else say(t);}
 function hint7(){const rest=Z7.filter(k=>!T7.found[k]);const t=rest.length===1?'Ein Teil fehlt noch. Es blinkt.':`Noch ${rest.length} Teile. Sie blinken.`;feedback(t,'sol');say(t);hlL.innerHTML='';rest.forEach(k=>glow7(k,false));}
 
 /* ================= Modus 1: Kreis-Wörter ================= */
@@ -418,7 +418,7 @@ function answer1(w){if(locked)return;const p=T1.part;
   if(w===p){label1(p);win(`Richtig! Das ist ${NOM[p]}.`);return;}
   T1.tries++;wrongShake();let t=`Nein. ${EXPL[w]} Versuch es nochmal.`;
   if(T1.tries>=2){t=`Schau genau: ${EXPL[p]}`;[...$('#ctrl').children].forEach(b=>{if(b.textContent===NAME[p])b.classList.add('pulse');});}
-  feedback(t,'try');say(t);}
+  feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,T1.tries);else say(t);}
 function tap1(q){const{MC,R,dA,dB,rE,comp}=T1;let hit=null;
   if(dist(q,MC)<32)hit='M';else if(dist(q,comp.N)<42)hit='spitze';else if(dist(q,comp.P)<46)hit='mine';else if(distSeg(q,comp.H,comp.G)<34||dist(q,comp.H)<26)hit='griff';
   else if(distSeg(q,MC,rE)<26)hit='r';else if(distSeg(q,dA,dB)<26)hit='d';else if(Math.abs(dist(q,MC)-R)<26)hit='k';
@@ -428,7 +428,7 @@ function tap1(q){const{MC,R,dA,dB,rE,comp}=T1;let hit=null;
   T1.tries++;sound('no');const g=partNode(hit,markL,'#E63946',20);setTimeout(()=>g.remove(),1500);
   let t=`Das ist ${NOM[hit]}. Gesucht ist ${ART[p]}. ${EXPL[p]}`;
   if(T1.tries>=2){glow1(p,false);t+=' Schau, es blinkt.';}
-  feedback(t,'try');say(t);}
+  feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,T1.tries);else say(t);}
 
 /* ================= Modus 2: Zirkel einstellen ================= */
 let T2=null,last2=null;
@@ -446,7 +446,7 @@ function newTask2(){const n=S.n2||0;const type=n<3?'set':(Math.random()<.5?'set'
 function mineLine(){const P=compassPts().P;const g=el('line',{x1:P[0],y1:P[1],x2:P[0],y2:RUL2.y+30,stroke:'#E63946','stroke-width':4,'stroke-dasharray':'6 4'},markL);blinkEl(g);}
 function answer2(o){if(locked)return;
   if(o===T2.t){mineLine();win(`Richtig! Der Zirkel ist auf ${cmT(o)} eingestellt.`);return;}
-  T2.tries++;wrongShake();mineLine();const t=`Nein, nicht ${cmT(o)}. Die Zirkelspitze steht auf 0. Schau, wo die Mine steht.`;feedback(t,'try');say(t);}
+  T2.tries++;wrongShake();mineLine();const t=`Nein, nicht ${cmT(o)}. Die Zirkelspitze steht auf 0. Schau, wo die Mine steht.`;feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,T2.tries);else say(t);}
 
 /* ---------- Gemeinsame Zeichen-Schritte (Modus 2, 3, 5, 6) ---------- */
 let drag=null,strokes=[],bins=[],hintOn=null;
@@ -720,6 +720,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Kreis-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint7','hintSet','hintStep','hint4']});</script>
 </body>
 </html>

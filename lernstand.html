@@ -156,6 +156,10 @@
   </div>
 
   <h2>Einstellungen</h2>
+  <div class="card" id="dpCard">
+    <h3>🤔 Denkpause gegen Durchklicken</h3>
+    <p class="meta">Nach einer falschen Antwort muss das Kind kurz warten und den Tipp lesen, bevor es weiter probieren darf. Gilt für alle Mathe- und Geometrie-Apps auf diesem iPad.</p>
+  </div>
   <div class="card">
     <h3>Name dieses Geräts</h3>
     <p class="meta">Damit man im Bericht sieht, auf welchem iPad geübt wurde.</p>
@@ -448,5 +452,7 @@
   };
 })();
 </script>
+<script src="denkpause.js"></script>
+<script>if(window.Denkpause)Denkpause.einstellungen(document.getElementById('dpCard'));</script>
 </body>
 </html>

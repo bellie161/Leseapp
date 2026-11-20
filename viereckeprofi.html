@@ -334,7 +334,10 @@ $('#speakBtn').onclick=()=>sayInstr();
 function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
   setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
   $('#ctrl button').style.fontSize='26px';}
-function nope(t,blinkFn){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(blinkFn)blinkFn();}
+function nope(t,blinkFn){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');if(blinkFn)blinkFn();
+  /* Denkpause nur bei Auswahl-Aufgaben, nicht beim Spannen am Geobrett (Modus 3) */
+  const n=MODE===1?(typeof M1!=='undefined'&&M1?(M1.w||0)+(M1.fin||0):1):MODE===2?M2.tries:MODE===4?M4.tries:MODE===5?M5.tries:0;
+  if(window.Denkpause&&MODE!==3)Denkpause.falsch(t,n||1);else say(t+' Versuch es nochmal.');}
 function helpData(){
   if(MODE===1)return{t:'Parallele Seiten finden',st:['Tippe eine Seite an. Sie leuchtet gelb.','Tippe dann die Seite gegenüber an. Sind die 2 Seiten parallel? Dann werden sie bunt.','Suche alle parallelen Seiten. Manche Vierecke haben 2 Paare, manche 1 Paar, manche keins.','Findest du keine weiteren? Tippe auf Fertig.']};
   if(MODE===2)return{t:'Wie heißt das Viereck?',st:['Prüfe das Viereck mit den Werkzeugen unten.','🎨 zeigt die parallelen Seiten. 📐 zeigt die rechten Winkel. 📏 legt die Seiten nebeneinander.','Tippe dann rechts auf den Namen.','Manche Vierecke haben mehrere Namen. Suche den genauesten Namen.']};
@@ -417,13 +420,13 @@ function tapSide1(i){if(locked)return;ghostL.innerHTML='';
   if(M1.sel<0){M1.sel=i;sound('tick');hideFb();render1();setInstr('Welche Seite ist parallel dazu? Tippe sie an.');sayInstr();return;}
   if(i===M1.sel){M1.sel=-1;render1();setInstr(firstInstr1());return;}
   const a=M1.sel;M1.sel=-1;render1();
-  if((i-a+4)%4!==2){sound('no');showMeet(a,i);const t='Diese 2 Seiten treffen sich an einer Ecke. Parallele Seiten treffen sich nie.';feedback(t,'try');say(t);setInstr(firstInstr1());return;}
+  if((i-a+4)%4!==2){sound('no');showMeet(a,i);const t='Diese 2 Seiten treffen sich an einer Ecke. Parallele Seiten treffen sich nie.';feedback(t,'try');M1.w=(M1.w||0)+1;if(window.Denkpause)Denkpause.falsch(t,M1.w);else say(t);setInstr(firstInstr1());return;}
   const k=a%2;
   if(M1.inf.par[k]){M1.found[k]=true;const col=PC[M1.pc++];M1.col[a]=M1.col[i]=col;sound('step');render1();strip1();
     const P=M1.P,p=P[k],q=P[k+1],c=P[(k+2)%4],d=P[(k+3)%4];[.3,.7].forEach(f=>{const A=add(p,mul(sub(q,p),f));measureBar(A,foot(A,c,d),col,fillL);});
     if(M1.pc===2)return win1();
     const t='Genau! Diese 2 Seiten sind parallel. Der Abstand ist überall gleich.';feedback(t+' ✓','ok');setInstr(firstInstr1());say(t+' '+instrText);return;}
-  sound('no');showMeet(a,i);const t='Nicht parallel! Verlängert man die Seiten, treffen sie sich.';feedback(t,'try');say(t);setInstr(firstInstr1());}
+  sound('no');showMeet(a,i);const t='Nicht parallel! Verlängert man die Seiten, treffen sie sich.';feedback(t,'try');M1.w=(M1.w||0)+1;if(window.Denkpause)Denkpause.falsch(t,M1.w);else say(t);setInstr(firstInstr1());}
 function finish1(){if(locked)return;const miss=[0,1].filter(k=>M1.inf.par[k]&&!M1.found[k]);
   if(miss.length){M1.fin++;nope(M1.pc?'Schau nochmal genau. Es gibt noch 2 Seiten, die parallel sind.':'Schau nochmal genau. Es gibt 2 Seiten, die parallel sind.',M1.fin>=2?()=>blinkEl($('#side'+miss[0])):null);return;}
   win1();}
@@ -672,6 +675,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Vierecke-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint1']});</script>
 </body>
 </html>

@@ -253,6 +253,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>
 (function(){
 "use strict";
@@ -509,9 +510,9 @@ function answer(ok,wrongMsg,solution,onOk,onSolution){
   if(ok){sess.tries=0;if(onOk){onOk()}else finishTask();return}
   sess.firstTry=false;sess.tries++;getP(sess.zr,sess.si).err++;save();
   if(LL){const sl=$('#slot');LL.fehler(sl&&!sl.classList.contains('empty')?sl.textContent:'',wrongMsg);if(sess.tries>=2)sess.llSol=true;}
-  if(sess.tries<2){setFeedback('bad',wrongMsg+' Versuch es noch einmal.');if(sess.onTip)sess.onTip(true)}
+  if(sess.tries<2){setFeedback('bad',wrongMsg+' Versuch es noch einmal.');if(sess.onTip)sess.onTip(true);if(window.Denkpause)Denkpause.falsch(wrongMsg,sess.tries)}
   else{sess.locked=true;if(onSolution)onSolution();
-    setFeedback('bad',wrongMsg+` Richtig ist: <b>${solution}</b>.`);
+    setFeedback('bad',wrongMsg+` Richtig ist: <b>${solution}</b>.`);if(window.Denkpause)Denkpause.falsch(wrongMsg+` Richtig ist: ${solution}.`,sess.tries,{loesung:true});
     showNext(()=>{if(onOk){resetStepKeep();onOk()}else finishTask(true)})}
 }
 function resetStepKeep(){sess.locked=false;sess.tries=0;$('#feedback').hidden=true;$('#btn-next').hidden=true;$('#btn-check').hidden=false;$('#btn-tip').hidden=false}

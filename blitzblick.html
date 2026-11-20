@@ -233,6 +233,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>
 (function(){
 const LL=window.LernLog||null;if(LL)LL.init('Blitzblick');
@@ -455,7 +456,7 @@ function help(btn){
   renderPic('help');
   el.fb.className='fb try';el.fb.hidden=false;
   el.fb.innerHTML='<div class="msg">Schau noch mal genau.</div>'+equation(G.task,true);
-  say('Schau noch mal genau. Erst die Fünf, dann der Rest.');
+  if(window.Denkpause)Denkpause.falsch('Schau noch mal genau. Erst die Fünf, dann der Rest.',G.tries);else say('Schau noch mal genau. Erst die Fünf, dann der Rest.');
 }
 function choose(v,btn){
   if(btn.classList.contains('wrong'))return;

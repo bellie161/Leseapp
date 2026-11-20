@@ -307,6 +307,7 @@
 </div>
 
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>
 (function () {
   'use strict';
@@ -896,8 +897,10 @@
       if (LL) LL.fertig(false);
       feedback('miss', 'Das war knifflig.', tip + ' ' + solvedText(t), t.type !== 'count', true);
       endTask();
+      if (window.Denkpause) Denkpause.falsch(tip + ' Schau dir danach die Lösung an.', 2, { loesung: true });
     } else {
       feedback('hint', 'Noch nicht ganz.', tip + ' Versuche es noch einmal.', false, false);
+      if (window.Denkpause) Denkpause.falsch(tip, 1);
       S.input = '';
       updateAnswer();
     }
@@ -920,6 +923,7 @@
     else if (t.isTrue) feedback('miss', 'Die Zahl passt doch.', 'Die Darstellung zeigt ' + fmt(t.n) + '.', true, true);
     else feedback('miss', 'Die Zahl passt nicht.', 'Dort steht ' + fmt(t.label) + ', die Darstellung zeigt aber ' + fmt(t.n) + '.', true, true);
     endTask();
+    if (!right && window.Denkpause) Denkpause.falsch(t.isTrue ? 'Die Zahl passt doch. Die Darstellung zeigt ' + fmt(t.n) + '. Schau dir die Tabelle an.' : 'Die Zahl passt nicht. Dort steht ' + fmt(t.label) + ', die Darstellung zeigt aber ' + fmt(t.n) + '.', 1, { loesung: true });
   }
 
   function next() {

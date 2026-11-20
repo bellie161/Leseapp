@@ -365,6 +365,7 @@ function check(){
     else fb.textContent='Noch nicht. Probier es noch einmal.';
     fb.className='feedback bad';
     refreshFields();renderActions();
+    if(window.Denkpause)Denkpause.falsch(S.mode==='A'?'Zähle noch einmal genau.':S.tries>=2?'Schau in die Box und verbessere.':'Noch nicht. Schau dir die Zahlen noch einmal genau an.',S.tries);
   }
 }
 function next(){
@@ -385,6 +386,7 @@ startRound();
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>
 if(window.LernLog){(function(L){
   L.init('Schüttelbox');

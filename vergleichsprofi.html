@@ -470,12 +470,14 @@ function startMode(m){MODE=m;show('task');newTask();
 function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();C.modes[MODE-1].newTask();}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();hush();};
 $('#speakBtn').onclick=()=>sayInstr();
-function win(t){locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
+function win(t){if(window.Denkpause&&Denkpause.ersterVersuch()&&M&&M.tries>0){locked=true;save();sound('ok');feedback(t+' Beim nächsten Mal gleich beim 1. Versuch – dann gibt es einen Stern ⭐','ok');
+    say(t+' Beim nächsten Mal gleich beim ersten Versuch. Dann gibt es einen Stern.');setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';return;}
+  locked=true;S.done++;S.stars++;const s=M.s;S.sc[s]=(S.sc[s]||0)+1;
   if(s===S.maxStage&&S.maxStage<NST&&S.sc[s]>=S.stg){S.maxStage++;pendingUp=S.maxStage;}
   save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
   setCtrl([{t:'Weiter ➜',cls:'',fn:next}]);$('#ctrl button').style.fontSize='26px';}
 function next(){if(pendingUp){showUp();return;}if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}
-function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(fx)fx();}
+function nope(t,fx){sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,(M&&M.tries)||1);else say(t+' Versuch es nochmal.');if(fx)fx();}
 function blinkEl(node){if(!node)return;node.classList.remove('blink');void node.getBBox();node.classList.add('blink');setTimeout(()=>node.classList.remove('blink'),2100);}
 function showUp(){const n=pendingUp;$('#upTitle').textContent=`Stufe ${n-1} geschafft!`;$('#upTxt').textContent=`Neu für dich: Stufe ${n} – ${C.stages[n].n}.`;$('#upOv').classList.add('on');confetti();sound('ok');
   say(`Super! Du hast Stufe ${n-1} geschafft. Neu für dich: Stufe ${n}, ${C.stages[n].n}.`);}
@@ -569,6 +571,7 @@ refreshStart();
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Vergleichs-Profi',uebung:()=>MODE+' '+C.modes[MODE-1].t+' · Stufe '+M.s+' '+C.stages[M.s].n,aufgabe:()=>instrText+' | '+(M.A?M.A.l+' '+(M.shown||'?')+' '+M.B.l+' (richtig: '+M.sg+')':(M.set||[]).map(x=>x.l).join(', ')+(M.word?' ('+M.word+')':'')),gesperrt:()=>locked});</script>
 </body>
 </html>

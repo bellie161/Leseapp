@@ -341,7 +341,7 @@ function answer1(yes){if(locked)return;
     M1.tries++;sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);
     if(!M1.measured)measure1();
     const t=M1.par?'Schau genau: Der Abstand ist überall gleich. Also sind die Linien parallel.':M1.cross?'Schau genau: Die Linien kreuzen sich. Parallele Linien treffen sich nie.':'Schau genau: Die Zahlen sind verschieden. Der Abstand ist nicht überall gleich.';
-    setTimeout(()=>{feedback(t,'try');say(t+' Versuch es nochmal.');},900);}}
+    setTimeout(()=>{feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,M1.tries);else say(t+' Versuch es nochmal.');},900);}}
 function train1(ok,done){const{c1,u,len,th}=M1;const g=el('g',{},markL);const tr=txt(g,0,0,'🚂',{'font-size':52});
   const s0=-len/2-10,s1=ok?len/2+10:(M1.d<0?0:len*.1);let tStart=null;const dur=ok?2200:1600;
   const flip=Math.cos(rad(th))<0;sound('choo');
@@ -538,7 +538,7 @@ function tapFind5(c,ln,y,w){if(locked||T5.phase!==1)return;
   if(Math.abs(c-T5.d)<.01){locked=true;ln.setAttribute('stroke','#F28C28');ln.setAttribute('stroke-width','9');sound('step');
     const t=`Genau! Diese Linie ist ${cmT(c)} von der langen Kante weg. Sie leuchtet jetzt orange auf deinem Geodreieck.`;feedback(t,'ok');say(t);
     setTimeout(()=>{locked=false;hideFb();start5b();},2600);return;}
-  T5.ftries++;sound('no');const t=`Das ist die Linie für ${cmT(c)}. Du suchst ${cmT(T5.d)}. Zähle von der langen Kante aus.`;feedback(t,'try');say(t);
+  T5.ftries++;sound('no');const t=`Das ist die Linie für ${cmT(c)}. Du suchst ${cmT(T5.d)}. Zähle von der langen Kante aus.`;feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,T5.ftries);else say(t);
   if(T5.ftries>=2){const k=Math.round(T5.d*2);blinkEl($('#fl'+k));}}
 function start5b(){hitL.innerHTML='';T5.phase=2;const{C,u,d}=T5;
   const A=add(C,mul(u,-430)),B=add(C,mul(u,430));el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#1D7FD8','stroke-width':6,'stroke-linecap':'round'},taskL);
@@ -636,7 +636,7 @@ function tapSide3(i){if(locked)return;
     M3.tries++;sound('no');const ln=$('#side'+i);if(ln){ln.setAttribute('stroke','#E63946');setTimeout(()=>{ln.setAttribute('stroke',M3.col[i]||'#2A9D4B');},1200);}
     let t=`Nein. Diese Seite trifft die ${PA[M3.pair]} Seite an einer Ecke. Parallele Seiten treffen sich nie.`;
     if(M3.tries>=2){t+=' Schau: Die blinkende Seite ist gegenüber.';blinkEl($('#side'+opp));}
-    feedback(t,'try');say(t);}}
+    feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,M3.tries);else say(t);}}
 function tapCorner3(i){if(locked||M3.done[i])return;M3.done[i]=true;const P=M3.P;corner(P[i],sub(P[(i+1)%4],P[i]),sub(P[(i+3)%4],P[i]),'#E63946',24);sound('tick');render3();
   const n=M3.done.filter(x=>x).length;
   if(n<4){feedback(`Rechter Winkel ✓  (${n} von 4)`,'ok');say(n===1?'Ein rechter Winkel.':n+' rechte Winkel.');return;}
@@ -674,7 +674,7 @@ function tapCorner4(i){if(locked||M4.checked[i])return;M4.checked[i]=true;markCo
   if(M4.checked.every(x=>x)){M4.phase='q1';strip4();locked=true;
     setTimeout(()=>{locked=false;hideFb();setInstr('Ist das ein Rechteck? Ein Rechteck hat 4 rechte Winkel.');sayInstr();
       setCtrl([{t:'✓ Ja, ein Rechteck',cls:'yes',fn:()=>answer4a(true)},{t:'✗ Nein, kein Rechteck',cls:'no',fn:()=>answer4a(false)}]);},1100);}}
-function nope(t,blinkFn){M4.tries++;sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');say(t+' Versuch es nochmal.');if(blinkFn)blinkFn();}
+function nope(t,blinkFn){M4.tries++;sound('no');$('#ctrl').classList.add('shake');setTimeout(()=>$('#ctrl').classList.remove('shake'),400);feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,M4.tries);else say(t+' Versuch es nochmal.');if(blinkFn)blinkFn();}
 function answer4a(yes){if(locked)return;const r=M4.right.filter(x=>x).length;
   if(yes!==M4.isRect){
     if(yes)nope(`Schau auf die Ecken: Nur ${r} Ecke${r===1?' ist ein rechter Winkel':'n sind rechte Winkel'}. Ein Rechteck braucht 4.`,()=>M4.right.forEach((x,i)=>{if(!x)blinkEl($('#cm'+i));}));
@@ -759,6 +759,7 @@ drawGeo();
 </script>
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
+<script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Parallel-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint3','hint4']});</script>
 </body>
 </html>
