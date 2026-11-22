@@ -531,12 +531,12 @@ function test(){setTitle('Test','⭐');let n=0,res=[];
     svg.querySelectorAll('[data-part]').forEach(g=>g.classList.toggle('hi',g.dataset.part===q.a));finish(ok)}}
   else main.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{if(answered)return;const ok=b.dataset.ok==='1';b.classList.add(ok?'right':'wrong');
     if(!ok)main.querySelector('.choice[data-ok="1"]').classList.add('right');finish(ok)})}
- function end(){const s=res.filter(x=>x===1).length;intro=`Du hast ${s} von ${Q.length} Sternen. ${s>=10?'Super! Du bist ein Igel-Profi!':s>=7?'Gut gemacht!':'Schau dir die Stationen noch einmal an und versuche es wieder.'}`;
+ function end(){const s=res.filter(x=>x===1).length;const need=Math.ceil(Q.length*2/3),ok=s>=need;intro=ok?`Du hast ${s} von ${Q.length} Sternen. ${s>=Q.length-2?'Super! Du bist ein Igel-Profi!':'Gut gemacht! Du hast den Test geschafft.'}`:`Du hast ${s} von ${Q.length} Sternen. Du brauchst mindestens ${need} Sterne. Mach den Test noch einmal!`;
   main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;align-items:center"><div style="width:min(420px,100%)">${igel()}</div>
    <div class="stars">${Q.map((_,i)=>`<span class="${res[i]===1?'':'off'}">⭐</span>`).join('')}</div>
-   <div class="qbar" style="width:100%">${spk(intro)}<span>${s} von ${Q.length} Sternen</span></div>
-   <div class="center"><button class="bigbtn" id="re">${ICON.again}<span>Nochmal</span></button><button class="bigbtn" id="hm">${ICON.home.replace('#7a4f2f','#2a1a05')}<span>Start</span></button></div></div>`;
-  tone('win');say(intro);document.getElementById('re').onclick=()=>{n=0;res=[];show();say(Q[0].q)};document.getElementById('hm').onclick=()=>go('home')}
+   <div class="qbar" style="width:100%">${spk(intro)}<span>${s} von ${Q.length} Sternen${ok?'':` · nötig: ${need}`}</span></div>
+   <div class="center"><button class="bigbtn" id="re">${ICON.again}<span>${ok?'Nochmal':'Test wiederholen'}</span></button><button class="bigbtn" id="hm" ${ok?'':'hidden'}>${ICON.home.replace('#7a4f2f','#2a1a05')}<span>Start</span></button></div></div>`;
+  tone(ok?'win':'no');say(intro);homeBtn.hidden=!ok;document.getElementById('re').onclick=()=>{homeBtn.hidden=false;n=0;res=[];show();say(Q[0].q)};document.getElementById('hm').onclick=()=>go('home')}
  show()}
 
 go('home',true);
