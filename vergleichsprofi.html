@@ -573,5 +573,6 @@ refreshStart();
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Vergleichs-Profi',uebung:()=>MODE+' '+C.modes[MODE-1].t+' · Stufe '+M.s+' '+C.stages[M.s].n,aufgabe:()=>instrText+' | '+(M.A?M.A.l+' '+(M.shown||'?')+' '+M.B.l+' (richtig: '+M.sg+')':(M.set||[]).map(x=>x.l).join(', ')+(M.word?' ('+M.word+')':'')),gesperrt:()=>locked});</script>
+<script src="uebungswahl.js" data-app="Vergleichs-Profi" data-items="Stufen=.stg;Übungen=.mode"></script>
 </body>
 </html>

@@ -622,5 +622,6 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Einmaleins-Profi',uebung:()=>LernLog.text('.mode[data-m="'+MODE+'"]')+' · Stufe '+M.s+' '+STAGES[M.s].n,aufgabe:()=>instrText+' | '+(MODE==1?M.k+' · '+M.n+' = '+M.v:MODE==2?M.n+'er-Reihe, gesucht '+M.v:MODE==3?M.T+' : '+M.n+' = '+M.k+' ('+(M.kind==='ver'?'verteilen':'aufteilen')+')':(M.q||[]).map(q=>q.t+' = '+q.v).join(', ')),gesperrt:()=>locked});</script>
+<script src="uebungswahl.js" data-app="Einmaleins-Profi" data-items="Reihen=.stg;Übungen=.mode"></script>
 </body>
 </html>
