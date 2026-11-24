@@ -74,6 +74,8 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
 .tool{background:#fff;color:var(--ink)}
 .toolsel{background:var(--teal)!important;color:#fff!important}
 .yes{background:var(--green)}.no{background:var(--red)}
+.ctrl button.wait{opacity:.35;filter:grayscale(1)}
+.namebox{font-size:34px;font-weight:700;border:3px dashed var(--teal);border-radius:14px;padding:6px 18px;background:#F0FAFA;font-style:italic;min-width:130px;text-align:center}
 .overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:50}
 .overlay.on{display:flex}
 .card{background:#fff;border-radius:26px;padding:24px 30px;max-width:680px;width:92%;text-align:center;font-size:22px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto}
@@ -108,6 +110,10 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
         <line x1="10" y1="36" x2="160" y2="36" stroke="#6b7280" stroke-width="6"/><line x1="10" y1="69" x2="160" y2="69" stroke="#6b7280" stroke-width="6"/></svg>
       <span><span class="num" style="background:#1D7FD8">1</span> Schienen-Check</span><small>Parallel – ja oder nein?</small>
     </button>
+    <button class="mode" data-m="6">
+      <svg viewBox="0 0 170 105"><line x1="28" y1="20" x2="160" y2="36" stroke="#374151" stroke-width="4"/><line x1="28" y1="46" x2="160" y2="46" stroke="#2A9D4B" stroke-width="4"/><line x1="28" y1="70" x2="160" y2="70" stroke="#1D7FD8" stroke-width="5"/><line x1="28" y1="98" x2="160" y2="82" stroke="#374151" stroke-width="4"/><text x="12" y="75" font-size="18" font-style="italic" font-weight="700" fill="#1D7FD8">g</text></svg>
+      <span><span class="num" style="background:#0F8B8D">1b</span> Finde die Parallele</span><small>Welche Gerade ist parallel zu g?</small>
+    </button>
     <button class="mode" data-m="2">
       <svg viewBox="0 0 170 105"><line x1="10" y1="80" x2="160" y2="80" stroke="#1D7FD8" stroke-width="5"/><line x1="10" y1="35" x2="160" y2="35" stroke="#8E44AD" stroke-width="5"/>
         <line x1="45" y1="80" x2="45" y2="35" stroke="#8E44AD" stroke-width="3" stroke-dasharray="6 5"/><line x1="125" y1="80" x2="125" y2="35" stroke="#8E44AD" stroke-width="3" stroke-dasharray="6 5"/>
@@ -131,7 +137,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   </div>
   <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
   <div class="progress" id="startProgress"></div>
-  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 19.11.2026 · 3</div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 24.11.2026 · 4</div>
 </section>
 
 <section id="task" class="screen">
@@ -178,6 +184,8 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   <h2>📖 Das merke ich mir</h2>
   <div class="merk"><svg viewBox="0 0 120 80"><line x1="5" y1="20" x2="115" y2="20" stroke="#1D7FD8" stroke-width="5"/><line x1="5" y1="60" x2="115" y2="60" stroke="#1D7FD8" stroke-width="5"/><line x1="30" y1="20" x2="30" y2="60" stroke="#8E44AD" stroke-width="3" stroke-dasharray="5 4"/><line x1="90" y1="20" x2="90" y2="60" stroke="#8E44AD" stroke-width="3" stroke-dasharray="5 4"/></svg>
     <div><b>Parallel</b><br>Zwei Linien sind parallel, wenn der Abstand überall gleich ist. Sie treffen sich nie.</div></div>
+  <div class="merk"><svg viewBox="0 0 120 80"><line x1="20" y1="25" x2="115" y2="25" stroke="#2A9D4B" stroke-width="5"/><line x1="20" y1="60" x2="115" y2="60" stroke="#1D7FD8" stroke-width="5"/><text x="8" y="30" font-size="18" font-style="italic" font-weight="700" fill="#2A9D4B">b</text><text x="8" y="65" font-size="18" font-style="italic" font-weight="700" fill="#1D7FD8">g</text></svg>
+    <div><b>Das Zeichen ∥</b><br><i>b</i> ∥ <i>g</i> heißt: Die Gerade b ist parallel zur Geraden g.</div></div>
   <div class="merk"><svg viewBox="0 0 120 80"><polygon points="8,14 112,14 60,66" fill="rgba(170,215,255,.6)" stroke="#1d4f8a" stroke-width="2"/><line x1="26" y1="32" x2="94" y2="32" stroke="#F28C28" stroke-width="3"/><line x1="2" y1="32" x2="118" y2="32" stroke="#1D7FD8" stroke-width="2"/><line x1="2" y1="14" x2="118" y2="14" stroke="#8E44AD" stroke-width="4"/></svg>
     <div><b>Parallele zeichnen – 2 Wege</b><br>1. Abstand zweimal messen, 2 Punkte setzen, verbinden.<br>2. Die Linie mit dem Abstand auf dem Geodreieck auf die Linie legen und an der langen Kante zeichnen.</div></div>
   <div class="merk"><svg viewBox="0 0 120 80"><rect x="10" y="15" width="100" height="50" fill="#2A9D4B"/><path d="M10 27 h12 v-12 M98 15 v12 h12 M10 53 h12 v12 M98 65 v-12 h12" stroke="#fff" stroke-width="3" fill="none"/></svg>
@@ -226,10 +234,10 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.to
 function cmT(c){c=Math.round(c*2)/2;const w=Math.floor(c),h=c-w>0.25;return(h?(w?w+'½':'½'):String(w))+' cm';}
 function cmSay(c){c=Math.round(c*2)/2;const w=Math.floor(c),h=c-w>0.25;return h?(w?w+' einhalb Zentimeter':'einen halben Zentimeter'):(w===1?'1 Zentimeter':w+' Zentimeter');}
 
-let S={goal:10,done:0,stars:0,shots:10,voice:true,mag:'gross',half:false,slant:false,seen:{},n1:0,n2:0,n3:0,n4:0,n5:0};
+let S={goal:10,done:0,stars:0,shots:10,voice:true,mag:'gross',half:false,slant:false,seen:{},n1:0,n2:0,n3:0,n4:0,n5:0,n6:0};
 try{Object.assign(S,JSON.parse(localStorage.getItem('parallelprofi')||'{}'));}catch(e){}
 function save(){try{localStorage.setItem('parallelprofi',JSON.stringify(S));}catch(e){}}
-function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[✏️📐✓✗⭐➜📏💡🚂🚧]/gu,'').replace(/(\d)½ cm/g,'$1 einhalb Zentimeter').replace(/½ cm/g,'einen halben Zentimeter').replace(/(\d) cm/g,'$1 Zentimeter'));u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
+function say(t){if(!S.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/ ∥ /g,' ist parallel zu ').replace(/[▢]/g,'').replace(/[✏️📐✓✗⭐➜📏💡🚂🚧]/gu,'').replace(/(\d)½ cm/g,'$1 einhalb Zentimeter').replace(/½ cm/g,'einen halben Zentimeter').replace(/(\d) cm/g,'$1 Zentimeter'));u.lang='de-DE';u.rate=0.85;speechSynthesis.speak(u);}catch(e){}}
 let AC=null;
 function tone(f,t0,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,AC.currentTime+t0);g.gain.exponentialRampToValueAtTime(0.22,AC.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+t0+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t0);o.stop(AC.currentTime+t0+d+0.05);}catch(e){}}
 function boing(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(320,AC.currentTime);o.frequency.exponentialRampToValueAtTime(520,AC.currentTime+.08);g.gain.setValueAtTime(.18,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.17);}catch(e){}}
@@ -241,7 +249,7 @@ function refreshStart(){const rest=Math.max(0,S.goal-S.done);const g=$('#gameBtn
   $('#startProgress').textContent=rest>0?`Noch ${rest} Stern${rest===1?'':'e'} bis zur Gummi-Schleuder ⭐`:'Die Gummi-Schleuder ist frei! 🎉';}
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(+b.dataset.m));
 $('#gameBtn').onclick=()=>{if(S.done>=S.goal)openSling(true);else{say(`Sammle noch ${S.goal-S.done} Sterne. Dann darfst du schießen.`);const g=$('#gameBtn');g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}};
-const MERK='Parallel: Zwei Linien sind parallel, wenn der Abstand überall gleich ist. Sie treffen sich nie. Parallele zeichnen geht auf 2 Wegen. Erstens: Den Abstand zweimal messen, 2 Punkte setzen und verbinden. Zweitens: Die Linie mit dem Abstand auf dem Geodreieck auf die Linie legen und an der langen Kante zeichnen. Rechteck: 4 Ecken, 4 rechte Winkel. Die Seiten gegenüber sind parallel und gleich lang. Quadrat: Ein Rechteck mit 4 gleich langen Seiten.';
+const MERK='Parallel: Zwei Linien sind parallel, wenn der Abstand überall gleich ist. Sie treffen sich nie. Das Zeichen für parallel: b ∥ g heißt: Die Gerade b ist parallel zur Geraden g. Parallele zeichnen geht auf 2 Wegen. Erstens: Den Abstand zweimal messen, 2 Punkte setzen und verbinden. Zweitens: Die Linie mit dem Abstand auf dem Geodreieck auf die Linie legen und an der langen Kante zeichnen. Rechteck: 4 Ecken, 4 rechte Winkel. Die Seiten gegenüber sind parallel und gleich lang. Quadrat: Ein Rechteck mit 4 gleich langen Seiten.';
 $('#merkBtn').onclick=()=>{$('#merkOv').classList.add('on');say(MERK);};
 $('#merkSpeak').onclick=()=>say(MERK);
 $('#merkClose').onclick=()=>{$('#merkOv').classList.remove('on');try{speechSynthesis.cancel();}catch(e){}};
@@ -251,7 +259,7 @@ const upds=[segSet('#goalSeg',()=>S.goal,v=>S.goal=+v),segSet('#shotSeg',()=>S.s
 $('#setBtn').onclick=()=>{upds.forEach(u=>u());$('#setOv').classList.add('on');};
 $('#setClose').onclick=()=>{$('#setOv').classList.remove('on');refreshStart();};
 $('#unlockBtn').onclick=()=>{S.done=Math.max(S.done,S.goal);save();$('#setOv').classList.remove('on');refreshStart();};
-$('#resetDone').onclick=()=>{S.done=0;S.n1=S.n2=S.n3=S.n4=S.n5=0;S.seen={};save();refreshStart();};
+$('#resetDone').onclick=()=>{S.done=0;S.n1=S.n2=S.n3=S.n4=S.n5=S.n6=0;S.seen={};save();refreshStart();};
 refreshStart();
 
 /* ---------- Gemeinsames ---------- */
@@ -268,7 +276,7 @@ function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>
 const isGeo=()=>MODE===2||MODE===5;
 function startMode(m){MODE=m;show('task');$('#geotools').style.display=isGeo()?'':'none';geoG.style.display=isGeo()?'':'none';pglow.style.display='none';newTask();
   if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
-function newTask(){if(anim){cancelAnimationFrame(anim);anim=null;}locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5][MODE]();}
+function newTask(){if(anim){cancelAnimationFrame(anim);anim=null;}locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5,newTask6][MODE]();}
 $('#homeBtn').onclick=()=>{if(anim){cancelAnimationFrame(anim);anim=null;}show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>sayInstr();
 function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MODE]||0)+1;save();updStars();sound('ok');confetti();feedback(t+' ⭐','ok');say(t);
@@ -276,11 +284,12 @@ function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MOD
   setCtrl([{t:'Weiter ➜',cls:'',fn:()=>{if(S.done>=S.goal)showReward();else{newTask();sayInstr();}}}]);
   $('#ctrl button').style.fontSize='26px';}
 function helpData(){
-  if(MODE===1)return{t:'Parallel oder nicht?',st:['Schau dir die zwei Linien an.','Parallel heißt: Der Abstand ist überall gleich.','Tippe auf 📏 Abstand messen. Vergleiche die Zahlen.','Tippe dann: parallel oder nicht parallel.']};
+  if(MODE===1)return{t:'Parallel oder nicht?',st:['Schau dir die zwei Linien an.','Parallel heißt: Der Abstand ist überall gleich.','Tippe auf 📏 Abstand messen. Tippe dann auf jede gelbe Zahl.','Sind alle Zahlen gleich? Dann sind die Linien parallel. Erst jetzt gehen die Knöpfe Ja und Nein.']};
   if(MODE===2){const s=steps[si];if(s&&s.type==='line')return{t:'Die parallele Linie',st:['Lege die lange Kante vom Geodreieck an die 2 lila Punkte.','Tippe auf ✏️ Linie zeichnen.','Zeichne an der langen Kante – durch beide lila Punkte.']};
     return{t:'Den Abstand messen',st:['Lege die Nulllinie vom Geodreieck genau auf die blaue Linie.',`Schiebe die 0 genau auf den grünen Punkt${s?' '+s.k:''}.`,'Tippe auf ✏️ Punkt setzen.',`Tippe an der langen Kante bei ${cmT(T2?T2.d:1)}. Dort kommt der Punkt hin.`]};}
   if(MODE===5)return{t:'Parallele mit den Linien am Geodreieck',st:['Auf dem Geodreieck sind Linien. Sie sind parallel zur langen Kante. Die Zahl sagt: So weit ist die Linie von der langen Kante weg.','Suche die Linie mit dem richtigen Abstand. Sie leuchtet orange.','Lege diese orange Linie genau auf die blaue Linie.','Zeichne an der langen Kante entlang. Fertig ist die Parallele!']};
   if(MODE===3)return{t:'Parallele Seiten färben',st:['Tippe eine Seite an. Sie wird blau.','Suche die Seite gegenüber. Sie ist parallel. Tippe sie an.','Mach das Gleiche mit den zwei grünen Seiten. Sie werden orange.','Tippe dann die 4 Ecken an. So zeigst du die rechten Winkel.']};
+  if(MODE===6)return{t:'Finde die Parallele',st:['Die blaue Gerade heißt g.','Tippe eine andere Gerade an. Dann siehst du ihre Abstände zu g.','Sind alle Zahlen gleich? Dann ist die Gerade parallel zu g. Tippe auf ✓.','Zum Schluss tippst du den Buchstaben der parallelen Geraden an.']};
   return{t:'Rechteck oder Quadrat?',st:['Tippe jede Ecke an. Du siehst: rechter Winkel – oder nicht.','Ein Rechteck hat 4 rechte Winkel.','Ein Quadrat ist ein Rechteck mit 4 gleich langen Seiten.','Bist du unsicher? Tippe auf 📏 Seiten vergleichen.']};}
 function openHelp(){const h=helpData();$('#helpTitle').textContent='So geht es: '+h.t;const ol=$('#helpSteps');ol.innerHTML='';h.st.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
   $('#helpOv').classList.add('on');say(h.st.join(' '));}
@@ -311,11 +320,19 @@ function newTask1(){
   else{delta=par?0:pick([-1,1])*rnd(10,14);c1=add(C,mul(n,-d/2));c2=add(C,mul(n,d/2));}
   const u2=[Math.cos(rad(th+delta)),Math.sin(rad(th+delta))];
   const rails=!cross&&(easy||Math.random()<.5);
-  M1={par,cross,th,len,u,n,u2,c1,c2,d,rails,tries:0,measured:false};
+  M1={par,cross,th,len,u,n,u2,c1,c2,d,rails,tries:0,measured:false,ready:false,tapped:[],vals:[],cms:[]};
   draw1();
   setInstr(rails?'Sind die Schienen parallel?':'Sind die zwei Linien parallel?');
   setCtrl1();}
-function setCtrl1(){setCtrl([{t:'📏 Abstand messen',fn:measure1},{t:'✓ Ja, parallel',cls:'yes',fn:()=>answer1(true)},{t:'✗ Nein, nicht parallel',cls:'no',fn:()=>answer1(false)}]);}
+function setCtrl1(){setCtrl([{t:'📏 Abstand messen',id:'m1Measure',fn:measure1},{t:'✓ Ja, parallel',cls:'yes wait',id:'m1Yes',fn:()=>answer1(true)},{t:'✗ Nein, nicht parallel',cls:'no wait',id:'m1No',fn:()=>answer1(false)}]);}
+function m1Btns(){['#m1Yes','#m1No'].forEach(s=>{const b=$(s);if(b)b.classList.toggle('wait',!M1.ready);});}
+function strip1(){if(!M1.measured){setStrip([]);return;}setStrip([{t:'Zahlen:'},...M1.vals.map((v,i)=>({t:M1.tapped[i]?v:'?',c:M1.tapped[i]?'done':'cur'}))]);}
+function tapLabel1(i,g){if(locked||M1.tapped[i])return;M1.tapped[i]=true;sound('tick');const r=g.querySelector('rect');r.setAttribute('fill','#E7F6EC');r.setAttribute('stroke','#2A9D4B');
+  say(M1.cross?'Hier treffen sich die Linien. Der Abstand ist null.':cmSay(M1.cms[i]));strip1();
+  if(M1.tapped.every(x=>x)){M1.ready=true;m1Btns();
+    setTimeout(()=>{if(locked)return;const t=M1.cross?'Die Linien treffen sich. Sind sie parallel?':'Vergleiche die Zahlen. Sind alle gleich?';setInstr(t);feedback(t,'sol');say(t);},M1.cross?2300:1000);}}
+function label1(M,t,i){const g=el('g',{style:'cursor:pointer'},hitL);el('rect',{x:M[0]-50,y:M[1]-22,width:100,height:44,rx:12,fill:'#FFF6CC',stroke:'#E0B000','stroke-width':4},g);txt(g,M[0],M[1]+1,t,{'font-size':24,fill:'#1F2A37'});
+  g.addEventListener('pointerdown',e=>{e.preventDefault();tapLabel1(i,g);});blinkEl(g);return g;}
 function onLine2(s){const P=add(M1.c1,mul(M1.u,s));const t=lineHit(P,M1.n,M1.c2,M1.u2);return t===null?null:add(P,mul(M1.n,t));}
 function draw1(){const{c1,c2,u,u2,len,rails,n}=M1;
   const e1=[add(c1,mul(u,-len/2)),add(c1,mul(u,len/2))],e2=[add(c2,mul(u2,-len/2)),add(c2,mul(u2,len/2))];
@@ -325,14 +342,16 @@ function draw1(){const{c1,c2,u,u2,len,rails,n}=M1;
   else{el('line',{x1:e1[0][0],y1:e1[0][1],x2:e1[1][0],y2:e1[1][1],stroke:'#1D7FD8','stroke-width':7,'stroke-linecap':'round'},taskL);
     el('line',{x1:e2[0][0],y1:e2[0][1],x2:e2[1][0],y2:e2[1][1],stroke:'#E63946','stroke-width':7,'stroke-linecap':'round'},taskL);}}
 function measure1(){if(locked)return;
-  if(M1.cross){feedback('Die Linien kreuzen sich. Dort ist der Abstand 0.','sol');say('Die Linien kreuzen sich. Dort ist der Abstand null.');
-    const t=lineHit(M1.c1,[M1.u2[0],M1.u2[1]],M1.c1,M1.u);el('circle',{cx:M1.c1[0],cy:M1.c1[1],r:22,fill:'none',stroke:'#8E44AD','stroke-width':5},markL);M1.measured=true;return;}
-  if(M1.measured){say(M1.sayTxt);return;}
-  const vals=[];[-.36,0,.36].forEach(f=>{const s=f*M1.len;const A=add(M1.c1,mul(M1.u,s)),B=onLine2(s);const c=dist(A,B)/CM;vals.push(cmT(c));measureBar(A,B,'#8E44AD',cmT(c));});
+  if(M1.measured){const t=M1.ready?'Vergleiche die Zahlen. Sind alle gleich?':'Tippe auf jede gelbe Zahl.';feedback(t,'sol');say(t);if(!M1.ready)[...hitL.children].forEach(blinkEl);return;}
   M1.measured=true;sound('tick');
-  M1.sayTxt=M1.par?`Überall ${vals[0]}. Der Abstand ist gleich.`:`Hier ${vals[0]}, hier ${vals[1]}, hier ${vals[2]}. Vergleiche die Zahlen.`;
-  feedback(vals.join('   ·   '),'sol');say(M1.sayTxt);}
+  if(M1.cross){el('circle',{cx:M1.c1[0],cy:M1.c1[1],r:22,fill:'none',stroke:'#8E44AD','stroke-width':5},markL);
+    M1.vals=['0 cm'];M1.cms=[0];M1.tapped=[false];label1(add(M1.c1,[0,-64]),'0 cm',0);}
+  else{M1.vals=[];M1.cms=[];[-.36,0,.36].forEach((f,i)=>{const s=f*M1.len;const A=add(M1.c1,mul(M1.u,s)),B=onLine2(s);const c=dist(A,B)/CM;M1.cms.push(c);M1.vals.push(cmT(c));measureBar(A,B,'#8E44AD',null);label1(mul(add(A,B),.5),cmT(c),i);});
+    M1.tapped=[false,false,false];}
+  strip1();const t=M1.cross?'Tippe auf die gelbe Zahl.':'Tippe auf jede gelbe Zahl.';setInstr(t);feedback(t,'sol');say(t);}
 function answer1(yes){if(locked)return;
+  if(!M1.ready){sound('tick');const t=M1.measured?'Tippe zuerst auf jede gelbe Zahl.':'Miss zuerst den Abstand. Tippe auf 📏 Abstand messen.';feedback(t,'sol');say(t);
+    if(M1.measured)[...hitL.children].forEach(blinkEl);else{const b=$('#m1Measure');if(b){b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);}}return;}
   if(yes===M1.par){
     locked=true;setCtrl([]);
     if(M1.par){feedback('Richtig! 🚂','ok');say('Richtig! Schau mal, der Zug fährt.');train1(true,()=>win(`Richtig! Die Linien sind parallel. Der Abstand ist überall ${cmT(M1.d/CM)}. Der Zug kann fahren.`));}
@@ -692,6 +711,75 @@ function answer4b(yes){if(locked)return;
   win(M4.isSq?'Super! Alle 4 Seiten sind gleich lang. Es ist ein Quadrat – und auch ein Rechteck.':'Super! Es ist ein Rechteck. Aber nicht alle Seiten sind gleich lang. Es ist kein Quadrat.');}
 function hint4(){if(locked)return;const t='Tippe auf die gelben Kreise an den Ecken.';feedback(t,'sol');say(t);[...hitL.children].forEach(blinkEl);}
 
+/* ================= Modus 6: Finde die Parallele ================= */
+let M6=null,hist6=[];const LET5=['a','b','c'];
+const off6=(ln,s)=>ln.slot+(s-ln.s0)*Math.tan(rad(ln.dl));
+const pt6=(m,ln,s)=>add(add(m.C,mul(m.u,s)),mul(m.n,off6(ln,s)));
+function build6(easy){const th=easy?0:pick([0,0,-12,12,-20,20]);const u=[Math.cos(rad(th)),Math.sin(rad(th))],n=[-u[1],u[0]];
+  const L=th?540:600,C=[515,320];const slots=[-1.5,-.5,.5,1.5].map(k=>k*3*CM);const gi=rint(0,3);
+  const dls=[0,(easy?rnd(12,16):rnd(6,9))*pick([-1,1]),(easy?rnd(18,24):rnd(10,15))*pick([-1,1])].sort(()=>Math.random()-.5);
+  const cand=slots.filter((_,i)=>i!==gi).map((sl,k)=>({slot:sl,s0:rnd(-L*.3,L*.3),dl:dls[k],par:dls[k]===0,name:LET5[k],st:null}));
+  return{th,u,n,L,C,g:{slot:slots[gi],s0:0,dl:0,name:'g'},cand};}
+function ok6(m){const all=[m.g,...m.cand];
+  for(const s of [-m.L/2,m.L/2]){const o=all.map(l=>off6(l,s)).sort((a,b)=>a-b);for(let i=1;i<o.length;i++)if(o[i]-o[i-1]<48)return false;
+    for(const l of all){const P=pt6(m,l,s);if(P[0]<40||P[0]>970||P[1]<28||P[1]>598)return false;}}
+  for(const l of all){const T=sub(pt6(m,l,-m.L/2),mul(m.u,34));if(T[0]<28||T[1]<28||T[1]>598)return false;}
+  const pi=m.cand.findIndex(c=>c.par);if(hist6.length>=2&&hist6.slice(-2).every(h=>h===pi))return false;return true;}
+function newTask6(){const easy=(S.n6||0)<4;let m=null;for(let k=0;k<500;k++){m=build6(easy);if(ok6(m))break;}
+  hist6.push(m.cand.findIndex(c=>c.par));
+  M6=Object.assign(m,{sel:-1,phase:'find',tries:0});draw6();
+  setStrip([{t:'1 Finden',c:'cur'},{t:'2 Benennen'}]);setInstr('Welche Gerade ist parallel zu g? Tippe sie an.');
+  setCtrl([{t:'✓ Diese ist parallel zu g',id:'c6ok',cls:'yes wait',fn:confirm6},{t:'💡 Hilfe',fn:hint6}]);}
+function wait6(on){const b=$('#c6ok');if(b)b.classList.toggle('wait',on);}
+function draw6(){taskL.innerHTML='';const m=M6;
+  const line=(ln,col,w,id)=>{const A=pt6(m,ln,-m.L/2),B=pt6(m,ln,m.L/2);
+    if(id!=='g'&&m.sel===id&&!ln.st)el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:'#FFD400','stroke-width':22,'stroke-linecap':'round',opacity:.55},taskL);
+    el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':w,'stroke-linecap':'round',id:'l6'+id,'stroke-dasharray':ln.st==='bad'?'14 9':'none'},taskL);
+    const T=sub(A,mul(m.u,34));const g=el('g',{id:'lb6'+id},taskL);el('circle',{cx:T[0],cy:T[1],r:22,fill:'#fff',stroke:col,'stroke-width':3},g);txt(g,T[0],T[1]-2,ln.name,{'font-size':30,fill:col,'font-style':'italic'});};
+  line(m.g,'#1D7FD8',7,'g');
+  m.cand.forEach((c,i)=>line(c,c.st==='ok'?'#2A9D4B':c.st==='bad'?'#E63946':'#374151',6,i));}
+function measure6(i){markL.innerHTML='';const m=M6,c=m.cand[i],vals=[];
+  const sx=c.dl?c.s0+(m.g.slot-c.slot)/Math.tan(rad(c.dl)):Infinity,cross=Math.abs(sx)<m.L/2-8;
+  [-.36,0,.36].forEach(f=>{const s=f*m.L,cm=Math.abs(off6(c,s)-m.g.slot)/CM;vals.push(cmT(cm));if(cm>=.75)measureBar(pt6(m,m.g,s),pt6(m,c,s),'#8E44AD',cmT(cm));});
+  if(cross){const X=pt6(m,c,sx);el('circle',{cx:X[0],cy:X[1],r:24,fill:'none',stroke:'#E63946','stroke-width':5},markL);}
+  return{vals,cross};}
+function select6(i){const m=M6,c=m.cand[i];
+  if(c.st==='bad'){const t=`${c.name} ist nicht parallel. Tippe eine andere Gerade an.`;feedback(t,'try');say(t);return;}
+  m.sel=i;sound('tick');hideFb();draw6();const r=measure6(i);
+  setStrip([{t:'1 Finden',c:'cur'},{t:'2 Benennen'},'|',{t:`Abstand ${c.name} zu g:  ${r.vals.join('  ·  ')}`,c:'D'}]);
+  const b=$('#c6ok');if(b)b.textContent=`✓ ${c.name} ist parallel zu g`;wait6(false);
+  setInstr(`Ist ${c.name} parallel zu g? Vergleiche die Zahlen.`);
+  say(r.cross?`${c.name} trifft g. Ist ${c.name} parallel zu g?`:`Abstand von ${c.name} zu g: ${r.vals.join(', ')}. Sind alle Zahlen gleich?`);}
+stage.addEventListener('pointerdown',e=>{if(MODE!==6||locked||!M6||M6.phase!=='find')return;const p=svgPt(stage,e),q=[p.x,p.y];
+  const dSeg=ln=>{const A=pt6(M6,ln,-M6.L/2),B=pt6(M6,ln,M6.L/2),v=sub(B,A);const t=Math.max(-.08,Math.min(1,dot(sub(q,A),v)/dot(v,v)));return dist(q,add(A,mul(v,t)));};
+  let best=-1,bd=42;M6.cand.forEach((c,i)=>{const d=dSeg(c);if(d<bd){bd=d;best=i;}});
+  if(best<0){if(dSeg(M6.g)<42){const t='Das ist die blaue Gerade g. Tippe eine andere Gerade an.';feedback(t,'try');say(t);}return;}
+  e.preventDefault();select6(best);});
+function confirm6(){const m=M6;if(locked||m.phase!=='find')return;
+  if(m.sel<0){const t='Tippe zuerst eine Gerade an. Dann siehst du die Abstände zu g.';feedback(t,'try');say(t);return;}
+  const i=m.sel,c=m.cand[i];
+  if(c.par){c.st='ok';m.phase='name';draw6();measure6(i);sound('step');
+    setStrip([{t:'1 Finden ✓',c:'done'},{t:'2 Benennen',c:'cur'}]);feedback('Richtig! Der Abstand ist überall gleich. ✓','ok');
+    setInstr('Wie heißt die grüne Gerade? Tippe den Buchstaben.');say('Richtig! Der Abstand ist überall gleich. '+instrText);setCtrl6name();return;}
+  const r=measure6(i);m.tries++;c.st='bad';m.sel=-1;draw6();sound('no');wait6(true);
+  const t=r.cross?`Nein. ${c.name} trifft g. Parallele Geraden treffen sich nie.`:`Nein. Bei ${c.name} sind die Zahlen verschieden. Der Abstand zu g ist nicht überall gleich.`;
+  feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,m.tries);else say(t+' Versuch es nochmal.');
+  const b=$('#c6ok');if(b)b.textContent='✓ Diese ist parallel zu g';
+  setStrip([{t:'1 Finden',c:'cur'},{t:'2 Benennen'}]);setInstr('Welche Gerade ist parallel zu g? Tippe sie an.');
+  if(m.tries>=2){const k=m.cand.findIndex(x=>x.par);blinkEl($('#l6'+k));blinkEl($('#lb6'+k));}}
+function setCtrl6name(){const c=$('#ctrl');c.innerHTML='';const box=document.createElement('span');box.className='namebox';box.id='nb6';box.textContent='▢ ∥ g';c.appendChild(box);
+  LET5.forEach(L=>{const b=document.createElement('button');b.className='tool';b.textContent=L;b.style.fontSize='30px';b.style.fontStyle='italic';b.style.minWidth='72px';b.onclick=()=>name6(L);c.appendChild(b);});
+  const h=document.createElement('button');h.className='tool';h.textContent='💡 Hilfe';h.onclick=hint6;c.appendChild(h);}
+function name6(L){const m=M6;if(locked)return;const k=m.cand.findIndex(c=>c.par),right=m.cand[k].name;
+  if(L===right){$('#nb6').textContent=`${right} ∥ g`;txt(uiL,880,585,`${right} ∥ g`,{'font-size':44,fill:'#2A9D4B','font-style':'italic'});
+    win(`Richtig! Die Gerade ${right} ist parallel zu g. Man schreibt: ${right} ∥ g.`);return;}
+  m.tries++;sound('no');const nb=$('#nb6');nb.textContent='▢ ∥ g';
+  const t=`Nein. ${L} ist nicht die grüne Gerade. Schau auf den Buchstaben an der grünen Geraden.`;feedback(t,'try');if(window.Denkpause)Denkpause.falsch(t,m.tries);else say(t);blinkEl($('#lb6'+k));}
+function hint6(){const m=M6;if(locked)return;
+  if(m.phase==='name'){const k=m.cand.findIndex(x=>x.par);const t='Schau auf den Buchstaben an der grünen Geraden.';feedback(t,'sol');say(t);blinkEl($('#lb6'+k));return;}
+  const t='Tippe eine Gerade an. Dann siehst du die Abstände zu g. Sind alle Zahlen gleich, ist die Gerade parallel.';feedback(t,'sol');say(t);
+  m.cand.forEach((c,i)=>{if(c.st!=='bad')blinkEl($('#l6'+i));});}
+
 /* ================= Belohnung: Gummi-Schleuder (3 Runden) ================= */
 function showReward(){$('#rewardTxt').textContent=`Du hast ${S.done} Sterne gesammelt. Jetzt darfst du mit der Gummi-Schleuder schießen!`;$('#rewardOv').classList.add('on');sound('ok');confetti();say('Super gemacht! Jetzt darfst du schießen.');}
 $('#rewardGo').onclick=()=>{$('#rewardOv').classList.remove('on');openSling(true);};
@@ -761,6 +849,6 @@ drawGeo();
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
-<script>if(window.LernLog)LernLog.geo({app:'Parallel-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint3','hint4']});</script>
+<script>if(window.LernLog)LernLog.geo({app:'Parallel-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint3','hint4','hint6']});</script>
 </body>
 </html>
