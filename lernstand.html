@@ -220,7 +220,7 @@
   $('#lockBtn').onclick = function () { try { sessionStorage.removeItem(UKEY); } catch (e) {} mode = 'check'; pinUI(); $('#main').hidden = true; $('#lock').hidden = false; };
   $('#pinChange').onclick = function () { mode = 'new'; pin = ''; pinUI(); $('#main').hidden = true; $('#lock').hidden = false; };
   var open = false; try { open = sessionStorage.getItem(UKEY) === '1'; } catch (e) {}
-  pinUI(); if (open && ls(PKEY)) unlock();
+  pinUI(); // Entsperren erst ganz am Ende, wenn alle Knöpfe eingerichtet sind
 
   /* ---------------- Daten ---------------- */
   function load() { try { var d = JSON.parse(ls(KEY) || 'null'); if (d && Array.isArray(d.e)) return d; } catch (e) {} return { v: 1, e: [] }; }
@@ -385,11 +385,38 @@
     function fb() { var t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} t.remove(); toast(ok ? 'Kopiert ✓' : 'Kopieren hat nicht geklappt.'); }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast('Kopiert ✓ – jetzt im Chat einfügen.'); }, fb); else fb();
   }
-  function shareFile(txt, name) {
-    var file; try { file = new File([txt], name, { type: 'text/plain' }); } catch (e) {}
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: name }).catch(function () {}); return; }
-    if (navigator.share) { navigator.share({ title: name, text: txt }).catch(function () {}); return; }
+  function download(txt, name) {
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  /* Teilen über das Teilen-Fenster (AirDrop). Fehler werden angezeigt statt verschluckt,
+     mit Ausweichwegen: nochmal versuchen, als Datei sichern, kopieren. */
+  function shareFile(txt, name) {
+    var file = null; try { file = new File([txt], name, { type: 'text/plain' }); } catch (e) {}
+    var data = null;
+    try { if (file && navigator.canShare && navigator.canShare({ files: [file] })) data = { files: [file] }; } catch (e) {}
+    if (!data && navigator.share) data = { title: name, text: txt };
+    if (!data) { download(txt, name); toast('Datei wird gespeichert …'); return; }
+    var p; try { p = navigator.share(data); } catch (err) { shareFail(txt, name, err); return; }
+    if (p && p.then) p.then(function () { toast('Geteilt ✓'); }, function (err) {
+      if (err && err.name === 'AbortError') return; // Teilen-Fenster selbst geschlossen
+      shareFail(txt, name, err);
+    });
+  }
+  function shareFail(txt, name, err) {
+    var old = document.getElementById('shareFail'); if (old) old.remove();
+    var d = document.createElement('div'); d.id = 'shareFail';
+    d.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(20,30,50,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+    d.innerHTML = '<div style="background:#fff;border-radius:20px;padding:20px 22px;max-width:480px;width:100%;font-size:17px;line-height:1.4">' +
+      '<h3 style="margin:0 0 8px">Teilen hat nicht geklappt</h3>' +
+      '<p style="margin:0 0 6px">Das iPad hat das Teilen abgebrochen. Bitte nochmal versuchen. Klappt es wieder nicht: als Datei sichern und dann in der App „Dateien“ per AirDrop schicken, oder kopieren und als Nachricht schicken.</p>' +
+      '<p style="margin:0 0 14px;color:#6b7280;font-size:14px">Meldung: ' + esc((err && (err.name + ' ' + (err.message || ''))) || 'unbekannt') + '</p>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap"><button data-a="again">📤 Nochmal teilen</button><button class="light" data-a="save">💾 Als Datei sichern</button><button class="light" data-a="copy">📋 Kopieren</button><button class="light" data-a="close">Schließen</button></div></div>';
+    d.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b && e.target !== d) return;
+      var a = b ? b.dataset.a : 'close'; d.remove();
+      if (a === 'again') shareFile(txt, name); else if (a === 'save') download(txt, name); else if (a === 'copy') copy(txt);
+    });
+    document.body.appendChild(d);
   }
   function fname(kind) { var d = new Date(); return kind + '-' + myDev().replace(/[^\wäöüÄÖÜß-]+/g, '_') + '-' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '.txt'; }
   $('#copyRep').onclick = function () { copy(report()); };
@@ -450,6 +477,10 @@
     if ($('#wipeTxt').value.trim().toUpperCase() !== 'LÖSCHEN') { toast('Bitte LÖSCHEN eintippen.'); return; }
     ls(KEY, null); $('#wipeTxt').value = ''; $('#wipeBox').hidden = true; toast('Alle Lernstand-Daten auf diesem Gerät gelöscht.'); render();
   };
+
+  /* Schon entsperrt (gleiche Sitzung)? Erst jetzt öffnen – vorher brach die Seite hier ab,
+     und die Knöpfe (Teilen, Kopieren …) hatten keine Funktion. */
+  if (open && ls(PKEY)) unlock();
 })();
 </script>
 <script src="denkpause.js"></script>
