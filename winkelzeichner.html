@@ -459,5 +459,15 @@ strokeLayer.setAttribute('pointer-events','none');stage.appendChild(strokeLayer)
 <script src="lernlog.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Winkel-Zeichner',uebung:()=>LernLog.text('.mode[data-l="'+LVL+'"]'),gesperrt:()=>locked,done:['success']});</script>
 <script src="uebungswahl.js" data-app="Winkel-Zeichner" data-items="Übungen=.mode"></script>
+<script>
+/* „Los geht's“ erst nach Lesezeit: Der Knopf zählt herunter, damit die Hilfe wirklich gelesen wird. */
+(function(){var ov=document.getElementById('helpOv'),b=document.getElementById('helpClose');if(!ov||!b)return;
+ var st=document.createElement('style');st.textContent='#helpClose:disabled{background:#9aa5b1!important;cursor:default}';document.head.appendChild(st);
+ var orig=b.textContent,t=null,was=false;
+ function start(){var n=ov.querySelectorAll('li').length||3,k=Math.max(5,Math.round(n*1.5));clearInterval(t);b.disabled=true;b.textContent='📖 Erst lesen … '+k;
+  t=setInterval(function(){k--;if(k<=0){clearInterval(t);b.disabled=false;b.textContent=orig;}else b.textContent='📖 Erst lesen … '+k;},1000);}
+ new MutationObserver(function(){var on=ov.classList.contains('on');if(on&&!was)start();if(!on){clearInterval(t);b.disabled=false;b.textContent=orig;}was=on;}).observe(ov,{attributes:true,attributeFilter:['class']});
+ if(ov.classList.contains('on')){was=true;start();}})();
+</script>
 </body>
 </html>
