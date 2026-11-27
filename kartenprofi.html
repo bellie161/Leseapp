@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Karten-Profi</title>
+<style>
+:root{--bg:#f4f7fb;--ink:#1d2433;--blue:#2b6fd6;--green:#2e9d4f;--red:#d63b3b;--orange:#f08a24;--card:#fff;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:22px}
+button{font-family:inherit;cursor:pointer}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:3px solid #dfe6f0;position:sticky;top:0;z-index:5}
+header h1{font-size:28px;margin:0;flex:1;text-align:center}
+.hbtn{background:#eef3fb;border:2px solid #c9d6ea;border-radius:14px;padding:8px 14px;font-size:18px;color:var(--ink);text-decoration:none;white-space:nowrap}
+.testbar{background:#ffe08a;text-align:center;font-weight:bold;padding:6px;font-size:18px}
+main{max-width:1100px;margin:0 auto;padding:14px}
+h2{font-size:26px;margin:18px 4px 10px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.tile{background:var(--card);border:3px solid #d6e0ee;border-radius:20px;padding:14px;text-align:left;display:flex;gap:12px;align-items:center;font-size:22px;color:var(--ink);min-height:96px}
+.tile .ic{font-size:44px;line-height:1}
+.tile b{display:block;font-size:22px}
+.tile small{display:block;font-size:17px;color:#55617a;margin-top:4px}
+.sec-saar .tile{border-color:#f3b37a;background:#fff8f1}
+.exhead{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:22px;height:22px;border-radius:50%;background:#dfe6f0;border:2px solid #c3cfe0}
+.dot.on{background:var(--green);border-color:#1f7a3a}
+.extitle{font-size:20px;color:#55617a;font-weight:bold}
+.qbar{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid #cfe0f7;border-radius:18px;padding:12px 16px;margin-bottom:12px}
+.q{font-size:28px;font-weight:bold;flex:1;line-height:1.3}
+.spk{font-size:30px;background:#eef3fb;border:2px solid #c9d6ea;border-radius:14px;padding:6px 12px;flex:none}
+.vis{display:flex;justify-content:center;align-items:center;flex-direction:column;gap:12px}
+.vis svg{max-width:100%;height:auto;touch-action:manipulation}
+.mapbox{width:100%;display:flex;justify-content:center}
+.mapbox svg{height:auto;display:block}
+.choices{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:14px 0}
+.ch{min-width:180px;min-height:72px;font-size:26px;font-weight:bold;padding:10px 20px;border-radius:18px;border:3px solid #9fb6d8;background:#fff;color:var(--ink)}
+.ch.sym{min-width:150px;padding:8px}
+.ch.right,[data-ans].right{background:#c9f0d3!important;border-color:var(--green)!important}
+.ch.wrong{background:#ffd5d5!important;border-color:var(--red)!important}
+svg [data-ans]{cursor:pointer}
+svg .wrong{fill:#ff8a8a!important}
+svg .right{fill:#7ddc95!important}
+svg .river.right,svg .river.wrong{fill:none!important}
+.show-me{animation:pulse 1s infinite}
+svg .show-me{stroke:#ffcc00!important;stroke-width:6!important;stroke-opacity:1!important}
+.ch.show-me{border-color:#ffb300!important;box-shadow:0 0 0 6px #ffe28a}
+@keyframes pulse{50%{opacity:.45}}
+.hint{background:#fff7d6;border:3px solid #f3cf55;border-radius:18px;padding:12px 16px;font-size:24px;display:flex;gap:12px;align-items:center;margin-top:8px}
+.hint .ht{flex:1;line-height:1.35}
+.wait{font-weight:bold;color:#a55c00;white-space:nowrap}
+.locked [data-ans]{pointer-events:none}
+.locked .choices{opacity:.55}
+.big-sym{background:#fff;border:3px solid #d6e0ee;border-radius:20px;padding:14px}
+.legend{display:flex;flex-direction:column;gap:4px;background:#fff;border:2px solid #ccd;border-radius:12px;padding:10px;font-size:20px}
+.legend div{display:flex;align-items:center;gap:10px}
+.legend span.sw{width:44px;height:26px;border:1px solid #777;display:inline-block}
+.row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center}
+.done{text-align:center}
+.done .big{font-size:80px}
+.bigbtn{font-size:26px;font-weight:bold;padding:16px 28px;border-radius:18px;border:3px solid #1f7a3a;background:#d9f5e1;margin:10px;color:var(--ink)}
+.bigbtn.alt{border-color:#9fb6d8;background:#fff}
+canvas{width:100%;max-width:900px;height:auto;border-radius:18px;border:3px solid #cbd9ec;touch-action:none;background:#bfe3ff;display:block;margin:0 auto}
+.rwinfo{text-align:center;font-size:24px;font-weight:bold;margin:8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:20}
+.modal .box{background:#fff;border-radius:18px;padding:20px;max-width:900px;width:94%;max-height:90vh;overflow:auto;font-size:19px}
+.modal input[type=number]{font-size:26px;width:120px;padding:6px}
+.adm h3{margin:14px 0 6px;font-size:21px}
+.adm label{display:flex;gap:8px;align-items:center;padding:4px 0}
+.adm input[type=checkbox]{width:24px;height:24px}
+.adm table{border-collapse:collapse;width:100%;font-size:16px}
+.adm td,.adm th{border:1px solid #ccd;padding:4px 6px;text-align:left;vertical-align:top}
+.adm .seg button{font-size:17px;padding:6px 12px;border-radius:10px;border:2px solid #9fb6d8;background:#fff;margin-right:6px}
+.adm .seg button.on{background:#2b6fd6;color:#fff;border-color:#2b6fd6}
+.msg{background:#e3f6e8;border:3px solid #7cc893;border-radius:16px;padding:12px;font-size:24px;text-align:center;margin:10px 0}
+.info{background:#eef5ff;border:2px solid #b9d0f0;border-radius:14px;padding:10px 14px;font-size:21px;line-height:1.35;max-width:640px}
+</style>
+</head>
+<body>
+<header>
+  <a class="hbtn" href="https://bellie161.github.io/Leseapp/" target="_top">⬅ Meine Lern-Apps</a>
+  <h1>🗺️ Karten-Profi</h1>
+  <button class="hbtn" id="admBtn" title="Für Erwachsene">⚙️</button>
+</header>
+<div id="testbar" class="testbar" hidden>🧪 TESTMODUS – nichts wird gespeichert</div>
+<main id="app"></main>
+
+<script>
+"use strict";
+/* =========================================================
+   Speicher
+   ========================================================= */
+const KEY='kartenprofi_v1';
+let S;
+function loadS(){
+  let d=null;
+  try{d=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  S=Object.assign({ex:{},items:{},off:{},blStage:1,wait:4,log:[]},d||{});
+}
+let TEST=false;
+function saveS(){ if(TEST) return; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
+loadS();
+
+/* =========================================================
+   Hilfen
+   ========================================================= */
+const $=s=>document.querySelector(s);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function opts3(correct,pool){return shuffle([correct,...shuffle(pool.filter(x=>x!==correct)).slice(0,2)]);}
+function btns(labels){return '<div class="choices">'+labels.map(l=>`<button class="ch" data-ans="${esc(l)}">${l}</button>`).join('')+'</div>';}
+function btnsH(list){return '<div class="choices">'+list.map(o=>`<button class="ch sym" data-ans="${esc(o.id)}">${o.html}</button>`).join('')+'</div>';}
+
+/* gewichtete Auswahl: unsichere Dinge kommen öfter */
+function pick(ex,items,keyFn){
+  const last=CUR&&CUR.lastKey;
+  let cand=items.filter(it=>keyFn(it)!==last); if(!cand.length) cand=items;
+  const w=cand.map(it=>{const st=S.items[ex+'|'+keyFn(it)]; if(!st) return 3; return st.s>=3?1:(st.s>=1?2:4);});
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<cand.length;i++){r-=w[i]; if(r<=0) return cand[i];}
+  return cand[cand.length-1];
+}
+
+/* =========================================================
+   Vorlesen (nur auf Tippen)
+   ========================================================= */
+let deVoice=null;
+function findVoice(){try{const v=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));deVoice=v.find(x=>/Anna|Petra|Helena|Google/i.test(x.name))||v[0]||null;}catch(e){}}
+try{speechSynthesis.onvoiceschanged=findVoice;findVoice();}catch(e){}
+function cleanSpeech(t){
+  return String(t)
+    .replace(/<[^>]+>/g,' ')
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu,' ')
+    .replace(/\bSt\.\s?/g,'Sankt ')
+    .replace(/\bz\.\s?B\./g,'zum Beispiel')
+    .replace(/\bca\./g,'ungefähr')
+    .replace(/(\d)\s?km\b/g,'$1 Kilometer')
+    .replace(/(\d)\s?m\b/g,'$1 Meter')
+    .replace(/(\d+)\.(\s|$)/g,'$1$2')
+    .replace(/\bLies\b/g,'Liehs').replace(/\blies\b/g,'liehs')
+    .replace(/[()„“"▲]/g,' ')
+    .replace(/–/g,' bis ')
+    .replace(/\s+/g,' ').trim();
+}
+function speak(t){
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(cleanSpeech(t));u.lang='de-DE';if(deVoice)u.voice=deVoice;u.rate=0.9;speechSynthesis.speak(u);}catch(e){}
+}
+
+/* =========================================================
+   Töne
+   ========================================================= */
+let AC=null;
+function tone(f,d,type='sine',vol=0.15,delay=0){
+  try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=vol;
+  o.connect(g);g.connect(AC.destination);const t=AC.currentTime+delay;o.start(t);g.gain.exponentialRampToValueAtTime(0.001,t+d);o.stop(t+d+0.05);}catch(e){}
+}
+const sndRight=()=>{tone(660,0.15);tone(880,0.25,'sine',0.15,0.12);};
+const sndWrong=()=>tone(180,0.35,'square',0.08);
+const sndPop=()=>tone(420+Math.random()*300,0.12,'triangle',0.15);
+
+/* =========================================================
+   Geodaten Deutschland (vereinfacht, gemeinsame Grenzpunkte)
+   ========================================================= */
+const P={
+ DKW:[8.66,54.91],DKE:[9.45,54.83],PRIW:[10.88,53.96],LAU:[10.6,53.37],ELBM:[8.95,53.88],
+ HHW:[9.73,53.56],HHN:[9.95,53.72],HHE:[10.2,53.62],HHSE:[10.3,53.45],HHS:[9.95,53.40],
+ MNB:[11.3,53.12],NBS:[11.6,53.03],NST:[10.62,51.6],NHT:[10.0,51.40],NHN:[9.4,51.65],NNL:[7.05,52.25],EMS:[7.2,53.3],
+ USE:[14.2,53.93],MBP:[14.42,53.28],BSP:[14.72,51.55],BST:[13.15,51.55],TSS:[12.25,51.12],ZIT:[14.82,50.87],
+ SBC:[12.1,50.32],TBS:[11.9,50.42],HTB:[10.05,50.5],HBB:[9.12,49.58],HBR:[8.45,49.55],HNR:[8.15,50.7],RNB:[6.4,50.32],
+ RBF:[8.2,48.97],BBL:[9.65,47.6],BAS:[7.6,47.58],DAT:[13.85,48.77],
+ SL1:[6.37,49.47],SL2:[6.43,49.57],SL3:[6.62,49.60],SL4:[6.88,49.60],SLE:[6.95,49.62],SL5:[7.02,49.64],SL6:[7.20,49.62],SL7:[7.32,49.55],
+ SL8:[7.30,49.45],SL9:[7.33,49.38],SL10:[7.42,49.25],SL11:[7.37,49.15],SL12:[7.10,49.12],SL13:[6.95,49.20],SL14:[6.80,49.19],
+ SL15:[6.70,49.25],SL16:[6.55,49.35],SLA:[6.47,49.403]
+};
+const C={
+ sh_n:['DKW','DKE'],
+ sh_e:['DKE',[9.9,54.78],[10.0,54.55],[10.2,54.42],[10.6,54.33],[11.05,54.4],[11.0,54.15],[10.75,54.05],'PRIW'],
+ sh_w:['DKW',[8.6,54.75],[8.85,54.6],[8.6,54.35],[8.95,54.25],[8.85,54.05],'ELBM'],
+ sh_mv:['PRIW',[10.95,53.65],'LAU'],
+ elbe_w:['ELBM',[9.35,53.8],'HHW'],
+ hh_n:['HHW','HHN','HHE','HHSE'],
+ hh_s:['HHW','HHS','HHSE'],
+ elbe_e:['HHSE','LAU'],
+ ni_mv:['LAU',[10.95,53.25],'MNB'],
+ ni_bb:['MNB','NBS'],
+ ni_st:['NBS',[11.15,52.9],[10.75,52.82],[11.02,52.5],[10.93,52.25],[10.55,51.95],'NST'],
+ ni_th:['NST',[10.25,51.45],'NHT'],
+ ni_he:['NHT',[9.65,51.42],'NHN'],
+ ni_nw:['NHN',[9.2,52.05],[8.85,52.45],[8.25,52.45],[7.75,52.28],'NNL'],
+ ni_nl:['NNL',[6.7,52.45],[7.05,52.65],[7.1,52.85],[7.2,53.2],'EMS'],
+ ni_coast:['EMS',[7.05,53.45],[7.2,53.65],[7.7,53.72],[8.05,53.7],[8.1,53.5],[8.3,53.55],[8.35,53.7],[8.55,53.55],[8.55,53.8],[8.7,53.9],'ELBM'],
+ mv_coast:['PRIW',[11.45,54.02],[11.6,54.15],[12.1,54.18],[12.45,54.42],[12.9,54.45],[13.15,54.4],[13.25,54.58],[13.4,54.68],[13.65,54.55],[13.6,54.32],[13.8,54.15],'USE'],
+ mv_pl:['USE',[14.05,53.75],[14.27,53.7],'MBP'],
+ mv_bb:['MNB',[11.9,53.27],[12.8,53.18],[13.6,53.42],'MBP'],
+ bb_pl:['MBP',[14.6,52.6],[14.55,52.35],[14.72,51.95],'BSP'],
+ bb_sn:['BST',[13.8,51.45],[14.2,51.55],'BSP'],
+ bb_st:['NBS',[11.9,52.9],[12.2,52.85],[12.25,52.55],[12.2,52.15],[12.6,51.97],[13.15,51.87],'BST'],
+ sn_st:['TSS',[12.15,51.45],[12.6,51.65],'BST'],
+ th_st:['NST',[11.2,51.4],[11.5,51.25],[11.95,51.12],'TSS'],
+ sn_pl:['BSP',[14.97,51.3],'ZIT'],
+ sn_cz:['ZIT',[14.3,51.05],[13.9,50.78],[13.3,50.6],[12.95,50.42],[12.5,50.33],'SBC'],
+ sn_by:['TBS','SBC'],
+ th_sn:['TBS',[12.25,50.6],[12.55,50.95],'TSS'],
+ th_by:['HTB',[10.6,50.35],[10.9,50.27],[11.3,50.4],[11.6,50.4],'TBS'],
+ he_th:['NHT',[10.05,51.1],[10.2,50.95],[10.05,50.65],'HTB'],
+ he_by:['HTB',[9.75,50.3],[9.5,50.1],[9.15,50.1],[9.1,49.8],'HBB'],
+ he_bw:['HBB',[8.85,49.45],[8.6,49.5],'HBR'],
+ he_rp:['HBR',[8.27,50.0],[7.9,49.98],[7.78,50.1],[7.9,50.35],[8.1,50.55],'HNR'],
+ nw_he:['NHN',[8.95,51.4],[8.55,51.1],'HNR'],
+ nw_rp:['HNR',[7.75,50.67],[7.2,50.6],[6.8,50.45],'RNB'],
+ nw_w:['RNB',[6.27,50.6],[6.02,50.75],[6.08,51.0],[5.87,51.05],[6.2,51.4],[6.0,51.85],[6.8,51.97],'NNL'],
+ rp_bw:['HBR',[8.45,49.3],'RBF'],
+ rp_fr:['RBF',[7.6,49.05],'SL11'],
+ sl_rp:['SL2','SL3','SL4','SLE','SL5','SL6','SL7','SL8','SL9','SL10','SL11'],
+ sl_fr:['SL11','SL12','SL13','SL14','SL15','SL16','SLA','SL1'],
+ sl_lu:['SL1','SL2'],
+ rp_lu:['SL2',[6.5,49.75],[6.15,50.13],'RNB'],
+ bw_by:['HBB',[9.95,49.55],[10.2,49.15],[10.45,48.75],[10.1,48.45],[10.05,47.95],'BBL'],
+ bw_ch:['BBL',[9.2,47.66],[8.85,47.7],[8.7,47.78],[8.4,47.6],'BAS'],
+ bw_fr:['BAS',[7.55,47.9],[7.6,48.2],[7.8,48.57],'RBF'],
+ by_cz:['SBC',[12.4,50.12],[12.55,49.92],[12.45,49.7],[12.9,49.35],[13.4,49.05],'DAT'],
+ by_at:['DAT',[13.45,48.57],[13.03,48.25],[12.85,47.95],[13.0,47.8],[13.05,47.5],[12.75,47.68],[12.2,47.6],[11.6,47.58],[11.0,47.4],[10.45,47.55],[10.2,47.27],[9.95,47.55],'BBL']
+};
+function chainPts(n){const rev=n[0]==='-';const c=C[rev?n.slice(1):n].map(v=>typeof v==='string'?P[v]:v);return rev?c.slice().reverse():c;}
+function polyFrom(list){let out=[];list.forEach(n=>{const c=chainPts(n);if(out.length){const l=out[out.length-1];if(l===c[0]||(l[0]===c[0][0]&&l[1]===c[0][1]))c.shift();}out=out.concat(c);});const f=out[0],l=out[out.length-1];if(f[0]===l[0]&&f[1]===l[1])out.pop();return out;}
+
+const STATES=[
+ {id:'SL',name:'Saarland',cap:'Saarbrücken',cx:[7.0,49.23],lab:[6.9,49.4],col:'#f3a05a',small:true,poly:['sl_rp','sl_fr','sl_lu'],hint:'Das Saarland ist klein und liegt ganz im Südwesten, an der Grenze zu Frankreich.'},
+ {id:'RP',name:'Rheinland-Pfalz',cap:'Mainz',cx:[8.27,50.0],lab:[7.35,49.95],col:'#9fd27a',poly:['-he_rp','rp_bw','rp_fr','-sl_rp','rp_lu','-nw_rp'],hint:'Rheinland-Pfalz liegt im Westen. Es ist der Nachbar vom Saarland.'},
+ {id:'BY',name:'Bayern',cap:'München',cx:[11.58,48.14],lab:[11.5,49.0],col:'#9ed6c8',poly:['th_by','sn_by','by_cz','by_at','-bw_by','-he_by'],hint:'Bayern ist das größte Bundesland. Es liegt im Südosten, unten rechts.'},
+ {id:'BW',name:'Baden-Württemberg',cap:'Stuttgart',cx:[9.18,48.78],lab:[9.0,48.45],col:'#f6c95a',poly:['-rp_bw','-he_bw','bw_by','bw_ch','bw_fr'],hint:'Baden-Württemberg liegt im Südwesten, unten links.'},
+ {id:'NW',name:'Nordrhein-Westfalen',cap:'Düsseldorf',cx:[6.78,51.23],lab:[7.55,51.55],col:'#b79be0',poly:['-ni_nw','nw_he','nw_rp','nw_w'],hint:'Nordrhein-Westfalen liegt im Westen, an der Grenze zu den Niederlanden.'},
+ {id:'NI',name:'Niedersachsen',cap:'Hannover',cx:[9.73,52.37],lab:[9.1,52.85],col:'#a8d98a',poly:['elbe_w','hh_s','elbe_e','ni_mv','ni_bb','ni_st','ni_th','ni_he','ni_nw','ni_nl','ni_coast'],hint:'Niedersachsen ist groß und liegt im Nordwesten, an der Nordsee.'},
+ {id:'HE',name:'Hessen',cap:'Wiesbaden',cx:[8.24,50.08],lab:[9.0,50.65],col:'#c9a27a',poly:['he_th','he_by','he_bw','he_rp','-nw_he','-ni_he'],hint:'Hessen liegt in der Mitte, etwas nach Westen. Dort ist Frankfurt.'},
+ {id:'BE',name:'Berlin',cap:'Berlin',cx:[13.4,52.52],lab:[13.4,52.52],col:'#f7d84a',small:true,raw:[[13.1,52.55],[13.3,52.67],[13.55,52.65],[13.75,52.47],[13.55,52.36],[13.2,52.40]],hint:'Berlin ist die Hauptstadt von Deutschland. Es liegt mitten in Brandenburg.'},
+ {id:'HH',name:'Hamburg',cap:'Hamburg',cx:[10.0,53.55],lab:[10.0,53.56],col:'#4f9a5a',small:true,poly:['hh_n','-hh_s'],hint:'Hamburg ist eine Stadt und ein Bundesland. Es liegt im Norden an der Elbe.'},
+ {id:'HB',name:'Bremen',cap:'Bremen',cx:[8.8,53.08],lab:[8.8,53.08],col:'#f4a259',small:true,raw:[[8.6,53.17],[8.85,53.2],[9.0,53.1],[8.8,52.98],[8.62,53.05]],raw2:[[8.5,53.6],[8.66,53.6],[8.66,53.5],[8.5,53.5]],hint:'Bremen ist ein kleiner Stadtstaat. Er liegt mitten in Niedersachsen.'},
+ {id:'SH',name:'Schleswig-Holstein',cap:'Kiel',cx:[10.14,54.32],lab:[9.6,54.3],col:'#f7e65a',poly:['sh_n','sh_e','sh_mv','-elbe_e','-hh_n','-elbe_w','-sh_w'],hint:'Schleswig-Holstein liegt ganz im Norden, zwischen Nordsee und Ostsee.'},
+ {id:'BB',name:'Brandenburg',cap:'Potsdam',cx:[13.06,52.4],lab:[13.7,52.05],col:'#7fb2e5',poly:['mv_bb','bb_pl','-bb_sn','-bb_st','-ni_bb'],hint:'Brandenburg liegt im Osten. Berlin liegt mitten in Brandenburg.'},
+ {id:'MV',name:'Mecklenburg-Vorpommern',cap:'Schwerin',cx:[11.41,53.63],lab:[12.6,53.75],col:'#e6d96a',poly:['mv_coast','mv_pl','-mv_bb','-ni_mv','-sh_mv'],hint:'Mecklenburg-Vorpommern liegt im Nordosten an der Ostsee.'},
+ {id:'ST',name:'Sachsen-Anhalt',cap:'Magdeburg',cx:[11.63,52.13],lab:[11.75,51.9],col:'#e7a6d6',poly:['bb_st','-sn_st','-th_st','-ni_st'],hint:'Sachsen-Anhalt liegt in der Mitte, etwas nach Osten.'},
+ {id:'SN',name:'Sachsen',cap:'Dresden',cx:[13.74,51.05],lab:[13.25,51.15],col:'#a6d672',poly:['bb_sn','sn_pl','sn_cz','-sn_by','th_sn','sn_st'],hint:'Sachsen liegt im Osten, an der Grenze zu Polen und Tschechien.'},
+ {id:'TH',name:'Thüringen',cap:'Erfurt',cx:[11.03,50.98],lab:[11.0,50.75],col:'#f6a65a',poly:['th_st','-th_sn','-th_by','-he_th','-ni_th'],hint:'Thüringen liegt genau in der Mitte von Deutschland.'}
+];
+STATES.forEach(s=>{s.pts=s.raw||polyFrom(s.poly);});
+const ST_BY={};STATES.forEach(s=>ST_BY[s.id]=s);
+const BL_STAGES=[['SL','RP','BY','BW','NW','NI'],['SL','RP','BY','BW','NW','NI','HE','BE','HH','HB','SH','BB'],STATES.map(s=>s.id)];
+
+const DE_RIVERS={
+ rhein:{n:'Rhein',p:[[9.2,47.66],[8.6,47.62],[7.6,47.58],[7.6,48.2],[7.8,48.57],[8.2,48.97],[8.35,49.1],[8.45,49.5],[8.27,50.0],[7.9,49.97],[7.6,50.36],[7.1,50.73],[6.96,50.94],[6.77,51.23],[6.75,51.43],[6.2,51.85],[5.8,51.9]],h:'Der Rhein fließt im Westen von Süden nach Norden.'},
+ donau:{n:'Donau',p:[[8.5,47.95],[9.0,48.1],[9.99,48.4],[10.8,48.72],[11.42,48.76],[12.1,49.02],[12.9,48.75],[13.46,48.57],[14.0,48.4]],h:'Die Donau fließt im Süden von Westen nach Osten.'},
+ elbe:{n:'Elbe',p:[[14.25,50.8],[13.74,51.05],[13.47,51.16],[13.0,51.56],[12.65,51.87],[12.25,51.85],[11.63,52.13],[11.95,52.6],[11.75,53.0],[11.0,53.2],[10.6,53.37],[9.95,53.54],[9.4,53.65],[8.85,53.87]],h:'Die Elbe kommt aus dem Osten und fließt bei Hamburg in die Nordsee.'},
+ weser:{n:'Weser',p:[[9.65,51.42],[9.4,51.7],[9.36,52.1],[8.92,52.29],[9.2,52.65],[8.8,53.08],[8.5,53.35],[8.57,53.55]],h:'Die Weser fließt durch Bremen in die Nordsee.'},
+ main:{n:'Main',p:[[11.58,49.95],[10.89,49.89],[10.23,50.05],[9.93,49.79],[9.52,49.76],[9.26,49.7],[9.15,49.97],[8.68,50.11],[8.27,50.0]],h:'Der Main fließt durch Frankfurt und mündet in den Rhein.'},
+ mosel:{n:'Mosel',p:[[6.37,49.47],[6.64,49.75],[7.07,49.92],[7.3,50.1],[7.6,50.36]],h:'Die Mosel kommt aus Frankreich und fließt bei Koblenz in den Rhein.'},
+ saar:{n:'Saar',p:[[7.05,49.11],[7.0,49.23],[6.75,49.31],[6.65,49.45],[6.58,49.70]],h:'Die Saar fließt durch das Saarland.'}
+};
+const DE_CITIES={
+ berlin:{n:'Berlin',p:[13.4,52.52],h:'Berlin ist die Hauptstadt. Es liegt im Osten.'},
+ hamburg:{n:'Hamburg',p:[10.0,53.55],h:'Hamburg liegt im Norden an der Elbe.'},
+ muenchen:{n:'München',p:[11.58,48.14],h:'München liegt im Süden, in Bayern.'},
+ koeln:{n:'Köln',p:[6.96,50.94],h:'Köln liegt im Westen am Rhein.'},
+ frankfurt:{n:'Frankfurt',p:[8.68,50.11],h:'Frankfurt liegt in der Mitte am Main.'},
+ leipzig:{n:'Leipzig',p:[12.37,51.34],h:'Leipzig liegt im Osten, in Sachsen.'},
+ saarbruecken:{n:'Saarbrücken',p:[7.0,49.23],h:'Saarbrücken liegt ganz im Südwesten, im Saarland.'},
+ stuttgart:{n:'Stuttgart',p:[9.18,48.78],h:'Stuttgart liegt im Südwesten.'},
+ dresden:{n:'Dresden',p:[13.74,51.05],h:'Dresden liegt im Osten an der Elbe.'},
+ kiel:{n:'Kiel',p:[10.14,54.32],h:'Kiel liegt ganz im Norden an der Ostsee.'}
+};
+const DE_MOUNT={
+ zugspitze:{n:'Zugspitze',hm:2962,p:[10.98,47.42]},
+ feldberg:{n:'Feldberg',hm:1493,p:[8.0,47.87]},
+ arber:{n:'Großer Arber',hm:1456,p:[13.13,49.11]},
+ fichtelberg:{n:'Fichtelberg',hm:1215,p:[12.95,50.43]},
+ brocken:{n:'Brocken',hm:1142,p:[10.62,51.8]},
+ wasserkuppe:{n:'Wasserkuppe',hm:950,p:[9.94,50.5]}
+};
+const SEA_N=[[5.4,53.4],[8.9,53.4],[9.1,54.2],[8.4,55.25],[5.4,55.25]];
+const SEA_O=[[9.8,54.45],[10.3,53.85],[14.3,53.8],[15.4,54.1],[15.4,55.25],[10.8,55.25]];
+const DK1=[[8.1,55.6],[8.66,54.91],[9.45,54.83],[9.9,54.85],[10.0,55.6]];
+const DK2=[[10.1,55.3],[10.6,54.95],[11.2,54.98],[11.0,54.78],[12.0,54.65],[12.3,54.95],[12.6,55.6],[10.4,55.6]];
+const BODENSEE=[[9.0,47.78],[9.2,47.68],[9.55,47.52],[9.75,47.52],[9.6,47.6],[9.3,47.73]];
+
+/* Großlandschaften: Trennlinien */
+const L1=[[5.0,50.85],[6.5,50.8],[7.0,51.3],[7.6,51.45],[8.6,51.55],[8.4,52.15],[9.2,52.25],[10.2,52.0],[10.9,51.95],[11.4,51.75],[12.0,51.35],[12.8,51.25],[14.0,51.25],[16.0,51.1]];
+const L2=[[8.6,46.8],[8.8,47.8],[9.5,48.15],[10.0,48.42],[11.0,48.72],[11.5,48.78],[12.1,49.0],[12.9,48.75],[13.5,48.55],[16.0,48.55]];
+const L3=[[9.55,46.8],[9.7,47.55],[10.3,47.6],[10.8,47.62],[11.5,47.68],[12.2,47.72],[12.8,47.78],[13.2,47.7],[16.0,47.7]];
+const BANDS={
+ tief:{n:'Norddeutsches Tiefland',col:'#a9dc8c',poly:L1.concat([[16.0,56],[5.0,56]])},
+ mittel:{n:'Mittelgebirge',col:'#f3e07a',poly:L1.slice().reverse().concat([[5.0,50.85]]).concat([[5.0,46.8]]).concat(L2).concat([[16.0,51.1]])},
+ vorland:{n:'Alpenvorland',col:'#f5b062',poly:L2.concat(L3.slice().reverse())},
+ alpen:{n:'Alpen',col:'#d98472',poly:L3.concat([[16.0,46.8]])}
+};
+// Mittelgebirge-Polygon sauber definieren: L1 (West->Ost), dann Ost-Rand runter, L2 rückwärts, West-Rand hoch
+BANDS.mittel.poly=L1.concat([[16.0,48.55]]).concat(L2.slice().reverse()).concat([[5.0,46.8]]);
+BANDS.vorland.poly=L2.concat(L3.slice().reverse());
+
+/* =========================================================
+   Geodaten Saarland
+   ========================================================= */
+const SLP={A:P.SLA,B:[6.70,49.37],Cc:[6.85,49.47],D:[6.97,49.50],E:P.SLE,F:[6.96,49.45],G:[6.92,49.37],M:[7.10,49.31],
+  wn:[7.15,49.43],nk:[7.22,49.33],nr:[7.02,49.33],rs:[7.10,49.22],s1:[6.84,49.30],s2:[6.80,49.24]};
+const KREISE=[
+ {id:'MZG',n:'Merzig-Wadern',full:'Landkreis Merzig-Wadern',stadt:'Merzig',col:'#b9dd8b',lab:[6.66,49.53],
+  pts:[P.SL1,P.SL2,P.SL3,P.SL4,SLP.E,SLP.D,SLP.Cc,SLP.B,SLP.A],hint:'Merzig-Wadern liegt im Nordwesten, an der Grenze zu Luxemburg und Frankreich. Dort ist die Saarschleife.'},
+ {id:'WND',n:'St. Wendel',full:'Landkreis St. Wendel',stadt:'St. Wendel',col:'#9fc9ef',lab:[7.14,49.54],
+  pts:[SLP.E,P.SL5,P.SL6,P.SL7,P.SL8,SLP.wn,SLP.F,SLP.D],hint:'Der Landkreis St. Wendel liegt ganz im Nordosten. Dort ist der Bostalsee.'},
+ {id:'NK',n:'Neunkirchen',full:'Landkreis Neunkirchen',stadt:'Ottweiler',col:'#e8a8d8',lab:[7.1,49.385],
+  pts:[SLP.F,SLP.wn,P.SL8,P.SL9,SLP.nk,SLP.M,SLP.nr,SLP.G],hint:'Der Landkreis Neunkirchen liegt in der Mitte vom Saarland. Er ist klein.'},
+ {id:'SPK',n:'Saarpfalz-Kreis',full:'Saarpfalz-Kreis',stadt:'Homburg',col:'#f39a7a',lab:[7.27,49.24],
+  pts:[P.SL9,P.SL10,P.SL11,P.SL12,SLP.rs,SLP.M,SLP.nk],hint:'Der Saarpfalz-Kreis liegt im Südosten. Dort ist Homburg.'},
+ {id:'RV',n:'Regionalverband Saarbrücken',full:'Regionalverband Saarbrücken',stadt:'Saarbrücken',col:'#c9b4f0',lab:[6.97,49.28],
+  pts:[SLP.M,SLP.rs,P.SL12,P.SL13,P.SL14,SLP.s2,SLP.s1,SLP.G,SLP.nr],hint:'Der Regionalverband Saarbrücken liegt im Süden. Dort ist die Landeshauptstadt Saarbrücken.'},
+ {id:'SLS',n:'Saarlouis',full:'Landkreis Saarlouis',stadt:'Saarlouis',col:'#f6c66b',lab:[6.79,49.395],
+  pts:[SLP.A,SLP.B,SLP.Cc,SLP.D,SLP.F,SLP.G,SLP.s1,SLP.s2,P.SL14,P.SL15,P.SL16],hint:'Der Landkreis Saarlouis liegt im Westen, an der Grenze zu Frankreich.'}
+];
+const KR_BY={};KREISE.forEach(k=>KR_BY[k.id]=k);
+const SL_OUT=polyFrom(['sl_rp','sl_fr','sl_lu']);
+const SL_NB={
+ FR:{n:'Frankreich',col:'#dfe4ee',pts:[[6.25,49.03],[7.6,49.03],[7.6,49.10],P.SL11,P.SL12,P.SL13,P.SL14,P.SL15,P.SL16,P.SLA,P.SL1,[6.25,49.46]],lab:[6.62,49.12],h:'Frankreich liegt im Süden und im Westen vom Saarland.'},
+ LU:{n:'Luxemburg',col:'#e8e1f0',pts:[[6.25,49.46],P.SL1,P.SL2,[6.48,49.72],[6.25,49.72]],lab:[6.335,49.64],h:'Luxemburg ist ein kleines Land im Nordwesten vom Saarland.'},
+ RP:{n:'Rheinland-Pfalz',col:'#e4efdc',pts:[[6.48,49.72],[7.6,49.72],[7.6,49.10],P.SL11,P.SL10,P.SL9,P.SL8,P.SL7,P.SL6,P.SL5,P.SLE,P.SL4,P.SL3,P.SL2],lab:[7.1,49.68],h:'Rheinland-Pfalz liegt im Norden und im Osten vom Saarland.'}
+};
+const SL_RIVERS={
+ saar:{n:'Saar',p:[[7.07,49.09],[7.02,49.17],[6.99,49.23],[6.92,49.24],[6.86,49.25],[6.80,49.28],[6.75,49.31],[6.73,49.36],[6.68,49.39],[6.64,49.44],[6.60,49.49],[6.56,49.50],[6.545,49.525],[6.57,49.54],[6.60,49.525],[6.595,49.56],[6.57,49.62],[6.56,49.72]],h:'Die Saar ist der größte Fluss. Sie fließt von Süden durch Saarbrücken, Völklingen, Saarlouis und Merzig nach Norden.'},
+ blies:{n:'Blies',p:[[7.15,49.60],[7.17,49.47],[7.16,49.40],[7.18,49.34],[7.24,49.27],[7.26,49.20],[7.20,49.13],[7.08,49.10]],h:'Die Blies fließt im Osten von St. Wendel über Neunkirchen nach Süden.'},
+ prims:{n:'Prims',p:[[7.0,49.65],[6.95,49.55],[6.90,49.47],[6.84,49.43],[6.78,49.40],[6.73,49.36]],h:'Die Prims kommt aus dem Norden und fließt bei Dillingen in die Saar.'},
+ nied:{n:'Nied',p:[[6.45,49.22],[6.52,49.27],[6.58,49.31],[6.65,49.35],[6.68,49.375]],h:'Die Nied kommt aus Frankreich und fließt im Westen in die Saar.'},
+ mosel:{n:'Mosel',p:[[6.33,49.38],[6.37,49.47],[6.43,49.57],[6.48,49.66],[6.50,49.72]],h:'Die Mosel ist die Grenze zu Luxemburg, ganz im Westen.'}
+};
+const SL_TOWNS={
+ saarbruecken:{n:'Saarbrücken',p:[6.99,49.235],k:'RV',cap:true},
+ saarlouis:{n:'Saarlouis',p:[6.75,49.315],k:'SLS'},
+ merzig:{n:'Merzig',p:[6.64,49.445],k:'MZG'},
+ wendel:{n:'St. Wendel',p:[7.17,49.47],k:'WND'},
+ neunkirchen:{n:'Neunkirchen',p:[7.18,49.35],k:'NK'},
+ homburg:{n:'Homburg',p:[7.34,49.325],k:'SPK'},
+ ingbert:{n:'St. Ingbert',p:[7.12,49.28],k:'SPK'},
+ voelklingen:{n:'Völklingen',p:[6.86,49.255],k:'RV'},
+ dillingen:{n:'Dillingen',p:[6.725,49.355],k:'SLS'},
+ lebach:{n:'Lebach',p:[6.91,49.41],k:'SLS'},
+ ottweiler:{n:'Ottweiler',p:[7.165,49.40],k:'NK'},
+ wadgassen:{n:'Wadgassen',p:[6.79,49.265],k:'SLS'},
+ blieskastel:{n:'Blieskastel',p:[7.255,49.235],k:'SPK'},
+ mettlach:{n:'Mettlach',p:[6.595,49.495],k:'MZG'},
+ perl:{n:'Perl',p:[6.40,49.475],k:'MZG'},
+ tholey:{n:'Tholey',p:[7.04,49.48],k:'WND'}
+};
+const SL_MARKS={
+ schleife:{n:'Saarschleife',ic:'↩️',p:[6.53,49.52],h:'Die Saarschleife ist bei Mettlach im Nordwesten. Dort macht die Saar eine große Kurve.'},
+ huette:{n:'Völklinger Hütte',ic:'🏭',p:[6.85,49.25],h:'Die Völklinger Hütte ist in Völklingen an der Saar, im Süden.'},
+ bostal:{n:'Bostalsee',ic:'⛵',p:[7.07,49.56],h:'Der Bostalsee liegt im Norden, im Landkreis St. Wendel.'},
+ schaumberg:{n:'Schaumberg',ic:'🗼',p:[7.04,49.48],h:'Der Schaumberg ist in Tholey, oben auf ihm steht ein Aussichtsturm.'},
+ dollberg:{n:'Dollberg',ic:'⛰️',p:[7.0,49.625],h:'Der Dollberg ist der höchste Berg. Er liegt ganz im Norden an der Grenze.'},
+ sbr:{n:'Saarbrücken',ic:'🏛️',p:[6.99,49.235],h:'Saarbrücken ist die Landeshauptstadt. Sie liegt im Süden an der Grenze zu Frankreich.'}
+};
+
+/* =========================================================
+   Projektion & SVG-Bausteine
+   ========================================================= */
+function proj(lon0,lon1,lat0,lat1,W,k){k=k||0.63;const s=W/((lon1-lon0)*k);return {W,H:(lat1-lat0)*s,x:lon=>(lon-lon0)*k*s,y:lat=>(lat1-lat)*s,s};}
+const PDE=proj(5.4,15.4,47.1,55.25,520);
+const PEU=proj(3.0,17.4,45.6,56.0,600);
+const PSL=proj(6.25,7.6,49.03,49.72,620,0.65);
+function dP(pr,a){return 'M'+a.map(p=>pr.x(p[0]).toFixed(1)+' '+pr.y(p[1]).toFixed(1)).join('L')+'Z';}
+function dL(pr,a){return 'M'+a.map(p=>pr.x(p[0]).toFixed(1)+' '+pr.y(p[1]).toFixed(1)).join('L');}
+function XY(pr,p){return [pr.x(p[0]),pr.y(p[1])];}
+function txt(x,y,t,o){o=o||{};return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${o.a||'middle'}" font-size="${o.fs||13}" font-weight="${o.fw||'bold'}" fill="${o.fill||'#1d2433'}" stroke="#fff" stroke-width="${o.sw==null?3:o.sw}" paint-order="stroke" style="pointer-events:none">${t}</text>`;}
+function multiline(x,y,t,o){const parts=t.split('|');const fs=(o&&o.fs)||13;return parts.map((p,i)=>txt(x,y+(i-(parts.length-1)/2)*fs*1.05,p,o)).join('');}
+function wrap(x0,y0,w,h,g,maxw){const ar=(w/h).toFixed(3);return `<div class="mapbox"><svg viewBox="${x0} ${y0} ${w.toFixed(0)} ${h.toFixed(0)}" style="width:min(100%, ${maxw||760}px, calc(64vh * ${ar}))" xmlns="http://www.w3.org/2000/svg">${g}</svg></div>`;}
+function stateD(pr,s){let d=dP(pr,s.pts);if(s.raw2)d+=dP(pr,s.raw2);return d;}
+
+/* Deutschland-Karte */
+function deSVG(o){
+  o=o||{};const pr=PDE;let g='';
+  g+=`<rect x="0" y="0" width="${pr.W}" height="${pr.H.toFixed(0)}" fill="#e7e9ee"/>`;
+  const seaTap=o.tapSeas;
+  g+=`<path d="${dP(pr,SEA_N)}" fill="#a9d3f5" ${seaTap?'data-ans="nordsee"':''}/>`;
+  g+=`<path d="${dP(pr,SEA_O)}" fill="#a9d3f5" ${seaTap?'data-ans="ostsee"':''}/>`;
+  g+=`<path d="${dP(pr,DK1)}${dP(pr,DK2)}" fill="#e7e9ee" stroke="#c5c9d3" style="pointer-events:none"/>`;
+  if(o.seaLabels){g+=txt(pr.x(6.9),pr.y(54.55),'Nordsee',{fs:16,fill:'#1c5fa8'});g+=txt(pr.x(12.4),pr.y(54.85),'Ostsee',{fs:16,fill:'#1c5fa8'});}
+  // Bundesländer
+  const allD=STATES.map(s=>stateD(pr,s)).join('');
+  if(o.bands){
+    g+=`<defs><clipPath id="deClip"><path d="${allD}"/></clipPath></defs>`;
+    g+=`<path d="${allD}" fill="#fff"/>`;
+    g+=`<g clip-path="url(#deClip)">`;
+    Object.entries(BANDS).forEach(([k,b])=>{
+      let fill=b.col;if(o.bandHl&&o.bandHl!==k)fill='#eceff3';
+      g+=`<path d="${dP(pr,b.poly)}" fill="${fill}" ${o.tapBands?`data-ans="${k}"`:''} stroke="none"/>`;
+    });
+    g+=`</g>`;
+    g+=`<path d="${allD}" fill="none" stroke="#8a93a6" stroke-width="0.8" style="pointer-events:none"/>`;
+  }else{
+    STATES.forEach(s=>{
+      let fill=o.plain?'#fbf6df':s.col;
+      if(o.hl){fill=(o.hl===s.id)?s.col:'#eef0f4';}
+      if(o.only&&!o.only.includes(s.id))fill='#f1f2f5';
+      g+=`<path d="${stateD(pr,s)}" fill="${fill}" stroke="#8d6fa8" stroke-width="${o.hl===s.id?2.5:1}" ${o.tapStates?`data-ans="${s.id}"`:''}/>`;
+    });
+  }
+  g+=`<path d="${dP(pr,BODENSEE)}" fill="#a9d3f5" stroke="#5a9bd8" stroke-width="0.8" style="pointer-events:none"/>`;
+  // Flüsse
+  (o.rivers||[]).forEach(id=>{
+    const r=DE_RIVERS[id];const hl=o.riverHl===id;
+    g+=`<path d="${dL(pr,r.p)}" fill="none" stroke="${hl?'#0a49b8':'#3a86e0'}" stroke-width="${hl?6:2.6}" stroke-linejoin="round" stroke-linecap="round" style="pointer-events:none"/>`;
+    if(o.riverLabels){const m=r.p[Math.floor(r.p.length/2)];g+=txt(pr.x(m[0])+4,pr.y(m[1])-6,r.n,{fs:12,fill:'#1c5fa8',a:'start'});}
+  });
+  if(o.tapRivers)(o.rivers||[]).forEach(id=>{g+=`<path class="river" d="${dL(pr,DE_RIVERS[id].p)}" fill="none" stroke="#000" stroke-opacity="0" stroke-width="22" data-ans="${id}" style="pointer-events:stroke"/>`;});
+  // Namen
+  if(o.names){STATES.forEach(s=>{if(o.only&&!o.only.includes(s.id))return;if(s.small&&s.id!=='SL')return;g+=multiline(pr.x(s.lab[0]),pr.y(s.lab[1]),s.name.replace('-','-|'),{fs:12});});}
+  if(o.nameOf){const s=ST_BY[o.nameOf];g+=multiline(pr.x(s.lab[0]),pr.y(s.lab[1])-(s.small?18:0),s.name.replace('-','-|'),{fs:15});}
+  // Städte
+  (o.cities||[]).forEach(c=>{
+    const ci=c.p?c:DE_CITIES[c.id];const [x,y]=XY(pr,ci.p);
+    const sq=c.square;
+    g+=sq?`<rect x="${x-6}" y="${y-6}" width="12" height="12" fill="#e03b3b" stroke="#6b0f0f" stroke-width="2"/>`:`<circle cx="${x}" cy="${y}" r="${c.big?7:5.5}" fill="#e03b3b" stroke="#6b0f0f" stroke-width="2"/>`;
+    if(c.label)g+=txt(x+9,y+5,ci.n,{fs:14,a:'start'});
+    if(c.tap)g+=`<circle cx="${x}" cy="${y}" r="20" fill="#fff" fill-opacity="0.01" stroke="#ffcc00" stroke-opacity="0" stroke-width="0" data-ans="${c.id}"/>`;
+  });
+  (o.mounts||[]).forEach(id=>{const m=DE_MOUNT[id];const [x,y]=XY(pr,m.p);
+    g+=`<polygon points="${x},${y-9} ${x+8},${y+5} ${x-8},${y+5}" fill="#3b2f2f"/>`;
+    if(o.mountLabels)g+=txt(x+10,y+2,m.n+' '+m.hm+' m',{fs:13,a:'start'});
+    if(o.tapMounts)g+=`<circle cx="${x}" cy="${y}" r="20" fill="#fff" fill-opacity="0.01" data-ans="${id}"/>`;
+  });
+  // Treffkreise für kleine Länder
+  if(o.tapStates){STATES.filter(s=>s.small).forEach(s=>{const [x,y]=XY(pr,s.cx.map((v,i)=>v));const c=s.id==='SL'?XY(pr,[6.88,49.38]):XY(pr,s.lab);
+    g+=`<circle cx="${c[0]}" cy="${c[1]}" r="${s.id==='SL'?20:16}" fill="#fff" fill-opacity="0.01" stroke="#ffcc00" stroke-opacity="0" data-ans="${s.id}"/>`;});}
+  if(o.ring){const s=ST_BY[o.ring];const c=s.id==='SL'?XY(pr,[6.88,49.38]):XY(pr,s.lab);g+=`<circle cx="${c[0]}" cy="${c[1]}" r="22" fill="none" stroke="#d62020" stroke-width="4" style="pointer-events:none"/>`;}
+  if(o.extra)g+=o.extra(pr);
+  return wrap(0,0,pr.W,pr.H,g,o.maxw);
+}
+
+/* Saarland-Karte */
+function slSVG(o){
+  o=o||{};const pr=PSL;let g='';const M=o.grid?40:0;
+  Object.entries(SL_NB).forEach(([k,n])=>{
+    g+=`<path d="${dP(pr,n.pts)}" fill="${n.col}" stroke="#c5c9d3" ${o.tapNb?`data-ans="${k}"`:''}/>`;
+  });
+  if(o.nbLabels!==false)Object.entries(SL_NB).forEach(([k,n])=>{g+=multiline(pr.x(n.lab[0]),pr.y(n.lab[1]),(k==='LU'?'LUXEM-|BURG':n.n.toUpperCase()),{fs:17,fill:'#5a6273'});});
+  KREISE.forEach(k=>{
+    let fill=o.plain?'#fbf3df':k.col; if(o.hl)fill=(o.hl===k.id)?k.col:'#f4f1ea';
+    g+=`<path d="${dP(pr,k.pts)}" fill="${fill}" stroke="#ffffff" stroke-width="${o.plain?0:2}" ${o.tapKreise?`data-ans="${k.id}"`:''}/>`;
+  });
+  g+=`<path d="${dP(pr,SL_OUT)}" fill="none" stroke="#c0398a" stroke-width="3.5" style="pointer-events:none"/>`;
+  if(o.kreisLines)KREISE.forEach(k=>{g+=`<path d="${dP(pr,k.pts)}" fill="none" stroke="#a08c6a" stroke-width="1.2" stroke-dasharray="5 4" style="pointer-events:none"/>`;});
+  (o.rivers||[]).forEach(id=>{const r=SL_RIVERS[id];const hl=o.riverHl===id;
+    g+=`<path d="${dL(pr,r.p)}" fill="none" stroke="${hl?'#0a49b8':'#3a86e0'}" stroke-width="${hl?8:4}" stroke-linejoin="round" stroke-linecap="round" style="pointer-events:none"/>`;
+    if(o.riverLabels){const m=r.p[Math.floor(r.p.length/2)];g+=txt(pr.x(m[0])+6,pr.y(m[1]),r.n,{fs:15,fill:'#1c5fa8',a:'start'});}
+  });
+  if(o.tapRivers)(o.rivers||[]).forEach(id=>{g+=`<path class="river" d="${dL(pr,SL_RIVERS[id].p)}" fill="none" stroke="#000" stroke-opacity="0" stroke-width="26" data-ans="${id}" style="pointer-events:stroke"/>`;});
+  if(o.names)KREISE.forEach(k=>{g+=multiline(pr.x(k.lab[0]),pr.y(k.lab[1]),k.n.replace('Regionalverband ','Regionalverband|'),{fs:15});});
+  (o.towns||[]).forEach(t=>{const tw=SL_TOWNS[t.id];const [x,y]=XY(pr,tw.p);
+    g+=tw.cap?`<rect x="${x-8}" y="${y-8}" width="16" height="16" fill="#e03b3b" stroke="#6b0f0f" stroke-width="2.5"/>`:`<circle cx="${x}" cy="${y}" r="7" fill="#e03b3b" stroke="#6b0f0f" stroke-width="2.5"/>`;
+    if(t.label)g+=txt(x+11,y+6,tw.n,{fs:17,a:'start'});
+    if(t.ring)g+=`<circle cx="${x}" cy="${y}" r="17" fill="none" stroke="#d62020" stroke-width="4" style="pointer-events:none"/>`;
+    if(t.tap)g+=`<circle cx="${x}" cy="${y}" r="20" fill="#fff" fill-opacity="0.01" stroke="#ffcc00" stroke-opacity="0" data-ans="${t.id}"/>`;
+  });
+  (o.marks||[]).forEach(m=>{const mk=SL_MARKS[m.id];const [x,y]=XY(pr,mk.p);
+    g+=`<circle cx="${x}" cy="${y}" r="19" fill="#fff" stroke="${m.ring?'#d62020':'#555'}" stroke-width="${m.ring?4:2}" ${m.tap?`data-ans="${m.id}"`:''}/>`;
+    g+=`<text x="${x}" y="${y+8}" text-anchor="middle" font-size="22" style="pointer-events:none">${mk.ic}</text>`;
+    if(m.label)g+=txt(x+22,y+6,mk.n,{fs:16,a:'start'});
+  });
+  if(o.grid){
+    const cols=['A','B','C','D'],rows=['1','2','3'];const cw=pr.W/4,rh=pr.H/3;
+    for(let i=1;i<4;i++)g+=`<line x1="${i*cw}" y1="0" x2="${i*cw}" y2="${pr.H}" stroke="#333" stroke-width="2" style="pointer-events:none"/>`;
+    for(let j=1;j<3;j++)g+=`<line x1="0" y1="${j*rh}" x2="${pr.W}" y2="${j*rh}" stroke="#333" stroke-width="2" style="pointer-events:none"/>`;
+    g+=`<rect x="0" y="0" width="${pr.W}" height="${pr.H}" fill="none" stroke="#333" stroke-width="2"/>`;
+    cols.forEach((c,i)=>{g+=`<text x="${(i+.5)*cw}" y="-12" text-anchor="middle" font-size="26" font-weight="bold" fill="#2b6fd6">${c}</text>`;});
+    rows.forEach((r,j)=>{g+=`<text x="-20" y="${(j+.5)*rh+9}" text-anchor="middle" font-size="26" font-weight="bold" fill="#d6532b">${r}</text>`;});
+  }
+  return wrap(-M,-M,pr.W+M,pr.H+M,g,860);
+}
+function slCell(p){const pr=PSL;const x=pr.x(p[0]),y=pr.y(p[1]);const cw=pr.W/4,rh=pr.H/3;
+  const ci=Math.floor(x/cw),ri=Math.floor(y/rh);const fx=x/cw-ci,fy=y/rh-ri;
+  return {cell:'ABCD'[ci]+(ri+1),clear:fx>0.12&&fx<0.88&&fy>0.12&&fy<0.88};}
+
+/* Flaggen */
+const FLAGS={
+ DE:'<rect width="60" height="13.3" fill="#000"/><rect y="13.3" width="60" height="13.4" fill="#dd0000"/><rect y="26.7" width="60" height="13.3" fill="#ffce00"/>',
+ DK:'<rect width="60" height="40" fill="#c8102e"/><rect x="18" width="7" height="40" fill="#fff"/><rect y="16.5" width="60" height="7" fill="#fff"/>',
+ PL:'<rect width="60" height="20" fill="#fff"/><rect y="20" width="60" height="20" fill="#dc143c"/>',
+ CZ:'<rect width="60" height="20" fill="#fff"/><rect y="20" width="60" height="20" fill="#d7141a"/><polygon points="0,0 30,20 0,40" fill="#11457e"/>',
+ AT:'<rect width="60" height="40" fill="#ed2939"/><rect y="13.3" width="60" height="13.4" fill="#fff"/>',
+ CH:'<rect width="60" height="40" fill="#da291c"/><rect x="26" y="9" width="8" height="22" fill="#fff"/><rect x="19" y="16" width="22" height="8" fill="#fff"/>',
+ FR:'<rect width="20" height="40" fill="#0055a4"/><rect x="20" width="20" height="40" fill="#fff"/><rect x="40" width="20" height="40" fill="#ef4135"/>',
+ LU:'<rect width="60" height="13.3" fill="#ed2939"/><rect y="13.3" width="60" height="13.4" fill="#fff"/><rect y="26.7" width="60" height="13.3" fill="#00a1de"/>',
+ BE:'<rect width="20" height="40" fill="#000"/><rect x="20" width="20" height="40" fill="#fdda24"/><rect x="40" width="20" height="40" fill="#ef3340"/>',
+ NL:'<rect width="60" height="13.3" fill="#ae1c28"/><rect y="13.3" width="60" height="13.4" fill="#fff"/><rect y="26.7" width="60" height="13.3" fill="#21468b"/>'
+};
+function flag(c,w){w=w||90;return `<svg viewBox="0 0 60 40" width="${w}" height="${w*2/3}" style="border:1px solid #888"><g>${FLAGS[c]}</g></svg>`;}
+const NBC={
+ DK:{n:'Dänemark',dir:'N',cap:'Kopenhagen',p:[9.5,55.55],fh:'rote Flagge mit weißem Kreuz'},
+ PL:{n:'Polen',dir:'O',cap:'Warschau',p:[16.2,52.3],fh:'weiß und rot'},
+ CZ:{n:'Tschechien',dir:'O',cap:'Prag',p:[15.4,49.55],fh:'weiß, rot und ein blaues Dreieck'},
+ AT:{n:'Österreich',dir:'S',cap:'Wien',p:[13.2,46.85],fh:'rot, weiß, rot'},
+ CH:{n:'Schweiz',dir:'S',cap:'Bern',p:[8.4,46.6],fh:'rot mit weißem Kreuz'},
+ FR:{n:'Frankreich',dir:'W',cap:'Paris',p:[5.1,47.7],fh:'blau, weiß, rot'},
+ LU:{n:'Luxemburg',dir:'W',cap:'Luxemburg',p:[4.9,49.35],fh:'rot, weiß, hellblau'},
+ BE:{n:'Belgien',dir:'W',cap:'Brüssel',p:[4.7,50.65],fh:'schwarz, gelb, rot'},
+ NL:{n:'Niederlande',dir:'W',cap:'Amsterdam',p:[5.0,52.5],fh:'rot, weiß, blau'}
+};
+const DIRN={N:'Norden',O:'Osten',S:'Süden',W:'Westen'};
+function euSVG(o){
+  o=o||{};const pr=PEU;let g='';
+  g+=`<rect width="${pr.W}" height="${pr.H.toFixed(0)}" fill="#e9ebef"/>`;
+  g+=`<path d="${dP(pr,[[3.0,53.3],[8.9,53.4],[9.1,54.2],[8.2,56.0],[3.0,56.0]])}" fill="#a9d3f5"/>`;
+  g+=`<path d="${dP(pr,[[9.8,54.45],[10.3,53.85],[14.3,53.8],[17.4,54.6],[17.4,56.0],[10.0,56.0]])}" fill="#a9d3f5"/>`;
+  g+=`<path d="${dP(pr,DK1)}${dP(pr,DK2)}" fill="#e9ebef" stroke="#c5c9d3"/>`;
+  const allD=STATES.map(s=>stateD(pr,s)).join('');
+  g+=`<path d="${allD}" fill="#f6d36b" stroke="#c9a640" stroke-width="0.6"/>`;
+  g+=`<path d="${dP(pr,BODENSEE)}" fill="#a9d3f5"/>`;
+  g+=txt(pr.x(10.3),pr.y(51.0),'DEUTSCHLAND',{fs:18,fill:'#7a5a00'});
+  if(o.compass)g+=compassMini(pr.W-50,pr.H-60);
+  Object.entries(NBC).forEach(([k,c])=>{
+    const [x,y]=XY(pr,c.p);const w=96,h=o.names?76:60;
+    g+=`<g ${o.tap?`data-ans="${k}"`:''}><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="10" fill="#fff" stroke="#6b7a99" stroke-width="2"/>`;
+    g+=`<g transform="translate(${x-27},${y-h/2+7}) scale(0.9)">${FLAGS[k]}<rect width="60" height="40" fill="none" stroke="#777"/></g>`;
+    if(o.names)g+=`<text x="${x}" y="${y+h/2-8}" text-anchor="middle" font-size="${c.n.length>9?12:14}" font-weight="bold" style="pointer-events:none">${c.n}</text>`;
+    g+='</g>';
+  });
+  return wrap(0,0,pr.W,pr.H,g,700);
+}
+function compassMini(cx,cy){return `<g style="pointer-events:none"><polygon points="${cx},${cy-34} ${cx+8},${cy} ${cx-8},${cy}" fill="#d63b3b"/><polygon points="${cx},${cy+34} ${cx+8},${cy} ${cx-8},${cy}" fill="#555"/><polygon points="${cx-34},${cy} ${cx},${cy-8} ${cx},${cy+8}" fill="#555"/><polygon points="${cx+34},${cy} ${cx},${cy-8} ${cx},${cy+8}" fill="#555"/>
+ <text x="${cx}" y="${cy-38}" text-anchor="middle" font-size="16" font-weight="bold">N</text><text x="${cx}" y="${cy+52}" text-anchor="middle" font-size="16" font-weight="bold">S</text><text x="${cx-46}" y="${cy+6}" text-anchor="middle" font-size="16" font-weight="bold">W</text><text x="${cx+45}" y="${cy+6}" text-anchor="middle" font-size="16" font-weight="bold">O</text></g>`;}
+
+/* Kartenzeichen */
+const SYM={
+ fluss:{n:'Fluss',s:'<path d="M5 30 q10 -16 20 0 t20 0 t20 0 t12 0" stroke="#2b7bd6" stroke-width="6" fill="none" stroke-linecap="round"/>',h:'Ein Fluss ist eine blaue, geschlängelte Linie.'},
+ grenze:{n:'Grenze',s:'<line x1="5" y1="30" x2="75" y2="30" stroke="#e46aa8" stroke-width="9"/>',h:'Eine Grenze ist eine rosa Linie. Sie trennt Länder.'},
+ stadt:{n:'Stadt',s:'<circle cx="40" cy="30" r="11" fill="#e03b3b" stroke="#6b0f0f" stroke-width="3"/>',h:'Ein roter Punkt ist eine Stadt.'},
+ gross:{n:'sehr große Stadt',s:'<rect x="27" y="17" width="26" height="26" fill="#e03b3b" stroke="#6b0f0f" stroke-width="3"/>',h:'Ein rotes Quadrat ist eine sehr große Stadt, zum Beispiel Berlin oder Hamburg.'},
+ berg:{n:'Berg',s:'<polygon points="40,8 56,38 24,38" fill="#3b2f2f"/><text x="40" y="56" text-anchor="middle" font-size="15" font-weight="bold">982</text>',h:'Ein kleines schwarzes Dreieck ist ein Berg. Die Zahl sagt, wie hoch er ist.'},
+ see:{n:'See',s:'<path d="M12 30 C12 10 62 8 68 28 C72 48 16 52 12 30Z" fill="#8cc8f5" stroke="#2b7bd6" stroke-width="3"/>',h:'Ein See ist eine blaue Fläche.'},
+ haupt:{n:'Hauptstadt',s:'<text x="40" y="36" text-anchor="middle" font-size="22" font-weight="bold">Berlin</text><line x1="10" y1="42" x2="70" y2="42" stroke="#000" stroke-width="2.5"/>',h:'Ein unterstrichener Name zeigt eine Hauptstadt.'},
+ nord:{n:'Nordpfeil',s:'<circle cx="40" cy="32" r="18" fill="none" stroke="#333" stroke-width="2"/><polygon points="40,10 46,32 34,32" fill="#d63b3b"/><polygon points="40,54 46,32 34,32" fill="#666"/><text x="40" y="9" text-anchor="middle" font-size="11" font-weight="bold">N</text>',h:'Der Nordpfeil zeigt, wo Norden ist.'},
+ mass:{n:'Maßstab',s:'<rect x="8" y="26" width="64" height="10" fill="#fff" stroke="#333" stroke-width="2"/><rect x="8" y="26" width="32" height="10" fill="#333"/><text x="40" y="20" text-anchor="middle" font-size="13" font-weight="bold">10 km</text><text x="8" y="52" font-size="12" text-anchor="middle">0</text><text x="72" y="52" font-size="12" text-anchor="middle">2</text>',h:'Der Maßstab sagt, wie viel kleiner die Karte ist als die Wirklichkeit.'},
+ plan:{n:'Planquadrat',s:'<line x1="40" y1="4" x2="40" y2="58" stroke="#333" stroke-width="2"/><line x1="8" y1="30" x2="76" y2="30" stroke="#333" stroke-width="2"/><circle cx="56" cy="14" r="10" fill="#2b4ba8"/><text x="56" y="19" text-anchor="middle" font-size="13" fill="#fff" font-weight="bold">A</text><circle cx="22" cy="46" r="10" fill="#2b4ba8"/><text x="22" y="51" text-anchor="middle" font-size="13" fill="#fff" font-weight="bold">1</text>',h:'Planquadrate sind Kästchen auf der Karte mit Buchstaben und Zahlen.'},
+ hoehen:{n:'Höhenschichten',s:'<rect x="22" y="4" width="36" height="10" fill="#5aa65a"/><rect x="22" y="15" width="36" height="10" fill="#a6d27a"/><rect x="22" y="26" width="36" height="10" fill="#f3e47a"/><rect x="22" y="37" width="36" height="10" fill="#f2b45e"/><rect x="22" y="48" width="36" height="10" fill="#c2783f"/>',h:'Die Farben zeigen, wie hoch das Land ist. Das sind Höhenschichten.'}
+};
+function sym(id,w){w=w||110;return `<svg viewBox="0 0 80 60" width="${w}" height="${w*0.75}">${SYM[id].s}</svg>`;}
+
+const HCOL=[{c:'#5aa65a',t:'0 – 100 m',v:1},{c:'#a6d27a',t:'100 – 200 m',v:2},{c:'#f3e47a',t:'200 – 500 m',v:3},{c:'#f2b45e',t:'500 – 1000 m',v:4},{c:'#c2783f',t:'über 1000 m',v:5}];
+function legendH(){return '<div class="legend"><b>Höhenschichten</b>'+HCOL.slice().reverse().map(h=>`<div><span class="sw" style="background:${h.c}"></span>${h.t}</div>`).join('')+'</div>';}
+function swatch(c,w){w=w||90;return `<svg width="${w}" height="${w*0.6}"><rect width="${w}" height="${w*0.6}" rx="8" fill="${c}" stroke="#555" stroke-width="2"/></svg>`;}
+
+/* Landschafts-Bilder */
+const PICS={
+ watt:'<rect width="160" height="110" fill="#bfe1ff"/><rect y="50" width="160" height="60" fill="#c9b994"/>'+[60,72,84,96].map(y=>`<path d="M0 ${y} q20 -8 40 0 t40 0 t40 0 t40 0" stroke="#7fa7c9" stroke-width="4" fill="none"/>`).join(''),
+ kreide:'<rect width="160" height="110" fill="#bfe1ff"/><rect y="70" width="160" height="40" fill="#3f86c9"/><path d="M70 110 L90 30 Q120 20 160 25 L160 110Z" fill="#f4f4f4" stroke="#bbb"/><path d="M90 30 Q120 18 160 22 L160 30 Q120 28 92 36Z" fill="#3f8f3f"/>',
+ flach:'<rect width="160" height="110" fill="#bfe1ff"/><rect y="55" width="160" height="55" fill="#8cc85a"/><path d="M0 85 Q40 75 80 88 T160 80" stroke="#3a86e0" stroke-width="6" fill="none"/><rect y="55" width="160" height="5" fill="#6aaa45"/>',
+ huegel:'<rect width="160" height="110" fill="#bfe1ff"/><path d="M0 75 Q40 30 80 70 Q110 40 160 70 L160 110 L0 110Z" fill="#3f8f3f"/><path d="M0 95 Q50 70 100 92 T160 88 L160 110 L0 110Z" fill="#5aab4a"/>'+[20,35,50,95,110,125].map(x=>`<polygon points="${x},${60+(x%3)*4} ${x+6},${74+(x%3)*4} ${x-6},${74+(x%3)*4}" fill="#1f5f2a"/>`).join(''),
+ felsen:'<rect width="160" height="110" fill="#bfe1ff"/><rect y="80" width="160" height="30" fill="#2f7a35"/><path d="M20 110 L22 45 L34 40 L38 110Z M45 110 L48 30 L62 28 L66 110Z M75 110 L76 50 L92 46 L95 110Z M105 110 L108 36 L124 34 L127 110Z" fill="#c98a5a" stroke="#8a5a35"/>',
+ vorland:'<rect width="160" height="110" fill="#bfe1ff"/><path d="M0 55 L25 25 L45 45 L70 15 L95 45 L120 20 L160 50 L160 60 L0 60Z" fill="#9aa6b8"/><path d="M25 25 L32 33 L18 33Z M70 15 L78 25 L62 25Z M120 20 L128 30 L112 30Z" fill="#fff"/><path d="M0 60 Q80 50 160 62 L160 110 L0 110Z" fill="#8cc85a"/><ellipse cx="85" cy="85" rx="45" ry="11" fill="#3f86c9"/>',
+ alpen:'<rect width="160" height="110" fill="#bfe1ff"/><path d="M0 110 L30 40 L50 70 L80 8 L110 60 L130 35 L160 80 L160 110Z" fill="#8f8f9a"/><path d="M80 8 L92 32 L84 28 L76 34 L68 30Z M30 40 L38 56 L22 56Z M130 35 L139 50 L121 50Z" fill="#fff"/>'
+};
+function pic(id,w){w=w||200;return `<svg viewBox="0 0 160 110" width="${w}" height="${w*110/160}" style="border-radius:12px;border:2px solid #999">${PICS[id]}</svg>`;}
+
+/* Kompass */
+function compass(o){
+  o=o||{};const c=150;let g=`<circle cx="${c}" cy="${c}" r="125" fill="#fff" stroke="#9fb6d8" stroke-width="3"/>`;
+  const arms={N:[0,-1],O:[1,0],S:[0,1],W:[-1,0]};
+  Object.entries(arms).forEach(([k,[dx,dy]])=>{
+    const tip=[c+dx*105,c+dy*105],l=[c-dy*22,c+dx*22],r=[c+dy*22,c-dx*22];
+    const fill=o.hl===k?'#f08a24':(k==='N'?'#d63b3b':'#7d8799');
+    g+=`<polygon points="${tip.join(',')} ${l.join(',')} ${r.join(',')}" fill="${fill}" stroke="#333" stroke-width="2" ${o.tap?`data-ans="${k}"`:''}/>`;
+  });
+  g+=`<circle cx="${c}" cy="${c}" r="10" fill="#333"/>`;
+  Object.entries(arms).forEach(([k,[dx,dy]])=>{
+    if(o.labels==='all'||(o.labels==='N'&&k==='N'))g+=`<text x="${c+dx*130}" y="${c+dy*130+10}" text-anchor="middle" font-size="30" font-weight="bold" style="pointer-events:none">${k}</text>`;
+  });
+  return `<svg viewBox="-20 -20 340 340" width="300" height="300">${g}</svg>`;
+}
+
+/* =========================================================
+   Übungen
+   ========================================================= */
+const TOPICS=[
+ {id:'karte',n:'Karten lesen',ic:'🧭'},
+ {id:'de',n:'Deutschland',ic:'🇩🇪'},
+ {id:'bl',n:'Bundesländer',ic:'🧩'},
+ {id:'saar',n:'Unser Saarland',ic:'💚'},
+ {id:'eu',n:'Europa',ic:'🇪🇺'}
+];
+const EX=[];
+function addEx(e){EX.push(e);}
+
+/* ---- Kartenzeichen ---- */
+addEx({id:'zeichen',t:'karte',ic:'🔣',n:'Kartenzeichen',d:'Was bedeuten die Zeichen?',gen(){
+  const ids=Object.keys(SYM);const id=pick('zeichen',ids,x=>x);const s=SYM[id];
+  if(Math.random()<0.55){
+    return {key:id,q:'Was bedeutet dieses Zeichen?',hint:s.h,
+      html:`<div class="big-sym">${sym(id,200)}</div>`+btns(opts3(s.n,ids.map(i=>SYM[i].n))),correct:s.n};
+  }
+  const others=shuffle(ids.filter(i=>i!==id)).slice(0,2);
+  return {key:id,q:`Tippe auf das Zeichen für: ${s.n}`,hint:s.h,html:btnsH(shuffle([id,...others]).map(i=>({id:i,html:sym(i,120)}))),correct:id};
+}});
+
+/* ---- Himmelsrichtungen ---- */
+addEx({id:'richtung',t:'karte',ic:'🧭',n:'Himmelsrichtungen',d:'Norden, Osten, Süden, Westen',gen(){
+  const H='Nie Ohne Seife Waschen: Norden ist oben. Dann im Uhrzeigersinn: Osten rechts, Süden unten, Westen links.';
+  const r=Math.random();
+  if(r<0.35){const k=pick('richtung',['N','O','S','W'],x=>'pf'+x);
+    return {key:'pf'+k,q:'Welche Himmelsrichtung zeigt der orange Pfeil?',hint:H,html:compass({hl:k,labels:'N'})+btns(opts3(DIRN[k],Object.values(DIRN))),correct:DIRN[k]};}
+  if(r<0.65){const k=pick('richtung',['O','S','W','N'],x=>'tap'+x);
+    return {key:'tap'+k,q:`Tippe auf den Pfeil nach ${DIRN[k]}.`,hint:H,html:compass({tap:true,labels:'N'}),correct:k};}
+  const items=[['hamburg','N'],['kiel','N'],['muenchen','S'],['stuttgart','S'],['berlin','O'],['dresden','O'],['koeln','W'],['saarbruecken','W']];
+  const it=pick('richtung',items,x=>'st'+x[0]);const ci=DE_CITIES[it[0]];
+  return {key:'st'+it[0],q:`${ci.n} liegt im … von Deutschland.`,hint:'Schau auf den Nordpfeil. Oben ist Norden, unten Süden, rechts Osten, links Westen.',
+    html:'<div class="row">'+deSVG({plain:true,cities:[{id:it[0],label:true,big:true}],extra:pr=>compassMini(pr.W-55,70)})+'</div>'+btns(opts3(DIRN[it[1]],Object.values(DIRN))),correct:DIRN[it[1]]};
+}});
+
+/* ---- Planquadrate ---- */
+const PQ_ICONS=[['🏠','das Haus'],['🌳','der Baum'],['⛪','die Kirche'],['🏫','die Schule'],['🐕','der Hund'],['🏰','die Burg'],['⛵','das Boot'],['🚗','das Auto']];
+function pqGrid(n,items,o){
+  o=o||{};const cols='ABCD'.slice(0,n);const cs=n===3?110:90;let h='<table style="border-collapse:collapse;font-size:28px;font-weight:bold;background:#fff">';
+  h+='<tr><td></td>'+[...cols].map(c=>`<td style="text-align:center;color:#2b6fd6;height:40px;${o.hlCol===c?'background:#dbe8ff':''}">${c}</td>`).join('')+'</tr>';
+  for(let r=1;r<=n;r++){h+=`<tr><td style="width:40px;text-align:center;color:#d6532b;${o.hlRow==r?'background:#ffe3d6':''}">${r}</td>`;
+    [...cols].forEach(c=>{const cell=c+r;const it=items.find(x=>x.cell===cell);
+      const bg=(o.hlCol===c&&o.hlRow==r)?'#fff3b0':(o.hlCol===c?'#eef4ff':(o.hlRow==r?'#fff2ec':'#fff'));
+      h+=`<td ${o.tap?`data-ans="${cell}"`:''} style="width:${cs}px;height:${cs}px;border:3px solid #333;text-align:center;font-size:${n===3?52:44}px;background:${bg}">${it?it.ic:''}</td>`;});
+    h+='</tr>';}
+  return h+'</table>';
+}
+addEx({id:'planquadrat',t:'karte',ic:'🔢',n:'Planquadrate',d:'Buchstabe und Zahl finden',gen(){
+  const rounds=(S.ex.planquadrat&&S.ex.planquadrat.rounds)||0;const n=rounds<2?3:4;
+  const H='Erst den Buchstaben oben suchen, dann die Zahl an der Seite. Wo sich beide treffen, ist das Planquadrat.';
+  const r=Math.random();
+  if(n===4&&r<0.3){
+    const towns=Object.entries(SL_TOWNS).filter(([k,t])=>['saarbruecken','saarlouis','merzig','wendel','homburg','neunkirchen','perl','dillingen','lebach','blieskastel'].includes(k)&&slCell(t.p).clear);
+    const [k,t]=pick('planquadrat',towns,x=>'sl'+x[0]);const cell=slCell(t.p).cell;
+    const allC=[];'ABCD'.split('').forEach(c=>[1,2,3].forEach(rr=>allC.push(c+rr)));
+    return {key:'sl'+k,q:`In welchem Planquadrat liegt ${t.n}?`,hint:H,html:slSVG({grid:true,plain:true,nbLabels:false,towns:[{id:k,label:true,ring:true}]})+btns(opts3(cell,allC)),correct:cell};
+  }
+  const cells=[];[...'ABCD'.slice(0,n)].forEach(c=>{for(let rr=1;rr<=n;rr++)cells.push(c+rr);});
+  const ics=shuffle(PQ_ICONS).slice(0,4);const pos=shuffle(cells).slice(0,4);
+  const items=ics.map((ic,i)=>({ic:ic[0],name:ic[1],cell:pos[i]}));const target=items[0];
+  if(r<0.65){
+    const near=cells.filter(c=>c!==target.cell&&(c[0]===target.cell[0]||c[1]===target.cell[1]));
+    return {key:'w'+n,q:`In welchem Planquadrat ist ${target.name} ${target.ic}?`,hint:H,html:pqGrid(n,items)+btns(opts3(target.cell,near.length>=2?near:cells)),correct:target.cell,
+      onWrong:()=>{const v=document.querySelector('.vis');v.querySelector('table').outerHTML=pqGrid(n,items,{hlCol:target.cell[0]});}};
+  }
+  const tc=rnd(cells);
+  return {key:'t'+n,q:`Tippe auf das Planquadrat ${tc}.`,hint:H,html:pqGrid(n,items,{tap:true}),correct:tc,
+    onWrong:()=>{const v=document.querySelector('.vis');v.querySelector('table').outerHTML=pqGrid(n,items,{tap:true,hlCol:tc[0],hlRow:tc.slice(1)});}};
+}});
+
+/* ---- Höhen ---- */
+function contour(steep,id){let g='';const n=5;for(let i=0;i<n;i++){const rx=steep?(18+i*9):(14+i*22),ry=rx*0.62;g+=`<ellipse cx="110" cy="80" rx="${rx}" ry="${ry}" fill="none" stroke="#7a4a20" stroke-width="2.5"/>`;}
+  return `<svg viewBox="0 0 220 160" width="220" height="160"><rect width="220" height="160" fill="#fffdf4"/>${g}<polygon points="110,74 116,84 104,84" fill="#333"/></svg>`;}
+function hill(tap){const cols=['#5aa65a','#a6d27a','#f3e47a','#f2b45e','#c2783f'];let g='<rect width="320" height="220" fill="#fff"/>';
+  cols.forEach((c,i)=>{const rx=140-i*27,ry=92-i*18;g+=`<ellipse cx="${160+i*4}" cy="${110-i*2}" rx="${rx}" ry="${ry}" fill="${c}" stroke="#7a4a20" stroke-width="1.5" ${tap?`data-ans="h${i}"`:''}/>`;});
+  return `<svg viewBox="0 0 320 220" width="340" height="234">${g}</svg>`;}
+addEx({id:'hoehen',t:'karte',ic:'⛰️',n:'Höhen auf Karten',d:'Farben und Höhenlinien',gen(){
+  const r=Math.random();
+  if(r<0.35){const h=pick('hoehen',HCOL,x=>'f'+x.v);
+    return {key:'f'+h.v,q:'Wie hoch ist das Land mit dieser Farbe? Schau in die Legende.',hint:'Suche die gleiche Farbe in der Legende. Daneben steht die Höhe.',
+      html:`<div class="row">${swatch(h.c,150)}${legendH()}</div>`+btns(opts3(h.t,HCOL.map(x=>x.t))),correct:h.t};}
+  if(r<0.6){const three=shuffle(HCOL).slice(0,3);const hi=Math.random()<0.6;const best=three.reduce((a,b)=>(hi?(b.v>a.v):(b.v<a.v))?b:a);
+    return {key:hi?'hoch':'tief',q:hi?'Welche Farbe zeigt das höchste Land?':'Welche Farbe zeigt das tiefste Land?',hint:'In der Legende: Grün ist tief unten. Gelb und Orange sind höher. Braun ist ganz hoch.',
+      html:legendH()+btnsH(three.map(h=>({id:h.c,html:swatch(h.c,110)}))),correct:best.c};}
+  if(r<0.8){const steepLeft=Math.random()<0.5;
+    return {key:'steil',q:'Bei welchem Berg ist es steiler?',hint:'Je dichter die Höhenlinien zusammen liegen, desto steiler ist der Berg.',
+      html:btnsH([{id:'L',html:contour(steepLeft)},{id:'R',html:contour(!steepLeft)}]),correct:steepLeft?'L':'R'};}
+  return {key:'spitze',q:'Tippe auf die höchste Stelle vom Berg.',hint:'Die Bergspitze ist innen, in der Mitte. Dort ist die Farbe braun.',html:'<div class="row">'+hill(true)+legendH()+'</div>',correct:'h4'};
+}});
+
+/* ---- Maßstab ---- */
+function ruler(n,showNums){const w=70;let g='';for(let i=0;i<n;i++){g+=`<rect x="${20+i*w}" y="40" width="${w}" height="34" fill="${i%2?'#fff':'#ffe9a8'}" stroke="#333" stroke-width="2"/>`;
+  g+=`<text x="${20+i*w+w/2}" y="64" text-anchor="middle" font-size="17" font-weight="bold">10 km</text>`;
+  if(showNums)g+=`<text x="${20+(i+1)*w}" y="100" text-anchor="middle" font-size="20" font-weight="bold" fill="#2b6fd6">${(i+1)*10}</text>`;}
+  g+=`<circle cx="20" cy="57" r="13" fill="#e03b3b"/><text x="20" y="63" text-anchor="middle" fill="#fff" font-size="16" font-weight="bold">A</text>`;
+  g+=`<circle cx="${20+n*w}" cy="57" r="13" fill="#2e9d4f"/><text x="${20+n*w}" y="63" text-anchor="middle" fill="#fff" font-size="16" font-weight="bold">B</text>`;
+  return `<svg viewBox="0 0 ${40+n*w} 110" width="${Math.min(760,(40+n*w)*1.7)}">${g}</svg>`;}
+addEx({id:'massstab',t:'karte',ic:'📏',n:'Maßstab',d:'Wie weit ist es in echt?',gen(){
+  if(Math.random()<0.2){const qs=[['Eine Karte zeigt alles …','kleiner als in echt',['größer als in echt','genau so groß wie in echt']],
+      ['Auf der Karte ist ein Weg 2 cm lang. In echt ist er …','länger',['kürzer','genau 2 cm lang']]];
+    const qq=pick('massstab',qs,x=>x[0]);return {key:qq[0],q:qq[0],hint:'Karten bilden die Wirklichkeit stark verkleinert ab. In echt ist alles viel größer.',html:btns(shuffle([qq[1],...qq[2]])),correct:qq[1]};}
+  const n=pick('massstab',[2,3,4,5],x=>'n'+x);const right=n*10+' km';
+  const pool=[n+' km',(n+1)*10+' km',(n-1)*10+' km',n*100+' km'].filter(x=>x!==right&&x!=='0 km');
+  return {key:'n'+n,q:'Jedes Kästchen ist 10 km. Wie weit ist es in echt von A nach B?',hint:'Zähle in Zehnern bei jedem Kästchen: 10, 20, 30 …',
+    html:ruler(n,false)+btns(opts3(right,pool.concat(right))),correct:right,
+    onWrong:()=>{document.querySelector('.vis svg').outerHTML=ruler(n,true);}};
+}});
+
+/* ---- Großlandschaften ---- */
+const LS_PICS=[['Wattenmeer an der Nordsee','watt','tief'],['Kreidefelsen an der Ostsee','kreide','tief'],['Ostfriesland','flach','tief'],['Lüneburger Heide','flach','tief'],
+ ['Elbsandsteingebirge','felsen','mittel'],['Harz','huegel','mittel'],['Schwarzwald','huegel','mittel'],['Schaumberg im Saarland','huegel','mittel'],
+ ['Chiemsee','vorland','vorland'],['Bodensee','vorland','vorland'],['Zugspitze (2962 m)','alpen','alpen'],['Watzmann','alpen','alpen']];
+const LS_H={tief:'Das Tiefland ist im Norden. Dort ist es flach, und dort sind die Küsten von Nordsee und Ostsee.',mittel:'Die Mittelgebirge sind in der Mitte. Dort gibt es viele Hügel und Wälder. Auch das Saarland liegt dort.',vorland:'Das Alpenvorland liegt vor den Alpen, im Süden. Dort gibt es große Seen.',alpen:'Die Alpen sind ganz im Süden. Dort sind die höchsten Berge, wie die Zugspitze.'};
+addEx({id:'landschaften',t:'de',ic:'🏔️',n:'Großlandschaften',d:'Tiefland, Mittelgebirge, Alpenvorland, Alpen',gen(){
+  const keys=Object.keys(BANDS);const names=keys.map(k=>BANDS[k].n);const r=Math.random();
+  if(r<0.3){const k=pick('landschaften',keys,x=>'tap'+x);
+    return {key:'tap'+k,q:`Tippe auf: ${BANDS[k].n}`,hint:LS_H[k],html:deSVG({bands:true,tapBands:true}),correct:k};}
+  if(r<0.55){const k=pick('landschaften',keys,x=>'hl'+x);
+    return {key:'hl'+k,q:'Wie heißt die farbige Großlandschaft?',hint:LS_H[k],html:deSVG({bands:true,bandHl:k})+btns(opts3(BANDS[k].n,names)),correct:BANDS[k].n};}
+  if(r<0.85){const it=pick('landschaften',LS_PICS,x=>'p'+x[0]);
+    return {key:'p'+it[0],q:`${it[0]}: Zu welcher Großlandschaft gehört das?`,hint:LS_H[it[2]],html:'<div class="row">'+pic(it[1],230)+deSVG({bands:true,maxw:260})+'</div>'+btns(opts3(BANDS[it[2]].n,names)),correct:BANDS[it[2]].n};}
+  const qs=[['Welche Großlandschaft liegt ganz im Norden?','tief'],['Welche Großlandschaft liegt ganz im Süden?','alpen'],['In welcher Großlandschaft liegt das Saarland?','mittel'],['Wo sind die höchsten Berge?','alpen']];
+  const qq=pick('landschaften',qs,x=>x[0]);
+  return {key:qq[0],q:qq[0],hint:LS_H[qq[1]],html:deSVG({bands:true,cities:qq[1]==='mittel'?[{id:'saarbruecken',label:true}]:[]})+btns(opts3(BANDS[qq[1]].n,names)),correct:BANDS[qq[1]].n};
+}});
+
+/* ---- Deutschland-Karte ---- */
+addEx({id:'dekarte',t:'de',ic:'🗺️',n:'Deutschland-Karte',d:'Meere, Flüsse, Städte, Berge',gen(){
+  const r=Math.random();const rivs=Object.keys(DE_RIVERS);
+  if(r<0.15){const k=pick('dekarte',['nordsee','ostsee'],x=>x);const nm=k==='nordsee'?'Nordsee':'Ostsee';
+    return {key:k,q:`Tippe auf die ${nm}.`,hint:k==='nordsee'?'Die Nordsee ist oben links, im Nordwesten.':'Die Ostsee ist oben rechts, im Nordosten.',html:deSVG({plain:true,tapSeas:true}),correct:k};}
+  if(r<0.4){const k=pick('dekarte',rivs,x=>'rv'+x);
+    return {key:'rv'+k,q:'Welcher Fluss ist dick markiert?',hint:DE_RIVERS[k].h,html:deSVG({plain:true,rivers:rivs,riverHl:k,seaLabels:true})+btns(opts3(DE_RIVERS[k].n,rivs.map(x=>DE_RIVERS[x].n))),correct:DE_RIVERS[k].n};}
+  if(r<0.55){const k=pick('dekarte',['rhein','donau','elbe','main'],x=>'rt'+x);
+    return {key:'rt'+k,q:`Tippe auf den Fluss: ${DE_RIVERS[k].n}`,hint:DE_RIVERS[k].h,html:deSVG({plain:true,rivers:rivs,tapRivers:true,seaLabels:true}),correct:k};}
+  const cityIds=['berlin','hamburg','muenchen','koeln','frankfurt','leipzig','saarbruecken'];
+  if(r<0.8){const k=pick('dekarte',cityIds,x=>'c'+x);
+    if(Math.random()<0.5)return {key:'c'+k,q:`Tippe auf ${DE_CITIES[k].n}.`,hint:DE_CITIES[k].h,html:deSVG({plain:true,rivers:['rhein','elbe','donau','main'],seaLabels:true,cities:cityIds.map(id=>({id,tap:true,big:true}))}),correct:k};
+    return {key:'c'+k,q:'Welche Stadt ist rot eingekreist?',hint:DE_CITIES[k].h,html:deSVG({plain:true,rivers:['rhein','elbe','donau','main'],seaLabels:true,cities:cityIds.map(id=>({id,big:true})),extra:pr=>{const [x,y]=XY(pr,DE_CITIES[k].p);return `<circle cx="${x}" cy="${y}" r="16" fill="none" stroke="#d62020" stroke-width="4"/>`;}})+btns(opts3(DE_CITIES[k].n,cityIds.map(x=>DE_CITIES[x].n))),correct:DE_CITIES[k].n};}
+  const ms=Object.keys(DE_MOUNT);const qs=[['Welcher ist der höchste Berg in Deutschland?','Zugspitze',['Brocken','Feldberg']],
+    ...ms.map(m=>[`Wie hoch ist der Berg ${DE_MOUNT[m].n}? Lies es auf der Karte.`,DE_MOUNT[m].hm+' m',ms.filter(x=>x!==m).map(x=>DE_MOUNT[x].hm+' m')])];
+  const qq=pick('dekarte',qs,x=>x[0]);
+  return {key:qq[0],q:qq[0],hint:'Lies auf der Karte: Neben jedem Dreieck stehen der Name und die Höhe in Metern.',html:deSVG({plain:true,mounts:ms,mountLabels:true})+btns(opts3(qq[1],qq[2])),correct:qq[1]};
+}});
+
+/* ---- Bundesländer ---- */
+function blSet(){return BL_STAGES[Math.min(3,S.blStage||1)-1];}
+addEx({id:'blfinden',t:'bl',ic:'👆',n:'Bundesländer finden',d:'Tippe auf das Bundesland',stage:true,gen(){
+  const set=blSet();const id=pick('blfinden',set,x=>x);const s=ST_BY[id];
+  return {key:id,q:`Tippe auf: ${s.name}`,hint:s.hint,html:deSVG({tapStates:true,only:set}),correct:id};
+}});
+addEx({id:'blname',t:'bl',ic:'🏷️',n:'Wie heißt das Land?',d:'Bundesländer benennen',stage:true,gen(){
+  const set=blSet();const id=pick('blname',set,x=>x);const s=ST_BY[id];
+  return {key:id,q:'Wie heißt das farbige Bundesland?',hint:s.hint,html:deSVG({hl:id,ring:s.small?id:null})+btns(opts3(s.name,set.map(x=>ST_BY[x].name))),correct:s.name};
+}});
+addEx({id:'blhaupt',t:'bl',ic:'🏛️',n:'Landeshauptstädte',d:'Welche Stadt gehört zu welchem Land?',stage:true,gen(){
+  const set=blSet();const r=Math.random();
+  if(r<0.15){const qs=[['Wie heißt die Hauptstadt von Deutschland?','Berlin',['Bonn','München']],['Wie viele Bundesländer hat Deutschland?','16',['6','27']],
+      ['Welche Bundesländer sind Stadtstaaten?','Berlin, Hamburg und Bremen',['Bayern, Hessen und Sachsen','Saarland, Thüringen und Kiel']]];
+    const qq=pick('blhaupt',qs,x=>x[0]);return {key:qq[0],q:qq[0],hint:'Deutschland hat 16 Bundesländer. Die Hauptstadt ist Berlin. Berlin, Hamburg und Bremen sind Städte und Bundesländer zugleich: Stadtstaaten.',html:btns(shuffle([qq[1],...qq[2]])),correct:qq[1]};}
+  const id=pick('blhaupt',set,x=>x);const s=ST_BY[id];
+  const caps=STATES.map(x=>x.cap).filter((v,i,a)=>a.indexOf(v)===i);
+  const ex=pr=>{const [x,y]=XY(pr,s.cx);return `<circle cx="${x}" cy="${y}" r="6" fill="#e03b3b" stroke="#6b0f0f" stroke-width="2"/>`;};
+  if(r<0.6||['BE','HH','HB'].includes(id))
+    return {key:'c'+id,q:`Wie heißt die Landeshauptstadt von ${s.name}?`,hint:`Der rote Punkt in ${s.name} zeigt die Hauptstadt. Sie fängt mit „${s.cap[0]}“ an.`,html:deSVG({hl:id,nameOf:id,extra:ex})+btns(opts3(s.cap,caps)),correct:s.cap};
+  return {key:'l'+id,q:`${s.cap} ist die Landeshauptstadt von …`,hint:`${s.cap} liegt im markierten Land.`,html:deSVG({hl:id,extra:pr=>ex(pr)+(()=>{const [x,y]=XY(pr,s.cx);return txt(x+8,y+5,s.cap,{fs:15,a:'start'});})()})+btns(opts3(s.name,set.map(x=>ST_BY[x].name))),correct:s.name};
+}});
+
+/* ---- Saarland: Lage ---- */
+addEx({id:'sllage',t:'saar',ic:'📍',n:'Wo liegt das Saarland?',d:'Lage und Nachbarn',gen(){
+  const r=Math.random();
+  if(r<0.25)return {key:'tapSL',q:'Tippe auf das Saarland.',hint:ST_BY.SL.hint,html:deSVG({tapStates:true}),correct:'SL'};
+  if(r<0.55){const k=pick('sllage',Object.keys(SL_NB),x=>'nb'+x);
+    return {key:'nb'+k,q:`Tippe auf ${SL_NB[k].n}.`,hint:SL_NB[k].h,html:slSVG({plain:true,nbLabels:false,tapNb:true,extra:true}),correct:k};}
+  const qs=[['Wo liegt das Saarland in Deutschland?','im Südwesten',['im Nordosten','in der Mitte']],
+    ['Welches Bundesland ist der Nachbar vom Saarland?','Rheinland-Pfalz',['Bayern','Sachsen']],
+    ['Welches Land grenzt im Süden an das Saarland?','Frankreich',['Polen','Österreich']],
+    ['Welches kleine Land grenzt im Nordwesten an das Saarland?','Luxemburg',['Dänemark','Schweiz']],
+    ['Welches Nachbarland vom Saarland spricht Französisch?','Frankreich',['Polen','Niederlande']]];
+  const qq=pick('sllage',qs,x=>x[0]);
+  const vis=qq[0].startsWith('Wo liegt')?deSVG({hl:'SL',ring:'SL',extra:pr=>compassMini(pr.W-55,70)}):slSVG({plain:true});
+  return {key:qq[0],q:qq[0],hint:'Schau genau auf die Karte. Das Saarland grenzt an Frankreich, Luxemburg und Rheinland-Pfalz.',html:vis+btns(shuffle([qq[1],...qq[2]])),correct:qq[1]};
+}});
+
+/* ---- Saarland: Kreise ---- */
+addEx({id:'slkreise',t:'saar',ic:'🧩',n:'Landkreise',d:'Die 6 Kreise im Saarland',gen(){
+  const r=Math.random();const ids=KREISE.map(k=>k.id);const names=KREISE.map(k=>k.n);
+  if(r<0.3){const k=pick('slkreise',ids,x=>'t'+x);return {key:'t'+k,q:`Tippe auf: ${KR_BY[k].n}`,hint:KR_BY[k].hint,html:slSVG({tapKreise:true}),correct:k};}
+  if(r<0.55){const k=pick('slkreise',ids,x=>'n'+x);return {key:'n'+k,q:'Wie heißt der farbige Kreis?',hint:KR_BY[k].hint,html:slSVG({hl:k})+btns(opts3(KR_BY[k].n,names)),correct:KR_BY[k].n};}
+  if(r<0.85){const tw=pick('slkreise',Object.keys(SL_TOWNS),x=>'s'+x);const T=SL_TOWNS[tw];
+    return {key:'s'+tw,q:`In welchem Kreis liegt ${T.n}?`,hint:'Schau, in welcher Farbe der rote Punkt liegt. Die Namen der Kreise stehen auf der Karte.',html:slSVG({names:true,towns:[{id:tw,label:true,ring:true}]})+btns(opts3(KR_BY[T.k].n,names)),correct:KR_BY[T.k].n};}
+  const qs=[['Wie viele Kreise hat das Saarland?','6',['3','16']],['Wie heißt der Kreis mit der Landeshauptstadt?','Regionalverband Saarbrücken',['Saarpfalz-Kreis','Saarlouis']],
+    ['Welcher Kreis liegt ganz im Nordwesten an der Saarschleife?','Merzig-Wadern',['St. Wendel','Neunkirchen']],['In welchem Kreis liegt der Bostalsee?','St. Wendel',['Saarlouis','Saarpfalz-Kreis']]];
+  const qq=pick('slkreise',qs,x=>x[0]);
+  return {key:qq[0],q:qq[0],hint:'Das Saarland hat 6 Kreise: Merzig-Wadern, Saarlouis, St. Wendel, Neunkirchen, Saarpfalz-Kreis und den Regionalverband Saarbrücken.',html:slSVG({names:true})+btns(shuffle([qq[1],...qq[2]])),correct:qq[1]};
+}});
+
+/* ---- Saarland: Flüsse ---- */
+addEx({id:'slfluesse',t:'saar',ic:'🌊',n:'Flüsse im Saarland',d:'Saar, Blies, Prims, Nied, Mosel',gen(){
+  const ids=Object.keys(SL_RIVERS);const names=ids.map(x=>SL_RIVERS[x].n);const r=Math.random();
+  if(r<0.4){const k=pick('slfluesse',ids,x=>'h'+x);return {key:'h'+k,q:'Welcher Fluss ist dick markiert?',hint:SL_RIVERS[k].h,html:slSVG({plain:true,kreisLines:true,rivers:ids,riverHl:k,towns:[{id:'saarbruecken',label:true},{id:'wendel',label:true},{id:'merzig',label:true}]})+btns(opts3(SL_RIVERS[k].n,names)),correct:SL_RIVERS[k].n};}
+  if(r<0.75){const k=pick('slfluesse',['saar','blies','prims','mosel'],x=>'t'+x);return {key:'t'+k,q:`Tippe auf den Fluss: ${SL_RIVERS[k].n}`,hint:SL_RIVERS[k].h,html:slSVG({plain:true,kreisLines:true,rivers:ids,tapRivers:true,towns:[{id:'saarbruecken',label:true},{id:'wendel',label:true},{id:'merzig',label:true}]}),correct:k};}
+  const qs=[['Welcher Fluss gibt dem Saarland seinen Namen?','Saar',['Blies','Rhein']],['Durch welche Stadt fließt die Saar?','Saarbrücken',['St. Wendel','Homburg']],
+    ['Welcher Fluss bildet die Grenze zu Luxemburg?','Mosel',['Prims','Blies']],['Wie heißt die große Kurve der Saar bei Mettlach?','Saarschleife',['Saarknoten','Saarbogen-Brücke']]];
+  const qq=pick('slfluesse',qs,x=>x[0]);
+  return {key:qq[0],q:qq[0],hint:'Die Saar fließt durch Saarbrücken, Saarlouis und Merzig. Bei Mettlach macht sie die Saarschleife. Die Mosel ist die Grenze zu Luxemburg.',html:slSVG({plain:true,kreisLines:true,rivers:ids,riverLabels:true,towns:[{id:'saarbruecken',label:true},{id:'saarlouis',label:true},{id:'merzig',label:true}]})+btns(shuffle([qq[1],...qq[2]])),correct:qq[1]};
+}});
+
+/* ---- Saarland: Orte ---- */
+addEx({id:'slorte',t:'saar',ic:'⭐',n:'Besondere Orte',d:'Saarschleife, Völklinger Hütte …',gen(){
+  const mk=Object.keys(SL_MARKS);const r=Math.random();
+  if(r<0.35){const k=pick('slorte',mk,x=>'m'+x);return {key:'m'+k,q:`Tippe auf: ${SL_MARKS[k].n}`,hint:SL_MARKS[k].h,html:slSVG({plain:true,kreisLines:true,rivers:['saar'],marks:mk.map(id=>({id,tap:true}))}),correct:k};}
+  if(r<0.6){const k=pick('slorte',mk,x=>'w'+x);return {key:'w'+k,q:'Was ist rot eingekreist?',hint:SL_MARKS[k].h,html:slSVG({plain:true,kreisLines:true,rivers:['saar'],marks:mk.map(id=>({id,ring:id===k}))})+btns(opts3(SL_MARKS[k].n,mk.map(x=>SL_MARKS[x].n))),correct:SL_MARKS[k].n};}
+  const tw=['saarbruecken','saarlouis','merzig','wendel','neunkirchen','homburg','voelklingen','dillingen'];
+  const k=pick('slorte',tw,x=>'c'+x);
+  return {key:'c'+k,q:`Tippe auf die Stadt ${SL_TOWNS[k].n}.`,hint:`${SL_TOWNS[k].n} liegt im ${KR_BY[SL_TOWNS[k].k].full}. ${KR_BY[SL_TOWNS[k].k].hint}`,html:slSVG({kreisLines:false,names:true,rivers:['saar','blies'],towns:tw.map(id=>({id,tap:true}))}),correct:k};
+}});
+
+/* ---- Saarland-Wissen ---- */
+const SL_QUIZ=[
+ ['🏛️','Wie heißt die Landeshauptstadt vom Saarland?','Saarbrücken',['Saarlouis','Homburg'],'Die Landeshauptstadt ist Saarbrücken.'],
+ ['👨‍👩‍👧','Wie viele Menschen leben ungefähr im Saarland?','ungefähr 1 Million',['ungefähr 1000','ungefähr 84 Millionen'],'Im Saarland leben ungefähr 1 Million Menschen. In ganz Deutschland sind es über 84 Millionen.'],
+ ['📐','Das Saarland ist …','das kleinste Flächenland',['das größte Bundesland','ein Stadtstaat'],'Das Saarland ist das kleinste Bundesland, das keine Stadt allein ist. Man sagt: das kleinste Flächenland.'],
+ ['⛰️','Wie heißt der höchste Berg im Saarland?','Dollberg',['Zugspitze','Brocken'],'Der höchste Berg im Saarland ist der Dollberg. Er ist 695 m hoch.'],
+ ['⛰️','Wie hoch ist der Dollberg?','695 m',['2962 m','69 m'],'Der Dollberg ist 695 m hoch.'],
+ ['🗼','Auf welchem Berg in Tholey steht ein Aussichtsturm?','Schaumberg',['Feldberg','Dollberg'],'Auf dem Schaumberg in Tholey steht ein Aussichtsturm.'],
+ ['↩️','Wo ist die Saarschleife?','bei Mettlach',['in Homburg','in Berlin'],'Die Saarschleife ist bei Mettlach. Von oben sieht man die große Kurve der Saar.'],
+ ['🏭','Was ist die Völklinger Hütte?','ein altes Eisenwerk, heute Weltkulturerbe',['ein hoher Berg','ein Badesee'],'In der Völklinger Hütte wurde früher Eisen gemacht. Heute ist sie ein Museum und Weltkulturerbe.'],
+ ['⛵','Wie heißt der große Badesee im Norden vom Saarland?','Bostalsee',['Bodensee','Chiemsee'],'Der Bostalsee liegt im Norden, bei St. Wendel.'],
+ ['⛏️','Wo haben früher viele Menschen im Saarland gearbeitet?','im Kohlebergwerk und im Stahlwerk',['auf Bananenfeldern','im Hafen am Meer'],'Früher gab es im Saarland viele Kohlebergwerke und Stahlwerke.'],
+ ['🗺️','Welche Länder grenzen an das Saarland?','Frankreich und Luxemburg',['Polen und Tschechien','Dänemark und Österreich'],'Das Saarland grenzt an Frankreich, Luxemburg und an das Bundesland Rheinland-Pfalz.'],
+ ['📅','Seit wann gehört das Saarland zur Bundesrepublik Deutschland?','seit 1957',['seit 2020','seit 1800'],'Das Saarland gehört seit 1957 zur Bundesrepublik Deutschland.'],
+ ['🧩','Wie viele Kreise hat das Saarland?','6',['16','2'],'Das Saarland hat 6 Kreise: 5 Landkreise und den Regionalverband Saarbrücken.'],
+ ['🍖','Was ist ein typisches Essen im Saarland?','Schwenkbraten und Lyoner',['Sushi','Fischbrötchen'],'Typisch für das Saarland sind Schwenkbraten vom Schwenkgrill und Lyoner.'],
+ ['🌊','Nach welchem Fluss ist das Saarland benannt?','Saar',['Mosel','Blies'],'Das Saarland hat seinen Namen von der Saar.'],
+ ['🇫🇷','Welche Sprache spricht man im Nachbarland Frankreich?','Französisch',['Englisch','Polnisch'],'In Frankreich spricht man Französisch. Viele Kinder im Saarland lernen Französisch.']
+];
+addEx({id:'slwissen',t:'saar',ic:'💡',n:'Saarland-Wissen',d:'Steckbrief-Quiz',gen(){
+  const it=pick('slwissen',SL_QUIZ,x=>x[1]);
+  return {key:it[1],q:it[1],hint:it[4],html:`<div style="font-size:90px;line-height:1">${it[0]}</div>`+btns(shuffle([it[2],...it[3]])),correct:it[2]};
+}});
+
+/* ---- Europa: Nachbarn ---- */
+addEx({id:'eunachbarn',t:'eu',ic:'🧭',n:'Nachbarländer',d:'Die 9 Nachbarn von Deutschland',gen(){
+  const ks=Object.keys(NBC);const r=Math.random();
+  if(r<0.35){const d=pick('eunachbarn',['N','O','S','W'],x=>'d'+x);const ok=ks.filter(k=>NBC[k].dir===d);
+    return {key:'d'+d,q:`Welches Land liegt im ${DIRN[d]} von Deutschland? Tippe darauf.`,hint:'Schau auf den Kompass: Oben ist Norden, rechts Osten, unten Süden, links Westen.',html:euSVG({names:true,tap:true,compass:true}),correct:ok};}
+  if(r<0.85){const k=pick('eunachbarn',ks,x=>'t'+x);const c=NBC[k];
+    return {key:'t'+k,q:`Tippe auf ${c.n}.`,hint:`${c.n} liegt im ${DIRN[c.dir]} von Deutschland. Die Flagge ist ${c.fh}.`,html:euSVG({tap:true,compass:true}),correct:k};}
+  return {key:'anz',q:'Wie viele Nachbarländer hat Deutschland? Zähle die Kärtchen.',hint:'Zähle alle Länder rund um Deutschland. Tippe beim Zählen mit dem Finger auf jedes Kärtchen.',html:euSVG({names:true})+btns(shuffle(['9','4','16'])),correct:'9'};
+}});
+
+/* ---- Europa-Wissen ---- */
+const EU_QUIZ=[
+ ['Wie viele Länder gehören zur Europäischen Union (EU)?','27',['9','100'],'In der EU sind 27 Länder.'],
+ ['Wie heißt das Geld in vielen EU-Ländern?','Euro',['Dollar','Mark'],'Viele EU-Länder bezahlen mit dem Euro.'],
+ ['Europa ist ein …','Kontinent',['Land','Bundesland'],'Europa ist einer von sieben Kontinenten.'],
+ ['Wie viele Kontinente gibt es auf der Erde?','7',['3','27'],'Es gibt sieben Kontinente.'],
+ ['Welches Meer liegt im Süden von Europa?','Mittelmeer',['Nordsee','Ostsee'],'Im Süden von Europa ist das Mittelmeer.'],
+ ['Welcher Ozean liegt im Westen von Europa?','Atlantischer Ozean',['Schwarzes Meer','Ostsee'],'Im Westen von Europa ist der Atlantische Ozean.'],
+ ['Welche zwei Meere liegen im Norden von Deutschland?','Nordsee und Ostsee',['Mittelmeer und Atlantik','Bodensee und Chiemsee'],'Im Norden von Deutschland liegen die Nordsee und die Ostsee.'],
+ ['Was ist ein Vorteil der EU?','Man kann einfach in andere Länder reisen.',['Alle sprechen dieselbe Sprache.','Es gibt keine Schule mehr.'],'In der EU kann man einfach reisen und Waren kaufen und verkaufen.'],
+ ['Welches Land hat die EU mit gegründet?','Frankreich',['Polen','Österreich'],'Die ersten 6 Länder waren Belgien, Deutschland, Frankreich, Italien, Luxemburg und die Niederlande.']
+];
+addEx({id:'euwissen',t:'eu',ic:'🇪🇺',n:'Europa-Wissen',d:'Hauptstädte, Flaggen, EU',gen(){
+  const ks=Object.keys(NBC);const r=Math.random();
+  if(r<0.35){const k=pick('euwissen',ks,x=>'f'+x);const others=shuffle(ks.filter(x=>x!==k)).slice(0,2);
+    return {key:'f'+k,q:`Welche Flagge gehört zu ${NBC[k].n}?`,hint:`Die Flagge von ${NBC[k].n} ist ${NBC[k].fh}.`,html:btnsH(shuffle([k,...others]).map(c=>({id:c,html:flag(c,130)}))),correct:k};}
+  if(r<0.65){const k=pick('euwissen',ks,x=>'h'+x);const c=NBC[k];
+    return {key:'h'+k,q:`Wie heißt die Hauptstadt von ${c.n}?`,hint:`Die Hauptstadt von ${c.n} beginnt mit „${c.cap[0]}“.`,html:flag(k,150)+btns(opts3(c.cap,ks.map(x=>NBC[x].cap))),correct:c.cap};}
+  const it=pick('euwissen',EU_QUIZ,x=>x[0]);
+  return {key:it[0],q:it[0],hint:it[3],html:'<div style="font-size:80px">🇪🇺</div>'+btns(shuffle([it[1],...it[2]])),correct:it[1]};
+}});
+const EX_BY={};EX.forEach(e=>EX_BY[e.id]=e);
+
+/* =========================================================
+   Ablauf
+   ========================================================= */
+const ROUND=10;
+let CUR=null;
+function exStat(id){return S.ex[id]||(S.ex[id]={rounds:0,tasks:0,first:0,wrong:0,last:null});}
+function itemStat(k){return S.items[k]||(S.items[k]={s:0,w:0,r:0});}
+
+function showHome(msg){
+  CUR=null;try{speechSynthesis.cancel();}catch(e){}
+  let h=msg?`<div class="msg">${msg}</div>`:'';
+  TOPICS.forEach(t=>{
+    const list=EX.filter(e=>e.t===t.id&&!S.off[e.id]);if(!list.length)return;
+    h+=`<section class="${t.id==='saar'?'sec-saar':''}"><h2>${t.ic} ${t.n}</h2><div class="tiles">`;
+    list.forEach(e=>{const st=S.ex[e.id];const stars=st?Math.min(5,st.rounds):0;
+      h+=`<button class="tile" data-ex="${e.id}"><span class="ic">${e.ic}</span><span><b>${e.n}</b><small>${e.d}</small><small>${'⭐'.repeat(stars)||'&nbsp;'}</small></span></button>`;});
+    h+='</div></section>';
+  });
+  $('#app').innerHTML=h;
+  document.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>startEx(b.dataset.ex));
+  window.scrollTo(0,0);
+}
+
+function startEx(id){
+  CUR={id,n:0,first:0,wrong:0,t0:Date.now(),lastKey:null};
+  nextTask();
+}
+function nextTask(){
+  const ex=EX_BY[CUR.id];let t;let guard=0;
+  do{t=ex.gen();guard++;}while(t.key===CUR.lastKey&&guard<6);
+  CUR.task=t;CUR.tries=0;CUR.lastKey=t.key;CUR.locked=false;
+  render();
+}
+function render(){
+  const t=CUR.task,ex=EX_BY[CUR.id];
+  let dots='';for(let i=0;i<ROUND;i++)dots+=`<span class="dot ${i<CUR.n?'on':''}"></span>`;
+  $('#app').innerHTML=`<div class="exhead"><button class="hbtn" id="homeB">🏠 Übersicht</button><div class="dots">${dots}</div><span class="extitle">${ex.ic} ${ex.n}</span></div>
+   <div class="qbar"><div class="q">${t.q}</div><button class="spk" id="spQ">🔊</button></div>
+   <div id="task"><div class="vis">${t.html}</div><div id="hint"></div></div>`;
+  $('#homeB').onclick=()=>showHome();
+  $('#spQ').onclick=()=>speak(t.say||t.q);
+  $('#task').addEventListener('click',onAnswer);
+  window.scrollTo(0,0);
+}
+function isCorrect(id){const c=CUR.task.correct;return Array.isArray(c)?c.includes(id):c===id;}
+function onAnswer(ev){
+  const el=ev.target.closest('[data-ans]');if(!el||CUR.locked)return;
+  const id=el.getAttribute('data-ans');
+  if(isCorrect(id)){
+    CUR.locked=true;sndRight();
+    document.querySelectorAll(`[data-ans="${CSS.escape(id)}"]`).forEach(e=>e.classList.add('right'));
+    const st=itemStat(CUR.id+'|'+CUR.task.key);
+    if(CUR.tries===0){st.s++;st.r++;CUR.first++;}
+    CUR.n++;
+    setTimeout(()=>{CUR.n>=ROUND?finishRound():nextTask();},CUR.tries===0?900:1300);
+  }else{
+    sndWrong();CUR.tries++;CUR.wrong++;
+    const st=itemStat(CUR.id+'|'+CUR.task.key);st.s=0;st.w++;
+    el.classList.add('wrong');setTimeout(()=>el.classList.remove('wrong'),900);
+    if(CUR.task.onWrong)try{CUR.task.onWrong();}catch(e){}
+    if(CUR.tries>=2)showMe();
+    lockWithHint();
+  }
+}
+function showMe(){
+  const c=CUR.task.correct;(Array.isArray(c)?c:[c]).forEach(id=>document.querySelectorAll(`[data-ans="${CSS.escape(id)}"]`).forEach(e=>{e.classList.add('show-me');if(e.tagName==='circle')e.setAttribute('stroke-opacity','1');}));
+}
+function lockWithHint(){
+  CUR.locked=true;const task=$('#task');task.classList.add('locked');
+  let sec=(S.wait||4)+(CUR.tries>=2?2:0);
+  $('#hint').innerHTML=`<div class="hint"><span style="font-size:36px">💡</span><span class="ht">${CUR.task.hint}</span><button class="spk" id="spH">🔊</button><span class="wait" id="wt">⏳ ${sec}</span></div>`;
+  $('#spH').onclick=()=>speak(CUR.task.hint);
+  const myTask=CUR.task;
+  const iv=setInterval(()=>{
+    if(!CUR||CUR.task!==myTask){clearInterval(iv);return;}
+    sec--;const w=$('#wt');if(w)w.textContent=sec>0?'⏳ '+sec:'👉 Jetzt du!';
+    if(sec<=0){clearInterval(iv);CUR.locked=false;task.classList.remove('locked');}
+  },1000);
+}
+function finishRound(){
+  const ex=EX_BY[CUR.id];const st=exStat(CUR.id);
+  st.rounds++;st.tasks+=ROUND;st.first+=CUR.first;st.wrong+=CUR.wrong;st.last=new Date().toISOString();
+  S.log.push({d:new Date().toISOString(),ex:CUR.id,ok:CUR.first,err:CUR.wrong,sec:Math.round((Date.now()-CUR.t0)/1000)});
+  if(S.log.length>400)S.log=S.log.slice(-400);
+  let stageMsg='';
+  if(ex.stage&&(S.blStage||1)<3){
+    const set=blSet();const all=['blfinden','blname'].every(e=>set.every(id=>(S.items[e+'|'+id]||{s:0}).s>=2));
+    if(all){S.blStage=(S.blStage||1)+1;stageMsg='🎉 Super! Jetzt kommen neue Bundesländer dazu.';}
+  }
+  saveS();
+  const done=CUR.id;
+  startReward(()=>{
+    $('#app').innerHTML=`<div class="done"><div class="big">🏆</div><h2>Toll gemacht!</h2>${stageMsg?`<div class="msg">${stageMsg}</div>`:''}
+      <button class="bigbtn" id="again">🔁 Noch eine Runde</button><button class="bigbtn alt" id="home2">🏠 Übersicht</button></div>`;
+    $('#again').onclick=()=>startEx(done);$('#home2').onclick=()=>showHome();
+  });
+}
+
+/* =========================================================
+   Belohnung: Gummi-Schleuder (3 Durchgänge)
+   ========================================================= */
+function startReward(onDone){
+  CUR=null;
+  $('#app').innerHTML=`<h2 style="text-align:center">🎯 Gummi-Schleuder</h2><div class="rwinfo" id="rwInfo"></div>
+    <canvas id="cv" width="900" height="520"></canvas><div class="rwinfo">Ziehe die Kugel nach hinten und lass los!</div>
+    <div style="text-align:center"><button class="bigbtn" id="rwDone" hidden>Weiter ➜</button></div>`;
+  const cv=$('#cv'),ctx=cv.getContext('2d');const W=900,H=520,GY=470,G=1100,BS=46;
+  const anchor={x:170,y:340};let round=0,shots=3,ball,boxes=[],hits=0,dragging=false,flying=false,flyT=0,running=true,waiting=false,last=performance.now();
+  const COLS=['#f6c95a','#9fd27a','#7fb2e5','#e7a6d6','#f3a05a','#c9b4f0'];
+  function col(x,n,arr){for(let i=0;i<n;i++)arr.push({x,y:GY-BS*(i+1),f:false,vx:0,vy:0,a:0,av:0,c:rnd(COLS)});}
+  const layouts=[
+    ()=>{const a=[];col(600,1,a);col(646,2,a);col(692,3,a);col(738,2,a);col(784,1,a);return a;},
+    ()=>{const a=[];col(580,4,a);col(626,2,a);col(760,4,a);col(806,2,a);return a;},
+    ()=>{const a=[];col(620,3,a);col(666,5,a);col(712,3,a);col(800,2,a);return a;}
+  ];
+  function info(){$('#rwInfo').textContent=`Durchgang ${round+1} von 3   •   Kugeln: ${'🔴'.repeat(shots)}   •   Treffer: ${hits}`;}
+  function resetBall(){ball={x:anchor.x,y:anchor.y,vx:0,vy:0,r:17};flying=false;flyT=0;}
+  function newRound(){boxes=layouts[round]();shots=3;resetBall();info();waiting=false;}
+  function pos(e){const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
+  cv.addEventListener('pointerdown',e=>{if(flying||waiting||shots<=0)return;const p=pos(e);if(Math.hypot(p.x-ball.x,p.y-ball.y)<80){dragging=true;try{cv.setPointerCapture(e.pointerId);}catch(_){}}});
+  cv.addEventListener('pointermove',e=>{if(!dragging)return;const p=pos(e);let dx=p.x-anchor.x,dy=p.y-anchor.y;const L=Math.hypot(dx,dy),M=140;if(L>M){dx*=M/L;dy*=M/L;}ball.x=anchor.x+dx;ball.y=anchor.y+dy;});
+  const up=()=>{if(!dragging)return;dragging=false;const dx=anchor.x-ball.x,dy=anchor.y-ball.y;if(Math.hypot(dx,dy)<15){resetBall();return;}
+    ball.vx=dx*7.8;ball.vy=dy*7.8;flying=true;shots--;info();tone(300,0.15,'sawtooth',0.06);};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  function knock(b,vx,vy){b.f=true;b.vx=vx;b.vy=vy;b.av=(Math.random()-.5)*8;hits++;sndPop();info();
+    boxes.forEach(o=>{if(!o.f&&Math.abs(o.x-b.x)<BS*0.9&&o.y<b.y){o.f=true;o.vx=vx*0.4+(Math.random()-.5)*80;o.vy=-80;o.av=(Math.random()-.5)*6;hits++;}});}
+  function afterShot(){waiting=true;setTimeout(()=>{if(!running)return;
+    if(boxes.every(b=>b.f)||shots<=0){round++;if(round<3){$('#rwInfo').textContent=`Durchgang ${round} geschafft! 🎉`;setTimeout(()=>running&&newRound(),1100);}
+      else{$('#rwInfo').textContent=`Fertig! Du hast ${hits} Kisten getroffen! 🎉`;resetBall();$('#rwDone').hidden=false;}}
+    else{resetBall();waiting=false;}},700);}
+  function step(dt){
+    if(flying){flyT+=dt;ball.vy+=G*dt;ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
+      if(ball.y+ball.r>GY){ball.y=GY-ball.r;ball.vy*=-0.35;ball.vx*=0.8;if(Math.abs(ball.vy)<60)ball.vy=0;}
+      boxes.forEach(b=>{if(b.f)return;const cx=Math.max(b.x,Math.min(ball.x,b.x+BS)),cy=Math.max(b.y,Math.min(ball.y,b.y+BS));
+        if(Math.hypot(ball.x-cx,ball.y-cy)<ball.r){knock(b,ball.vx*0.6+60,Math.min(-150,ball.vy*0.3-200));ball.vx*=0.75;ball.vy*=0.75;}});
+      if(ball.x>W+60||ball.x<-60||flyT>6||(ball.vy===0&&Math.abs(ball.vx)<25)){flying=false;afterShot();}}
+    boxes.forEach(b=>{if(!b.f)return;b.vy+=G*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.a+=b.av*dt;});
+  }
+  function draw(){
+    const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#9fd4ff');sky.addColorStop(1,'#e6f5ff');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#7cc35a';ctx.fillRect(0,GY,W,H-GY);ctx.fillStyle='#5aa23f';ctx.fillRect(0,GY,W,6);
+    ctx.strokeStyle='#6b3e1f';ctx.lineWidth=14;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(anchor.x,GY);ctx.lineTo(anchor.x,anchor.y+40);ctx.lineTo(anchor.x-26,anchor.y-6);ctx.moveTo(anchor.x,anchor.y+40);ctx.lineTo(anchor.x+26,anchor.y-6);ctx.stroke();
+    if(!flying){ctx.strokeStyle='#3b2a1a';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(anchor.x-26,anchor.y-6);ctx.lineTo(ball.x,ball.y);ctx.lineTo(anchor.x+26,anchor.y-6);ctx.stroke();}
+    if(dragging){let x=ball.x,y=ball.y,vx=(anchor.x-ball.x)*7.8,vy=(anchor.y-ball.y)*7.8;ctx.fillStyle='rgba(255,255,255,.9)';
+      for(let i=0;i<26;i++){const d=0.035;vy+=G*d;x+=vx*d;y+=vy*d;if(y>GY)break;if(i%2===0){ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill();}}}
+    boxes.forEach(b=>{ctx.save();ctx.translate(b.x+BS/2,b.y+BS/2);ctx.rotate(b.a);ctx.fillStyle=b.c;ctx.strokeStyle='#5a4a2a';ctx.lineWidth=3;
+      ctx.fillRect(-BS/2,-BS/2,BS,BS);ctx.strokeRect(-BS/2,-BS/2,BS,BS);ctx.fillStyle='#222';ctx.beginPath();ctx.arc(-9,-5,4,0,7);ctx.arc(9,-5,4,0,7);ctx.fill();
+      ctx.beginPath();ctx.lineWidth=3;ctx.arc(0,4,10,0.2,Math.PI-0.2);ctx.stroke();ctx.restore();});
+    if(shots>0||flying){ctx.fillStyle='#d62020';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(ball.x-5,ball.y-6,5,0,7);ctx.fill();}
+  }
+  function loop(t){if(!running)return;const dt=Math.min(0.033,(t-last)/1000);last=t;step(dt);draw();requestAnimationFrame(loop);}
+  newRound();requestAnimationFrame(loop);
+  $('#rwDone').onclick=()=>{running=false;onDone();};
+}
+
+/* =========================================================
+   Erwachsenen-Bereich
+   ========================================================= */
+$('#admBtn').onclick=()=>{
+  const a=3+Math.floor(Math.random()*6),b=4+Math.floor(Math.random()*5);
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box"><h3>⚙️ Nur für Erwachsene</h3><p>Wie viel ist ${a} · ${b}?</p><input type="number" id="gate"> <button class="bigbtn" id="gok">OK</button> <button class="bigbtn alt" id="gx">Abbrechen</button></div>`;
+  document.body.appendChild(m);
+  m.querySelector('#gx').onclick=()=>m.remove();
+  m.querySelector('#gok').onclick=()=>{if(+m.querySelector('#gate').value===a*b){m.remove();adminPanel();}else m.querySelector('#gate').value='';};
+};
+function fmtD(iso){if(!iso)return '–';const d=new Date(iso);return d.toLocaleDateString('de-DE')+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
+function adminPanel(){
+  const m=document.createElement('div');m.className='modal';
+  const build=()=>{
+    let h=`<div class="box adm"><h3>⚙️ Einstellungen für Erwachsene</h3>
+    <label><input type="checkbox" id="tm" ${TEST?'checked':''}> 🧪 Testmodus (Eingaben werden nicht gespeichert)</label>
+    <h3>Wartezeit nach einem Fehler</h3><div class="seg">${[3,4,6,8].map(s=>`<button data-w="${s}" class="${(S.wait||4)===s?'on':''}">${s} s</button>`).join('')}</div>
+    <h3>Bundesländer: wie viele üben?</h3><div class="seg">${[[1,'6 Länder'],[2,'12 Länder'],[3,'alle 16']].map(([v,l])=>`<button data-st="${v}" class="${(S.blStage||1)===v?'on':''}">${l}</button>`).join('')}</div>
+    <p style="font-size:16px;color:#555">Es geht automatisch weiter, wenn Jakob alle Länder der Stufe beim Finden und Benennen mindestens zweimal hintereinander richtig hatte.</p>
+    <h3>Übungen ein- und ausschalten</h3>`;
+    TOPICS.forEach(t=>{h+=`<b>${t.ic} ${t.n}</b>`;EX.filter(e=>e.t===t.id).forEach(e=>{h+=`<label><input type="checkbox" data-on="${e.id}" ${S.off[e.id]?'':'checked'}> ${e.ic} ${e.n}</label>`;});});
+    h+=`<h3>📊 Auswertung</h3><table><tr><th>Übung</th><th>Runden</th><th>1. Versuch richtig</th><th>Zuletzt</th><th>Noch unsicher</th></tr>`;
+    EX.forEach(e=>{const st=S.ex[e.id];if(!st)return;
+      const pct=st.tasks?Math.round(100*st.first/st.tasks):0;
+      const weak=Object.entries(S.items).filter(([k,v])=>k.startsWith(e.id+'|')&&v.w>0&&v.s<2).sort((a,b)=>b[1].w-a[1].w).slice(0,5).map(([k])=>prettyKey(e.id,k.split('|')[1]));
+      h+=`<tr><td>${e.ic} ${e.n}</td><td>${st.rounds}</td><td>${pct} %</td><td>${fmtD(st.last)}</td><td>${weak.join(', ')||'–'}</td></tr>`;});
+    h+=`</table><h3>Letzte Runden</h3><table><tr><th>Datum</th><th>Übung</th><th>1. Versuch richtig</th><th>Fehler</th><th>Zeit</th></tr>`;
+    S.log.slice(-12).reverse().forEach(l=>{h+=`<tr><td>${fmtD(l.d)}</td><td>${EX_BY[l.ex]?EX_BY[l.ex].n:l.ex}</td><td>${l.ok} von 10</td><td>${l.err}</td><td>${Math.floor(l.sec/60)} min ${l.sec%60} s</td></tr>`;});
+    h+=`</table><p><button class="bigbtn alt" id="rst">🗑️ Fortschritt löschen</button> <button class="bigbtn" id="cls">Fertig</button></p></div>`;
+    m.innerHTML=h;
+    m.querySelector('#tm').onchange=e=>{TEST=e.target.checked;$('#testbar').hidden=!TEST;if(!TEST)loadS();};
+    m.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{S.wait=+b.dataset.w;saveS();build();});
+    m.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{S.blStage=+b.dataset.st;saveS();build();});
+    m.querySelectorAll('[data-on]').forEach(c=>c.onchange=()=>{if(c.checked)delete S.off[c.dataset.on];else S.off[c.dataset.on]=true;saveS();});
+    let armed=false;m.querySelector('#rst').onclick=e=>{if(!armed){armed=true;e.target.textContent='⚠️ Wirklich löschen? Nochmal tippen';return;}
+      S={ex:{},items:{},off:S.off,blStage:1,wait:S.wait,log:[]};saveS();build();};
+    m.querySelector('#cls').onclick=()=>{m.remove();if(!CUR)showHome();};
+  };
+  build();document.body.appendChild(m);
+}
+function prettyKey(ex,k){
+  if(ST_BY[k])return ST_BY[k].name;
+  if(/^[a-z]?[A-Z]{2,3}$/.test(k)){const id=k.replace(/^[a-z]/,'');if(ST_BY[id])return ST_BY[id].name;if(KR_BY[id])return KR_BY[id].n;if(NBC[id])return NBC[id].n;if(SL_NB[id])return SL_NB[id].n;}
+  if(SYM[k])return SYM[k].n;
+  const m=k.match(/^(?:rv|rt|c|sl|s|t|h|w|m)([a-z]+)$/);
+  if(m){const id=m[1];if(DE_RIVERS[id])return DE_RIVERS[id].n;if(DE_CITIES[id])return DE_CITIES[id].n;if(SL_TOWNS[id])return SL_TOWNS[id].n;if(SL_RIVERS[id])return SL_RIVERS[id].n;if(SL_MARKS[id])return SL_MARKS[id].n;}
+  return k.length>40?k.slice(0,40)+'…':k;
+}
+
+showHome();
+</script>
+</body>
+</html>
