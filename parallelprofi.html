@@ -57,6 +57,7 @@ h1{font-size:44px;margin:46px 0 0;color:var(--teal);text-align:center}
 .chip.D{border-color:var(--purple);color:var(--purple);font-size:26px;padding:6px 18px;border-width:4px;background:#F6EEFA}
 .chk{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:14px 0 6px}.chk button{font-size:34px;min-width:120px;padding:14px 18px;background:#fff;color:var(--purple);border:4px solid var(--purple);box-shadow:0 4px 0 rgba(0,0,0,.15)}
 .chk button.no{background:#fde7e9;border-color:var(--red);color:var(--red)}
+body.badge .feedback{top:92px}
 #helpClose:disabled{background:#9aa5b1!important;cursor:default}
 .chip.cur{background:#FFF6CC;border-color:#E0B000;color:var(--ink)}
 .chip.done{background:#E7F6EC;border-color:var(--green);color:var(--green)}
@@ -140,7 +141,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   </div>
   <div class="row"><button id="merkBtn" style="background:#E63946">📖 Merken</button><button id="gameBtn" class="gamebtn">🎯 Gummi-Schleuder</button></div>
   <div class="progress" id="startProgress"></div>
-  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 26.11.2026 · 5</div>
+  <div style="margin-top:14px;font-size:14px;color:#9aa5b1">Version vom 27.11.2026 · 6</div>
 </section>
 
 <section id="task" class="screen">
@@ -284,7 +285,7 @@ function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='�
 function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
 function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
 const isGeo=()=>MODE===2||MODE===5;
-function startMode(m){MODE=m;show('task');$('#geotools').style.display=isGeo()?'':'none';geoG.style.display=isGeo()?'':'none';pglow.style.display='none';newTask();
+function startMode(m){MODE=m;document.body.classList.toggle('badge',m===2||m===5);show('task');$('#geotools').style.display=isGeo()?'':'none';geoG.style.display=isGeo()?'':'none';pglow.style.display='none';newTask();
   if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
 function newTask(){if(anim){cancelAnimationFrame(anim);anim=null;}locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5,newTask6][MODE]();}
 $('#homeBtn').onclick=()=>{if(anim){cancelAnimationFrame(anim);anim=null;}show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
@@ -296,7 +297,7 @@ function win(t,n){locked=true;n=n||1;S.done+=n;S.stars+=n;S['n'+MODE]=(S['n'+MOD
 function helpData(){
   if(MODE===1)return{t:'Parallel oder nicht?',st:['Schau dir die zwei Linien an.','Parallel heißt: Die Linien schneiden sich nie. Der Abstand ist überall gleich.','Tippe auf 📏 Abstand messen. Tippe dann auf jede gelbe Zahl.','Sind alle Zahlen gleich? Dann sind die Linien parallel. Erst jetzt gehen die Knöpfe Ja und Nein.']};
   if(MODE===2){const s=steps[si];if(s&&s.type==='line')return{t:'Die parallele Linie',st:['Lege die lange Kante vom Geodreieck an die 2 lila Punkte.','Tippe auf ✏️ Linie zeichnen.','Zeichne an der langen Kante – durch beide lila Punkte.']};
-    return{t:'Den Abstand messen',st:['Lege die Nulllinie vom Geodreieck genau auf die blaue Linie.',`Schiebe die 0 genau auf den grünen Punkt${s?' '+s.k:''}.`,'Tippe auf ✏️ Punkt setzen.',`Tippe an der langen Kante bei ${cmT(T2?T2.d:1)}. Dort kommt der Punkt hin.`]};}
+    return{t:'Den Abstand messen',st:['Lege die lange Kante vom Geodreieck genau auf die blaue Linie. Die Spitze zeigt nach oben.',`Schiebe die 0 genau auf den grünen Punkt${s?' '+s.k:''}.`,'Tippe auf ✏️ Punkt setzen.',`Geh an der Mittellinie hoch bis zur Linie für ${cmT(T2?T2.d:1)}. Dort kommt der Punkt hin.`]};}
   if(MODE===5)return{t:'Parallele mit den Linien am Geodreieck',st:['Auf dem Geodreieck sind Linien. Sie sind parallel zur langen Kante. Die Zahl sagt: So weit ist die Linie von der langen Kante weg.','Suche die Linie mit dem richtigen Abstand. Sie leuchtet orange.','Lege diese orange Linie genau auf die blaue Linie.','Zeichne an der langen Kante entlang. Fertig ist die Parallele!']};
   if(MODE===3)return{t:'Parallele Seiten färben',st:['Tippe eine Seite an. Sie wird blau.','Suche die Seite gegenüber. Sie ist parallel. Tippe sie an.','Mach das Gleiche mit den zwei grünen Seiten. Sie werden orange.','Tippe dann die 4 Ecken an. So zeigst du die rechten Winkel.']};
   if(MODE===6)return{t:'Finde die Parallele',st:['Die blaue Gerade heißt g. Gesucht ist die Gerade, die g nie schneidet.','Tippe eine andere Gerade an. Dann siehst du ihre Abstände zu g.','Sind alle Zahlen gleich? Dann ist die Gerade parallel zu g. Tippe auf ✓.','Zum Schluss tippst du den Buchstaben der parallelen Geraden an.']};
@@ -310,7 +311,7 @@ $('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{if($('#helpClose').d
 /* Kontrollfrage: Welcher Abstand ist gesucht? (vor jeder Aufgabe in 2 und 2b) */
 let pendChk=null;
 function askDist(d){if(S.chk===false)return;const run=()=>{if(!$('#task').classList.contains('on'))return;
-    const opts=(S.half?[1,1.5,2,2.5,3,3.5]:[1,2,3,4]);const bx=$('#chkBtns');bx.innerHTML='';$('#chkFb').textContent='';let ready=false;
+    const opts=(S.half?[1,1.5,2,2.5,3]:[1,2,3,4]);const bx=$('#chkBtns');bx.innerHTML='';$('#chkFb').textContent='';let ready=false;
     opts.forEach(v=>{const b=document.createElement('button');b.textContent=cmT(v);b.onclick=()=>{if(!ready)return;
       if(Math.abs(v-d)<.01){tone(700,0,.12);tone(950,.1,.18);$('#chkOv').classList.remove('on');return;}
       tone(240,0,.3,'triangle');b.classList.add('no');ready=false;
@@ -405,12 +406,16 @@ function train1(ok,done){const{c1,u,len,th}=M1;const g=el('g',{},markL);const tr
 
 /* ================= Modus 2: Parallele zeichnen (Geodreieck) ================= */
 const CM=36,H=7.6*CM,HOME={x:850,y:585,rot:0};const geo=Object.assign({},HOME);
-const geoG=el('g',{id:'geo',style:'cursor:grab'},$('#geoHolder'));const geoInner=el('g',{},geoG);let glow=null,pglow=null;
+const geoG=el('g',{id:'geo',style:'cursor:grab'},$('#geoHolder'));const geoInner=el('g',{},geoG);let glow=null,pglow=null,cglow=null;
 (function(){const g=el('g',{transform:`translate(0,${H/3})`},geoInner);
   el('polygon',{points:`${-H},0 ${H},0 0,${-H}`,fill:'rgba(170,215,255,0.5)',stroke:'#1d4f8a','stroke-width':2.5,'stroke-linejoin':'round'},g);
   for(let k=-14;k<=14;k++){const x=k*CM/2,big=k%2===0;el('line',{x1:x,y1:0,x2:x,y2:big?-16:-9,stroke:'#1d3557','stroke-width':big?2.2:1.3},g);if(big&&k!==0)txt(g,x,-28,String(Math.abs(k/2)),{'font-size':17,fill:'#1d3557'});}
-  for(let k=2;k<=13;k++){const y=-k*CM/2,w=H+y-6,half=k%2===1;el('line',{x1:-w,y1:y,x2:w,y2:y,stroke:'#1d4f8a','stroke-width':half?1:1.6,opacity:half?.4:.7,'stroke-dasharray':half?'6 5':'none'},g);
-    if(!half&&k<=12){[-1,1].forEach(sg=>txt(g,sg*22,y-9,String(k/2),{'font-size':13,fill:'#1d4f8a','font-weight':700}));}}
+  /* Hilfslinien wie auf dem echten Geodreieck: 1, 2, 3 cm gestrichelt, halbe cm kurz gestrichelt, Zahlen links und rechts */
+  const LX=2.75*CM;[-1,1].forEach(sg=>{el('line',{x1:sg*LX,y1:-4,x2:sg*LX,y2:-3.3*CM,stroke:'#1d4f8a','stroke-width':1.2,opacity:.6},g);
+    for(let m=1;m<=6;m++)el('line',{x1:sg*LX-(m%2?3:6),y1:-m*CM/2,x2:sg*LX+(m%2?3:6),y2:-m*CM/2,stroke:'#1d4f8a','stroke-width':1.2,opacity:.7},g);});
+  for(let k=2;k<=6;k++){const y=-k*CM/2,w=H+y-6,half=k%2===1;el('line',{x1:-w,y1:y,x2:w,y2:y,stroke:'#1d4f8a','stroke-width':half?1.1:1.8,opacity:half?.5:.85,'stroke-dasharray':half?'5 7':'16 6'},g);
+    if(!half)[-1,1].forEach(sg=>{el('rect',{x:sg*LX-9,y:y-25,width:18,height:20,fill:'rgba(235,245,255,.9)'},g);txt(g,sg*LX,y-15,String(k/2),{'font-size':16,fill:'#1d4f8a','font-weight':700});});}
+  cglow=el('line',{x1:0,y1:-4,x2:0,y2:-H+60,stroke:'#FFD400','stroke-width':14,'stroke-linecap':'round',opacity:.75,'pointer-events':'none',style:'display:none'},g);
   pglow=el('line',{x1:0,y1:0,x2:0,y2:0,stroke:'#F28C28','stroke-width':7,'stroke-linecap':'round',opacity:.85,'pointer-events':'none',style:'display:none'},g);
   el('line',{x1:0,y1:-2,x2:0,y2:-H+46,stroke:'#1d3557','stroke-width':3},g);
   el('circle',{cx:0,cy:-30,r:13,fill:'#fff',stroke:'#1d3557','stroke-width':2},g);txt(g,0,-30,'0',{'font-size':18,fill:'#E63946'});
@@ -443,7 +448,7 @@ let T2=null,steps=[],si=0,strokes=[],dots=[],tries=0,tool='move',cur=null,ghostO
 function newTask2(){
   resetPointers();strokes=[];dots=[];tries=0;ghostOn=false;cur=null;
   const th=S.slant&&Math.random()<.5?pick([-15,-10,10,15]):0;
-  const dl=S.half?[1,1.5,2,2.5,3,3.5]:[1,2,3];let d=pick(dl);if(d===lastD2)d=pick(dl.filter(x=>x!==d));lastD2=d;
+  const dl=S.half?[1,1.5,2,2.5,3]:[1,2,3];let d=pick(dl);if(d===lastD2)d=pick(dl.filter(x=>x!==d));lastD2=d;
   const u=[Math.cos(rad(th)),Math.sin(rad(th))],n=[u[1],-u[0]],C=[470,420];
   const S1=add(C,mul(u,-190)),S2=add(C,mul(u,190)),Q1=add(S1,mul(n,d*CM)),Q2=add(S2,mul(n,d*CM));
   T2={th,d,u,n,C,S1,S2,Q1,Q2};
@@ -460,35 +465,37 @@ function strip2(){const it=[{t:'Abstand '+(Number.isInteger(T2.d)?cmT(T2.d):(T2.
 function instr2(){const s=steps[si];if(!s)return'';if(s.type==='line')return'Verbinde die 2 lila Punkte mit einer langen Linie.';
   return`Grüner Punkt ${s.k}: Miss ${cmT(T2.d)} nach oben. Setze dort einen Punkt.`;}
 function rotN(){return deg(Math.atan2(T2.n[1],T2.n[0]));}
-function goalPose(s){if(s.type==='mark')return placeSo({rot:rotN()},0,0,s.spot);return placeSo({rot:T2.th},0,0,mul(add(s.P0,s.P1),.5));}
+function goalPose(s){if(s.type==='mark')return placeSo({rot:T2.th},0,0,s.spot);return placeSo({rot:T2.th},0,0,mul(add(s.P0,s.P1),.5));}
 function lineSpanOk(s){const Z=toWorld(0,0),c=Math.cos(rad(geo.rot)),sn=Math.sin(rad(geo.rot));return[s.P0,s.P1].every(P=>Math.abs((P[0]-Z[0])*c+(P[1]-Z[1])*sn)<=H-10);}
 function isGoalPose(){const s=steps[si];if(!s)return false;const Z=toWorld(0,0);
   if(s.type==='line')return Math.abs(dot(sub(Z,s.P0),T2.n))<3&&Math.abs(ldiff(0,geo.rot-T2.th))<1&&lineSpanOk(s);
-  return dist(Z,s.spot)<3&&Math.abs(ldiff(0,geo.rot-rotN()))<1;}
+  return dist(Z,s.spot)<3&&Math.abs(adiff(geo.rot,T2.th))<1;}
 function snapGeo(){if(MODE===5)return snapGeo5();if(MODE!==2)return;const s=steps[si];if(S.mag==='aus'||locked||!s)return;
   const LOOSE={a:18,d:55},TH=S.mag==='genau'?{a:4,d:15}:LOOSE;const near=t=>{feedback(t,'try');say(t);};const Z=toWorld(0,0);
   if(s.type==='line'){const df=ldiff(0,geo.rot-T2.th),off=Math.abs(dot(sub(Z,s.P0),T2.n));
     if(Math.abs(df)>TH.a||off>TH.d){if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&off<=LOOSE.d)near('Fast! Lege die lange Kante noch genauer an die lila Punkte.');return;}
     geo.rot+=df;let a=dot(sub(Z,s.P0),T2.u);a=Math.max(s.len-(H-14),Math.min(H-14,a));placeSo(geo,0,0,add(s.P0,mul(T2.u,a)));}
-  else{const df=ldiff(0,geo.rot-rotN()),dd=dist(Z,s.spot);
-    if(Math.abs(df)>TH.a||dd>TH.d){if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&dd<=LOOSE.d)near('Fast! Lege die Nulllinie und die 0 noch genauer an.');return;}
+  else{const df=adiff(T2.th,geo.rot),dd=dist(Z,s.spot);
+    if(dd<=TH.d&&Math.abs(adiff(T2.th+180,geo.rot))<=TH.a){near('Dreh das Geodreieck um: Die Spitze muss nach oben zeigen.');return;}
+    if(Math.abs(df)>TH.a||dd>TH.d){if(S.mag==='genau'&&Math.abs(df)<=LOOSE.a&&dd<=LOOSE.d)near('Fast! Lege die lange Kante und die 0 noch genauer an.');return;}
     geo.rot+=df;placeSo(geo,0,0,s.spot);}
   drawGeo();sound('snap');
   if(isGoalPose()){const t=s.type==='line'?'Gut angelegt! Jetzt tippe auf ✏️ Linie zeichnen.':'Gut angelegt! Jetzt tippe auf ✏️ Punkt setzen.';feedback(t,'ok');say(t.replace('Jetzt tippe auf','Jetzt'));}}
 function setTool(t){tool=t;const m=$('#toolMove'),d=$('#toolDraw');if(m)m.classList.toggle('toolsel',t==='move');if(d){d.classList.toggle('toolsel',t==='draw');d.textContent=MODE===5||(steps[si]&&steps[si].type==='line')?'✏️ Linie zeichnen':'✏️ Punkt setzen';}
-  geoG.style.pointerEvents=t==='move'&&!locked?'':'none';glow.style.display=t==='draw'?'':'none';geoG.style.cursor=t==='move'?'grab':'crosshair';}
+  geoG.style.pointerEvents=t==='move'&&!locked?'':'none';const mk=MODE===2&&steps[si]&&steps[si].type==='mark';glow.style.display=t==='draw'&&!mk?'':'none';cglow.style.display=t==='draw'&&mk?'':'none';geoG.style.cursor=t==='move'?'grab':'crosshair';}
 function longEdge(){return{a:toWorld(-H,0),b:toWorld(H,0)};}
 function projT(e,q){const v=sub(e.b,e.a),l2=dot(v,v);return Math.max(0,Math.min(1,dot(sub(q,e.a),v)/l2));}
 const lerp=(e,t)=>[e.a[0]+(e.b[0]-e.a[0])*t,e.a[1]+(e.b[1]-e.a[1])*t];
 const tx=t=>-H+t*2*H;
-function snapDot(t){const step=Number.isInteger(T2.d)?CM:CM/2;let x=Math.round(tx(t)/step)*step;x=Math.max(-7*CM,Math.min(7*CM,x));return(x+H)/(2*H);}
+/* Punkt auf der Mittellinie: t = Anteil von 0 bis zur Spitze, einrasten auf ganze (bzw. halbe) cm, höchstens 3 cm wie auf dem echten Geodreieck */
+function snapDot(t){const step=Number.isInteger(T2.d)?CM:CM/2;let y=Math.round(t*H/step)*step;y=Math.max(step,Math.min(3*CM,y));return y/H;}
 let lastCm=null;
 stage.addEventListener('pointerdown',e=>{
   if(!isGeo()||tool!=='draw'||locked)return;if(cur&&!e.isPrimary)return;const st=MODE===5?{type:'line'}:steps[si];if(!st)return;e.preventDefault();const p=svgPt(stage,e),q=[p.x,p.y];
   if(MODE===5){const ps=pose5();if(!ps.ok){const m=ps.k===null?`Lege zuerst das Geodreieck richtig an: die Linie ${cmT(T5.d)} genau auf die blaue Linie.`:`Halt! Auf der blauen Linie liegt die Linie ${cmT(ps.k)}. Du brauchst die Linie ${cmT(T5.d)}.`;feedback(m,'try');say(m);sound('no');return;}}
-  if(st.type==='mark'){const Z=toWorld(0,0);if(Math.abs(ldiff(T2.th,geo.rot-90))>=2||Math.abs(dot(sub(Z,T2.S1),T2.n))>=6){const m='Halt! Die Nulllinie muss genau auf der blauen Linie liegen. Erst dann darfst du messen.';feedback(m,'try');say(m);sound('no');return;}}
-  const ed=longEdge(),t=projT(ed,q),w=lerp(ed,t);
-  if(dist(w,q)>45){const m='Tippe genau an die lange Kante vom Geodreieck.';feedback(m,'try');say(m);return;}
+  if(st.type==='mark'){const Z=toWorld(0,0);if(Math.abs(adiff(geo.rot,T2.th))>=2||Math.abs(dot(sub(Z,T2.S1),T2.n))>=6){const m='Halt! Die lange Kante muss genau auf der blauen Linie liegen, die Spitze zeigt nach oben. Erst dann darfst du messen.';feedback(m,'try');say(m);sound('no');return;}}
+  const ed=st.type==='mark'?{a:toWorld(0,0),b:toWorld(0,-H)}:longEdge(),t=projT(ed,q),w=lerp(ed,t);
+  if(dist(w,q)>45){const m=st.type==='mark'?'Tippe auf die Mittellinie vom Geodreieck – die Linie von der 0 zur Spitze.':'Tippe genau an die lange Kante vom Geodreieck.';feedback(m,'try');say(m);return;}
   hideFb();lastCm=null;
   if(st.type==='mark')cur={type:'dot',id:e.pointerId,ed,t:snapDot(t)};else cur={type:'line',id:e.pointerId,ed,t0:t,t1:t};render2();});
 window.addEventListener('pointermove',e=>{if(!cur||e.pointerId!==cur.id)return;const p=svgPt(stage,e),q=[p.x,p.y];
@@ -504,7 +511,7 @@ function render2(){strokeL.innerHTML='';
     el('line',{x1:s.a[0],y1:s.a[1],x2:s.b[0],y2:s.b[1],stroke:c,'stroke-width':7,'stroke-linecap':'round','stroke-dasharray':s.status==='bad'?'14 8':'none'},strokeL);});
   dots.forEach(d=>el('circle',{cx:d.P[0],cy:d.P[1],r:10,fill:d.status==='bad'?'#E63946':'#D6338A',stroke:'#fff','stroke-width':3},strokeL));
   if(!cur)return;
-  if(cur.type==='dot'){const P=lerp(cur.ed,cur.t),c=Math.abs(tx(cur.t))/CM;el('circle',{cx:P[0],cy:P[1],r:11,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeL);
+  if(cur.type==='dot'){const P=lerp(cur.ed,cur.t),c=cur.t*H/CM;el('circle',{cx:P[0],cy:P[1],r:11,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeL);
     const lx=P[0]+62,ly=P[1]-34;el('rect',{x:lx-48,y:ly-22,width:96,height:44,rx:12,fill:'#fff',stroke:'#D6338A','stroke-width':3},strokeL);txt(strokeL,lx,ly+1,cmT(c),{'font-size':24,fill:'#1F2A37'});}
   else{const a=lerp(cur.ed,cur.t0),b=lerp(cur.ed,cur.t1);el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'#D6338A','stroke-width':7,'stroke-linecap':'round'},strokeL);
     el('circle',{cx:b[0],cy:b[1],r:12,fill:'#D6338A',stroke:'#fff','stroke-width':3},strokeL);txt(strokeL,b[0]+22,b[1]-22,'✏️',{'font-size':26});}}
@@ -553,7 +560,7 @@ function toLocalG(g,P){const c=Math.cos(rad(g.rot)),sn=Math.sin(rad(g.rot)),dx=P
 function newTask5(){
   resetPointers();strokes=[];dots=[];tries=0;ghostOn=false;cur=null;
   const th=S.slant&&Math.random()<.5?pick([-15,-10,10,15]):0;
-  const dl=S.half?[1,1.5,2,2.5,3,3.5]:[1,2,3];let d=pick(dl);if(d===lastD5)d=pick(dl.filter(x=>x!==d));lastD5=d;
+  const dl=S.half?[1,1.5,2,2.5,3]:[1,2,3];let d=pick(dl);if(d===lastD5)d=pick(dl.filter(x=>x!==d));lastD5=d;
   const u=[Math.cos(rad(th)),Math.sin(rad(th))],n=[u[1],-u[0]],C=[470,400];
   T5={th,d,u,n,C,phase:1,posed:false,ftries:0};
   geoG.style.transition='none';geoG.style.opacity='1';geoG.style.pointerEvents='';Object.assign(geo,HOME);drawGeo();
@@ -567,13 +574,13 @@ function strip5(){const ph=T5.phase,it=[{t:'Abstand '+(Number.isInteger(T5.d)?cm
 function find5(){hitL.innerHTML='';const g=el('g',{},hitL),Z=2,base=560,cx=500,half=S.half;
   el('rect',{x:20,y:20,width:960,height:585,rx:24,fill:'#fff'},g);
   distBadge(T5.d,g);txt(g,500,104,'🔍 Dein Geodreieck – ganz groß. Tippe die Linie für '+cmT(T5.d)+' an.',{'font-size':22,fill:'#475569'});
-  el('polygon',{points:`${cx-470},${base} ${cx+470},${base} ${cx+470-4.4*CM*Z},${base-4.4*CM*Z} ${cx-470+4.4*CM*Z},${base-4.4*CM*Z}`,fill:'rgba(170,215,255,.45)',stroke:'#1d4f8a','stroke-width':3},g);
+  el('polygon',{points:`${cx-470},${base} ${cx+470},${base} ${cx+470-3.6*CM*Z},${base-3.6*CM*Z} ${cx-470+3.6*CM*Z},${base-3.6*CM*Z}`,fill:'rgba(170,215,255,.45)',stroke:'#1d4f8a','stroke-width':3},g);
   el('line',{x1:cx-470,y1:base,x2:cx+470,y2:base,stroke:'#1d3557','stroke-width':5},g);
   txt(g,cx+330,base-16,'lange Kante',{'font-size':20,fill:'#1d3557'});
-  el('line',{x1:cx,y1:base,x2:cx,y2:base-4.4*CM*Z,stroke:'#1d3557','stroke-width':3},g);
-  for(let k=1;k<=8;k++){const c=k/2;if(!half&&k%2)continue;const y=base-c*CM*Z,w=470-c*CM*Z-6;
-    const ln=el('line',{x1:cx-w,y1:y,x2:cx+w,y2:y,stroke:'#1d4f8a','stroke-width':k%2?2:3,'stroke-dasharray':k%2?'10 7':'none',id:'fl'+k},g);
-    txt(g,cx-34,y-17,cmT(c).replace(' cm',''),{'font-size':30,fill:'#1d4f8a'});txt(g,cx+34,y-17,cmT(c).replace(' cm',''),{'font-size':30,fill:'#1d4f8a'});
+  el('line',{x1:cx,y1:base,x2:cx,y2:base-3.6*CM*Z,stroke:'#1d3557','stroke-width':3},g);
+  for(let k=1;k<=6;k++){const c=k/2;if(!half&&k%2)continue;const y=base-c*CM*Z,w=470-c*CM*Z-6;
+    const ln=el('line',{x1:cx-w,y1:y,x2:cx+w,y2:y,stroke:'#1d4f8a','stroke-width':k%2?2:3.5,'stroke-dasharray':k%2?'10 9':'30 10',id:'fl'+k},g);
+    if(!(k%2))[-1,1].forEach(sg=>{const lx=cx+sg*2.75*CM*Z;el('rect',{x:lx-18,y:y-38,width:36,height:32,rx:6,fill:'#EAF4FF'},g);txt(g,lx,y-21,String(c),{'font-size':30,fill:'#1d4f8a'});});
     const h=el('line',{x1:cx-w,y1:y,x2:cx+w,y2:y,stroke:'rgba(0,0,0,0)','stroke-width':half?20:34,'pointer-events':'stroke',style:'cursor:pointer'},g);
     h.addEventListener('pointerdown',e=>{e.preventDefault();tapFind5(c,ln,y,w);});}
   // Abstands-Pfeil zur Erklärung
@@ -595,7 +602,7 @@ function start5b(){hitL.innerHTML='';T5.phase=2;const{C,u,d}=T5;distBadge(d);
 /* Wo liegt die blaue Linie auf dem Geodreieck? */
 function pose5(g){g=g||geo;const cand=[T5.th,T5.th+180];const r=cand.reduce((b,c)=>Math.abs(adiff(g.rot,c))<Math.abs(adiff(g.rot,b))?c:b);
   const df=adiff(r,g.rot);const L=toLocalG(g,T5.C),depth=-L[1];const step=S.half?CM/2:CM,k=Math.round(depth/step);
-  const angOk=Math.abs(df)<1,on=Math.abs(depth-k*step)<3&&k>=0&&k*step<=6.5*CM;
+  const angOk=Math.abs(df)<1,on=Math.abs(depth-k*step)<3&&k>=0&&k*step<=3*CM;
   return{df,depth,L,k:angOk&&on?k*step/CM:null,ok:angOk&&on&&Math.abs(k*step/CM-T5.d)<.01&&Math.abs(L[0])<H-k*step-60};}
 function snapGeo5(){if(!T5||T5.phase!==2||locked)return;
   const TH=S.mag==='genau'?{a:4,d:12}:{a:18,d:45};const near=t=>{feedback(t,'try');say(t);};
@@ -603,7 +610,7 @@ function snapGeo5(){if(!T5||T5.phase!==2||locked)return;
   const p=pose5();if(Math.abs(p.df)>TH.a)return;
   const Z=toWorld(0,0),g2={rot:geo.rot+p.df};placeSo(g2,0,0,Z);
   const L=toLocalG(g2,T5.C),depth=-L[1],step=S.half?CM/2:CM;let k=Math.round(depth/step);
-  if(depth<-TH.d||k*step>6.5*CM)return;if(k<0)k=0;
+  if(depth<-TH.d||k*step>3*CM)return;if(k<0)k=0;
   if(Math.abs(depth-k*step)>TH.d){if(S.mag==='genau'&&Math.abs(depth-k*step)<45)near('Fast! Lege die Linie noch genauer auf die blaue Linie.');return;}
   const lim=H-k*step-80;const lx=Math.max(-lim,Math.min(lim,L[0]));
   placeSo(g2,lx,-k*step,T5.C);Object.assign(geo,{x:g2.x,y:g2.y,rot:g2.rot});drawGeo();sound('snap');afterPose5();}
