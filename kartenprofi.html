@@ -73,6 +73,13 @@ canvas{width:100%;max-width:900px;height:auto;border-radius:18px;border:3px soli
 .adm .seg button{font-size:17px;padding:6px 12px;border-radius:10px;border:2px solid #9fb6d8;background:#fff;margin-right:6px}
 .adm .seg button.on{background:#2b6fd6;color:#fff;border-color:#2b6fd6}
 .msg{background:#e3f6e8;border:3px solid #7cc893;border-radius:16px;padding:12px;font-size:24px;text-align:center;margin:10px 0}
+.xbox{display:flex;flex-direction:column;gap:12px;align-items:center;max-width:900px;margin:0 auto}
+.xp{font-size:24px;line-height:1.4;margin:4px 0;max-width:820px;width:100%}
+.xrow{display:flex;gap:16px;align-items:center;background:#fff;border:2px solid #d6e0ee;border-radius:16px;padding:10px 14px;width:100%;max-width:820px}
+.xl{flex:none;min-width:110px;text-align:center}.xt{font-size:22px;line-height:1.35}
+.xtab{border-collapse:collapse;font-size:22px;background:#fff;border-radius:12px}
+.xtab td{border:1px solid #d6e0ee;padding:8px 12px;vertical-align:middle}
+.sw2{display:inline-block;width:22px;height:22px;border-radius:5px;border:1px solid #777;margin-right:8px;vertical-align:middle}
 .info{background:#eef5ff;border:2px solid #b9d0f0;border-radius:14px;padding:10px 14px;font-size:21px;line-height:1.35;max-width:640px}
 </style>
 </head>
@@ -85,8 +92,10 @@ canvas{width:100%;max-width:900px;height:auto;border-radius:18px;border:3px soli
 <div id="testbar" class="testbar" hidden>🧪 TESTMODUS – nichts wird gespeichert</div>
 <main id="app"></main>
 
+<script src="lernlog.js"></script>
 <script>
 "use strict";
+const LL=window.LernLog||null;if(LL)LL.init('Karten-Profi');
 /* =========================================================
    Speicher
    ========================================================= */
@@ -97,7 +106,7 @@ function loadS(){
   try{d=JSON.parse(localStorage.getItem(KEY));}catch(e){}
   S=Object.assign({ex:{},items:{},off:{},blStage:1,wait:4,log:[]},d||{});
 }
-let TEST=false;
+let TEST=false;try{TEST=!!(LL&&LL.testmodus());}catch(e){}
 function saveS(){ if(TEST) return; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
 loadS();
 
@@ -307,11 +316,11 @@ const KREISE=[
   pts:[P.SL1,P.SL2,P.SL3,P.SL4,SLP.E,SLP.D,SLP.Cc,SLP.B,SLP.A],hint:'Merzig-Wadern liegt im Nordwesten, an der Grenze zu Luxemburg und Frankreich. Dort ist die Saarschleife.'},
  {id:'WND',n:'St. Wendel',full:'Landkreis St. Wendel',stadt:'St. Wendel',col:'#9fc9ef',lab:[7.14,49.54],
   pts:[SLP.E,P.SL5,P.SL6,P.SL7,P.SL8,SLP.wn,SLP.F,SLP.D],hint:'Der Landkreis St. Wendel liegt ganz im Nordosten. Dort ist der Bostalsee.'},
- {id:'NK',n:'Neunkirchen',full:'Landkreis Neunkirchen',stadt:'Ottweiler',col:'#e8a8d8',lab:[7.1,49.385],
+ {id:'NK',n:'Neunkirchen',full:'Landkreis Neunkirchen',stadt:'Ottweiler',col:'#e8a8d8',lab:[7.06,49.36],
   pts:[SLP.F,SLP.wn,P.SL8,P.SL9,SLP.nk,SLP.M,SLP.nr,SLP.G],hint:'Der Landkreis Neunkirchen liegt in der Mitte vom Saarland. Er ist klein.'},
  {id:'SPK',n:'Saarpfalz-Kreis',full:'Saarpfalz-Kreis',stadt:'Homburg',col:'#f39a7a',lab:[7.27,49.24],
   pts:[P.SL9,P.SL10,P.SL11,P.SL12,SLP.rs,SLP.M,SLP.nk],hint:'Der Saarpfalz-Kreis liegt im Südosten. Dort ist Homburg.'},
- {id:'RV',n:'Regionalverband Saarbrücken',full:'Regionalverband Saarbrücken',stadt:'Saarbrücken',col:'#c9b4f0',lab:[6.97,49.28],
+ {id:'RV',n:'Regionalverband Saarbrücken',full:'Regionalverband Saarbrücken',stadt:'Saarbrücken',col:'#c9b4f0',lab:[7.0,49.30],
   pts:[SLP.M,SLP.rs,P.SL12,P.SL13,P.SL14,SLP.s2,SLP.s1,SLP.G,SLP.nr],hint:'Der Regionalverband Saarbrücken liegt im Süden. Dort ist die Landeshauptstadt Saarbrücken.'},
  {id:'SLS',n:'Saarlouis',full:'Landkreis Saarlouis',stadt:'Saarlouis',col:'#f6c66b',lab:[6.79,49.395],
   pts:[SLP.A,SLP.B,SLP.Cc,SLP.D,SLP.F,SLP.G,SLP.s1,SLP.s2,P.SL14,P.SL15,P.SL16],hint:'Der Landkreis Saarlouis liegt im Westen, an der Grenze zu Frankreich.'}
@@ -853,6 +862,89 @@ addEx({id:'euwissen',t:'eu',ic:'🇪🇺',n:'Europa-Wissen',d:'Hauptstädte, Fla
 const EX_BY={};EX.forEach(e=>EX_BY[e.id]=e);
 
 /* =========================================================
+   Erklär-Seiten („So geht's“)
+   ========================================================= */
+function plain(t){return String(t).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();}
+function ansLabel(a){
+  if(Array.isArray(a))return a.map(ansLabel).join(' oder ');
+  const L=[ST_BY,KR_BY,NBC,SL_NB,DE_RIVERS,SL_RIVERS,DE_CITIES,SL_TOWNS,SL_MARKS,BANDS,SYM,DE_MOUNT];
+  for(const o of L){if(o[a])return o[a].name||o[a].n;}
+  if(DIRN[a])return DIRN[a];
+  if(a==='nordsee')return 'Nordsee';if(a==='ostsee')return 'Ostsee';
+  if(a==='L')return 'linker Berg';if(a==='R')return 'rechter Berg';if(a==='h4')return 'Bergspitze';
+  const h=HCOL.find(x=>x.c===a);if(h)return 'Farbe für '+h.t;
+  return String(a);
+}
+function xRow(left,text){return `<div class="xrow"><div class="xl">${left}</div><div class="xt say">${text}</div></div>`;}
+function xText(t){return `<p class="xp say">${t}</p>`;}
+const EXPLAIN={
+ zeichen:()=>xText('Eine Karte zeigt die Erde von oben. Alles ist viel kleiner und einfacher gezeichnet. Die Zeichen auf der Karte erklärt die <b>Legende</b>.')+
+   Object.keys(SYM).map(k=>xRow(sym(k,100),`<b>${SYM[k].n}</b>: ${SYM[k].h}`)).join(''),
+ richtung:()=>`<div class="row">${compass({labels:'all'})}</div>`+xText('Es gibt vier Himmelsrichtungen: <b>N</b> = Norden, <b>O</b> = Osten, <b>S</b> = Süden, <b>W</b> = Westen.')+
+   xText('Auf Karten ist <b>Norden oben</b>. Süden ist unten. Osten ist rechts. Westen ist links.')+
+   xText('Merksatz im Uhrzeigersinn: <b>N</b>ie <b>O</b>hne <b>S</b>eife <b>W</b>aschen.'),
+ planquadrat:()=>`<div class="row">${pqGrid(3,[{ic:'🌳',cell:'B2'}],{hlCol:'B',hlRow:'2'})}</div>`+
+   xText('Eine Karte kann in Kästchen eingeteilt sein. Die Kästchen heißen <b>Planquadrate</b>.')+
+   xText('1. Suche oben den <b style="color:#2b6fd6">Buchstaben</b> und fahre mit dem Finger nach unten.')+
+   xText('2. Suche an der Seite die <b style="color:#d6532b">Zahl</b> und fahre mit dem Finger nach rechts.')+
+   xText('3. Wo sich beide Finger treffen, ist das Planquadrat. Der Baum ist in <b>B2</b>.'),
+ hoehen:()=>`<div class="row">${hill(false)}${legendH()}</div>`+
+   xText('Auf Karten zeigen <b>Farben</b>, wie hoch das Land ist. Grün ist tief unten, gelb ist höher, orange und braun sind hohe Berge.')+
+   xText('Welche Farbe welche Höhe hat, steht in der <b>Legende</b>.')+
+   `<div class="row"><div style="text-align:center">${contour(true)}<br><b>steil</b></div><div style="text-align:center">${contour(false)}<br><b>flach</b></div></div>`+
+   xText('Ein Berg wird mit <b>Höhenlinien</b> gezeichnet. Liegen die Linien dicht zusammen, ist der Berg <b>steil</b>. Liegen sie weit auseinander, ist er <b>flach</b>.'),
+ massstab:()=>`<div class="row">${ruler(3,true)}</div>`+
+   xText('Eine Karte ist viel kleiner als die Wirklichkeit. Der <b>Maßstab</b> sagt, wie weit es in echt ist.')+
+   xText('Hier ist jedes Kästchen <b>10 km</b> lang. Zähle in Zehnern: 10, 20, 30. Von A nach B sind es <b>30 km</b>.'),
+ landschaften:()=>deSVG({bands:true,extra:pr=>txt(pr.x(10.2),pr.y(53.0),'Norddeutsches Tiefland',{fs:17})+txt(pr.x(10.0),pr.y(50.6),'Mittelgebirge',{fs:17})+txt(pr.x(11.6),pr.y(48.2),'Alpenvorland',{fs:16})+txt(pr.x(11.4),pr.y(47.35),'Alpen',{fs:16,fill:'#fff',sw:0})})+
+   xText('Deutschland hat <b>vier Großlandschaften</b>. Von Norden nach Süden:')+
+   Object.keys(BANDS).map(k=>xRow(swatch(BANDS[k].col,70),`<b>${BANDS[k].n}</b>: ${LS_H[k]}`)).join(''),
+ dekarte:()=>deSVG({plain:true,seaLabels:true,rivers:Object.keys(DE_RIVERS),riverLabels:true,cities:Object.keys(DE_CITIES).map(id=>({id,label:true,square:['berlin','hamburg','muenchen','koeln'].includes(id)})),mounts:['zugspitze','feldberg','brocken'],mountLabels:true})+
+   xText('Im Norden liegen die <b>Nordsee</b> und die <b>Ostsee</b>.')+
+   xText('Wichtige Flüsse: <b>Rhein</b>, <b>Donau</b>, <b>Elbe</b>, <b>Weser</b>, <b>Main</b>, <b>Mosel</b> und die <b>Saar</b>.')+
+   xText('Die Hauptstadt ist <b>Berlin</b>. Ein rotes Quadrat zeigt eine sehr große Stadt.')+
+   xText('Der höchste Berg ist die <b>Zugspitze</b> mit 2962 m. Sie liegt ganz im Süden in den Alpen.'),
+ blfinden:()=>blExplain(),
+ blname:()=>blExplain(),
+ blhaupt:()=>xText('Deutschland hat <b>16 Bundesländer</b>. Jedes Bundesland hat eine <b>Landeshauptstadt</b>. Dort sitzt die Regierung vom Bundesland.')+
+   `<table class="xtab">${blSet().map(id=>`<tr><td><span class="sw2" style="background:${ST_BY[id].col}"></span>${ST_BY[id].name}</td><td><b>${ST_BY[id].cap}</b></td></tr>`).join('')}</table>`+
+   xText('<b>Berlin</b>, <b>Hamburg</b> und <b>Bremen</b> sind Städte und Bundesländer zugleich. Man nennt sie <b>Stadtstaaten</b>.'),
+ sllage:()=>`<div class="row">${deSVG({hl:'SL',ring:'SL',maxw:320,extra:pr=>compassMini(pr.W-55,70)})}${slSVG({plain:true})}</div>`+
+   xText('Das <b>Saarland</b> liegt ganz im <b>Südwesten</b> von Deutschland.')+
+   xText('Nachbarn: Im Süden und Westen <b>Frankreich</b>, im Nordwesten <b>Luxemburg</b>, im Norden und Osten das Bundesland <b>Rheinland-Pfalz</b>.'),
+ slkreise:()=>slSVG({names:true})+
+   xText('Das Saarland hat <b>6 Kreise</b>: 5 Landkreise und den Regionalverband Saarbrücken. In der <b>Kreisstadt</b> ist die Verwaltung vom Kreis.')+
+   KREISE.map(k=>xRow(swatch(k.col,70),`<b>${k.full}</b> – Kreisstadt: ${k.stadt}`)).join(''),
+ slfluesse:()=>slSVG({plain:true,kreisLines:true,rivers:Object.keys(SL_RIVERS),riverLabels:true,towns:[{id:'saarbruecken',label:true},{id:'saarlouis',label:true},{id:'merzig',label:true},{id:'wendel',label:true}]})+
+   Object.keys(SL_RIVERS).map(k=>xRow(`<b style="font-size:26px;color:#1c5fa8">${SL_RIVERS[k].n}</b>`,SL_RIVERS[k].h)).join(''),
+ slorte:()=>slSVG({plain:true,kreisLines:true,rivers:['saar'],marks:Object.keys(SL_MARKS).map(id=>({id,label:true}))})+
+   Object.keys(SL_MARKS).map(k=>xRow(`<span style="font-size:40px">${SL_MARKS[k].ic}</span>`,`<b>${SL_MARKS[k].n}</b>: ${SL_MARKS[k].h}`)).join(''),
+ slwissen:()=>xText('<b>Steckbrief Saarland</b>')+SL_QUIZ.map(q=>xRow(`<span style="font-size:40px">${q[0]}</span>`,q[4])).filter((v,i,a)=>a.indexOf(v)===i).join(''),
+ eunachbarn:()=>euSVG({names:true,compass:true})+
+   xText('Deutschland hat <b>9 Nachbarländer</b>.')+
+   ['N','O','S','W'].map(d=>xRow(`<b style="font-size:24px">${DIRN[d]}</b>`,Object.keys(NBC).filter(k=>NBC[k].dir===d).map(k=>`${flag(k,40)} ${NBC[k].n}`).join(' &nbsp; '))).join(''),
+ euwissen:()=>xText('Europa ist einer von <b>sieben Kontinenten</b>. In der <b>Europäischen Union (EU)</b> sind 27 Länder. Viele bezahlen mit dem <b>Euro</b>. Man kann einfach in andere Länder reisen.')+
+   xText('Meere: Im Norden <b>Nordsee</b> und <b>Ostsee</b>, im Süden das <b>Mittelmeer</b>, im Westen der <b>Atlantische Ozean</b>.')+
+   `<table class="xtab">${Object.keys(NBC).map(k=>`<tr><td>${flag(k,54)}</td><td>${NBC[k].n}</td><td>Hauptstadt: <b>${NBC[k].cap}</b></td></tr>`).join('')}</table>`
+};
+function blExplain(){const set=blSet();
+  return deSVG({names:true,only:set,extra:pr=>['BE','HH','HB'].filter(id=>set.includes(id)).map(id=>{const s=ST_BY[id];const [x,y]=XY(pr,s.lab);return txt(x+(id==='HB'?-12:12),y+(id==='HH'?-10:4),s.name,{fs:13,a:id==='HB'?'end':'start'});}).join('')})+
+   xText('Deutschland hat <b>16 Bundesländer</b>. Auf der Karte hat jedes Bundesland eine eigene Farbe.')+
+   set.map(id=>xRow(swatch(ST_BY[id].col,60),`<b>${ST_BY[id].name}</b>: ${ST_BY[id].hint}`)).join('');}
+function showExplain(back){
+  const ex=EX_BY[CUR.id];
+  $('#app').innerHTML=`<div class="exhead"><button class="hbtn" id="homeB">🏠 Übersicht</button><span class="extitle">${ex.ic} ${ex.n}</span></div>
+   <div class="qbar"><div class="q">📖 So geht's: ${ex.n}</div><button class="spk" id="spX">🔊</button></div>
+   <div class="xbox">${EXPLAIN[CUR.id]()}</div>
+   <div style="text-align:center"><button class="bigbtn" id="goB">${back?'⬅ Zurück zur Aufgabe':'✏️ Jetzt üben'}</button></div>`;
+  $('#homeB').onclick=()=>showHome();
+  $('#spX').onclick=()=>speak([...document.querySelectorAll('.xbox .say')].map(e=>e.textContent).join(' '));
+  $('#goB').onclick=()=>{try{speechSynthesis.cancel();}catch(e){}back?render():nextTask();};
+  window.scrollTo(0,0);
+}
+
+
+/* =========================================================
    Ablauf
    ========================================================= */
 const ROUND=10;
@@ -861,6 +953,7 @@ function exStat(id){return S.ex[id]||(S.ex[id]={rounds:0,tasks:0,first:0,wrong:0
 function itemStat(k){return S.items[k]||(S.items[k]={s:0,w:0,r:0});}
 
 function showHome(msg){
+  if(CUR&&LL)LL.abbruch();
   CUR=null;try{speechSynthesis.cancel();}catch(e){}
   let h=msg?`<div class="msg">${msg}</div>`:'';
   TOPICS.forEach(t=>{
@@ -877,21 +970,24 @@ function showHome(msg){
 
 function startEx(id){
   CUR={id,n:0,first:0,wrong:0,t0:Date.now(),lastKey:null};
-  nextTask();
+  S.seen=S.seen||{};
+  if(EXPLAIN[id]&&(S.explainAlways||!S.seen[id])){S.seen[id]=1;saveS();showExplain(false);}else nextTask();
 }
 function nextTask(){
   const ex=EX_BY[CUR.id];let t;let guard=0;
   do{t=ex.gen();guard++;}while(t.key===CUR.lastKey&&guard<6);
   CUR.task=t;CUR.tries=0;CUR.lastKey=t.key;CUR.locked=false;
+  if(LL)LL.start(ex.n,plain(t.q)+' – Lösung: '+ansLabel(t.correct));
   render();
 }
 function render(){
   const t=CUR.task,ex=EX_BY[CUR.id];
   let dots='';for(let i=0;i<ROUND;i++)dots+=`<span class="dot ${i<CUR.n?'on':''}"></span>`;
-  $('#app').innerHTML=`<div class="exhead"><button class="hbtn" id="homeB">🏠 Übersicht</button><div class="dots">${dots}</div><span class="extitle">${ex.ic} ${ex.n}</span></div>
+  $('#app').innerHTML=`<div class="exhead"><button class="hbtn" id="homeB">🏠 Übersicht</button><div class="dots">${dots}</div><span class="extitle">${ex.ic} ${ex.n}</span>${EXPLAIN[CUR.id]?'<button class="hbtn" id="exB">📖 Erklärung</button>':''}</div>
    <div class="qbar"><div class="q">${t.q}</div><button class="spk" id="spQ">🔊</button></div>
    <div id="task"><div class="vis">${t.html}</div><div id="hint"></div></div>`;
   $('#homeB').onclick=()=>showHome();
+  if($('#exB'))$('#exB').onclick=()=>{if(LL)LL.hilfe();showExplain(true);};
   $('#spQ').onclick=()=>speak(t.say||t.q);
   $('#task').addEventListener('click',onAnswer);
   window.scrollTo(0,0);
@@ -905,10 +1001,10 @@ function onAnswer(ev){
     document.querySelectorAll(`[data-ans="${CSS.escape(id)}"]`).forEach(e=>e.classList.add('right'));
     const st=itemStat(CUR.id+'|'+CUR.task.key);
     if(CUR.tries===0){st.s++;st.r++;CUR.first++;}
-    CUR.n++;
+    CUR.n++;if(LL)LL.fertig(true);
     setTimeout(()=>{CUR.n>=ROUND?finishRound():nextTask();},CUR.tries===0?900:1300);
   }else{
-    sndWrong();CUR.tries++;CUR.wrong++;
+    sndWrong();CUR.tries++;CUR.wrong++;if(LL)LL.fehler(ansLabel(id),plain(CUR.task.hint));
     const st=itemStat(CUR.id+'|'+CUR.task.key);st.s=0;st.w++;
     el.classList.add('wrong');setTimeout(()=>el.classList.remove('wrong'),900);
     if(CUR.task.onWrong)try{CUR.task.onWrong();}catch(e){}
@@ -922,8 +1018,9 @@ function showMe(){
 function lockWithHint(){
   CUR.locked=true;const task=$('#task');task.classList.add('locked');
   let sec=(S.wait||4)+(CUR.tries>=2?2:0);
-  $('#hint').innerHTML=`<div class="hint"><span style="font-size:36px">💡</span><span class="ht">${CUR.task.hint}</span><button class="spk" id="spH">🔊</button><span class="wait" id="wt">⏳ ${sec}</span></div>`;
+  $('#hint').innerHTML=`<div class="hint"><span style="font-size:36px">💡</span><span class="ht">${CUR.task.hint}</span><button class="spk" id="spH">🔊</button>${EXPLAIN[CUR.id]?'<button class="spk" id="exH" title="Erklärung">📖</button>':''}<span class="wait" id="wt">⏳ ${sec}</span></div>`;
   $('#spH').onclick=()=>speak(CUR.task.hint);
+  if($('#exH'))$('#exH').onclick=()=>{if(LL)LL.hilfe();showExplain(true);};
   const myTask=CUR.task;
   const iv=setInterval(()=>{
     if(!CUR||CUR.task!==myTask){clearInterval(iv);return;}
@@ -1024,7 +1121,8 @@ function adminPanel(){
   const m=document.createElement('div');m.className='modal';
   const build=()=>{
     let h=`<div class="box adm"><h3>⚙️ Einstellungen für Erwachsene</h3>
-    <label><input type="checkbox" id="tm" ${TEST?'checked':''}> 🧪 Testmodus (Eingaben werden nicht gespeichert)</label>
+    <label><input type="checkbox" id="tm" ${TEST?'checked':''}> 🧪 Testmodus (Eingaben werden nicht gespeichert und nicht in den Lernstand übernommen; endet nach 4 Stunden von selbst)</label>
+    <label><input type="checkbox" id="exAlways" ${S.explainAlways?'checked':''}> 📖 Erklärung vor jeder Übung zeigen (sonst nur beim ersten Mal)</label>
     <h3>Wartezeit nach einem Fehler</h3><div class="seg">${[3,4,6,8].map(s=>`<button data-w="${s}" class="${(S.wait||4)===s?'on':''}">${s} s</button>`).join('')}</div>
     <h3>Bundesländer: wie viele üben?</h3><div class="seg">${[[1,'6 Länder'],[2,'12 Länder'],[3,'alle 16']].map(([v,l])=>`<button data-st="${v}" class="${(S.blStage||1)===v?'on':''}">${l}</button>`).join('')}</div>
     <p style="font-size:16px;color:#555">Es geht automatisch weiter, wenn Jakob alle Länder der Stufe beim Finden und Benennen mindestens zweimal hintereinander richtig hatte.</p>
@@ -1039,7 +1137,9 @@ function adminPanel(){
     S.log.slice(-12).reverse().forEach(l=>{h+=`<tr><td>${fmtD(l.d)}</td><td>${EX_BY[l.ex]?EX_BY[l.ex].n:l.ex}</td><td>${l.ok} von 10</td><td>${l.err}</td><td>${Math.floor(l.sec/60)} min ${l.sec%60} s</td></tr>`;});
     h+=`</table><p><button class="bigbtn alt" id="rst">🗑️ Fortschritt löschen</button> <button class="bigbtn" id="cls">Fertig</button></p></div>`;
     m.innerHTML=h;
-    m.querySelector('#tm').onchange=e=>{TEST=e.target.checked;$('#testbar').hidden=!TEST;if(!TEST)loadS();};
+    m.querySelector('#tm').onchange=e=>{TEST=e.target.checked;try{if(TEST)localStorage.setItem('lernlog.test',String(Date.now()+4*3600*1000));else localStorage.removeItem('lernlog.test');}catch(_){}
+      $('#testbar').hidden=!TEST;if(!TEST)loadS();};
+    m.querySelector('#exAlways').onchange=e=>{S.explainAlways=e.target.checked;saveS();};
     m.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{S.wait=+b.dataset.w;saveS();build();});
     m.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{S.blStage=+b.dataset.st;saveS();build();});
     m.querySelectorAll('[data-on]').forEach(c=>c.onchange=()=>{if(c.checked)delete S.off[c.dataset.on];else S.off[c.dataset.on]=true;saveS();});
