@@ -328,7 +328,8 @@ function hideFb(){$('#feedback').className='feedback';}
 function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
 function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
 function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
-function startMode(m){MODE=m;show('task');newTask();if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
+const erklImmer=()=>{try{return !!(window.Uebungswahl&&Uebungswahl.erklaerImmer&&Uebungswahl.erklaerImmer());}catch(e){return false;}};
+function startMode(m){MODE=m;show('task');newTask();if(!S.seen[m]||erklImmer()){S.seen[m]=true;save();openHelp();}else sayInstr();}
 function newTask(){locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5][MODE]();}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>sayInstr();
@@ -678,7 +679,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Vierecke-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint1']});</script>
-<script src="uebungswahl.js" data-app="Vierecke-Profi" data-items="Übungen=.mode"></script>
+<script src="uebungswahl.js?v=20261127" data-app="Vierecke-Profi" data-erklaer="1" data-items="Übungen=.mode"></script>
 <script>
 /* „Los geht's“ erst nach Lesezeit: Der Knopf zählt herunter, damit die Hilfe wirklich gelesen wird. */
 (function(){var ov=document.getElementById('helpOv'),b=document.getElementById('helpClose');if(!ov||!b)return;

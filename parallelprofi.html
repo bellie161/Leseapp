@@ -285,8 +285,9 @@ function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='�
 function setCtrl(btns){const c=$('#ctrl');c.innerHTML='';btns.forEach(b=>{const e=document.createElement('button');e.className=b.cls===undefined?'tool':b.cls;e.textContent=b.t;if(b.id)e.id=b.id;e.onclick=b.fn;c.appendChild(e);});}
 function setStrip(items){const st=$('#strip');st.innerHTML='';items.forEach(it=>{if(it==='|'){const s=document.createElement('span');s.className='sp';st.appendChild(s);return;}const s=document.createElement('span');s.className='chip '+(it.c||'');s.textContent=it.t;st.appendChild(s);});}
 const isGeo=()=>MODE===2||MODE===5;
+const erklImmer=()=>{try{return !!(window.Uebungswahl&&Uebungswahl.erklaerImmer&&Uebungswahl.erklaerImmer());}catch(e){return false;}};
 function startMode(m){MODE=m;document.body.classList.toggle('badge',m===2||m===5);show('task');$('#geotools').style.display=isGeo()?'':'none';geoG.style.display=isGeo()?'':'none';pglow.style.display='none';newTask();
-  if(!S.seen[m]){S.seen[m]=true;save();openHelp();}else sayInstr();}
+  if(!S.seen[m]||erklImmer()){S.seen[m]=true;save();openHelp();}else sayInstr();}
 function newTask(){if(anim){cancelAnimationFrame(anim);anim=null;}locked=false;hideFb();clearStage();setStrip([]);updStars();[null,newTask1,newTask2,newTask3,newTask4,newTask5,newTask6][MODE]();}
 $('#homeBtn').onclick=()=>{if(anim){cancelAnimationFrame(anim);anim=null;}show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>sayInstr();
@@ -883,6 +884,6 @@ drawGeo();
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Parallel-Profi',modus:()=>MODE,aufgabe:()=>instrText,gesperrt:()=>locked,hints:['hint3','hint4','hint6']});</script>
-<script src="uebungswahl.js" data-app="Parallel-Profi" data-items="Übungen=.mode"></script>
+<script src="uebungswahl.js?v=20261127" data-app="Parallel-Profi" data-erklaer="1" data-items="Übungen=.mode"></script>
 </body>
 </html>

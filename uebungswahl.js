@@ -24,6 +24,9 @@
   }).filter(function (g) { return g && g.sel; });
   var GATE = ds.gate || '#setBtn,#btn-settings,#openSettings,#btnSettings,#btnLehrer,#hold';
   var VKEY = 'uebungswahl.vorlesen', VDEF = ds.vorlesen === 'an';
+  var EKEY = 'uebungswahl.erklaer', HAS_E = ds.erklaer === '1'; // Erklärung vor jeder Übung (sonst nur beim ersten Mal)
+  function erklImmer() { try { var m = JSON.parse(ls(EKEY) || '{}'); return !!m[APP]; } catch (e) { return false; } }
+  function setErkl(v) { var m = {}; try { m = JSON.parse(ls(EKEY) || '{}') || {}; } catch (e) {} m[APP] = !!v; ls(EKEY, JSON.stringify(m)); }
   var KEY = 'uebungswahl.v1', PKEY = 'lernlog.pin', OKEY = 'uebungswahl.offen', OPEN_MS = 10 * 60 * 1000;
 
   function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
@@ -137,7 +140,8 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function panel() {
     var o = off(), h = '<h2>Übungen ein- und ausschalten</h2><p>' + esc(APP) + ': Ausgeschaltete Übungen sieht das Kind nicht mehr. Schalte aus, was es schon sicher kann.</p>' +
-      '<h3>Vorlesen</h3><label class="' + (autoRead() ? '' : 'aus') + '"><span>Aufträge automatisch vorlesen<br><small style="color:#6b7280;font-size:14px">Aus: Das Kind liest selbst und tippt bei Bedarf auf 🔊.</small></span><input type="checkbox" data-vor="1"' + (autoRead() ? ' checked' : '') + '></label>';
+      '<h3>Vorlesen</h3><label class="' + (autoRead() ? '' : 'aus') + '"><span>Aufträge automatisch vorlesen<br><small style="color:#6b7280;font-size:14px">Aus: Das Kind liest selbst und tippt bei Bedarf auf 🔊.</small></span><input type="checkbox" data-vor="1"' + (autoRead() ? ' checked' : '') + '></label>' +
+      (HAS_E ? '<h3>Erklärung</h3><label class="' + (erklImmer() ? '' : 'aus') + '"><span>Erklärung vor jeder Übung zeigen<br><small style="color:#6b7280;font-size:14px">Aus: Die Erklärung kommt nur beim ersten Mal. Danach mit ❓.</small></span><input type="checkbox" data-erkl="1"' + (erklImmer() ? ' checked' : '') + '></label>' : '');
     GROUPS.forEach(function (g, gi) {
       var seen = {}, list = items(g).filter(function (el) { var k = keyOf(el); if (seen[k]) return false; seen[k] = 1; return true; });
       if (!list.length) return;
@@ -154,6 +158,8 @@
     ov.querySelector('[data-lock]').onclick = function () { setOpen(false); close(); };
     var vor = ov.querySelector('input[data-vor]');
     vor.onchange = function () { setAutoRead(vor.checked); vor.parentNode.className = vor.checked ? '' : 'aus'; };
+    var ek = ov.querySelector('input[data-erkl]');
+    if (ek) ek.onchange = function () { setErkl(ek.checked); ek.parentNode.className = ek.checked ? '' : 'aus'; };
     [].forEach.call(ov.querySelectorAll('input[data-k]'), function (inp) {
       inp.onchange = function () {
         var grp = [].slice.call(ov.querySelectorAll('input[data-g="' + inp.dataset.g + '"]'));
@@ -219,5 +225,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 
-  window.Uebungswahl = { apply: apply, offen: isOpen };
+  window.Uebungswahl = { apply: apply, offen: isOpen, erklaerImmer: erklImmer };
 })();

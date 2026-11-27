@@ -191,6 +191,7 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
 <!-- ============ OVERLAYS ============ -->
 <div class="overlay" id="helpOv"><div class="card">
   <h2>So prüfst du</h2>
+  <div id="helpIntro" style="font-size:22px;font-weight:700;color:#1d4f8a;margin-bottom:8px"></div>
   <svg viewBox="0 0 300 120" style="width:300px;height:120px">
     <polygon points="30,110 270,110 150,-10" fill="rgba(170,215,255,.5)" stroke="#1d4f8a" stroke-width="2" transform="rotate(180 150 60)"/>
   </svg>
@@ -348,11 +349,13 @@ updMagBtn();
 /* ---------- Aufgaben ---------- */
 let TM=1,task=null,tries=0,locked=false;
 const INSTR={1:'Ist das ein rechter Winkel? Prüfe mit dem Geodreieck.',2:'Welcher Winkel ist ein rechter Winkel? Prüfe mit dem Geodreieck.',3:'Wie viele rechte Winkel hat die Form? Prüfe jede Ecke.'};
+const erklImmer=()=>{try{return !!(window.Uebungswahl&&Uebungswahl.erklaerImmer&&Uebungswahl.erklaerImmer());}catch(e){return false;}};
 function startMode(m){TM=m;show('task');$('#instr').textContent=INSTR[m];newTask();
-  if(!S.seenHelp){S.seenHelp=true;save();openHelp();}else say(INSTR[m]);}
+  S.seenM=S.seenM||{};if(!S.seenM[m]||erklImmer()){S.seenM[m]=true;save();openHelp();}else say(INSTR[m]);}
+const HELPINTRO={1:'Hier prüfst du einen Winkel: Ist er ein rechter Winkel?',2:'Hier sind mehrere Winkel. Prüfe jeden Winkel und tippe auf den rechten Winkel.',3:'Prüfe jede Ecke der Form. Zähle, wie viele rechte Winkel sie hat.'};
 $('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>say(INSTR[TM]);
-function openHelp(){$('#helpOv').classList.add('on');say('So prüfst du. Spitze vom Geodreieck auf den Punkt. Eine rote Kante genau auf eine Linie. Schau: Liegt die andere Linie genau an der anderen roten Kante? Dann ist es ein rechter Winkel.');}
+function openHelp(){$('#helpIntro').textContent=HELPINTRO[TM]||'';$('#helpOv').classList.add('on');say((HELPINTRO[TM]||'')+' So prüfst du. Spitze vom Geodreieck auf den Punkt. Eine rote Kante genau auf eine Linie. Schau: Liegt die andere Linie genau an der anderen roten Kante? Dann ist es ein rechter Winkel.');}
 $('#helpBtn').onclick=openHelp;
 $('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');say(INSTR[TM]);};
 
@@ -652,7 +655,7 @@ function endSling(){slingRounds++;const last=slingRounds>=MAXR;
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Winkel-Profi',uebung:()=>LernLog.text('.mode[data-mode="'+TM+'"]')+' · '+S.level,gesperrt:()=>locked,okSound:true});</script>
-<script src="uebungswahl.js" data-app="Winkel-Profi" data-items="Übungen=.mode"></script>
+<script src="uebungswahl.js?v=20261127" data-app="Winkel-Profi" data-erklaer="1" data-items="Übungen=.mode"></script>
 <script>
 /* „Los geht's“ erst nach Lesezeit: Der Knopf zählt herunter, damit die Hilfe wirklich gelesen wird. */
 (function(){var ov=document.getElementById('helpOv'),b=document.getElementById('helpClose');if(!ov||!b)return;

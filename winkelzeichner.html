@@ -257,7 +257,8 @@ $('#magBtn').onclick=()=>{S.mag={gross:'genau',genau:'aus',aus:'gross'}[S.mag];s
 
 /* ---------- Aufgabe ---------- */
 let LVL=1,T=null,strokes=[],tries=0,locked=false,tool='move',cur=null,ghostOn=false;
-function startLevel(l){LVL=l;show('task');$('#instr').textContent=LV[l].instr;setGlow();newTask();if(!S.seen[l]){S.seen[l]=true;save();openHelp();}else say(LV[l].instr);}
+const erklImmer=()=>{try{return !!(window.Uebungswahl&&Uebungswahl.erklaerImmer&&Uebungswahl.erklaerImmer());}catch(e){return false;}};
+function startLevel(l){LVL=l;show('task');$('#instr').textContent=LV[l].instr;setGlow();newTask();if(!S.seen[l]||erklImmer()){S.seen[l]=true;save();openHelp();}else say(LV[l].instr);}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=()=>say(LV[LVL].instr);
 function openHelp(){$('#helpTitle').textContent='So geht es: '+LV[LVL].title;const ol=$('#helpSteps');ol.innerHTML='';LV[LVL].steps.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="n">${i+1}</span>${s}`;ol.appendChild(li);});
@@ -458,7 +459,7 @@ strokeLayer.setAttribute('pointer-events','none');stage.appendChild(strokeLayer)
 <!-- Lernstand-Aufzeichnung (Auswertung: lernstand.html) -->
 <script src="lernlog.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Winkel-Zeichner',uebung:()=>LernLog.text('.mode[data-l="'+LVL+'"]'),gesperrt:()=>locked,done:['success']});</script>
-<script src="uebungswahl.js" data-app="Winkel-Zeichner" data-items="Übungen=.mode"></script>
+<script src="uebungswahl.js?v=20261127" data-app="Winkel-Zeichner" data-erklaer="1" data-items="Übungen=.mode"></script>
 <script>
 /* „Los geht's“ erst nach Lesezeit: Der Knopf zählt herunter, damit die Hilfe wirklich gelesen wird. */
 (function(){var ov=document.getElementById('helpOv'),b=document.getElementById('helpClose');if(!ov||!b)return;

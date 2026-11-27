@@ -160,14 +160,15 @@ svg.stage{width:100%;height:100%;display:block;touch-action:none}
   <button id="setClose" style="background:var(--green);margin-top:8px">Fertig</button>
 </div></div>
 <div class="overlay" id="helpOv"><div class="card">
-  <h2>So spannst du</h2>
-  <ol class="steps">
+  <h2 id="helpTitle">So spannst du</h2>
+  <div id="helpIntro" style="font-size:22px;font-weight:700;color:#1d4f8a;margin-bottom:8px"></div>
+  <ol class="steps" id="helpSteps">
     <li><span class="n">1</span>Tippe auf einen Nagel. Dort beginnt dein Gummi.</li>
     <li><span class="n">2</span>Ziehe den Gummi zum nächsten Nagel – oder tippe den Nagel an.</li>
     <li><span class="n">3</span>Zum Schluss tippe wieder auf den <b>ersten</b> Nagel. Jetzt ist die Form zu.</li>
     <li><span class="n">4</span>Ecke verschieben: Ecke festhalten und zu einem anderen Nagel ziehen.</li>
   </ol>
-  <div style="font-size:19px;color:#4b5563;margin-bottom:14px">↶ nimmt die letzte Ecke weg. 🗑 nimmt den Gummi ab.</div>
+  <div id="helpFoot" style="font-size:19px;color:#4b5563;margin-bottom:14px">↶ nimmt die letzte Ecke weg. 🗑 nimmt den Gummi ab.</div>
   <button id="helpClose" style="background:var(--green)">Los geht's!</button>
 </div></div>
 
@@ -366,11 +367,20 @@ function clearAll(){if(locked)return;bands=[];active=null;$('#feedback').classNa
 
 /* ---------- Aufgaben ---------- */
 const INSTR={copy:'Spanne die Form vom Vorbild nach.',find:'Wie viele rechte Winkel hat die Form? Prüfe jede Ecke.',free:'Spanne, was du möchtest!'};
-function startMode(m){MODE=m;layout();show('task');geoOn=m==='find';newTask();if(!S.seenHelp&&m!=='find'){S.seenHelp=true;save();openHelp();}else sayInstr();}
+const erklImmer=()=>{try{return !!(window.Uebungswahl&&Uebungswahl.erklaerImmer&&Uebungswahl.erklaerImmer());}catch(e){return false;}};
+function startMode(m){MODE=m;layout();show('task');geoOn=m==='find';newTask();S.seenM=S.seenM||{};if(m!=='free'&&(!S.seenM[m]||erklImmer())){S.seenM[m]=true;save();openHelp();}else sayInstr();}
 function sayInstr(){say($('#instr').textContent);}
 $('#homeBtn').onclick=()=>{show('start');refreshStart();try{speechSynthesis.cancel();}catch(e){}};
 $('#speakBtn').onclick=sayInstr;
-function openHelp(){$('#helpOv').classList.add('on');say('Tippe auf einen Nagel. Ziehe den Gummi zum nächsten Nagel, oder tippe den Nagel an. Zum Schluss tippe wieder auf den ersten Nagel.');}
+
+const GB_HELP={
+ copy:{t:'So spannst du nach',i:'Links ist das Vorbild. Spanne die gleiche Form rechts auf dein Brett.',st:['Schau, an welchem Nagel das Vorbild anfängt. Zähle die Nägel.','Tippe auf den gleichen Nagel auf deinem Brett. Dort beginnt dein Gummi.','Ziehe den Gummi zum nächsten Nagel – oder tippe den Nagel an.','Zum Schluss tippe wieder auf den <b>ersten</b> Nagel. Jetzt ist die Form zu.'],f:'↶ nimmt die letzte Ecke weg. 🗑 nimmt den Gummi ab.'},
+ self:{t:'So spannst du selbst',i:'Lies genau, welche Form du spannen sollst.',st:['Tippe auf einen Nagel. Dort beginnt dein Gummi.','Ziehe den Gummi zum nächsten Nagel – oder tippe den Nagel an.','Zum Schluss tippe wieder auf den <b>ersten</b> Nagel. Jetzt ist die Form zu.','Ecke verschieben: Ecke festhalten und zu einem anderen Nagel ziehen.'],f:'↶ nimmt die letzte Ecke weg. 🗑 nimmt den Gummi ab.'},
+ find:{t:'So findest du rechte Winkel',i:'Prüfe jede Ecke der Form mit dem Geodreieck. Zähle die rechten Winkel.',st:['Schiebe die Spitze vom Geodreieck genau auf eine Ecke der Form.','Drehe das Geodreieck, bis eine Kante genau auf einer Seite der Form liegt.','Schau: Liegt die andere Seite genau an der anderen Kante? Dann ist es ein rechter Winkel.','Mach das bei jeder Ecke. Zähle zum Schluss die rechten Winkel.'],f:'Schieben: mit dem Finger. Drehen: am orangen Knopf ↻ oder mit zwei Fingern.'}
+};
+function openHelp(){const h=GB_HELP[MODE]||GB_HELP.self;$('#helpTitle').textContent=h.t;$('#helpIntro').textContent=h.i;
+  $('#helpSteps').innerHTML=h.st.map((s,i)=>`<li><span class="n">${i+1}</span>${s}</li>`).join('');$('#helpFoot').textContent=h.f;
+  $('#helpOv').classList.add('on');say(h.i+' '+h.st.map(s=>s.replace(/<[^>]+>/g,'')).join(' '));}
 $('#helpBtn').onclick=openHelp;$('#helpClose').onclick=()=>{$('#helpOv').classList.remove('on');sayInstr();};
 function feedback(t,cls){const f=$('#feedback');f.textContent=t;f.className='feedback '+cls;}
 function updStars(){const r=Math.max(0,S.goal-S.done);$('#stars').textContent='⭐ '+S.stars+'   🎯 '+(r?'noch '+r:'frei!');}
@@ -531,7 +541,7 @@ function endRound(){slingRounds++;const last=slingRounds>=MAXR;
 <script src="lernlog.js"></script>
 <script src="denkpause.js"></script>
 <script>if(window.LernLog)LernLog.geo({app:'Geobrett',uebung:()=>LernLog.text('.mode[data-mode="'+MODE+'"]')+' · '+N+'x'+N+' · '+S.level,gesperrt:()=>locked,done:['success'],skip:()=>MODE==='free'});</script>
-<script src="uebungswahl.js" data-app="Geobrett" data-items="Übungen=.mode"></script>
+<script src="uebungswahl.js?v=20261127" data-app="Geobrett" data-erklaer="1" data-items="Übungen=.mode"></script>
 <script>
 /* „Los geht's“ erst nach Lesezeit: Der Knopf zählt herunter, damit die Hilfe wirklich gelesen wird. */
 (function(){var ov=document.getElementById('helpOv'),b=document.getElementById('helpClose');if(!ov||!b)return;
